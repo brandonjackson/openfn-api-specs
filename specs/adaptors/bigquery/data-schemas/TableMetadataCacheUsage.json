@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/TableMetadataCacheUsage",
+  "title": "TableMetadataCacheUsage",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/TableMetadataCacheUsage",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Table level detail on the usage of metadata caching. Only set for Metadata caching eligible tables referenced in the query.",
+  "properties": {
+    "pruningStats": {
+      "$ref": "PruningStats.json"
+    },
+    "unusedReason": {
+      "type": "string",
+      "description": "Reason for not using metadata caching for the table.",
+      "enum": [
+        "UNUSED_REASON_UNSPECIFIED",
+        "EXCEEDED_MAX_STALENESS",
+        "METADATA_CACHING_NOT_ENABLED",
+        "OTHER_REASON"
+      ]
+    },
+    "tableType": {
+      "type": "string",
+      "description": "[Table type](https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#Table.FIELDS.type)."
+    },
+    "explanation": {
+      "type": "string",
+      "description": "Free form human-readable reason metadata caching was unused for the job."
+    },
+    "staleness": {
+      "type": "string",
+      "format": "google-duration",
+      "description": "Duration since last refresh as of this job for managed tables (indicates metadata cache staleness as seen by this job)."
+    },
+    "tableReference": {
+      "$ref": "TableReference.json"
+    }
+  }
+}

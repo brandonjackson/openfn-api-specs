@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googledrive/Permission",
+  "title": "Permission",
+  "x-openfn-adaptor": "googledrive",
+  "x-source": {
+    "openapi": "#/components/schemas/Permission",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A permission for a file. A permission grants a user, group, domain, or the world access to a file or a folder hierarchy. For more information, see [Share files, folders, and drives](https://developers.google.com/workspace/drive/api/guides/manage-sharing). By default, permission requests only return a subset of fields. Permission `kind`, `ID`, `type`, and `role` are always returned. To retrieve specific fields, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter). Some resource methods (such as `permissions.update`) require a `permissionId`. Use the `permissions.list` method to retrieve the ID for a file, folder, or shared drive.",
+  "properties": {
+    "expirationTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time at which this permission will expire (RFC 3339 date-time). Expiration times have the following restrictions: - They can only be set on user and group permissions - The time must be in the future - The time cannot be more than a year in the future"
+    },
+    "pendingOwner": {
+      "type": "boolean",
+      "description": "Whether the account associated with this permission is a pending owner. Only populated for permissions of type `user` for files that aren't in a shared drive."
+    },
+    "allowFileDiscovery": {
+      "type": "boolean",
+      "description": "Whether the permission allows the file to be discovered through search. This is only applicable for permissions of type `domain` or `anyone`."
+    },
+    "photoLink": {
+      "type": "string",
+      "description": "Output only. A link to the user's profile photo, if available."
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the grantee. Supported values include: * `user` * `group` * `domain` * `anyone` When creating a permission, if `type` is `user` or `group`, you must provide an `emailAddress` for the user or group. If `type` is `domain`, you must provide a `domain`. If `type` is `anyone`, no extra information is required."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Output only. Identifies what kind of resource this is. Value: the fixed string `\"drive#permission\"`.",
+      "default": "drive#permission"
+    },
+    "role": {
+      "type": "string",
+      "description": "The role granted by this permission. Supported values include: * `owner` * `organizer` * `fileOrganizer` * `writer` * `commenter` * `reader` For more information, see [Roles and permissions](https://developers.google.com/workspace/drive/api/guides/ref-roles)."
+    },
+    "view": {
+      "type": "string",
+      "description": "Indicates the view for this permission. Only populated for permissions that belong to a view. The only supported values are `published` and `metadata`: * `published`: The permission's role is `publishedReader`. * `metadata`: The item is only visible to the `metadata` view because the item has limited access and the scope has at least read access to the parent. The `metadata` view is only supported on folders. For more information, see [Views](https://developers.google.com/workspace/drive/api/guides/ref-roles#views)."
+    },
+    "permissionDetails": {
+      "type": "array",
+      "description": "Output only. Details of whether the permissions on this item are inherited or are directly on this item.",
+      "readOnly": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "Output only. The primary role for this user. Supported values include: * `owner` * `organizer` * `fileOrganizer` * `writer` * `commenter` * `reader` For more information, see [Roles and permissions](https://developers.google.com/workspace/drive/api/guides/ref-roles)."
+          },
+          "permissionType": {
+            "type": "string",
+            "description": "Output only. The permission type for this user. Supported values include: * `file` * `member`"
+          },
+          "inherited": {
+            "type": "boolean",
+            "description": "Output only. Whether this permission is inherited. This field is always populated. This is an output-only field."
+          },
+          "inheritedFrom": {
+            "type": "string",
+            "description": "Output only. The ID of the item from which this permission is inherited. This is only populated for items in shared drives.",
+            "readOnly": true
+          }
+        }
+      }
+    },
+    "deleted": {
+      "type": "boolean",
+      "description": "Output only. Whether the account associated with this permission has been deleted. This field only pertains to permissions of type `user` or `group`."
+    },
+    "id": {
+      "type": "string",
+      "description": "Output only. The ID of this permission. This is a unique identifier for the grantee, and is published in the [User resource](https://developers.google.com/workspace/drive/api/reference/rest/v3/User) as `permissionId`. IDs should be treated as opaque values."
+    },
+    "teamDrivePermissionDetails": {
+      "type": "array",
+      "description": "Output only. Deprecated: Output only. Use `permissionDetails` instead.",
+      "readOnly": true,
+      "deprecated": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "inherited": {
+            "type": "boolean",
+            "description": "Deprecated: Output only. Use `permissionDetails/inherited` instead.",
+            "deprecated": true
+          },
+          "inheritedFrom": {
+            "type": "string",
+            "description": "Deprecated: Output only. Use `permissionDetails/inheritedFrom` instead.",
+            "deprecated": true
+          },
+          "role": {
+            "type": "string",
+            "description": "Deprecated: Output only. Use `permissionDetails/role` instead.",
+            "deprecated": true
+          },
+          "teamDrivePermissionType": {
+            "type": "string",
+            "description": "Deprecated: Output only. Use `permissionDetails/permissionType` instead.",
+            "deprecated": true
+          }
+        }
+      }
+    },
+    "emailAddress": {
+      "type": "string",
+      "description": "Output only. The email address of the user or group to which this permission refers.",
+      "readOnly": true
+    },
+    "inheritedPermissionsDisabled": {
+      "type": "boolean",
+      "description": "When `true`, only organizers, owners, and users with permissions added directly on the item can access it."
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Output only. The \"pretty\" name of the value of the permission. The following is a list of examples for each type of permission: * `user` - User's full name, as defined for their Google Account, such as \"Dana A.\" * `group` - Name of the Google Group, such as \"The Company Administrators.\" * `domain` - String domain name, such as \"cymbalgroup.com.\" * `anyone` - No `displayName` is present."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Output only. The domain to which this permission refers.",
+      "readOnly": true
+    }
+  }
+}

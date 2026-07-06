@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googlesheets/FilterView",
+  "title": "FilterView",
+  "x-openfn-adaptor": "googlesheets",
+  "x-source": {
+    "openapi": "#/components/schemas/FilterView",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A filter view. For more information, see [Manage data visibility with filters](https://developers.google.com/workspace/sheets/api/guides/filters).",
+  "properties": {
+    "namedRangeId": {
+      "type": "string",
+      "description": "The named range this filter view is backed by, if any. When writing, only one of range, named_range_id, or table_id may be set."
+    },
+    "filterViewId": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The ID of the filter view."
+    },
+    "title": {
+      "type": "string",
+      "description": "The name of the filter view."
+    },
+    "criteria": {
+      "type": "object",
+      "description": "The criteria for showing/hiding values per column. The map's key is the column index, and the value is the criteria for that column. This field is deprecated in favor of filter_specs.",
+      "deprecated": true,
+      "additionalProperties": {
+        "$ref": "FilterCriteria.json"
+      }
+    },
+    "range": {
+      "$ref": "GridRange.json"
+    },
+    "tableId": {
+      "type": "string",
+      "description": "The table this filter view is backed by, if any. When writing, only one of range, named_range_id, or table_id may be set."
+    },
+    "filterSpecs": {
+      "type": "array",
+      "description": "The filter criteria for showing or hiding values per column. Both criteria and filter_specs are populated in responses. If both fields are specified in an update request, this field takes precedence.",
+      "items": {
+        "$ref": "FilterSpec.json"
+      }
+    },
+    "sortSpecs": {
+      "type": "array",
+      "description": "The sort order per column. Later specifications are used when values are equal in the earlier specifications.",
+      "items": {
+        "$ref": "SortSpec.json"
+      }
+    }
+  }
+}

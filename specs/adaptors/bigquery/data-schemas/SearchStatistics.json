@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/SearchStatistics",
+  "title": "SearchStatistics",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/SearchStatistics",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Statistics for a search query. Populated as part of JobStatistics2.",
+  "properties": {
+    "indexPruningStats": {
+      "type": "array",
+      "description": "Search index pruning statistics, one for each base table that has a search index. If a base table does not have a search index or the index does not help with pruning on the base table, then there is no pruning statistics for that table.",
+      "items": {
+        "$ref": "IndexPruningStats.json"
+      }
+    },
+    "indexUnusedReasons": {
+      "type": "array",
+      "description": "When `indexUsageMode` is `UNUSED` or `PARTIALLY_USED`, this field explains why indexes were not used in all or part of the search query. If `indexUsageMode` is `FULLY_USED`, this field is not populated.",
+      "items": {
+        "$ref": "IndexUnusedReason.json"
+      }
+    },
+    "indexUsageMode": {
+      "type": "string",
+      "description": "Specifies the index usage mode for the query.",
+      "enum": [
+        "INDEX_USAGE_MODE_UNSPECIFIED",
+        "UNUSED",
+        "PARTIALLY_USED",
+        "FULLY_USED"
+      ]
+    }
+  }
+}

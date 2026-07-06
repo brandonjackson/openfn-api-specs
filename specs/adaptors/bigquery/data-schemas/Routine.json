@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/Routine",
+  "title": "Routine",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/Routine",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A user-defined function or a stored procedure.",
+  "properties": {
+    "description": {
+      "type": "string",
+      "description": "Optional. The description of the routine, if defined."
+    },
+    "arguments": {
+      "type": "array",
+      "description": "Optional.",
+      "items": {
+        "$ref": "Argument.json"
+      }
+    },
+    "determinismLevel": {
+      "type": "string",
+      "description": "Optional. The determinism level of the JavaScript UDF, if defined.",
+      "enum": [
+        "DETERMINISM_LEVEL_UNSPECIFIED",
+        "DETERMINISTIC",
+        "NOT_DETERMINISTIC"
+      ]
+    },
+    "externalRuntimeOptions": {
+      "$ref": "ExternalRuntimeOptions.json"
+    },
+    "etag": {
+      "type": "string",
+      "description": "Output only. A hash of this resource.",
+      "readOnly": true
+    },
+    "buildStatus": {
+      "$ref": "RoutineBuildStatus.json"
+    },
+    "securityMode": {
+      "type": "string",
+      "description": "Optional. The security mode of the routine, if defined. If not defined, the security mode is automatically determined from the routine's configuration.",
+      "enum": [
+        "SECURITY_MODE_UNSPECIFIED",
+        "DEFINER",
+        "INVOKER"
+      ]
+    },
+    "dataGovernanceType": {
+      "type": "string",
+      "description": "Optional. If set to `DATA_MASKING`, the function is validated and made available as a masking function. For more information, see [Create custom masking routines](https://cloud.google.com/bigquery/docs/user-defined-functions#custom-mask).",
+      "enum": [
+        "DATA_GOVERNANCE_TYPE_UNSPECIFIED",
+        "DATA_MASKING"
+      ]
+    },
+    "definitionBody": {
+      "type": "string",
+      "description": "Required. The body of the routine. For functions, this is the expression in the AS clause. If `language = \"SQL\"`, it is the substring inside (but excluding) the parentheses. For example, for the function created with the following statement: `CREATE FUNCTION JoinLines(x string, y string) as (concat(x, \"\\n\", y))` The definition_body is `concat(x, \"\\n\", y)` (\\n is not replaced with linebreak). If `language=\"JAVASCRIPT\"`, it is the evaluated string in the AS clause. For example, for the function created with the following statement: `CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'` The definition_body is `return \"\\n\";\\n` Note that both \\n are replaced with linebreaks. If `definition_body` references another routine, then that routine must be fully qualified with its project ID."
+    },
+    "lastModifiedTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The time when this routine was last modified, in milliseconds since the epoch.",
+      "readOnly": true
+    },
+    "routineType": {
+      "type": "string",
+      "description": "Required. The type of routine.",
+      "enum": [
+        "ROUTINE_TYPE_UNSPECIFIED",
+        "SCALAR_FUNCTION",
+        "PROCEDURE",
+        "TABLE_VALUED_FUNCTION",
+        "AGGREGATE_FUNCTION"
+      ]
+    },
+    "importedLibraries": {
+      "type": "array",
+      "description": "Optional. If language = \"JAVASCRIPT\", this field stores the path of the imported JAVASCRIPT libraries.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "language": {
+      "type": "string",
+      "description": "Optional. Defaults to \"SQL\" if remote_function_options field is absent, not set otherwise.",
+      "enum": [
+        "LANGUAGE_UNSPECIFIED",
+        "SQL",
+        "JAVASCRIPT",
+        "PYTHON",
+        "JAVA",
+        "SCALA"
+      ]
+    },
+    "remoteFunctionOptions": {
+      "$ref": "RemoteFunctionOptions.json"
+    },
+    "creationTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The time when this routine was created, in milliseconds since the epoch.",
+      "readOnly": true
+    },
+    "routineReference": {
+      "$ref": "RoutineReference.json"
+    },
+    "sparkOptions": {
+      "$ref": "SparkOptions.json"
+    },
+    "strictMode": {
+      "type": "boolean",
+      "description": "Optional. Use this option to catch many common errors. Error checking is not exhaustive, and successfully creating a procedure doesn't guarantee that the procedure will successfully execute at runtime. If `strictMode` is set to `TRUE`, the procedure body is further checked for errors such as non-existent tables or columns. The `CREATE PROCEDURE` statement fails if the body fails any of these checks. If `strictMode` is set to `FALSE`, the procedure body is checked only for syntax. For procedures that invoke themselves recursively, specify `strictMode=FALSE` to avoid non-existent procedure errors during validation. Default value is `TRUE`."
+    },
+    "pythonOptions": {
+      "$ref": "PythonOptions.json"
+    },
+    "returnTableType": {
+      "$ref": "StandardSqlTableType.json"
+    },
+    "returnType": {
+      "$ref": "StandardSqlDataType.json"
+    }
+  }
+}

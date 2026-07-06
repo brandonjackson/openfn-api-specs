@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/SparkStatistics",
+  "title": "SparkStatistics",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/SparkStatistics",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Statistics for a BigSpark query. Populated as part of JobStatistics2",
+  "properties": {
+    "gcsStagingBucket": {
+      "type": "string",
+      "description": "Output only. The Google Cloud Storage bucket that is used as the default file system by the Spark application. This field is only filled when the Spark procedure uses the invoker security mode. The `gcsStagingBucket` bucket is inferred from the `@@spark_proc_properties.staging_bucket` system variable (if it is provided). Otherwise, BigQuery creates a default staging bucket for the job and returns the bucket name in this field. Example: * `gs://[bucket_name]`",
+      "readOnly": true
+    },
+    "sparkJobLocation": {
+      "type": "string",
+      "description": "Output only. Location where the Spark job is executed. A location is selected by BigQueury for jobs configured to run in a multi-region.",
+      "readOnly": true
+    },
+    "sparkJobId": {
+      "type": "string",
+      "description": "Output only. Spark job ID if a Spark job is created successfully.",
+      "readOnly": true
+    },
+    "endpoints": {
+      "type": "object",
+      "description": "Output only. Endpoints returned from Dataproc. Key list: - history_server_endpoint: A link to Spark job UI.",
+      "readOnly": true,
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "kmsKeyName": {
+      "type": "string",
+      "description": "Output only. The Cloud KMS encryption key that is used to protect the resources created by the Spark job. If the Spark procedure uses the invoker security mode, the Cloud KMS encryption key is either inferred from the provided system variable, `@@spark_proc_properties.kms_key_name`, or the default key of the BigQuery job's project (if the CMEK organization policy is enforced). Otherwise, the Cloud KMS key is either inferred from the Spark connection associated with the procedure (if it is provided), or from the default key of the Spark connection's project if the CMEK organization policy is enforced. Example: * `projects/[kms_project_id]/locations/[region]/keyRings/[key_region]/cryptoKeys/[key]`",
+      "readOnly": true
+    },
+    "loggingInfo": {
+      "$ref": "SparkLoggingInfo.json"
+    }
+  }
+}

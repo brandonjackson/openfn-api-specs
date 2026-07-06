@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/ArimaResult",
+  "title": "ArimaResult",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/ArimaResult",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "(Auto-)arima fitting result. Wrap everything in ArimaResult for easier refactoring if we want to use model-specific iteration results.",
+  "properties": {
+    "arimaModelInfo": {
+      "type": "array",
+      "description": "This message is repeated because there are multiple arima models fitted in auto-arima. For non-auto-arima model, its size is one.",
+      "items": {
+        "$ref": "ArimaModelInfo.json"
+      }
+    },
+    "seasonalPeriods": {
+      "type": "array",
+      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
+          "NO_SEASONALITY",
+          "DAILY",
+          "WEEKLY",
+          "MONTHLY",
+          "QUARTERLY",
+          "YEARLY",
+          "HOURLY"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/MlStatistics",
+  "title": "MlStatistics",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/MlStatistics",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Job statistics specific to a BigQuery ML training job.",
+  "properties": {
+    "maxIterations": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Maximum number of iterations specified as max_iterations in the 'CREATE MODEL' query. The actual number of iterations may be less than this number due to early stop.",
+      "readOnly": true
+    },
+    "modelType": {
+      "type": "string",
+      "description": "Output only. The type of the model that is being trained.",
+      "enum": [
+        "MODEL_TYPE_UNSPECIFIED",
+        "LINEAR_REGRESSION",
+        "LOGISTIC_REGRESSION",
+        "KMEANS",
+        "MATRIX_FACTORIZATION",
+        "DNN_CLASSIFIER",
+        "TENSORFLOW",
+        "DNN_REGRESSOR",
+        "XGBOOST",
+        "BOOSTED_TREE_REGRESSOR",
+        "BOOSTED_TREE_CLASSIFIER",
+        "ARIMA",
+        "AUTOML_REGRESSOR",
+        "AUTOML_CLASSIFIER",
+        "PCA",
+        "DNN_LINEAR_COMBINED_CLASSIFIER",
+        "DNN_LINEAR_COMBINED_REGRESSOR",
+        "AUTOENCODER",
+        "ARIMA_PLUS",
+        "ARIMA_PLUS_XREG",
+        "RANDOM_FOREST_REGRESSOR",
+        "RANDOM_FOREST_CLASSIFIER",
+        "TENSORFLOW_LITE",
+        "ONNX",
+        "TRANSFORM_ONLY",
+        "CONTRIBUTION_ANALYSIS"
+      ],
+      "readOnly": true
+    },
+    "hparamTrials": {
+      "type": "array",
+      "description": "Output only. Trials of a [hyperparameter tuning job](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-hp-tuning-overview) sorted by trial_id.",
+      "readOnly": true,
+      "items": {
+        "$ref": "HparamTuningTrial.json"
+      }
+    },
+    "trainingType": {
+      "type": "string",
+      "description": "Output only. Training type of the job.",
+      "enum": [
+        "TRAINING_TYPE_UNSPECIFIED",
+        "SINGLE_TRAINING",
+        "HPARAM_TUNING"
+      ],
+      "readOnly": true
+    },
+    "iterationResults": {
+      "type": "array",
+      "description": "Results for all completed iterations. Empty for [hyperparameter tuning jobs](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-hp-tuning-overview).",
+      "items": {
+        "$ref": "IterationResult.json"
+      }
+    }
+  }
+}

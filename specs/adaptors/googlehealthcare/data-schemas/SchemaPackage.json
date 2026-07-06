@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googlehealthcare/SchemaPackage",
+  "title": "SchemaPackage",
+  "x-openfn-adaptor": "googlehealthcare",
+  "x-source": {
+    "openapi": "#/components/schemas/SchemaPackage",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A schema package contains a set of schemas and type definitions.",
+  "properties": {
+    "schematizedParsingType": {
+      "type": "string",
+      "description": "Optional. Determines how messages that fail to parse are handled.",
+      "enum": [
+        "SCHEMATIZED_PARSING_TYPE_UNSPECIFIED",
+        "SOFT_FAIL",
+        "HARD_FAIL"
+      ]
+    },
+    "types": {
+      "type": "array",
+      "description": "Optional. Schema type definitions that are layered based on their VersionSources that match the incoming message. Type definitions present in higher indices override those in lower indices with the same type name if their VersionSources all match an incoming message.",
+      "items": {
+        "$ref": "Hl7TypesConfig.json"
+      }
+    },
+    "schemas": {
+      "type": "array",
+      "description": "Optional. Schema configs that are layered based on their VersionSources that match the incoming message. Schema configs present in higher indices override those in lower indices with the same message type and trigger event if their VersionSources all match an incoming message.",
+      "items": {
+        "$ref": "Hl7SchemaConfig.json"
+      }
+    },
+    "ignoreMinOccurs": {
+      "type": "boolean",
+      "description": "Optional. Flag to ignore all min_occurs restrictions in the schema. This means that incoming messages can omit any group, segment, field, component, or subcomponent."
+    },
+    "unexpectedSegmentHandling": {
+      "type": "string",
+      "description": "Optional. Determines how unexpected segments (segments not matched to the schema) are handled.",
+      "enum": [
+        "UNEXPECTED_SEGMENT_HANDLING_MODE_UNSPECIFIED",
+        "FAIL",
+        "SKIP",
+        "PARSE"
+      ]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gmail/CseKeyPair",
+  "title": "CseKeyPair",
+  "x-openfn-adaptor": "gmail",
+  "x-source": {
+    "openapi": "#/components/schemas/CseKeyPair",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A client-side encryption S/MIME key pair, which is comprised of a public key, its certificate chain, and metadata for its paired private key. Gmail uses the key pair to complete the following tasks: - Sign outgoing client-side encrypted messages. - Save and reopen drafts of client-side encrypted messages. - Save and reopen sent messages. - Decrypt incoming or archived S/MIME messages. For administrators managing identities and keypairs for users in their organization, requests require authorization with a [service account](https://developers.google.com/identity/protocols/OAuth2ServiceAccount) that has [domain-wide delegation authority](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority) to impersonate users with the `https://www.googleapis.com/auth/gmail.settings.basic` scope. For users managing their own identities and keypairs, requests require [hardware key encryption](https://support.google.com/a/answer/14153163) turned on and configured.",
+  "properties": {
+    "keyPairId": {
+      "type": "string",
+      "description": "Output only. The immutable ID for the client-side encryption S/MIME key pair.",
+      "readOnly": true
+    },
+    "disableTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. If a key pair is set to `DISABLED`, the time that the key pair's state changed from `ENABLED` to `DISABLED`. This field is present only when the key pair is in state `DISABLED`.",
+      "readOnly": true
+    },
+    "pem": {
+      "type": "string",
+      "description": "Output only. The public key and its certificate chain, in [PEM](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail) format.",
+      "readOnly": true
+    },
+    "pkcs7": {
+      "type": "string",
+      "description": "Input only. The public key and its certificate chain. The chain must be in [PKCS#7](https://en.wikipedia.org/wiki/PKCS_7) format and use PEM encoding and ASCII armor."
+    },
+    "enablementState": {
+      "type": "string",
+      "description": "Output only. The current state of the key pair.",
+      "enum": [
+        "stateUnspecified",
+        "enabled",
+        "disabled"
+      ],
+      "readOnly": true
+    },
+    "privateKeyMetadata": {
+      "type": "array",
+      "description": "Metadata for instances of this key pair's private key.",
+      "items": {
+        "$ref": "CsePrivateKeyMetadata.json"
+      }
+    },
+    "subjectEmailAddresses": {
+      "type": "array",
+      "description": "Output only. The email address identities that are specified on the leaf certificate.",
+      "readOnly": true,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

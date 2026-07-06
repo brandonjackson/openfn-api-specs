@@ -8,95 +8,682 @@
     "capturedAt": "2026-07-06"
   },
   "type": "object",
-  "description": "The metadata for a Google Drive file.",
+  "description": "The metadata for a file. Some resource methods (such as `files.update`) require a `fileId`. Use the `files.list` method to retrieve the ID for a file.",
   "properties": {
-    "kind": {
+    "md5Checksum": {
       "type": "string",
-      "example": "drive#file"
+      "description": "Output only. The MD5 checksum for the content of the file. This is only applicable to files with binary content in Google Drive."
+    },
+    "modifiedByMe": {
+      "type": "boolean",
+      "description": "Output only. Whether the file has been modified by this user."
+    },
+    "isAppAuthorized": {
+      "type": "boolean",
+      "description": "Output only. Whether the file was created or opened by the requesting app."
+    },
+    "version": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. A monotonically increasing version number for the file. This reflects every change made to the file on the server, even those not visible to the user."
+    },
+    "ownedByMe": {
+      "type": "boolean",
+      "description": "Output only. Whether the user owns the file. Not populated for items in shared drives."
+    },
+    "imageMediaMetadata": {
+      "type": "object",
+      "description": "Output only. Additional metadata about image media, if available.",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The width of the image in pixels."
+        },
+        "cameraMake": {
+          "type": "string",
+          "description": "Output only. The make of the camera used to create the photo."
+        },
+        "isoSpeed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The ISO speed used to create the photo."
+        },
+        "flashUsed": {
+          "type": "boolean",
+          "description": "Output only. Whether a flash was used to create the photo."
+        },
+        "meteringMode": {
+          "type": "string",
+          "description": "Output only. The metering mode used to create the photo."
+        },
+        "focalLength": {
+          "type": "number",
+          "format": "float",
+          "description": "Output only. The focal length used to create the photo, in millimeters."
+        },
+        "cameraModel": {
+          "type": "string",
+          "description": "Output only. The model of the camera used to create the photo."
+        },
+        "aperture": {
+          "type": "number",
+          "format": "float",
+          "description": "Output only. The aperture used to create the photo (f-number)."
+        },
+        "exposureMode": {
+          "type": "string",
+          "description": "Output only. The exposure mode used to create the photo."
+        },
+        "rotation": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The number of clockwise 90 degree rotations applied from the image's original orientation."
+        },
+        "time": {
+          "type": "string",
+          "description": "Output only. The date and time the photo was taken (EXIF DateTime)."
+        },
+        "exposureBias": {
+          "type": "number",
+          "format": "float",
+          "description": "Output only. The exposure bias of the photo (APEX value)."
+        },
+        "exposureTime": {
+          "type": "number",
+          "format": "float",
+          "description": "Output only. The length of the exposure, in seconds."
+        },
+        "maxApertureValue": {
+          "type": "number",
+          "format": "float",
+          "description": "Output only. The smallest f-number of the lens at the focal length used to create the photo (APEX value)."
+        },
+        "lens": {
+          "type": "string",
+          "description": "Output only. The lens used to create the photo."
+        },
+        "colorSpace": {
+          "type": "string",
+          "description": "Output only. The color space of the photo."
+        },
+        "location": {
+          "type": "object",
+          "description": "Output only. Geographic location information stored in the image.",
+          "properties": {
+            "altitude": {
+              "type": "number",
+              "format": "double",
+              "description": "Output only. The altitude stored in the image."
+            },
+            "latitude": {
+              "type": "number",
+              "format": "double",
+              "description": "Output only. The latitude stored in the image."
+            },
+            "longitude": {
+              "type": "number",
+              "format": "double",
+              "description": "Output only. The longitude stored in the image."
+            }
+          }
+        },
+        "height": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The height of the image in pixels."
+        },
+        "whiteBalance": {
+          "type": "string",
+          "description": "Output only. The white balance mode used to create the photo."
+        },
+        "sensor": {
+          "type": "string",
+          "description": "Output only. The type of sensor used to create the photo."
+        },
+        "subjectDistance": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The distance to the subject of the photo, in meters."
+        }
+      }
+    },
+    "clientEncryptionDetails": {
+      "$ref": "ClientEncryptionDetails.json"
+    },
+    "labelInfo": {
+      "type": "object",
+      "description": "Label information on the file.",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "description": "Output only. The set of labels on the file as requested by the label IDs in the `includeLabels` parameter. By default, no labels are returned.",
+          "items": {
+            "$ref": "Label.json"
+          }
+        }
+      }
+    },
+    "spaces": {
+      "type": "array",
+      "description": "Output only. The list of spaces which contain the file. The currently supported values are `drive`, `appDataFolder`, and `photos`.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exportLinks": {
+      "type": "object",
+      "description": "Output only. Links for exporting Docs Editors files to specific formats.",
+      "readOnly": true,
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "starred": {
+      "type": "boolean",
+      "description": "Whether the user has starred the file."
+    },
+    "properties": {
+      "type": "object",
+      "description": "A collection of arbitrary key-value pairs which are visible to all apps.\nEntries with null values are cleared in update and copy requests.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "shared": {
+      "type": "boolean",
+      "description": "Output only. Whether the file has been shared. Not populated for items in shared drives."
+    },
+    "sharedWithMeTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time at which the file was shared with the user, if applicable (RFC 3339 date-time)."
+    },
+    "fileExtension": {
+      "type": "string",
+      "description": "Output only. The final component of `fullFileExtension`. This is only available for files with binary content in Google Drive."
+    },
+    "appProperties": {
+      "type": "object",
+      "description": "A collection of arbitrary key-value pairs which are private to the requesting app.\nEntries with null values are cleared in update and copy requests. These properties can only be retrieved using an authenticated request. An authenticated request uses an access token obtained with a OAuth 2 client ID. You cannot use an API key to retrieve private properties.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "sha1Checksum": {
+      "type": "string",
+      "description": "Output only. The SHA1 checksum associated with this file, if available. This field is only populated for files with content stored in Google Drive; it's not populated for Docs Editors or shortcut files."
+    },
+    "folderColorRgb": {
+      "type": "string",
+      "description": "The color for a folder or a shortcut to a folder as an RGB hex string. The supported colors are published in the `folderColorPalette` field of the [`about`](/workspace/drive/api/reference/rest/v3/about) resource. If an unsupported color is specified, the closest color in the palette is used instead."
+    },
+    "permissions": {
+      "type": "array",
+      "description": "Output only. The full list of permissions for the file. This is only available if the requesting user can share the file. Not populated for items in shared drives.",
+      "items": {
+        "$ref": "Permission.json"
+      }
     },
     "id": {
       "type": "string",
-      "example": "1a2B3c4D5e6F7g8H9i0JkLmNoPqRsTuVwX"
+      "description": "The ID of the file."
     },
-    "name": {
-      "type": "string",
-      "example": "report.csv"
-    },
-    "mimeType": {
-      "type": "string",
-      "example": "text/csv"
-    },
-    "description": {
-      "type": "string"
-    },
-    "parents": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "example": [
-        "0AJk9LmNoPqRsUk9PVA"
-      ]
-    },
-    "webViewLink": {
-      "type": "string",
-      "example": "https://drive.google.com/file/d/1a2B3c4D5e6F7g8H9i0JkLmNoPqRsTuVwX/view"
-    },
-    "webContentLink": {
-      "type": "string"
-    },
-    "iconLink": {
-      "type": "string"
+    "hasAugmentedPermissions": {
+      "type": "boolean",
+      "description": "Output only. Whether there are permissions directly on this file. This field is only populated for items in shared drives."
     },
     "size": {
       "type": "string",
-      "description": "Size in bytes, as a string.",
-      "example": "10240"
+      "format": "int64",
+      "description": "Output only. Size in bytes of blobs and Google Workspace editor files. Won't be populated for files that have no size, like shortcuts and folders."
     },
-    "createdTime": {
+    "quotaBytesUsed": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The number of storage quota bytes used by the file. This includes the head revision as well as previous revisions with `keepForever` enabled."
+    },
+    "sharingUser": {
+      "$ref": "User.json"
+    },
+    "viewersCanCopyContent": {
+      "type": "boolean",
+      "description": "Deprecated: Use `copyRequiresWriterPermission` instead.",
+      "deprecated": true
+    },
+    "originalFilename": {
+      "type": "string",
+      "description": "The original filename of the uploaded content if available, or else the original value of the `name` field. This is only available for files with binary content in Google Drive."
+    },
+    "driveId": {
+      "type": "string",
+      "description": "Output only. ID of the shared drive the file resides in. Only populated for items in shared drives."
+    },
+    "thumbnailLink": {
+      "type": "string",
+      "description": "Output only. A short-lived link to the file's thumbnail, if available. Typically lasts on the order of hours. Not intended for direct usage on web applications due to [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) policies. Consider using a proxy server. Only populated when the requesting app can access the file's content. If the file isn't shared publicly, the URL returned in `files.thumbnailLink` must be fetched using a credentialed request."
+    },
+    "viewedByMeTime": {
       "type": "string",
       "format": "date-time",
-      "example": "2024-03-04T10:00:00.000Z"
+      "description": "The last time the file was viewed by the user (RFC 3339 date-time)."
+    },
+    "videoMediaMetadata": {
+      "type": "object",
+      "description": "Output only. Additional metadata about video media. This may not be available immediately upon upload.",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The width of the video in pixels."
+        },
+        "height": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Output only. The height of the video in pixels."
+        },
+        "durationMillis": {
+          "type": "string",
+          "format": "int64",
+          "description": "Output only. The duration of the video in milliseconds."
+        }
+      }
+    },
+    "webContentLink": {
+      "type": "string",
+      "description": "Output only. A link for downloading the content of the file in a browser. This is only available for files with binary content in Google Drive."
     },
     "modifiedTime": {
       "type": "string",
       "format": "date-time",
-      "example": "2024-03-05T12:30:00.000Z"
+      "description": "he last time the file was modified by anyone (RFC 3339 date-time). Note that setting modifiedTime will also update modifiedByMeTime for the user."
+    },
+    "modifiedByMeTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The last time the file was modified by the user (RFC 3339 date-time)."
     },
     "trashed": {
       "type": "boolean",
-      "example": false
+      "description": "Whether the file has been trashed, either explicitly or from a trashed parent folder. Only the owner may trash a file, but other users can still access the file in the owner's trash until it's permanently deleted."
     },
-    "starred": {
-      "type": "boolean",
-      "example": false
+    "name": {
+      "type": "string",
+      "description": "The name of the file. This isn't necessarily unique within a folder. Note that for immutable items such as the top-level folders of shared drives, the My Drive root folder, and the Application Data folder, the name is constant."
     },
-    "shared": {
-      "type": "boolean",
-      "example": false
-    },
-    "md5Checksum": {
-      "type": "string"
-    },
-    "owners": {
+    "contentRestrictions": {
       "type": "array",
+      "description": "Restrictions for accessing the content of the file. Only populated if such a restriction exists.",
       "items": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "type": "string",
-            "example": "drive#user"
-          },
-          "displayName": {
-            "type": "string",
-            "example": "Ama Mensah"
-          },
-          "emailAddress": {
-            "type": "string",
-            "example": "ama@example.org"
+        "$ref": "ContentRestriction.json"
+      }
+    },
+    "downloadRestrictions": {
+      "$ref": "DownloadRestrictionsMetadata.json"
+    },
+    "inheritedPermissionsDisabled": {
+      "type": "boolean",
+      "description": "Whether this file has inherited permissions disabled. Inherited permissions are enabled by default."
+    },
+    "headRevisionId": {
+      "type": "string",
+      "description": "Output only. The ID of the file's head revision. This is currently only available for files with binary content in Google Drive."
+    },
+    "viewedByMe": {
+      "type": "boolean",
+      "description": "Output only. Whether the file has been viewed by this user."
+    },
+    "permissionIds": {
+      "type": "array",
+      "description": "Output only. List of permission IDs for users with access to this file.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "writersCanShare": {
+      "type": "boolean",
+      "description": "Whether users with only `writer` permission can modify the file's permissions. Not populated for items in shared drives."
+    },
+    "createdTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time at which the file was created (RFC 3339 date-time)."
+    },
+    "contentHints": {
+      "type": "object",
+      "description": "Additional information about the content of the file. These fields are never populated in responses.",
+      "properties": {
+        "indexableText": {
+          "type": "string",
+          "description": "Text to be indexed for the file to improve fullText queries. This is limited to 128 KB in length and may contain HTML elements."
+        },
+        "thumbnail": {
+          "type": "object",
+          "description": "A thumbnail for the file. This will only be used if Google Drive cannot generate a standard thumbnail.",
+          "properties": {
+            "image": {
+              "type": "string",
+              "format": "byte",
+              "description": "The thumbnail data encoded with URL-safe Base64 ([RFC 4648 section 5](https://datatracker.ietf.org/doc/html/rfc4648#section-5))."
+            },
+            "mimeType": {
+              "type": "string",
+              "description": "The MIME type of the thumbnail."
+            }
           }
         }
       }
+    },
+    "webViewLink": {
+      "type": "string",
+      "description": "Output only. A link for opening the file in a relevant Google editor or viewer in a browser."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Output only. Identifies what kind of resource this is. Value: the fixed string `\"drive#file\"`.",
+      "default": "drive#file"
+    },
+    "trashingUser": {
+      "$ref": "User.json"
+    },
+    "thumbnailVersion": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The thumbnail version for use in thumbnail cache invalidation."
+    },
+    "sha256Checksum": {
+      "type": "string",
+      "description": "Output only. The SHA256 checksum associated with this file, if available. This field is only populated for files with content stored in Google Drive; it's not populated for Docs Editors or shortcut files."
+    },
+    "mimeType": {
+      "type": "string",
+      "description": "The MIME type of the file. Google Drive attempts to automatically detect an appropriate value from uploaded content, if no value is provided. The value cannot be changed unless a new revision is uploaded. If a file is created with a Google Doc MIME type, the uploaded content is imported, if possible. The supported import formats are published in the [`about`](/workspace/drive/api/reference/rest/v3/about) resource."
+    },
+    "parents": {
+      "type": "array",
+      "description": "The ID of the parent folder containing the file. A file can only have one parent folder; specifying multiple parents isn't supported. If not specified as part of a create request, the file is placed directly in the user's My Drive folder. If not specified as part of a copy request, the file inherits any discoverable parent of the source file. Update requests must use the `addParents` and `removeParents` parameters to modify the parents list.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shortcutDetails": {
+      "type": "object",
+      "description": "Information about a shortcut file.",
+      "properties": {
+        "targetResourceKey": {
+          "type": "string",
+          "description": "Output only. The `resourceKey` for the target file."
+        },
+        "targetMimeType": {
+          "type": "string",
+          "description": "Output only. The MIME type of the file that this shortcut points to. The value of this field is a snapshot of the target's MIME type, captured when the shortcut is created."
+        },
+        "targetId": {
+          "type": "string",
+          "description": "The ID of the file that this shortcut points to. Can only be set on `files.create` requests."
+        }
+      }
+    },
+    "iconLink": {
+      "type": "string",
+      "description": "Output only. A static, unauthenticated link to the file's icon."
+    },
+    "capabilities": {
+      "type": "object",
+      "description": "Output only. Capabilities the current user has on this file. Each capability corresponds to a fine-grained action that a user may take. For more information, see [Understand file capabilities](https://developers.google.com/workspace/drive/api/guides/manage-sharing#capabilities).",
+      "properties": {
+        "canShare": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can modify the sharing settings for this file."
+        },
+        "canChangeViewersCanCopyContent": {
+          "type": "boolean",
+          "description": "Deprecated: Output only.",
+          "deprecated": true
+        },
+        "canMoveChildrenWithinDrive": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can move children of this folder within this drive. This is `false` when the item isn't a folder. Note that a request to move the child may still fail depending on the current user's access to the child and to the destination folder."
+        },
+        "canReadDrive": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can read the shared drive to which this file belongs. Only populated for items in shared drives."
+        },
+        "canTrash": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can move this file to trash."
+        },
+        "canUntrash": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can restore this file from trash."
+        },
+        "canMoveTeamDriveItem": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canMoveItemWithinDrive` or `canMoveItemOutOfDrive` instead.",
+          "deprecated": true
+        },
+        "canMoveItemWithinDrive": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can move this item within this drive. Note that a request to change the parent of the item may still fail depending on the new parent that's being added and the parent that is being removed."
+        },
+        "canModifyOwnerContentRestriction": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can add or modify content restrictions which are owner restricted."
+        },
+        "canEnableInheritedPermissions": {
+          "type": "boolean",
+          "description": "Whether a user can re-enable inherited permissions."
+        },
+        "canAddMyDriveParent": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can add a parent for the item without removing an existing parent in the same request. Not populated for shared drive files."
+        },
+        "canChangeSecurityUpdateEnabled": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can change the `securityUpdateEnabled` field on link share metadata."
+        },
+        "canMoveItemIntoTeamDrive": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canMoveItemOutOfDrive` instead.",
+          "deprecated": true
+        },
+        "canRemoveContentRestriction": {
+          "type": "boolean",
+          "description": "Output only. Whether there's a content restriction on the file that can be removed by the current user."
+        },
+        "canStartApproval": {
+          "type": "boolean",
+          "description": "Whether the current user can start an approval on the file."
+        },
+        "canRemoveChildren": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can remove children from this folder. This is always `false` when the item isn't a folder. For a folder in a shared drive, use `canDeleteChildren` or `canTrashChildren` instead."
+        },
+        "canMoveItemOutOfDrive": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can move this item outside of this drive by changing its parent. Note that a request to change the parent of the item may still fail depending on the new parent that's being added."
+        },
+        "canDisableInheritedPermissions": {
+          "type": "boolean",
+          "description": "Whether a user can disable inherited permissions."
+        },
+        "canReadTeamDrive": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canReadDrive` instead.",
+          "deprecated": true
+        },
+        "canChangeCopyRequiresWriterPermission": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can change the `copyRequiresWriterPermission` restriction of this file."
+        },
+        "canRename": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can rename this file."
+        },
+        "canModifyEditorContentRestriction": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can add or modify content restrictions on the file which are editor restricted."
+        },
+        "canCopy": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can copy this file. For an item in a shared drive, whether the current user can copy non-folder descendants of this item, or this item if it's not a folder."
+        },
+        "canComment": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can comment on this file."
+        },
+        "canAddFolderFromAnotherDrive": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can add a folder from another drive (different shared drive or My Drive) to this folder. This is `false` when the item isn't a folder. Only populated for items in shared drives."
+        },
+        "canEdit": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can edit this file. Other factors may limit the type of changes a user can make to a file. For example, see `canChangeCopyRequiresWriterPermission` or `canModifyContent`."
+        },
+        "canListChildren": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can list the children of this folder. This is always `false` when the item isn't a folder."
+        },
+        "canMoveItemOutOfTeamDrive": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canMoveItemOutOfDrive` instead.",
+          "deprecated": true
+        },
+        "canMoveChildrenOutOfTeamDrive": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canMoveChildrenOutOfDrive` instead.",
+          "deprecated": true
+        },
+        "canAcceptOwnership": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user is the pending owner of the file. Not populated for shared drive files."
+        },
+        "canAddChildren": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can add children to this folder. This is always `false` when the item isn't a folder."
+        },
+        "canTrashChildren": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can trash children of this folder. This is `false` when the item isn't a folder. Only populated for items in shared drives."
+        },
+        "canDeleteChildren": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can delete children of this folder. This is `false` when the item isn't a folder. Only populated for items in shared drives."
+        },
+        "canRemoveMyDriveParent": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can remove a parent from the item without adding another parent in the same request. Not populated for shared drive files."
+        },
+        "canMoveItemWithinTeamDrive": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canMoveItemWithinDrive` instead.",
+          "deprecated": true
+        },
+        "canDelete": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can delete this file."
+        },
+        "canReadRevisions": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can read the revisions resource of this file. For a shared drive item, whether revisions of non-folder descendants of this item, or this item if it's not a folder, can be read."
+        },
+        "canReadLabels": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can read the labels on the file."
+        },
+        "canModifyContent": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can modify the content of this file."
+        },
+        "canChangeItemDownloadRestriction": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can change the owner or organizer-applied download restrictions of the file."
+        },
+        "canModifyLabels": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can modify the labels on the file."
+        },
+        "canMoveChildrenOutOfDrive": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can move children of this folder outside of the shared drive. This is `false` when the item isn't a folder. Only populated for items in shared drives."
+        },
+        "canMoveChildrenWithinTeamDrive": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use `canMoveChildrenWithinDrive` instead.",
+          "deprecated": true
+        },
+        "canModifyContentRestriction": {
+          "type": "boolean",
+          "description": "Deprecated: Output only. Use one of `canModifyEditorContentRestriction`, `canModifyOwnerContentRestriction`, or `canRemoveContentRestriction`.",
+          "deprecated": true
+        },
+        "canAccessViaGenAi": {
+          "type": "boolean",
+          "description": "Whether the current user can access this file via Gen AI features."
+        },
+        "canDownload": {
+          "type": "boolean",
+          "description": "Output only. Whether the current user can download this file."
+        }
+      }
+    },
+    "fullFileExtension": {
+      "type": "string",
+      "description": "Output only. The full file extension extracted from the `name` field. May contain multiple concatenated extensions, such as \"tar.gz\". This is only available for files with binary content in Google Drive. This is automatically updated when the `name` field changes, however it's not cleared if the new name doesn't contain a valid extension."
+    },
+    "owners": {
+      "type": "array",
+      "description": "Output only. The owner of this file. Only certain legacy files may have more than one owner. This field isn't populated for items in shared drives.",
+      "items": {
+        "$ref": "User.json"
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "A short description of the file."
+    },
+    "explicitlyTrashed": {
+      "type": "boolean",
+      "description": "Output only. Whether the file has been explicitly trashed, as opposed to recursively trashed from a parent folder."
+    },
+    "lastModifyingUser": {
+      "$ref": "User.json"
+    },
+    "copyRequiresWriterPermission": {
+      "type": "boolean",
+      "description": "Whether the options to copy, print, or download this file should be disabled for readers and commenters."
+    },
+    "linkShareMetadata": {
+      "type": "object",
+      "description": "Contains details about the link URLs that clients are using to refer to this item.",
+      "properties": {
+        "securityUpdateEnabled": {
+          "type": "boolean",
+          "description": "Output only. Whether the security update is enabled for this file."
+        },
+        "securityUpdateEligible": {
+          "type": "boolean",
+          "description": "Output only. Whether the file is eligible for security update."
+        }
+      }
+    },
+    "teamDriveId": {
+      "type": "string",
+      "description": "Deprecated: Output only. Use `driveId` instead.",
+      "deprecated": true
+    },
+    "hasThumbnail": {
+      "type": "boolean",
+      "description": "Output only. Whether this file has a thumbnail. This doesn't indicate whether the requesting app has access to the thumbnail. To check access, look for the presence of the thumbnailLink field."
+    },
+    "trashedTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time that the item was trashed (RFC 3339 date-time). Only populated for items in shared drives."
+    },
+    "resourceKey": {
+      "type": "string",
+      "description": "Output only. A key needed to access the item via a shared link."
     }
   }
 }

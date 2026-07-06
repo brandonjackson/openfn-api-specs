@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/TableList",
+  "title": "TableList",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/TableList",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Partial projection of the metadata for a given table in a list response.",
+  "properties": {
+    "etag": {
+      "type": "string",
+      "description": "A hash of this page of results."
+    },
+    "kind": {
+      "type": "string",
+      "description": "The type of list.",
+      "default": "bigquery#tableList"
+    },
+    "tables": {
+      "type": "array",
+      "description": "Tables in the requested dataset.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "labels": {
+            "type": "object",
+            "description": "The labels associated with this table. You can use these to organize and group your tables.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "creationTime": {
+            "type": "string",
+            "format": "int64",
+            "description": "Output only. The time when this table was created, in milliseconds since the epoch.",
+            "readOnly": true
+          },
+          "kind": {
+            "type": "string",
+            "description": "The resource type."
+          },
+          "timePartitioning": {
+            "$ref": "TimePartitioning.json"
+          },
+          "requirePartitionFilter": {
+            "type": "boolean",
+            "description": "Optional. If set to true, queries including this table must specify a partition filter. This filter is used for partition elimination.",
+            "default": "false"
+          },
+          "expirationTime": {
+            "type": "string",
+            "format": "int64",
+            "description": "The time when this table expires, in milliseconds since the epoch. If not present, the table will persist indefinitely. Expired tables will be deleted and their storage reclaimed."
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of table."
+          },
+          "friendlyName": {
+            "type": "string",
+            "description": "The user-friendly name for this table."
+          },
+          "id": {
+            "type": "string",
+            "description": "An opaque ID of the table."
+          },
+          "view": {
+            "type": "object",
+            "description": "Information about a logical view.",
+            "properties": {
+              "useLegacySql": {
+                "type": "boolean",
+                "description": "True if view is defined in legacy SQL dialect, false if in GoogleSQL."
+              },
+              "privacyPolicy": {
+                "$ref": "PrivacyPolicy.json"
+              }
+            }
+          },
+          "clustering": {
+            "$ref": "Clustering.json"
+          },
+          "tableReference": {
+            "$ref": "TableReference.json"
+          },
+          "rangePartitioning": {
+            "$ref": "RangePartitioning.json"
+          }
+        }
+      }
+    },
+    "nextPageToken": {
+      "type": "string",
+      "description": "A token to request the next page of results."
+    },
+    "totalItems": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The total number of tables in the dataset."
+    }
+  }
+}
