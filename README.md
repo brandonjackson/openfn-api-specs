@@ -85,4 +85,31 @@ const all = getDataObjects('dhis2');                // { OrganisationUnit: {...}
 const spec = getOpenapi('twilio');                  // OpenAPI 3.x document
 ```
 
-Reads resolve to the specs shipped with the installed package.
+Reads resolve to the specs shipped with the installed package — a fixed
+snapshot pinned to that version.
+
+### Live specs (`fetch*`)
+
+For the latest specs without bumping your dependency, use the async `fetch*`
+variants. Each pulls the live file from [jsDelivr](https://www.jsdelivr.com/)
+(which mirrors this public repo) and falls back to the bundled snapshot when the
+CDN is unreachable (offline, air-gapped CI):
+
+```ts
+import {
+  fetchOpenapi, fetchManifest,
+  fetchDataObjects, fetchDataObject, fetchDataObjectIndex,
+} from 'openfn-api-specs';
+
+const spec = await fetchOpenapi('twilio');          // latest OpenAPI 3.x document
+const all = await fetchDataObjects('dhis2');        // latest { OrganisationUnit: {...}, ... }
+```
+
+Behaviour is tunable via environment variables:
+
+| variable                       | default                              | meaning                              |
+| ------------------------------ | ------------------------------------ | ------------------------------------ |
+| `OPENFN_API_SPECS_REF`         | `main`                               | git ref to fetch                     |
+| `OPENFN_API_SPECS_REPO`        | `brandonjackson/openfn-api-specs`    | owner/repo to fetch from             |
+| `OPENFN_API_SPECS_DISABLE_CDN` | _(unset)_                            | `1` to always use the bundled snapshot |
+| `OPENFN_API_SPECS_TIMEOUT_MS`  | `5000`                               | per-request timeout in milliseconds  |
