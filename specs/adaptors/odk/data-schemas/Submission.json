@@ -8,82 +8,62 @@
     "capturedAt": "2026-07-06"
   },
   "type": "object",
+  "required": [
+    "instanceId",
+    "submitterId",
+    "createdAt"
+  ],
   "properties": {
     "instanceId": {
       "type": "string",
-      "example": "uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44"
+      "example": "uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44",
+      "description": "The `instanceId` of the `Submission`, given by the Submission XML."
     },
     "submitterId": {
-      "type": "integer",
-      "example": 5
+      "type": "number",
+      "example": 23,
+      "description": "The ID of the `Actor` (`App User`, `User`, or `Public Link`) that originally submitted this `Submission`."
     },
     "deviceId": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "example": "imei:123456",
+      "description": "The self-identified `deviceId` of the device that collected the data, sent by it upon submission to the server. The initial submission `deviceId` will be returned here."
     },
     "userAgent": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "example": "Enketo/3.0.4",
+      "description": "The self-identified `userAgent` of the device that collected the data, sent by it upon submission to the server. The initial submission `userAgent` will be returned here."
     },
     "reviewState": {
-      "type": [
-        "string",
-        "null"
+      "allOf": [
+        {
+          "$ref": "SubmissionReviewState.json"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
-      "enum": [
-        "null",
-        "received",
-        "hasIssues",
-        "edited",
-        "approved",
-        "rejected"
-      ]
+      "description": "The current review state of the submission."
     },
     "createdAt": {
       "type": "string",
-      "format": "date-time"
+      "example": "2018-01-19T23:58:03.395Z",
+      "description": "ISO date format. The time that the server received the Submission."
     },
     "updatedAt": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
+      "type": "string",
+      "example": "2018-03-21T12:45:02.312Z",
+      "description": "ISO date format. `null` when the Submission is first created, then updated when the Submission's XML data or metadata is updated."
     },
     "deletedAt": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
+      "type": "string",
+      "description": "Timestamp of the deletion in ISO date format. `null` if the Submission is not deleted.",
+      "example": "2018-04-18T23:42:11.406Z"
     },
     "currentVersion": {
-      "type": "object",
-      "properties": {
-        "instanceId": {
-          "type": "string"
-        },
-        "instanceName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "submitterId": {
-          "type": "integer"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "current": {
-          "type": "boolean"
-        }
-      }
+      "$ref": "SubmissionVersion.json",
+      "description": "The current version of the `Submission`."
     }
   }
 }

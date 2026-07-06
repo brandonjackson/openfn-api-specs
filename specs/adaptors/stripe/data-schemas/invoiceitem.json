@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/invoiceitem",
+  "title": "InvoiceItem",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/invoiceitem",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Invoice Items represent the component lines of an [invoice](https://docs.stripe.com/api/invoices). When you create an invoice item with an `invoice` field, it is attached to the specified invoice and included as [an invoice line item](https://docs.stripe.com/api/invoices/line_item) within [invoice.lines](https://docs.stripe.com/api/invoices/object#invoice_object-lines).\n\nInvoice Items can be created before you are ready to actually send the invoice. This can be particularly useful when combined\nwith a [subscription](https://docs.stripe.com/api/subscriptions). Sometimes you want to add a charge or credit to a customer, but actually charge\nor credit the customer's card only at the end of a regular billing cycle. This is useful for combining several charges\n(to minimize per-transaction fees), or for having Stripe tabulate your usage-based billing totals.\n\nRelated guides: [Integrate with the Invoicing API](https://docs.stripe.com/invoicing/integration), [Subscription Invoices](https://docs.stripe.com/billing/invoices/subscription#adding-upcoming-invoice-items).",
+  "properties": {
+    "amount": {
+      "description": "Amount (in the `currency` specified) of the invoice item. This should always be equal to `unit_amount * quantity`.",
+      "type": "integer"
+    },
+    "currency": {
+      "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+      "format": "currency",
+      "type": "string"
+    },
+    "customer": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "customer.json"
+        },
+        {
+          "$ref": "deleted_customer.json"
+        }
+      ],
+      "description": "The ID of the customer to bill for this invoice item.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "customer.json"
+          },
+          {
+            "$ref": "deleted_customer.json"
+          }
+        ]
+      }
+    },
+    "customer_account": {
+      "description": "The ID of the account to bill for this invoice item.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "description": {
+      "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discountable": {
+      "description": "If true, discounts will apply to this invoice item. Always false for prorations.",
+      "type": "boolean"
+    },
+    "discounts": {
+      "description": "The discounts which apply to the invoice item. Item discounts are applied before invoice discounts. Use `expand[]=discounts` to expand each discount.",
+      "items": {
+        "anyOf": [
+          {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          {
+            "$ref": "discount.json"
+          }
+        ],
+        "x-expansionResources": {
+          "oneOf": [
+            {
+              "$ref": "discount.json"
+            }
+          ]
+        }
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "invoice": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "invoice.json"
+        }
+      ],
+      "description": "The ID of the invoice this invoice item belongs to.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "invoice.json"
+          }
+        ]
+      }
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "net_amount": {
+      "description": "The amount after discounts, but before credits and taxes. This field is `null` for `discountable=true` items.",
+      "type": "integer"
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "invoiceitem"
+      ],
+      "type": "string"
+    },
+    "parent": {
+      "anyOf": [
+        {
+          "$ref": "billing_bill_resource_invoice_item_parents_invoice_item_parent.json"
+        }
+      ],
+      "description": "The parent that generated this invoice item."
+    },
+    "period": {
+      "$ref": "invoice_line_item_period.json"
+    },
+    "pricing": {
+      "anyOf": [
+        {
+          "$ref": "billing_bill_resource_invoicing_pricing_pricing.json"
+        }
+      ],
+      "description": "The pricing information of the invoice item."
+    },
+    "proration": {
+      "description": "Whether the invoice item was created automatically as a proration adjustment when the customer switched plans.",
+      "type": "boolean"
+    },
+    "proration_details": {
+      "$ref": "proration_details.json"
+    },
+    "quantity": {
+      "description": "Quantity of units for the invoice item in integer format, with any decimal precision truncated. For the item's full-precision decimal quantity, use `quantity_decimal`. This field will be deprecated in favor of `quantity_decimal` in a future version. If the invoice item is a proration, the quantity of the subscription that the proration was computed for.",
+      "type": "integer"
+    },
+    "quantity_decimal": {
+      "description": "Non-negative decimal with at most 12 decimal places. The quantity of units for the invoice item.",
+      "format": "decimal",
+      "type": "string"
+    },
+    "tax_rates": {
+      "description": "The tax rates which apply to the invoice item. When set, the `default_tax_rates` on the invoice do not apply to this invoice item.",
+      "items": {
+        "$ref": "tax_rate.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "test_clock": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "test_helpers.test_clock.json"
+        }
+      ],
+      "description": "ID of the test clock this invoice item belongs to.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "test_helpers.test_clock.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "amount",
+    "currency",
+    "customer",
+    "date",
+    "discountable",
+    "id",
+    "livemode",
+    "object",
+    "period",
+    "proration",
+    "quantity",
+    "quantity_decimal"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "customer",
+    "discounts",
+    "invoice",
+    "parent",
+    "period",
+    "pricing",
+    "proration_details",
+    "tax_rates",
+    "test_clock"
+  ],
+  "x-resourceId": "invoiceitem"
+}

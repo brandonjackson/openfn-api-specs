@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/GoalResponse",
+  "title": "GoalResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/GoalResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "GoalBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "likes": {
+          "description": "Array of likes for users who have liked this goal.",
+          "type": "array",
+          "items": {
+            "$ref": "Like.json"
+          },
+          "readOnly": true
+        },
+        "num_likes": {
+          "description": "The number of users who have liked this goal.",
+          "type": "integer",
+          "readOnly": true,
+          "example": 5
+        },
+        "team": {
+          "allOf": [
+            {
+              "$ref": "TeamCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "*Conditional*. This property is only present when the `workspace` provided is an organization."
+            }
+          ]
+        },
+        "workspace": {
+          "allOf": [
+            {
+              "$ref": "WorkspaceCompact.json"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "followers": {
+          "type": "array",
+          "items": {
+            "$ref": "UserCompact.json"
+          },
+          "description": "Array of users who are members of this goal."
+        },
+        "time_period": {
+          "allOf": [
+            {
+              "$ref": "TimePeriodCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ]
+        },
+        "metric": {
+          "allOf": [
+            {
+              "$ref": "GoalMetricBase.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "can_manage": {
+                  "description": "*Conditional*. Only relevant for `progress_source` of type `external`. This boolean indicates whether the requester has the ability to update the current value of this metric. This returns `true` if the external metric was created by the requester, `false` otherwise.",
+                  "type": "boolean",
+                  "readOnly": true,
+                  "example": true
+                }
+              }
+            }
+          ]
+        },
+        "owner": {
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ]
+        },
+        "current_status_update": {
+          "allOf": [
+            {
+              "$ref": "StatusUpdateCompact.json"
+            },
+            {
+              "description": "The latest `status_update` posted to this goal."
+            }
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "readOnly": true,
+          "description": "The current status of this goal. When the goal is open, its status can be `green`, `yellow`, and `red` to reflect \"On Track\", \"At Risk\", and \"Off Track\", respectively. When the goal is closed, the value can be `missed`, `achieved`, `partial`, or `dropped`.\n*Note* you can only write to this property if `metric` is set.",
+          "example": "green"
+        },
+        "privacy_setting": {
+          "type": "string",
+          "description": "The privacy setting of the goal.",
+          "enum": [
+            "public_to_workspace",
+            "members_only"
+          ],
+          "example": "public_to_workspace"
+        },
+        "default_access_level": {
+          "type": "string",
+          "description": "The default access level when inviting new members to the goal",
+          "enum": [
+            "admin",
+            "editor",
+            "commenter",
+            "viewer"
+          ],
+          "example": "editor"
+        },
+        "custom_fields": {
+          "description": "Array of custom field values applied directly to the goal itself. These represent the values set on the goal, not the fields available for items in the goal.",
+          "type": "array",
+          "items": {
+            "$ref": "CustomFieldCompact.json"
+          }
+        },
+        "custom_field_settings": {
+          "description": "Array of custom field definitions that are enabled for the goal. These represent which custom fields are available to be used on items within the goal, but do not include any values.",
+          "type": "array",
+          "items": {
+            "$ref": "CustomFieldSettingResponse.json"
+          }
+        }
+      }
+    }
+  ]
+}

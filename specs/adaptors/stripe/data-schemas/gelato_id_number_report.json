@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/gelato_id_number_report",
+  "title": "GelatoIdNumberReport",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/gelato_id_number_report",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Result from an id_number check",
+  "properties": {
+    "dob": {
+      "anyOf": [
+        {
+          "$ref": "gelato_data_id_number_report_date.json"
+        }
+      ],
+      "description": "Date of birth."
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "gelato_id_number_report_error.json"
+        }
+      ],
+      "description": "Details on the verification error. Present when status is `unverified`."
+    },
+    "first_name": {
+      "description": "First name.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id_number": {
+      "description": "ID number. When `id_number_type` is `us_ssn`, only the last 4 digits are present.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id_number_type": {
+      "description": "Type of ID number.",
+      "enum": [
+        "br_cpf",
+        "sg_nric",
+        "us_ssn"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_name": {
+      "description": "Last name.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "description": "Status of this `id_number` check.",
+      "enum": [
+        "unverified",
+        "verified"
+      ],
+      "type": "string",
+      "x-stripeBypassValidation": true
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "dob",
+    "error"
+  ]
+}

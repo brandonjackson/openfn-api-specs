@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/tax_product_resource_tax_rate_details",
+  "title": "TaxProductResourceTaxRateDetails",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/tax_product_resource_tax_rate_details",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "country": {
+      "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "flat_amount": {
+      "anyOf": [
+        {
+          "$ref": "tax_rate_flat_amount.json"
+        }
+      ],
+      "description": "The amount of the tax rate when the `rate_type` is `flat_amount`. Tax rates with `rate_type` `percentage` can vary based on the transaction, resulting in this field being `null`. This field exposes the amount and currency of the flat tax rate."
+    },
+    "percentage_decimal": {
+      "description": "The tax rate percentage as a string. For example, 8.5% is represented as `\"8.5\"`.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "rate_type": {
+      "description": "Indicates the type of tax rate applied to the taxable amount. This value can be `null` when no tax applies to the location. This field is only present for TaxRates created by Stripe Tax.",
+      "enum": [
+        "flat_amount",
+        "percentage"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "state": {
+      "description": "State, county, province, or region ([ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2)).",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax_type": {
+      "description": "The tax type, such as `vat` or `sales_tax`.",
+      "enum": [
+        "amusement_tax",
+        "communications_tax",
+        "gst",
+        "hst",
+        "igst",
+        "jct",
+        "lease_tax",
+        "pst",
+        "qst",
+        "retail_delivery_fee",
+        "rst",
+        "sales_tax",
+        "service_tax",
+        "vat"
+      ],
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-stripeBypassValidation": true
+    }
+  },
+  "required": [
+    "percentage_decimal"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "flat_amount"
+  ]
+}

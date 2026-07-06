@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/GoalRelationshipCompact",
+  "title": "GoalRelationshipCompact",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/GoalRelationshipCompact",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A *goal relationship* is an object representing the relationship between a goal and another goal, a project, a task, or a portfolio.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "goal_relationship",
+      "x-insert-after": "gid"
+    },
+    "resource_subtype": {
+      "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
+      "type": "string",
+      "readOnly": true,
+      "example": "subgoal",
+      "enum": [
+        "subgoal",
+        "supporting_work"
+      ]
+    },
+    "supporting_resource": {
+      "allOf": [
+        {
+          "$ref": "ProjectCompact.json"
+        },
+        {
+          "type": "object",
+          "readOnly": true,
+          "description": "The supporting resource that supports the goal. This can be either a project, task, portfolio, or goal."
+        }
+      ]
+    },
+    "contribution_weight": {
+      "description": "The weight that the supporting resource's progress contributes to the supported goal's progress. This can be 0, 1, or any value in between.",
+      "type": "number",
+      "example": 1
+    }
+  }
+}

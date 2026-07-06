@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kobotoolbox/BaseProduct",
+  "title": "BaseProduct",
+  "x-openfn-adaptor": "kobotoolbox",
+  "x-source": {
+    "openapi": "#/components/schemas/BaseProduct",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "name": {
+      "type": "string",
+      "description": "The product's name, meant to be displayable to the customer. Applicable to both `service` and `good` types.",
+      "maxLength": 5000
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A description of this object."
+    },
+    "type": {
+      "allOf": [
+        {
+          "$ref": "StripeProductType.json"
+        }
+      ],
+      "description": "The type of the product. The product is either of type `good`, which is eligible for use with Orders and SKUs, or `service`, which is eligible for use with Subscriptions and Plans.\n\n* `good` - Good\n* `service` - Service"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "readOnly": true
+    }
+  },
+  "required": [
+    "id",
+    "metadata",
+    "name",
+    "type"
+  ]
+}

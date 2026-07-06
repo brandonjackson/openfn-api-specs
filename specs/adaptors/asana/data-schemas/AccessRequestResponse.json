@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/AccessRequestResponse",
+  "title": "AccessRequestResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/AccessRequestResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A *access request* object represents a request to access a shareable resource within Asana. It includes the requester's information, approval status, and target resource details.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "access_request",
+      "x-insert-after": "gid"
+    },
+    "message": {
+      "description": "The message included in the access request, if any.",
+      "type": "string",
+      "example": "Please grant me access to this resource."
+    },
+    "approval_status": {
+      "description": "The current approval status of the request.",
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied"
+      ],
+      "example": "pending"
+    },
+    "requester": {
+      "$ref": "UserCompact.json",
+      "description": "The user who made the access request.",
+      "readOnly": true
+    },
+    "target": {
+      "$ref": "AccessRequestTargetIdCompact.json",
+      "description": "The target resource that the requester wants access to.",
+      "readOnly": true
+    }
+  }
+}

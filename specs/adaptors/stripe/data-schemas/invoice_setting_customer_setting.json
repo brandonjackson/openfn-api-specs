@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/invoice_setting_customer_setting",
+  "title": "InvoiceSettingCustomerSetting",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/invoice_setting_customer_setting",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "custom_fields": {
+      "description": "Default custom fields to be displayed on invoices for this customer.",
+      "items": {
+        "$ref": "invoice_setting_custom_field.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "default_payment_method": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "payment_method.json"
+        }
+      ],
+      "description": "ID of a payment method that's attached to the customer, to be used as the customer's default payment method for subscriptions and invoices.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "payment_method.json"
+          }
+        ]
+      }
+    },
+    "footer": {
+      "description": "Default footer to be displayed on invoices for this customer.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rendering_options": {
+      "anyOf": [
+        {
+          "$ref": "invoice_setting_customer_rendering_options.json"
+        }
+      ],
+      "description": "Default options for invoice PDF rendering for this customer."
+    }
+  },
+  "type": "object",
+  "x-expandableFields": [
+    "custom_fields",
+    "default_payment_method",
+    "rendering_options"
+  ]
+}

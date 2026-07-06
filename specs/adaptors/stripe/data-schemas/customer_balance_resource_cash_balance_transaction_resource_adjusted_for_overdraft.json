@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/customer_balance_resource_cash_balance_transaction_resource_adjusted_for_overdraft",
+  "title": "CustomerBalanceResourceCashBalanceTransactionResourceAdjustedForOverdraft",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/customer_balance_resource_cash_balance_transaction_resource_adjusted_for_overdraft",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "balance_transaction": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "balance_transaction.json"
+        }
+      ],
+      "description": "The [Balance Transaction](https://docs.stripe.com/api/balance_transactions/object) that corresponds to funds taken out of your Stripe balance.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "balance_transaction.json"
+          }
+        ]
+      }
+    },
+    "linked_transaction": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "customer_cash_balance_transaction.json"
+        }
+      ],
+      "description": "The [Cash Balance Transaction](https://docs.stripe.com/api/cash_balance_transactions/object) that brought the customer balance negative, triggering the clawback of funds.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "customer_cash_balance_transaction.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "balance_transaction",
+    "linked_transaction"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "balance_transaction",
+    "linked_transaction"
+  ]
+}

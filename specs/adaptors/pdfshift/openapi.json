@@ -1,157 +1,2881 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "PDFShift API (mock subset)",
+    "title": "PDFShift API Documentation",
     "version": "3.0",
-    "description": "Focused subset of the PDFShift v3 HTML-to-PDF conversion API used by the OpenFn pdfshift adaptor. Covers PDF conversion (POST /convert/pdf, called by generatePDF), credits usage, and account details. Derived from the official PDFShift OpenAPI document at https://docs.pdfshift.io/openapi.json. The convert endpoint returns a raw binary PDF by default, or a JSON conversion-result object when filename/webhook is used or when encode is true.",
-    "x-openfn-adaptor": "pdfshift"
+    "description": "This is the documentation for the PDFShift API.\n\nOur aim here is to provide you with a clear, concise and complete set of tool to generate the PDF you want.\n\nDon't forget to add the `sandbox` parameter to `True` while testing the API, this won't use your credits and generate free PDF (with a watermark).\nBut if you forgot to set it, don't worry ; Send us a message and we'll reset your credits usage.",
+    "termsOfService": "https://pdfshift.io/terms",
+    "contact": {
+      "name": "PDFShift",
+      "url": "https://pdfshift.io",
+      "email": "support@pdfshift.io"
+    },
+    "x-logo": {
+      "url": "https://pdfshift.io/images/favicons/android-chrome-512x512.png"
+    }
   },
   "servers": [
     {
       "url": "https://api.pdfshift.io/v3",
-      "description": "PDFShift API v3"
+      "description": "",
+      "x-last-modified": 1764750693905
     }
   ],
+  "paths": {
+    "/account": {
+      "get": {
+        "tags": [
+          "account",
+          "details"
+        ],
+        "summary": "Account details",
+        "description": "Returns the account details for the connected API Key",
+        "responses": {
+          "200": {
+            "description": "Account details",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                },
+                "example": {
+                  "success": true,
+                  "account": {
+                    "name": "Richard Hendricks",
+                    "firstname": "Richard",
+                    "email": "richard@piedpiper.com",
+                    "created": 1526561399000,
+                    "company_name": "PiedPiper",
+                    "company_details": "Hacker Hostel,\n5230 Newell Road,\nPalo Alto, CA 94303",
+                    "company_vat": null,
+                    "country": "US",
+                    "renew_date": 1763683200000,
+                    "avatar": "https://secure.gravatar.com/avatar/584ac79c82c64934d475251b46f78f4a?d=mm&s=96",
+                    "billing_email": "jared@piedpiper.com",
+                    "plan": {
+                      "display": "Business",
+                      "name": "business",
+                      "credits": 50000,
+                      "filesize": 1250,
+                      "timeout": 100,
+                      "price": 99,
+                      "yearly": false,
+                      "overage": 20
+                    },
+                    "hard_limit": null,
+                    "subscription_ends_at": null
+                  }
+                }
+              }
+            },
+            "x-last-modified": 1764751907156
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764751450778
+    },
+    "/credits/usage": {
+      "get": {
+        "tags": [
+          "credits",
+          "usage"
+        ],
+        "summary": "Credits usage",
+        "description": "Returns the current credits usage with some details to help you know where your usage is at.\n\nIt contains the `total` credits, the `remaining` credits you can use for your period and the `used` number of credits.\n\nThe `base` value might differ from the `total` if you have enabled overage. In this case, `base` represent the default limit from your current plan, whereas `total` is the limit set in your overage. Once your credit usage reaches the `total`, the conversions will be refused.",
+        "responses": {
+          "200": {
+            "description": "Current credit usage",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Credits"
+                },
+                "example": {
+                  "credits": {
+                    "base": 50000,
+                    "remaining": 49881,
+                    "total": 50000,
+                    "used": 119
+                  },
+                  "success": true
+                }
+              }
+            },
+            "x-last-modified": 1764750969372
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764750838571
+    },
+    "/invoices": {
+      "get": {
+        "tags": [],
+        "summary": "Invoices list",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "List of invoices",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoices"
+                },
+                "example": {
+                  "success": true,
+                  "invoices": {
+                    "has_more": true,
+                    "data": [
+                      {
+                        "created": 1763123660000,
+                        "amount": 99,
+                        "reference": "PS202511-00010",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202511-00110.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1760445289000,
+                        "amount": 99,
+                        "reference": "PS202510-00109",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202510-00109.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1757853195000,
+                        "amount": 99,
+                        "reference": "PS202509-00108",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202509-00108.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1755180347000,
+                        "amount": 99,
+                        "reference": "PS202508-00107",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202508-00107.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1752496441000,
+                        "amount": 99,
+                        "reference": "PS202507-00106",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202507-00106.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1749904431000,
+                        "amount": 99,
+                        "reference": "PS202506-00105",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202506-00105.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1747226035000,
+                        "amount": 99,
+                        "reference": "PS202505-00104",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202505-00104.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1744634029000,
+                        "amount": 99,
+                        "reference": "PS202504-00103",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202504-00103.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1741955686000,
+                        "amount": 99,
+                        "reference": "PS202503-00102",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202503-00102.pdf?token=xxx_token_xxx"
+                      },
+                      {
+                        "created": 1739536453000,
+                        "amount": 99,
+                        "reference": "PS202502-00101",
+                        "download_url": "https://api.pdfshift.io/v3/invoices/PS202502-00101.pdf?token=xxx_token_xxx"
+                      }
+                    ],
+                    "limit": 10,
+                    "page": 0,
+                    "total": 28
+                  }
+                }
+              }
+            },
+            "x-last-modified": 1764751440861
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764751463833
+    },
+    "/convert/pdf": {
+      "post": {
+        "tags": [],
+        "summary": "Convert to PDF",
+        "x-mint": {
+          "content": "Convert a given HTML document to a PDF file.\n\nYou can provide the HTML source directly, or a URL to fetch it from.\n\nNumerous options are available to customize the generated PDF document.\n\n<Warning>\nPlease note that the response from this endpoint will vary depending on some parameters.\n\nYou can read more at [Varying responses](/docs/varying-responses).\n</Warning>"
+        },
+        "parameters": [
+          {
+            "name": "X-Processor-Version",
+            "in": "header",
+            "description": "Specifies the Chromium version that will be used for the conversion. Right now, only \"116\" and \"142\" are accepted.\nAll new users are automatically using the latest version.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "116",
+                "142"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ConvertForm"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "landscape": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Will set the view in landscape mode instead of portrait."
+                      },
+                      "format": {
+                        "type": "string",
+                        "default": "A4",
+                        "description": "Format of the document.\nYou can either use the standard values (Letter, Legal, Tabloid, Ledger, A0, A1, A2, A3, A4, A5) or a custom `{width}x{height}` value.\nFor `{width}` and `{height}`, you can indicate the following units: in, cm, mm.\n. The `{height}` value can be replaced by `auto` to automatically adjust the height to the content. For instance, pasing the format `1024xauto` will set the page width to 1024px and the height to the content height."
+                      },
+                      "disable_backgrounds": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "The final document will not have the background images."
+                      },
+                      "remove_blank": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Will analyze the last page of the document. If no content is present in it, the page will be removed. But note that if there are remaining hidden data, header or footer that have been pushed to that page, the page will be kept."
+                      },
+                      "pages": {
+                        "type": "string",
+                        "default": null,
+                        "description": "Pages to print. Can be one number (`3`), a range (`1-5`), a list (`4,5,6`) or a combination of both (`1-3,6,7`).\nIf the number is higher than the real number of pages, that number will be ignored."
+                      },
+                      "zoom": {
+                        "type": "number",
+                        "minimum": 0.1,
+                        "maximum": 2,
+                        "default": 1,
+                        "description": "A value between 0.1 and 2.\nAllows you to increase the zoom in the document for specific purposes.\n1 is the default zoom, lower is smaller, higher is bigger."
+                      },
+                      "margin": {
+                        "oneOf": [
+                          {
+                            "$ref": "#/components/schemas/MarginForm"
+                          },
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Empty spaces between the outer and the beginning of the content. See the [Margin](/docs/margin) section for more details."
+                      },
+                      "header": {
+                        "$ref": "#/components/schemas/CustomHeaderFooter",
+                        "description": "Defines a custom header.\n\n**Note**: The footer and header are Independent from the rest of the document.\n\nAs such, the CSS style defined in your body won't apply on your header/footer. To style your header/footer, you need to set a specific style either using <style> tag first, or adding style=\"\" on your DOM elements.\n\nSee the [Header/Footer section](/docs/header-footer) for more details.",
+                        "type": "object",
+                        "default": null
+                      },
+                      "footer": {
+                        "$ref": "#/components/schemas/CustomHeaderFooter",
+                        "description": "Defines a custom header.\n\n**Note**: The footer and header are Independent from the rest of the document.\n\nAs such, the CSS style defined in your body won't apply on your header/footer. To style your header/footer, you need to set a specific style either using <style> tag first, or adding style=\"\" on your DOM elements.\n\nSee the [Header/Footer section](/docs/header-footer) for more details.",
+                        "type": "object",
+                        "default": null
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "default": null,
+                        "description": "Allows you to add custom metadata to the generated PDF document.\nThe following metadata are reserved and thus not accepted: 'author_raw', 'creator_raw', 'producer', 'producer_raw', 'subject_raw', 'title_raw'."
+                      },
+                      "protection": {
+                        "$ref": "#/components/schemas/ProtectionForm",
+                        "description": "Will add restrictions on the PDF document.\n\n**Note**: Some PDF Reader don't make the distinction between **user** and **owner** in a PDF Document.\nThis means that when the user password has been entered, some PDF reader ignore the restrictions (no print, no copy, etc).\n\nSo, setting a blank password for the user is similar to no security.\n\nSee the [Protection](/docs/protection) section for more details.",
+                        "type": "object",
+                        "default": null
+                      },
+                      "watermark": {
+                        "$ref": "#/components/schemas/WatermarkForm",
+                        "description": "Add a watermark to the generated document.\nThe watermark will always be placed at the center of the document.\nSee the [Watermark](/docs/watermark) section for more details.",
+                        "type": "object",
+                        "default": null
+                      },
+                      "pdfa": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "If set to true, will generate a PDF/A-3b compliant document"
+                      },
+                      "linearize": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Enable PDF linearization for fast web viewing."
+                      }
+                    }
+                  }
+                ],
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file generated successfully",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "X-Response-Status-Code": {
+                "description": "Provides the status code PDFShift got when loading your source when it is an HTTP request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Processor": {
+                "description": "Returns the name of the PDFShift’s server that ran the conversion.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Credits-Cost": {
+                "description": "Indicates the number of credits that this generation requires.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Credits-Used": {
+                "description": "Contrary to X-Credits-Cost, this header indicates the number of credits that were decreased from your account. It is identical to X-Credits-Cost excepted if you passed the sandbox parameter, in which case the value will be at 0.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Response-Duration": {
+                "description": "The number of miliseconds it took to load the HTML source provided in the request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Duration": {
+                "description": "The number of miliseconds it took to load the source and then generate the PDF document. This value should be closer to the Time To First Byte duration you can have on your end.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "example": "<...PDF binary data...>"
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "filesize": {
+                      "type": "integer"
+                    },
+                    "duration": {
+                      "type": "integer"
+                    },
+                    "response": {
+                      "type": "object"
+                    },
+                    "executed": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "pdf_pages": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "url",
+                    "filesize",
+                    "duration",
+                    "response",
+                    "executed"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "url": "https://s3.amazonaws.com/pdfshift/d/2/2019-05/99c456250a01448686d81752a3fb5beb/15466098-8368-49e1-ac33-ff4c3941a0df.pdf",
+                  "filesize": 259972,
+                  "duration": 1500,
+                  "response": {
+                    "duration": 2562,
+                    "status-code": 200
+                  },
+                  "executed": "2025-12-02T12:34:56.789Z",
+                  "pdf_pages": 5
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Conversion request accepted and queued for processing. Returned when the `webhook` parameter is used.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "queued": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "queued": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Data passed to the request were invalid or wrongly formatted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. No remaining credits left.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout. The requested page took too long to load.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-last-modified": 1764751282579
+      }
+    },
+    "/convert/png": {
+      "x-last-modified": 1764751294923,
+      "post": {
+        "tags": [],
+        "summary": "Convert to PNG",
+        "x-mint": {
+          "content": "This endpoint will convert an HTML document to a PNG image.\n\nYou can specify additional options to customize the output image, such as capturing the full page, selecting specific elements using CSS selectors, or defining a clip region.\n<Note>Only one of `fullpage`, `css_selector`, or `clip` can be set at a time.</Note>\n\n<Warning>\nPlease note that the response from this endpoint will vary depending on some parameters.\n\nYou can read more at [Varying responses](/docs/varying-responses).\n</Warning>"
+        },
+        "parameters": [
+          {
+            "name": "X-Processor-Version",
+            "in": "header",
+            "description": "Specifies the Chromium version that will be used for the conversion. Right now, only \"116\" and \"142\" are accepted.\nAll new users are automatically using the latest version.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "116",
+                "142"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ImageConvertForm"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ConvertForm"
+                  }
+                ],
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PNG file generated successfully",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "X-Response-Status-Code": {
+                "description": "Provides the status code PDFShift got when loading your source when it is an HTTP request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Processor": {
+                "description": "Returns the name of the PDFShift’s server that ran the conversion.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Credits-Cost": {
+                "description": "Indicates the number of credits that this generation requires.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Credits-Used": {
+                "description": "Contrary to X-Credits-Cost, this header indicates the number of credits that were decreased from your account. It is identical to X-Credits-Cost excepted if you passed the sandbox parameter, in which case the value will be at 0.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Response-Duration": {
+                "description": "The number of miliseconds it took to load the HTML source provided in the request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Duration": {
+                "description": "The number of miliseconds it took to load the source and then generate the PDF document. This value should be closer to the Time To First Byte duration you can have on your end.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "example": "<...PNG binary data...>"
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "filesize": {
+                      "type": "integer"
+                    },
+                    "duration": {
+                      "type": "integer"
+                    },
+                    "response": {
+                      "type": "object"
+                    },
+                    "executed": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "url",
+                    "filesize",
+                    "duration",
+                    "response",
+                    "executed"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "url": "https://s3.amazonaws.com/pdfshift/d/2/2019-05/99c456250a01448686d81752a3fb5beb/15466098-8368-49e1-ac33-ff4c3941a0df.pdf",
+                  "filesize": 259972,
+                  "duration": 1500,
+                  "response": {
+                    "duration": 2562,
+                    "status-code": 200
+                  },
+                  "executed": "2025-12-02T12:34:56.789Z"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Conversion request accepted and queued for processing. Returned when the `webhook` parameter is used.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "queued": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "queued": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Data passed to the request were invalid or wrongly formatted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. No remaining credits left.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout. The requested page took too long to load.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/jpeg": {
+      "post": {
+        "tags": [],
+        "summary": "Convert to JPEG",
+        "x-mint": {
+          "content": "This endpoint will convert an HTML document to a JPEG image.\n\nYou can specify additional options to customize the output image, such as capturing the full page, selecting specific elements using CSS selectors, or defining a clip region.\n<Note>Only one of `fullpage`, `css_selector`, or `clip` can be set at a time.</Note>\n\n<Warning>\nPlease note that the response from this endpoint will vary depending on some parameters.\n\nYou can read more at [Varying responses](/docs/varying-responses).\n</Warning>"
+        },
+        "parameters": [
+          {
+            "name": "X-Processor-Version",
+            "in": "header",
+            "description": "Specifies the Chromium version that will be used for the conversion. Right now, only \"116\" and \"142\" are accepted.\nAll new users are automatically using the latest version.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "116",
+                "142"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ImageConvertForm"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ConvertForm"
+                  }
+                ],
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JPEG file generated successfully",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "X-Response-Status-Code": {
+                "description": "Provides the status code PDFShift got when loading your source when it is an HTTP request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Processor": {
+                "description": "Returns the name of the PDFShift’s server that ran the conversion.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Credits-Cost": {
+                "description": "Indicates the number of credits that this generation requires.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Credits-Used": {
+                "description": "Contrary to X-Credits-Cost, this header indicates the number of credits that were decreased from your account. It is identical to X-Credits-Cost excepted if you passed the sandbox parameter, in which case the value will be at 0.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Response-Duration": {
+                "description": "The number of miliseconds it took to load the HTML source provided in the request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Duration": {
+                "description": "The number of miliseconds it took to load the source and then generate the PDF document. This value should be closer to the Time To First Byte duration you can have on your end.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "example": "<...JPEG binary data...>"
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "filesize": {
+                      "type": "integer"
+                    },
+                    "duration": {
+                      "type": "integer"
+                    },
+                    "response": {
+                      "type": "object"
+                    },
+                    "executed": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "url",
+                    "filesize",
+                    "duration",
+                    "response",
+                    "executed"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "url": "https://s3.amazonaws.com/pdfshift/d/2/2019-05/99c456250a01448686d81752a3fb5beb/15466098-8368-49e1-ac33-ff4c3941a0df.pdf",
+                  "filesize": 259972,
+                  "duration": 1500,
+                  "response": {
+                    "duration": 2562,
+                    "status-code": 200
+                  },
+                  "executed": "2025-12-02T12:34:56.789Z"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Conversion request accepted and queued for processing. Returned when the `webhook` parameter is used.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "queued": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "queued": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Data passed to the request were invalid or wrongly formatted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. No remaining credits left.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout. The requested page took too long to load.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764751315921
+    },
+    "/convert/webp": {
+      "post": {
+        "tags": [],
+        "summary": "Convert to WEBP",
+        "x-mint": {
+          "content": "This endpoint will convert an HTML document to a WEBP image.\n\nYou can specify additional options to customize the output image, such as capturing the full page, selecting specific elements using CSS selectors, or defining a clip region.\n<Note>Only one of `fullpage`, `css_selector`, or `clip` can be set at a time.</Note>\n\n<Warning>\nPlease note that the response from this endpoint will vary depending on some parameters.\n\nYou can read more at [Varying responses](/docs/varying-responses).\n</Warning>"
+        },
+        "parameters": [
+          {
+            "name": "X-Processor-Version",
+            "in": "header",
+            "description": "Specifies the Chromium version that will be used for the conversion. Right now, only \"116\" and \"142\" are accepted.\nAll new users are automatically using the latest version.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "116",
+                "142"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ImageConvertForm"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ConvertForm"
+                  }
+                ],
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "WEBP file generated successfully",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "X-Response-Status-Code": {
+                "description": "Provides the status code PDFShift got when loading your source when it is an HTTP request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Processor": {
+                "description": "Returns the name of the PDFShift’s server that ran the conversion.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Credits-Cost": {
+                "description": "Indicates the number of credits that this generation requires.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Credits-Used": {
+                "description": "Contrary to X-Credits-Cost, this header indicates the number of credits that were decreased from your account. It is identical to X-Credits-Cost excepted if you passed the sandbox parameter, in which case the value will be at 0.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Response-Duration": {
+                "description": "The number of miliseconds it took to load the HTML source provided in the request.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-PDFShift-Duration": {
+                "description": "The number of miliseconds it took to load the source and then generate the PDF document. This value should be closer to the Time To First Byte duration you can have on your end.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "example": "<...WEBP binary data...>"
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "filesize": {
+                      "type": "integer"
+                    },
+                    "duration": {
+                      "type": "integer"
+                    },
+                    "response": {
+                      "type": "object"
+                    },
+                    "executed": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "url",
+                    "filesize",
+                    "duration",
+                    "response",
+                    "executed"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "url": "https://s3.amazonaws.com/pdfshift/d/2/2019-05/99c456250a01448686d81752a3fb5beb/15466098-8368-49e1-ac33-ff4c3941a0df.pdf",
+                  "filesize": 259972,
+                  "duration": 1500,
+                  "response": {
+                    "duration": 2562,
+                    "status-code": 200
+                  },
+                  "executed": "2025-12-02T12:34:56.789Z"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Conversion request accepted and queued for processing. Returned when the `webhook` parameter is used.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "queued": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "queued": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Data passed to the request were invalid or wrongly formatted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. No remaining credits left.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout. The requested page took too long to load.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764751389626
+    },
+    "/logs": {
+      "get": {
+        "tags": [
+          "logs"
+        ],
+        "summary": "List recent logs",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items to return (between 5 and 100, defaults to 20)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter logs by status: 'error', 'success', or 'all' (default: 'all')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "error",
+                "success",
+                "all"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "API Key to filter the results to. Default is null, which includes all requests from all API keys.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Returns the events that occurred before the given time. Format is ISO datetime.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recents logs. Can be filtered by API Key, Status (error/success) and time range.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Logs"
+                },
+                "example": {
+                  "success": true,
+                  "logs": {
+                    "has_more": true,
+                    "data": [
+                      {
+                        "id": 12345500,
+                        "duration": 2191,
+                        "executed": 1764753251000,
+                        "credits": 1,
+                        "sandbox": false,
+                        "filesize": 305345,
+                        "error": null,
+                        "code": 200,
+                        "user_agent": "Python/3.9 aiohttp/3.10.5",
+                        "request_id": "40bad9f3-0eb8-4de3-82de-3886ff9522ed",
+                        "query": null
+                      },
+                      {
+                        "id": 12345501,
+                        "duration": 2385,
+                        "executed": 1764753169000,
+                        "credits": 1,
+                        "sandbox": false,
+                        "filesize": 310593,
+                        "error": null,
+                        "code": 200,
+                        "user_agent": "Python/3.9 aiohttp/3.10.5",
+                        "request_id": "e8079824-f786-45b1-a8cb-a35fe916ea8d",
+                        "query": null
+                      },
+                      {
+                        "id": 12345502,
+                        "duration": 2377,
+                        "executed": 1764752870000,
+                        "credits": 1,
+                        "sandbox": false,
+                        "filesize": 306883,
+                        "error": null,
+                        "code": 200,
+                        "user_agent": "Python/3.9 aiohttp/3.10.5",
+                        "request_id": "22bf9320-455a-4e91-bda4-b90cfb0e4eb0",
+                        "query": null
+                      },
+                      {
+                        "id": 12345503,
+                        "duration": 2209,
+                        "executed": 1764752729000,
+                        "credits": 1,
+                        "sandbox": false,
+                        "filesize": 334962,
+                        "error": null,
+                        "code": 200,
+                        "user_agent": "Python/3.9 aiohttp/3.10.5",
+                        "request_id": "6ac98706-9dbe-4ba2-acaf-3ad2313048d6",
+                        "query": null
+                      },
+                      {
+                        "id": 12345504,
+                        "duration": 1419,
+                        "executed": 1764616844000,
+                        "credits": 1,
+                        "sandbox": false,
+                        "filesize": 300952,
+                        "error": null,
+                        "code": 200,
+                        "user_agent": "Python/3.9 aiohttp/3.10.5",
+                        "request_id": "63a0fdbf-a07c-4c65-a8f7-4ad09db5530c",
+                        "query": null
+                      }
+                    ],
+                    "limit": 5,
+                    "page": 0,
+                    "total": 233
+                  }
+                }
+              }
+            },
+            "x-last-modified": 1764750969372
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764751475763
+    },
+    "/logs/{request_id}": {
+      "get": {
+        "tags": [],
+        "summary": "Get log by request ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique request ID of the log entry to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a specific log entry by its request ID",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Log"
+                },
+                "example": {
+                  "success": true,
+                  "log": {
+                    "id": 12345500,
+                    "duration": 2191,
+                    "executed": 1764753251000,
+                    "credits": 1,
+                    "sandbox": false,
+                    "filesize": 305345,
+                    "error": null,
+                    "code": 200,
+                    "user_agent": "Python/3.9 aiohttp/3.10.5",
+                    "request_id": "40bad9f3-0eb8-4de3-82de-3886ff9522ed",
+                    "query": null
+                  }
+                }
+              }
+            },
+            "x-last-modified": 1764750969372
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key, missing, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-last-modified": 1764751485019
+    },
+    "/templates": {
+      "get": {
+        "tags": [
+          "templates"
+        ],
+        "summary": "List templates",
+        "description": "Returns a list of templates registered to your account.",
+        "responses": {
+          "200": {
+            "description": "List of templates",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Templates"
+                },
+                "example": {
+                  "success": true,
+                  "templates": {
+                    "has_more": false,
+                    "data": [
+                      {
+                        "slug": "test-1",
+                        "created": 1734076868000,
+                        "name": "First test for templates"
+                      }
+                    ],
+                    "limit": 10,
+                    "page": 0,
+                    "total": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "templates"
+        ],
+        "summary": "Create template",
+        "description": "Creates a new template stored at PDFShift.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateCreateForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Template created",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Template"
+                },
+                "example": {
+                  "success": true,
+                  "template": {
+                    "slug": "test-1",
+                    "created": 1734076868073,
+                    "name": "First test for templates"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/templates/{slug}.html": {
+      "get": {
+        "tags": [
+          "templates"
+        ],
+        "summary": "Get template HTML",
+        "description": "Returns the raw HTML content of the template.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML content",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<html>...</html>"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Template not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/templates/{slug}": {
+      "put": {
+        "tags": [
+          "templates"
+        ],
+        "summary": "Update template",
+        "description": "Update the name or content of a template. Slug cannot be changed.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateUpdateForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Template updated",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Template"
+                },
+                "example": {
+                  "success": true,
+                  "template": {
+                    "slug": "test-1",
+                    "created": 1734076868000,
+                    "name": "First test for templates"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Template not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "templates"
+        ],
+        "summary": "Delete template",
+        "description": "Deletes a template by slug.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template deleted",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Template not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/templates/{slug}.{ext}": {
+      "post": {
+        "tags": [
+          "templates"
+        ],
+        "summary": "Generate document from template",
+        "description": "Generates a document from a template using provided data. Supported extensions: html, pdf, jpeg, png, webp.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ext",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "html",
+                "pdf",
+                "jpeg",
+                "png",
+                "webp"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateGenerateForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated document",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Invalid auth key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Template not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. You have been rate limited.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "description": "The number of requests remaining in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "The maximum number of requests allowed in the current rate limit window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "The time at which the current rate limit window resets (Unix timestamp).",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "components": {
     "securitySchemes": {
       "apiKeyHeader": {
         "type": "apiKey",
+        "description": "Authenticate your account by including your secret key in API requests.\nYou can manage your API keys in the [Dashboard](https://app.pdfshift.io/dashboard/).\n\nAuthentication to the API is performed by using the HTTP Header X-API-Key.",
         "name": "X-API-Key",
         "in": "header",
-        "description": "Authenticate by including your secret key in the HTTP header X-API-Key. Manage keys in the PDFShift dashboard."
+        "x-last-modified": 1764750344730
       }
     },
     "schemas": {
-      "ConvertRequest": {
+      "Error": {
         "type": "object",
-        "required": ["source"],
         "properties": {
-          "source": {
-            "type": "string",
-            "description": "The HTML document (raw string) or a URL to convert to PDF."
+          "success": {
+            "type": "boolean"
           },
-          "sandbox": {
-            "type": "boolean",
-            "description": "Generate the PDF in dev/sandbox mode. Produces a watermarked document that does not consume credits."
+          "error": {
+            "type": "string"
           },
-          "encode": {
-            "type": "boolean",
-            "description": "Return the generated PDF as a Base64-encoded string instead of raw binary. Defaults to true in the adaptor.",
-            "default": true
-          },
-          "filename": {
-            "type": "string",
-            "description": "Optional. 7+ characters (letters, numbers, '-' or '_'). When set, the file is stored and the API returns a JSON result containing a temporary download URL (kept ~2 days) instead of the binary PDF.",
-            "pattern": "^[A-Za-z0-9_-]{7,}$"
-          },
-          "webhook": {
-            "type": "string",
-            "format": "uri",
-            "description": "Optional callback URL for async conversion. When set, the API responds with a queued acknowledgement and later POSTs the result to this URL."
-          },
-          "use_print": {
-            "type": "boolean",
-            "description": "Use the print CSS stylesheet instead of the screen stylesheet."
-          },
-          "format": {
-            "type": "string",
-            "description": "Page format, e.g. 'A4', 'Letter', 'Legal', or a custom 'widthxheight' value.",
-            "example": "A4"
-          },
-          "landscape": {
-            "type": "boolean",
-            "description": "Render the document in landscape orientation."
-          },
-          "css": {
-            "type": "string",
-            "description": "Additional CSS (URL or raw string) applied before conversion."
+          "code": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
-      "ConversionResult": {
+      "Errors": {
         "type": "object",
-        "description": "JSON result returned by a conversion endpoint when filename/webhook is used or encode is true.",
-        "required": ["success", "url", "filesize", "duration", "response", "executed"],
         "properties": {
           "success": {
-            "type": "boolean",
-            "description": "Whether the conversion succeeded."
+            "type": "boolean"
           },
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "description": "Temporary download URL for the generated document (when filename/webhook is used)."
+          "errors": {
+            "type": "object"
           },
-          "filesize": {
+          "code": {
             "type": "integer",
-            "description": "Size of the generated document in bytes."
-          },
-          "duration": {
-            "type": "integer",
-            "description": "Total time taken to generate the document, in milliseconds."
-          },
-          "response": {
-            "type": "object",
-            "description": "Details about loading the source document.",
-            "properties": {
-              "duration": {
-                "type": "integer",
-                "description": "Milliseconds spent loading the source."
-              },
-              "status-code": {
-                "type": "integer",
-                "description": "HTTP status code PDFShift received when loading an HTTP source."
-              }
-            }
-          },
-          "executed": {
-            "type": "string",
-            "format": "date-time",
-            "description": "ISO 8601 timestamp at which the conversion ran."
-          },
-          "pdf_pages": {
-            "type": "integer",
-            "description": "Total number of pages in the generated PDF."
+            "format": "int32"
           }
         }
       },
       "Credits": {
         "type": "object",
-        "description": "Current credit usage for the account.",
         "properties": {
           "credits": {
             "type": "object",
             "properties": {
               "base": {
                 "type": "integer",
-                "format": "int32",
-                "description": "Default credit limit from the current plan."
+                "format": "int32"
               },
               "remaining": {
                 "type": "integer",
-                "format": "int32",
-                "description": "Credits still available for the current period."
+                "format": "int32"
               },
               "total": {
                 "type": "integer",
-                "format": "int32",
-                "description": "Total credit limit (may exceed base if overage is enabled)."
+                "format": "int32"
               },
               "used": {
                 "type": "integer",
-                "format": "int32",
-                "description": "Credits consumed so far this period."
+                "format": "int32"
               }
             }
           },
           "success": {
             "type": "boolean"
           }
-        }
+        },
+        "x-last-modified": 1764750524862
       },
       "Account": {
         "type": "object",
-        "description": "Account details.",
         "properties": {
           "success": {
             "type": "boolean"
@@ -159,141 +2883,777 @@
           "account": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "firstname": { "type": "string" },
-              "email": { "type": "string", "format": "email" },
-              "created": { "type": "integer", "format": "int64" },
-              "company_name": { "type": "string" },
-              "country": { "type": "string" },
-              "renew_date": { "type": "integer", "format": "int64" },
-              "avatar": { "type": "string", "format": "uri" },
+              "name": {
+                "type": "string"
+              },
+              "firstname": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "created": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "company_name": {
+                "type": "string"
+              },
+              "company_details": {
+                "type": "string",
+                "default": null
+              },
+              "company_vat": {
+                "type": "string",
+                "default": null
+              },
+              "country": {
+                "type": "string"
+              },
+              "renew_date": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "avatar": {
+                "type": "string",
+                "format": "uri"
+              },
+              "billing_email": {
+                "type": "string",
+                "default": null,
+                "format": "email"
+              },
               "plan": {
                 "type": "object",
+                "default": null,
                 "properties": {
-                  "display": { "type": "string" },
-                  "name": { "type": "string" },
-                  "credits": { "type": "integer", "format": "int32" },
-                  "filesize": { "type": "integer", "format": "int32" },
-                  "timeout": { "type": "integer", "format": "int32" },
-                  "price": { "type": "number", "format": "float" },
-                  "yearly": { "type": "boolean" },
-                  "overage": { "type": "number", "format": "float" }
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "credits": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "filesize": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "timeout": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  "yearly": {
+                    "type": "boolean"
+                  },
+                  "overage": {
+                    "type": "number",
+                    "format": "float"
+                  }
                 }
+              },
+              "hard_limit": {
+                "type": "integer",
+                "default": null,
+                "format": "int32"
+              },
+              "subscription_ends_at": {
+                "type": "integer",
+                "default": null,
+                "format": "int64"
+              }
+            }
+          }
+        },
+        "x-last-modified": 176475072263
+      },
+      "Invoices": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "invoices": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "created": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "amount": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "download_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "page": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "total": {
+                "type": "integer",
+                "format": "int32"
               }
             }
           }
         }
       },
-      "Error": {
+      "LogObject": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
-          "error": { "type": "string" },
-          "code": { "type": "integer", "format": "int32" }
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "duration": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "executed": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "credits": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sandbox": {
+            "type": "boolean"
+          },
+          "filesize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "error": {
+            "type": "string",
+            "default": null
+          },
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "user_agent": {
+            "type": "string",
+            "default": null
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string",
+            "default": null
+          }
         }
-      }
-    }
-  },
-  "security": [{ "apiKeyHeader": [] }],
-  "paths": {
-    "/convert/pdf": {
-      "post": {
-        "operationId": "convertToPdf",
-        "summary": "Convert HTML or a URL to PDF",
-        "description": "Converts an HTML string or a URL to a PDF document. Called by the adaptor's generatePDF operation. Returns a raw binary PDF by default; returns a JSON ConversionResult when filename or webhook is provided, or a Base64-encoded PDF string when encode is true.",
-        "tags": ["convert"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ConvertRequest" }
+      },
+      "Log": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "log": {
+            "$ref": "#/components/schemas/LogObject"
+          }
+        }
+      },
+      "Logs": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "logs": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LogObject"
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "page": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "total": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        }
+      },
+      "BasicAuthForm": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "default": null
+          },
+          "password": {
+            "type": "string",
+            "default": null
+          }
+        }
+      },
+      "WebhookForm": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "method": {
+            "type": "string",
+            "default": "POST"
+          },
+          "auth": {
+            "$ref": "#/components/schemas/BasicAuthForm"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "PDF generated successfully. Binary PDF, Base64 string, or a JSON conversion result depending on the request options.",
-            "content": {
-              "application/pdf": {
-                "schema": { "type": "string", "format": "binary" }
-              },
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ConversionResult" }
-              }
-            }
+        "required": [
+          "url"
+        ]
+      },
+      "CookieForm": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           },
-          "202": {
-            "description": "Async conversion accepted (webhook provided). Result will be POSTed to the webhook.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": { "type": "boolean" },
-                    "queued": { "type": "boolean" }
-                  }
+          "value": {
+            "type": "string"
+          },
+          "secure": {
+            "type": "boolean",
+            "default": false
+          },
+          "http_only": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "MarginForm": {
+        "type": "object",
+        "properties": {
+          "top": {
+            "type": "string",
+            "default": "48"
+          },
+          "right": {
+            "type": "string",
+            "default": "48"
+          },
+          "bottom": {
+            "type": "string",
+            "default": "48"
+          },
+          "left": {
+            "type": "string",
+            "default": "48"
+          }
+        }
+      },
+      "CustomHeaderFooter": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "description": "Element to add in the header part of the document.\nPDFShift will automatically detect if it's an URL and load it, or an HTML data and charge it.\n\nAccepted variables are:\n  {{date}}  - Formatted print date\n  {{title}} - Title of the HTML document\n  {{url}}   - Page URL\n  {{page}}  - Current page\n  {{total}} - Total number of pages",
+            "type": "string"
+          },
+          "height": {
+            "type": "string",
+            "default": null,
+            "description": "A spacing between the header or footer and the content.\nFor header, it's the space between the header and the beginning of the document.\nFor the footer, it's the space between the end of the document and the bottom of the page."
+          },
+          "start_at": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "Start to display the header/footer at that given page.\n**Important**: If you send header AND footer, and set a start_at higher than 1, it must be the same for header and footer.\n\nFor instance, header.start_at = 1 and footer.start_at = 5 is possible.\nBut header.start_at = 2 and footer.start_at = 3 is NOT possible."
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "ConvertForm": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
               }
-            }
+            ],
+            "description": "Original document to convert to PDF. PDFShift will automatically detect if it's an URL and load it, or an HTML document and charge it.\nYou can also send an array of documents to convert if parallel conversions is enabled on your account. In that case, you will also need to provide the webhook parameters as this operation is asynchronous."
           },
-          "401": {
-            "description": "Unauthorized. Invalid, missing, or disabled API key.",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
-            }
+          "sandbox": {
+            "type": "boolean",
+            "default": false,
+            "description": "Will generates documents that doesn't count in the credits. The generated document will come with a watermark and you are limited to 10 documents per minutes."
           },
-          "429": {
-            "description": "Too Many Requests. Rate limit exceeded.",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+          "encode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Will return the generated PDF in Base64 encoded format, instead of raw."
+          },
+          "filename": {
+            "type": "string",
+            "description": "Name of the destination file.\nOnly an alphanumerical value with \"-\" or \"_\", of at least 7 chars accepted.\n\nIf given, the response **will not be the PDF**, but a JSON response containing an url parameter to an Amazon S3 bucket, to download the file.\nThe file will be **kept for 2 days**, then automatically deleted.\n\nSee [Saving the document to Amazon S3](/docs/saving-to-s3) for an example."
+          },
+          "s3_destination": {
+            "type": "string",
+            "description": "Path to your S3 bucket, in order to save the converted PDF directly into your AWS S3 account.\nUse a full path value like\n`s3://doc-example-bucket/pdfshift/upload/86aa3ede7d05.pdf`.\n\nSee [Saving to your Amazon S3](/docs/saving-to-s3) for more details."
+          },
+          "use_print": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use the print stylesheet instead of the general one."
+          },
+          "css": {
+            "type": "string",
+            "description": "Will append this CSS styles to the document before saving it. Can be an URL or a String of CSS rules."
+          },
+          "javascript": {
+            "type": "string",
+            "description": "Will execute the given Javascript before saving the document. Can be an URL or a String of JS code."
+          },
+          "delay": {
+            "type": "integer",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 10000,
+            "description": "In milliseconds. Will wait for this duration before capturing the document. Up to 10 seconds max."
+          },
+          "timeout": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 900,
+            "description": "If provided, will kill the page loading at a specified time without stopping with a TimeoutError. Value in seconds."
+          },
+          "wait_for": {
+            "type": "string",
+            "description": "Name of a function available globally.\nWhen present, PDFShift will wait for this function to return a truthy value (true, 1, a string, etc) or up to 30 seconds, then proceed to the conversion.\nIf the function never returns a truthy value in the allocated time, the conversion will fail with an error."
+          },
+          "wait_for_network": {
+            "type": "boolean",
+            "default": true,
+            "description": "If set to true, will wait that there was no network requests in the last 500ms."
+          },
+          "ignore_long_polling": {
+            "type": "boolean",
+            "default": false,
+            "description": "Will not wait for long-polling request to end before generating the document.\nThis can be helpful when loading a page that have websockets or long running queries that have no impact on the generated document.\nRequires `wait_for_network` to be set to true, otherwise the conversion never waits for network requests at all."
+          },
+          "disable_javascript": {
+            "type": "boolean",
+            "default": false,
+            "description": "Will not execute the javascript at all in the document."
+          },
+          "lazy_load_images": {
+            "type": "boolean",
+            "default": false,
+            "description": "When set to true, will scroll the page to the bottom to trigger loading the images with lazy loading before saving the document."
+          },
+          "raise_for_status": {
+            "type": "boolean",
+            "default": false,
+            "description": "Won't convert the document if the loaded source (when HTTP) returns a non 2XX response."
+          },
+          "webhook": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WebhookForm"
+              },
+              {
+                "type": "string",
+                "format": "uri"
+              }
+            ],
+            "description": "An URL where we will send a POST request containing a JSON body similar to when you use the filename parameter.\nThe JSON response will contain a URL key that points to your file, stored on Amazon S3.\n\n**Note**: When the conversion fail, we also do a `POST` request to your endpoint, but with an `error` key instead.\n\nWe recommend you to first check if the body contains the `error` before processing the document, and act accordingly."
+          },
+          "auth": {
+            "$ref": "#/components/schemas/BasicAuthForm",
+            "description": "Basic authentication that will be sent along the request to load the source when it's an URL."
+          },
+          "http_headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "List of HTTP headers that you can pass to the request when loading the source URL."
+          },
+          "cookies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CookieForm"
+            },
+            "description": "List of cookies you want to send along with the requests when loading the source.\nThey must be provided as an array of objects."
+          },
+          "is_hipaa": {
+            "type": "boolean",
+            "default": false,
+            "description": "When set to True, ensure the conversion's parameters are compliant to HIPAA regulations.\nThis will disable features such as `filename` or `webhook` when the `s3_destination` is managed by PDFShift, to avoid storing any sensitive documents on PDFShift's servers. See [Handling sensitive documents](https://help.pdfshift.io/how-do-you-handle-sensitive-documents) for more details."
+          },
+          "is_gdpr": {
+            "type": "boolean",
+            "default": false,
+            "description": "When set to True, ensure the conversion's parameters are compliant to GDPR regulations.\nThis will disable features such as `filename` or `webhook` when the `s3_destination` is managed by PDFShift, to avoid storing any sensitive documents on PDFShift's servers. See [Handling sensitive documents](https://help.pdfshift.io/how-do-you-handle-sensitive-documents) for more details."
+          },
+          "log_request": {
+            "type": "boolean",
+            "default": false,
+            "description": "Log the request parameters. Useful for debugging purposes with PDFShift support."
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "ImageConvertForm": {
+        "type": "object",
+        "properties": {
+          "transparent": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set to true, the image will have a transparent background.\n**Note**: This option is only available when outputting PNG images."
+          },
+          "fullpage": {
+            "type": "boolean",
+            "default": false,
+            "description": "Capture the full scrollable page.\nOnly one of `fullpage`, `css_selector`, or `clip` can be set."
+          },
+          "css_selector": {
+            "type": "string",
+            "default": null,
+            "description": "CSS selector for the element to capture.\nOnly one of `fullpage`, `css_selector`, or `clip` can be set."
+          },
+          "clip": {
+            "type": "object",
+            "description": "Clip region to capture.\nOnly one of `fullpage`, `css_selector`, or `clip` can be set.",
+            "properties": {
+              "width": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Width of the region to capture (in pixels)."
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Height of the region to capture (in pixels)."
+              },
+              "x": {
+                "type": "integer",
+                "description": "X coordinate of the top-left corner (in pixels)."
+              },
+              "y": {
+                "type": "integer",
+                "description": "Y coordinate of the top-left corner (in pixels)."
+              }
+            },
+            "required": [
+              "width",
+              "height",
+              "x",
+              "y"
+            ]
+          },
+          "quality": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 100,
+            "default": 80,
+            "description": "Quality of the output image (only for JPEG, 10-100)."
+          },
+          "dpi": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              4
+            ],
+            "default": 1,
+            "description": "DPI scaling factor. Must be one of 1, 2, or 4."
+          }
+        }
+      },
+      "ProtectionForm": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "type": "string",
+            "default": null,
+            "description": "Author metadata for the PDF."
+          },
+          "user_password": {
+            "type": "string",
+            "default": "",
+            "description": "Password required to open the PDF."
+          },
+          "owner_password": {
+            "type": "string",
+            "default": "",
+            "description": "Password required to change permissions."
+          },
+          "no_print": {
+            "type": "boolean",
+            "default": false,
+            "description": "Disallow printing of the PDF."
+          },
+          "no_copy": {
+            "type": "boolean",
+            "default": false,
+            "description": "Disallow copying content from the PDF."
+          },
+          "no_modify": {
+            "type": "boolean",
+            "default": false,
+            "description": "Disallow modifying the PDF."
+          }
+        }
+      },
+      "WatermarkForm": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "PDF source. Must be a valid URL or a base64 encoded PDF document."
+          },
+          "image": {
+            "type": "string",
+            "description": "Image source for watermark."
+          },
+          "text": {
+            "type": "string",
+            "description": "Text to use as watermark."
+          },
+          "font_size": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 300,
+            "default": 16,
+            "description": "Font size for text watermark (5-300)."
+          },
+          "font_family": {
+            "type": "string",
+            "enum": [
+              "Helvetica",
+              "Times",
+              "Courier"
+            ],
+            "default": "Helvetica",
+            "description": "Font family for text watermark."
+          },
+          "font_color": {
+            "type": "string",
+            "pattern": "^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$",
+            "default": "000000",
+            "description": "Font color in hexadecimal (e.g. #000000 or 000000)."
+          },
+          "font_opacity": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100,
+            "description": "Font opacity percentage (0-100)."
+          },
+          "font_bold": {
+            "type": "boolean",
+            "default": false,
+            "description": "Bold font for text watermark."
+          },
+          "font_italic": {
+            "type": "boolean",
+            "default": false,
+            "description": "Italic font for text watermark."
+          },
+          "offset_x": {
+            "type": "string",
+            "default": "center",
+            "description": "Horizontal offset: 'left', 'right', 'center', or value ending with px/in/cm/mm/pt."
+          },
+          "offset_y": {
+            "type": "string",
+            "default": "middle",
+            "description": "Vertical offset: 'top', 'bottom', 'middle', or value ending with px/in/cm/mm/pt."
+          },
+          "rotate": {
+            "type": "integer",
+            "minimum": -359,
+            "maximum": 359,
+            "default": -45,
+            "description": "Rotation angle for watermark (-359 to 359)."
+          }
+        }
+      },
+      "Templates": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "templates": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "created": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "page": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "total": {
+                "type": "integer",
+                "format": "int32"
+              }
             }
           }
         }
-      }
-    },
-    "/credits/usage": {
-      "get": {
-        "operationId": "getCreditsUsage",
-        "summary": "Get current credits usage",
-        "description": "Returns the current credits usage: total, remaining and used credits for the current period.",
-        "tags": ["credits"],
-        "responses": {
-          "200": {
-            "description": "Current credit usage",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Credits" } }
-            }
+      },
+      "Template": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
           },
-          "401": {
-            "description": "Unauthorized.",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+          "template": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "created": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "name": {
+                "type": "string"
+              }
             }
           }
         }
-      }
-    },
-    "/account": {
-      "get": {
-        "operationId": "getAccount",
-        "summary": "Get account details",
-        "description": "Returns details about the authenticated account, including plan and billing information.",
-        "tags": ["account"],
-        "responses": {
-          "200": {
-            "description": "Account details",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Account" } }
-            }
+      },
+      "TemplateCreateForm": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Unique identifier for the template."
           },
-          "401": {
-            "description": "Unauthorized.",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
-            }
+          "name": {
+            "type": "string",
+            "description": "Name of the template."
+          },
+          "content": {
+            "type": "string",
+            "description": "HTML content of the template."
           }
-        }
+        },
+        "required": [
+          "slug",
+          "name",
+          "content"
+        ]
+      },
+      "TemplateUpdateForm": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the template."
+          },
+          "content": {
+            "type": "string",
+            "description": "HTML content of the template."
+          }
+        },
+        "required": [
+          "content"
+        ]
       }
     }
+  },
+  "security": [
+    {
+      "apiKeyHeader": []
+    }
+  ],
+  "externalDocs": {
+    "description": "You can access our documentation online by visiting https://docs.pdfshift.io",
+    "url": "https://docs.pdfshift.io"
   }
 }

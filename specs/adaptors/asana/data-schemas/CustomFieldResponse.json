@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/CustomFieldResponse",
+  "title": "CustomFieldResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/CustomFieldResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "CustomFieldBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "representation_type": {
+          "description": "This field tells the type of the custom field.",
+          "type": "string",
+          "example": "number",
+          "readOnly": true,
+          "enum": [
+            "text",
+            "enum",
+            "multi_enum",
+            "number",
+            "date",
+            "people",
+            "formula",
+            "custom_id",
+            "reference"
+          ]
+        },
+        "id_prefix": {
+          "description": "This field is the unique custom ID string for the custom field.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "example": "ID"
+        },
+        "input_restrictions": {
+          "type": "array",
+          "items": {
+            "description": "*Conditional*. Only relevant for custom fields of type `reference`. This array of strings reflects the allowed types of objects that can be written to a `reference` custom field value.",
+            "type": "string",
+            "enum": [
+              "task",
+              "project",
+              "portfolio",
+              "goal"
+            ]
+          },
+          "example": [
+            "task"
+          ]
+        },
+        "is_formula_field": {
+          "description": "*Conditional*. This flag describes whether a custom field is a formula custom field.",
+          "type": "boolean",
+          "example": false
+        },
+        "is_value_read_only": {
+          "description": "*Conditional*. This flag describes whether a custom field is read only.",
+          "type": "boolean",
+          "example": false
+        },
+        "created_by": {
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {}
+          ]
+        },
+        "people_value": {
+          "description": "*Conditional*. Only relevant for custom fields of type `people`. This array of [compact user](/reference/users) objects reflects the values of a `people` custom field.",
+          "type": "array",
+          "items": {
+            "$ref": "UserCompact.json"
+          }
+        },
+        "reference_value": {
+          "description": "*Conditional*. Only relevant for custom fields of type `reference`. This array of objects reflects the values of a `reference` custom field.",
+          "type": "array",
+          "items": {
+            "$ref": "AsanaNamedResource.json"
+          }
+        },
+        "html_text_value": {
+          "description": "*Conditional*. Only relevant for custom fields of type `text`. This is the HTML representation of the text value of a custom field, corresponding to the `text_value` plain-text field.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "readOnly": true,
+          "example": "<body>Some Value</body>"
+        },
+        "privacy_setting": {
+          "description": "The privacy setting of the custom field. *Note: Administrators in your organization may restrict the values of `privacy_setting`.*",
+          "type": "string",
+          "enum": [
+            "public_with_guests",
+            "public",
+            "private"
+          ],
+          "example": "public_with_guests"
+        },
+        "default_access_level": {
+          "description": "The default access level when inviting new members to the custom field. This isn't applied when the `privacy_setting` is `private`, or the user is a guest. For local fields in a project or portfolio, the user must additionally have permission to modify the container itself.",
+          "type": "string",
+          "enum": [
+            "admin",
+            "editor",
+            "user"
+          ],
+          "example": "user"
+        },
+        "resource_subtype": {
+          "description": "The type of the custom field. Must be one of the given values.\n",
+          "type": "string",
+          "readOnly": true,
+          "example": "text",
+          "enum": [
+            "text",
+            "enum",
+            "multi_enum",
+            "number",
+            "date",
+            "people",
+            "reference"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/terminal_reader_reader_resource_process_setup_intent_action",
+  "title": "TerminalReaderReaderResourceProcessSetupIntentAction",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/terminal_reader_reader_resource_process_setup_intent_action",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Represents a reader action to process a setup intent",
+  "properties": {
+    "generated_card": {
+      "description": "ID of a card PaymentMethod generated from the card_present PaymentMethod that may be attached to a Customer for future transactions. Only present if it was possible to generate a card PaymentMethod.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "process_config": {
+      "$ref": "terminal_reader_reader_resource_process_setup_config.json"
+    },
+    "setup_intent": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "setup_intent.json"
+        }
+      ],
+      "description": "Most recent SetupIntent processed by the reader.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "setup_intent.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "setup_intent"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "process_config",
+    "setup_intent"
+  ]
+}

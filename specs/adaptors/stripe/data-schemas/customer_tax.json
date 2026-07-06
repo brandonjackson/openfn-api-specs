@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/customer_tax",
+  "title": "CustomerTax",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/customer_tax",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "automatic_tax": {
+      "description": "Surfaces if automatic tax computation is possible given the current customer location information.",
+      "enum": [
+        "failed",
+        "not_collecting",
+        "supported",
+        "unrecognized_location"
+      ],
+      "type": "string"
+    },
+    "ip_address": {
+      "description": "A recent IP address of the customer used for tax reporting and tax location inference.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location": {
+      "anyOf": [
+        {
+          "$ref": "customer_tax_location.json"
+        }
+      ],
+      "description": "The identified tax location of the customer."
+    },
+    "provider": {
+      "description": "The tax calculation provider used for location resolution. Defaults to `stripe` when not using a [third-party provider](/tax/third-party-apps).",
+      "enum": [
+        "anrok",
+        "avalara",
+        "sphere",
+        "stripe"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "automatic_tax",
+    "provider"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "location"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/source_order",
+  "title": "SourceOrder",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/source_order",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "amount": {
+      "description": "A positive integer in the smallest currency unit (that is, 100 cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency) representing the total amount for the order.",
+      "type": "integer"
+    },
+    "currency": {
+      "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+      "format": "currency",
+      "type": "string"
+    },
+    "email": {
+      "description": "The email address of the customer placing the order.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "items": {
+      "description": "List of items constituting the order.",
+      "items": {
+        "$ref": "source_order_item.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "shipping": {
+      "$ref": "shipping.json"
+    }
+  },
+  "required": [
+    "amount",
+    "currency"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "items",
+    "shipping"
+  ]
+}

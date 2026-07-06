@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/AuditLogEvent",
+  "title": "AuditLogEvent",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/AuditLogEvent",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "An object representing a single event within an Asana domain.\n\nEvery audit log event is comprised of an `event_type`, `actor`, `resource`, and `context`. Some events will include additional metadata about the event under `details`. See our [currently supported list of events](/docs/audit-log-events#supported-audit-log-events) for more details.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the `AuditLogEvent`, as a string.",
+      "type": "string",
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "created_at": {
+      "description": "The time the event was created.",
+      "type": "string",
+      "format": "date-time",
+      "example": "2021-01-01T00:00:00.000Z"
+    },
+    "event_type": {
+      "description": "The type of the event.",
+      "type": "string",
+      "example": "task_deleted"
+    },
+    "event_category": {
+      "description": "The category that this `event_type` belongs to.",
+      "type": "string",
+      "example": "deletion"
+    },
+    "actor": {
+      "$ref": "AuditLogEventActor.json"
+    },
+    "resource": {
+      "$ref": "AuditLogEventResource.json"
+    },
+    "details": {
+      "$ref": "AuditLogEventDetails.json"
+    },
+    "context": {
+      "$ref": "AuditLogEventContext.json"
+    }
+  }
+}

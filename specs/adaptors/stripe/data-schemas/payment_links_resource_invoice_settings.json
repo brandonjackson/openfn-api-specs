@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/payment_links_resource_invoice_settings",
+  "title": "PaymentLinksResourceInvoiceSettings",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/payment_links_resource_invoice_settings",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "account_tax_ids": {
+      "description": "The account tax IDs associated with the invoice.",
+      "items": {
+        "anyOf": [
+          {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          {
+            "$ref": "tax_id.json"
+          },
+          {
+            "$ref": "deleted_tax_id.json"
+          }
+        ],
+        "x-expansionResources": {
+          "oneOf": [
+            {
+              "$ref": "tax_id.json"
+            },
+            {
+              "$ref": "deleted_tax_id.json"
+            }
+          ]
+        }
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "custom_fields": {
+      "description": "A list of up to 4 custom fields to be displayed on the invoice.",
+      "items": {
+        "$ref": "invoice_setting_custom_field.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "description": {
+      "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "footer": {
+      "description": "Footer to be displayed on the invoice.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "issuer": {
+      "anyOf": [
+        {
+          "$ref": "connect_account_reference.json"
+        }
+      ],
+      "description": "The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account."
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "rendering_options": {
+      "anyOf": [
+        {
+          "$ref": "invoice_setting_checkout_rendering_options.json"
+        }
+      ],
+      "description": "Options for invoice PDF rendering."
+    }
+  },
+  "type": "object",
+  "x-expandableFields": [
+    "account_tax_ids",
+    "custom_fields",
+    "issuer",
+    "rendering_options"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/WorkspaceMembershipResponse",
+  "title": "WorkspaceMembershipResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/WorkspaceMembershipResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "WorkspaceMembershipBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "user_task_list": {
+          "$ref": "UserTaskListResponse.json",
+          "description": "The user's \"My tasks\" in the workspace.",
+          "readOnly": true
+        },
+        "is_active": {
+          "type": "boolean",
+          "readOnly": true,
+          "description": "Indicates whether the user is currently associated with the workspace. Returns `true` for users who have joined the workspace or have been invited but not yet accepted."
+        },
+        "is_admin": {
+          "type": "boolean",
+          "readOnly": true,
+          "description": "Reflects if this user is an admin of the workspace."
+        },
+        "is_guest": {
+          "type": "boolean",
+          "readOnly": true,
+          "description": "Reflects if this user is a guest of the workspace."
+        },
+        "is_view_only": {
+          "type": "boolean",
+          "readOnly": true,
+          "description": "Reflects if this user has view only license in the workspace."
+        },
+        "vacation_dates": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "readOnly": true,
+          "deprecated": true,
+          "description": "*Deprecated:* Use the [`/ooo_entries`](/reference/getoooentries) endpoints instead. Contains keys `start_on` and `end_on` for the vacation dates for the user in this workspace. If `start_on` is null, the entire `vacation_dates` object will be null. If `end_on` is before today, the entire `vacation_dates` object will be null.",
+          "properties": {
+            "start_on": {
+              "description": "*Deprecated:* Use the [`/ooo_entries`](/reference/getoooentries) endpoints instead. The day on which the user's vacation in this workspace starts. This is a date with `YYYY-MM-DD` format.",
+              "type": "string",
+              "deprecated": true,
+              "example": "2022-11-05"
+            },
+            "end_on": {
+              "description": "*Deprecated:* Use the [`/ooo_entries`](/reference/getoooentries) endpoints instead. The day on which the user's vacation in this workspace ends, or null if there is no end date. This is a date with `YYYY-MM-DD` format.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "deprecated": true,
+              "example": "2022-11-07"
+            }
+          }
+        },
+        "created_at": {
+          "description": "The time at which this resource was created.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        }
+      }
+    }
+  ]
+}

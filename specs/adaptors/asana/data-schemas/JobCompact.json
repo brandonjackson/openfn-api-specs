@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/JobCompact",
+  "title": "JobCompact",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/JobCompact",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A *job* is an object representing a process that handles asynchronous work.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "job",
+      "x-insert-after": "gid"
+    },
+    "resource_subtype": {
+      "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
+      "type": "string",
+      "readOnly": true,
+      "example": "duplicate_task"
+    },
+    "status": {
+      "description": "The current status of this job.",
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "succeeded",
+        "failed"
+      ],
+      "readOnly": true,
+      "example": "in_progress"
+    },
+    "new_portfolio": {
+      "$ref": "PortfolioCompact.json"
+    },
+    "new_project": {
+      "$ref": "ProjectCompact.json"
+    },
+    "new_task": {
+      "allOf": [
+        {
+          "$ref": "TaskCompact.json"
+        },
+        {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      ]
+    },
+    "new_project_template": {
+      "$ref": "ProjectTemplateCompact.json"
+    },
+    "new_graph_export": {
+      "$ref": "GraphExportCompact.json"
+    },
+    "new_resource_export": {
+      "$ref": "ResourceExportCompact.json"
+    }
+  }
+}

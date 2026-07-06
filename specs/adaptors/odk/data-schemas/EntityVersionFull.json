@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "odk/EntityVersionFull",
+  "title": "EntityVersionFull",
+  "x-openfn-adaptor": "odk",
+  "x-source": {
+    "openapi": "#/components/schemas/EntityVersionFull",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "EntityVersion.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "object",
+          "description": "The source of the Entity version, such as a Submission or an API request. This property is experimental and may change in the future.",
+          "example": {
+            "event": {},
+            "submission": {}
+          }
+        },
+        "baseDiff": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of properties that are different between this version and its base version. Includes the label if it differs between the two versions.",
+          "example": [
+            "name",
+            "age"
+          ]
+        },
+        "serverDiff": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of properties that are different between this version and the previous version on the server. Includes the label if it differs between the two versions.",
+          "example": [
+            "name",
+            "age"
+          ]
+        },
+        "conflict": {
+          "type": "string",
+          "description": "Type of the conflict if this version causes a conflict; otherwise `null`",
+          "enum": [
+            "soft",
+            "hard"
+          ]
+        },
+        "resolved": {
+          "type": "boolean",
+          "description": "Is the conflict resolved? Note that this is also false for the version which didn't cause a conflict",
+          "example": false
+        },
+        "lastGoodVersion": {
+          "type": "boolean",
+          "description": "Indicates whether this version is the last known good version. Currently, the last known good version is defined as the version immediately prior to the first unresolved conflict. If there is no conflict, or if all conflicts are resolved, then the current version is the last known good version. This property is experimental, as the definition of the last known good version may change in the future.",
+          "example": false
+        },
+        "relevantToConflict": {
+          "type": "boolean",
+          "description": "Indicates whether this version includes information relevant to resolving a conflict. If so, it will be shown to the user during conflict resolution. This property is experimental, as we may redefine conflict relevance in the future.",
+          "example": false
+        }
+      }
+    }
+  ]
+}

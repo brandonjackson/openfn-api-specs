@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/item",
+  "title": "LineItem",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/item",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A line item.",
+  "properties": {
+    "adjustable_quantity": {
+      "anyOf": [
+        {
+          "$ref": "line_items_adjustable_quantity.json"
+        }
+      ]
+    },
+    "amount_discount": {
+      "description": "Total discount amount applied. If no discounts were applied, defaults to 0.",
+      "type": "integer"
+    },
+    "amount_subtotal": {
+      "description": "Total before any discounts or taxes are applied.",
+      "type": "integer"
+    },
+    "amount_tax": {
+      "description": "Total tax amount applied. If no tax was applied, defaults to 0.",
+      "type": "integer"
+    },
+    "amount_total": {
+      "description": "Total after discounts and taxes.",
+      "type": "integer"
+    },
+    "currency": {
+      "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+      "format": "currency",
+      "type": "string"
+    },
+    "description": {
+      "description": "An arbitrary string attached to the object. Often useful for displaying to users. Defaults to product name.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discounts": {
+      "description": "The discounts applied to the line item.",
+      "items": {
+        "$ref": "line_items_discount_amount.json"
+      },
+      "type": "array"
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "item"
+      ],
+      "type": "string"
+    },
+    "price": {
+      "anyOf": [
+        {
+          "$ref": "price.json"
+        }
+      ],
+      "description": "The price used to generate the line item."
+    },
+    "quantity": {
+      "description": "The quantity of products being purchased.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "taxes": {
+      "description": "The taxes applied to the line item.",
+      "items": {
+        "$ref": "line_items_tax_amount.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "amount_discount",
+    "amount_subtotal",
+    "amount_tax",
+    "amount_total",
+    "currency",
+    "id",
+    "object"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "adjustable_quantity",
+    "discounts",
+    "price",
+    "taxes"
+  ],
+  "x-resourceId": "item"
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/WebhookResponse",
+  "title": "WebhookResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/WebhookResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "WebhookCompact.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "description": "The time at which this resource was created.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "last_failure_at": {
+          "description": "The timestamp when the webhook last received an error when sending an event to the target.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "last_failure_content": {
+          "description": "The contents of the last error response sent to the webhook when attempting to deliver events to the target.",
+          "type": "string",
+          "readOnly": true,
+          "example": "500 Server Error\\n\\nCould not complete the request"
+        },
+        "last_success_at": {
+          "description": "The timestamp when the webhook last successfully sent an event to the target.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "delivery_retry_count": {
+          "description": "The number of times the webhook has retried delivery of events to the target (resets after a successful attempt).",
+          "type": "integer",
+          "readOnly": true,
+          "example": 3
+        },
+        "next_attempt_after": {
+          "description": "The timestamp after which the webhook will next attempt to deliver an event to the target.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "failure_deletion_timestamp": {
+          "description": "The timestamp when the webhook will be deleted if there is no successful attempt to deliver events to the target",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "filters": {
+          "description": "Whitelist of filters to apply to events from this webhook. If a webhook event passes any of the filters the event will be delivered; otherwise no event will be sent to the receiving server.",
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "WebhookFilter.json"
+              },
+              {
+                "description": "A set of filters to specify a whitelist for what types of events will be delivered."
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

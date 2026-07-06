@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/ProjectTemplateBase",
+  "title": "ProjectTemplateBase",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/ProjectTemplateBase",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "ProjectTemplateCompact.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "Free-form textual information associated with the project template",
+          "type": "string",
+          "example": "These are things we need to pack for a trip."
+        },
+        "html_description": {
+          "description": "The description of the project template with formatting as HTML.",
+          "type": "string",
+          "example": "<body>These are things we need to pack for a trip.</body>"
+        },
+        "public": {
+          "description": "True if the project template is public to its team.",
+          "type": "boolean",
+          "example": false
+        },
+        "owner": {
+          "description": "The current owner of the project template, may be null.",
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ]
+        },
+        "team": {
+          "allOf": [
+            {
+              "$ref": "TeamCompact.json"
+            }
+          ]
+        },
+        "requested_dates": {
+          "description": "Array of date variables in this project template. Calendar dates must be provided for these variables when instantiating a project.",
+          "type": "array",
+          "items": {
+            "$ref": "DateVariableCompact.json"
+          },
+          "readOnly": true
+        },
+        "color": {
+          "description": "Color of the project template.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "dark-pink",
+            "dark-green",
+            "dark-blue",
+            "dark-red",
+            "dark-teal",
+            "dark-brown",
+            "dark-orange",
+            "dark-purple",
+            "dark-warm-gray",
+            "light-pink",
+            "light-green",
+            "light-blue",
+            "light-red",
+            "light-teal",
+            "light-brown",
+            "light-orange",
+            "light-purple",
+            "light-warm-gray",
+            null
+          ],
+          "example": "light-green"
+        },
+        "requested_roles": {
+          "description": "Array of template roles in this project template. User Ids can be provided for these variables when instantiating a project to assign template tasks to the user.",
+          "type": "array",
+          "items": {
+            "$ref": "TemplateRole.json"
+          }
+        }
+      }
+    }
+  ]
+}

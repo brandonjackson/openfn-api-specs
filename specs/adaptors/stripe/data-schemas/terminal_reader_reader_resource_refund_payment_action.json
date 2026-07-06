@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/terminal_reader_reader_resource_refund_payment_action",
+  "title": "TerminalReaderReaderResourceRefundPaymentAction",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/terminal_reader_reader_resource_refund_payment_action",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Represents a reader action to refund a payment",
+  "properties": {
+    "amount": {
+      "description": "The amount being refunded.",
+      "type": "integer"
+    },
+    "charge": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "charge.json"
+        }
+      ],
+      "description": "Charge that is being refunded.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "charge.json"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+      "type": "object"
+    },
+    "payment_intent": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "payment_intent.json"
+        }
+      ],
+      "description": "Payment intent that is being refunded.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "payment_intent.json"
+          }
+        ]
+      }
+    },
+    "reason": {
+      "description": "The reason for the refund.",
+      "enum": [
+        "duplicate",
+        "fraudulent",
+        "requested_by_customer"
+      ],
+      "type": "string"
+    },
+    "refund": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "refund.json"
+        }
+      ],
+      "description": "Unique identifier for the refund object.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "refund.json"
+          }
+        ]
+      }
+    },
+    "refund_application_fee": {
+      "description": "Boolean indicating whether the application fee should be refunded when refunding this charge. If a full charge refund is given, the full application fee will be refunded. Otherwise, the application fee will be refunded in an amount proportional to the amount of the charge refunded. An application fee can be refunded only by the application that created the charge.",
+      "type": "boolean"
+    },
+    "refund_payment_config": {
+      "$ref": "terminal_reader_reader_resource_refund_payment_config.json"
+    },
+    "reverse_transfer": {
+      "description": "Boolean indicating whether the transfer should be reversed when refunding this charge. The transfer will be reversed proportionally to the amount being refunded (either the entire or partial amount). A transfer can be reversed only by the application that created the charge.",
+      "type": "boolean"
+    }
+  },
+  "type": "object",
+  "x-expandableFields": [
+    "charge",
+    "payment_intent",
+    "refund",
+    "refund_payment_config"
+  ]
+}

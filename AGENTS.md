@@ -15,7 +15,12 @@ adaptor's named operations. Therefore:
 - A narrowed view is legitimate **only when derived from a full source of truth**
   — never hand-authored on its own. The full spec stays the source of truth.
 - Where a full machine spec exists upstream, we **commit it verbatim** as
-  `upstream.json` and treat it as ground truth.
+  `upstream.<ext>` (`upstream.json`, or `upstream.yaml` for a YAML spec — kept
+  byte-for-byte) and treat it as ground truth. It is **never edited**. If a content
+  change is ever unavoidable (e.g. redacting an example value that trips secret
+  scanning), it is the smallest possible change, recorded in `source.json`'s
+  `modifications[]`, and logged — never silent. `pnpm test` re-hashes the committed
+  upstream against `upstream.contentHash`, so a later edit can't slip in unnoticed.
 
 "Full" means different things by origin, and provenance must say which:
 
@@ -84,6 +89,10 @@ specs/adaptors/<adaptor>/
     { "kind": "postman", "url": "https://…", "result": "not-found", "note": "no public workspace" }
   ],
   "verifiedAgainst": ["ast.json"],  // what the surface was cross-checked against
+
+  "modifications": [],              // content edits forced onto a verbatim upstream —
+                                    // MUST be empty for a clean copy; each entry is a
+                                    // loud, reviewable exception (e.g. a redacted example)
 
   "sources": ["https://…"],         // URLs consulted
   "capturedAt": "2026-07-06",       // when this spec content was produced

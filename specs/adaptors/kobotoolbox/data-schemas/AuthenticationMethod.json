@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kobotoolbox/AuthenticationMethod",
+  "title": "AuthenticationMethod",
+  "x-openfn-adaptor": "kobotoolbox",
+  "x-source": {
+    "openapi": "#/components/schemas/AuthenticationMethod",
+    "capturedAt": "2026-07-06"
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Authenticated by username/email login\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "password"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "email": {
+          "$ref": "Email.json"
+        },
+        "username": {
+          "$ref": "Username.json"
+        }
+      },
+      "required": [
+        "method",
+        "at"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Authenticated after password reset\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "password_reset"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "email": {
+          "$ref": "Email.json"
+        }
+      },
+      "required": [
+        "at",
+        "email",
+        "method"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Authenticated by confirming a code sent by email.\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "code"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "email": {
+          "$ref": "Email.json"
+        }
+      },
+      "required": [
+        "at",
+        "email",
+        "method"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Authenticated by confirming a code sent by phone.\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "code"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "phone": {
+          "$ref": "Phone.json"
+        }
+      },
+      "required": [
+        "at",
+        "method",
+        "phone"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Reauthenticated by password\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "password"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "reauthenticated": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        }
+      },
+      "required": [
+        "method",
+        "reauthenticated",
+        "at"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Authenticated by third-party provider\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "socialaccount"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "provider": {
+          "$ref": "ProviderID.json"
+        },
+        "uid": {
+          "$ref": "ProviderAccountID.json"
+        }
+      },
+      "required": [
+        "method",
+        "reauthenticated",
+        "at",
+        "provider",
+        "uid"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "(Re)authenticated by 2FA\n",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "mfa"
+          ]
+        },
+        "at": {
+          "$ref": "Timestamp.json"
+        },
+        "type": {
+          "$ref": "AuthenticatorType.json"
+        },
+        "reauthenticated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "method",
+        "at",
+        "type"
+      ]
+    }
+  ]
+}

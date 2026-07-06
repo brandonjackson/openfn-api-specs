@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/TimeTrackingEntryCompact",
+  "title": "TimeTrackingEntryCompact",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/TimeTrackingEntryCompact",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A generic Asana Resource, containing a globally unique identifier.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "time_tracking_entry",
+      "x-insert-after": "gid"
+    },
+    "duration_minutes": {
+      "description": "Time in minutes tracked by the entry.",
+      "type": "integer",
+      "example": 12
+    },
+    "entered_on": {
+      "description": "The day that this entry is logged on.",
+      "type": "string",
+      "format": "date",
+      "example": "2015-03-14"
+    },
+    "attributable_to": {
+      "allOf": [
+        {
+          "$ref": "ProjectCompact.json"
+        },
+        {
+          "type": "object",
+          "description": "The attributable to project specifies which project's budget a time entry should be counted toward, if the task belongs to more than one project. If it only belongs to one project, it should be that project."
+        }
+      ]
+    },
+    "created_by": {
+      "$ref": "UserCompact.json",
+      "readOnly": true
+    },
+    "categories": {
+      "description": "The categories linked to this time tracking entry.",
+      "type": "array",
+      "items": {
+        "$ref": "TimeTrackingCategoryCompact.json"
+      },
+      "readOnly": true
+    }
+  }
+}

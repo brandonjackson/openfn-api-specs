@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/invoices_resource_shipping_cost",
+  "title": "InvoicesResourceShippingCost",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/invoices_resource_shipping_cost",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "amount_subtotal": {
+      "description": "Total shipping cost before any taxes are applied.",
+      "type": "integer"
+    },
+    "amount_tax": {
+      "description": "Total tax amount applied due to shipping costs. If no tax was applied, defaults to 0.",
+      "type": "integer"
+    },
+    "amount_total": {
+      "description": "Total shipping cost after taxes are applied.",
+      "type": "integer"
+    },
+    "shipping_rate": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "shipping_rate.json"
+        }
+      ],
+      "description": "The ID of the ShippingRate for this invoice.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "shipping_rate.json"
+          }
+        ]
+      }
+    },
+    "taxes": {
+      "description": "The taxes applied to the shipping rate.",
+      "items": {
+        "$ref": "line_items_tax_amount.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "amount_subtotal",
+    "amount_tax",
+    "amount_total"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "shipping_rate",
+    "taxes"
+  ]
+}

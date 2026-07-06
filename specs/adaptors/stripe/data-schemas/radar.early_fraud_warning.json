@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/radar.early_fraud_warning",
+  "title": "RadarEarlyFraudWarning",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/radar.early_fraud_warning",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "An early fraud warning indicates that the card issuer has notified us that a\ncharge may be fraudulent.\n\nRelated guide: [Early fraud warnings](https://docs.stripe.com/disputes/measuring#early-fraud-warnings)",
+  "properties": {
+    "actionable": {
+      "description": "An EFW is actionable if it has not received a dispute and has not been fully refunded. You may wish to proactively refund a charge that receives an EFW, in order to avoid receiving a dispute later.",
+      "type": "boolean"
+    },
+    "charge": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "charge.json"
+        }
+      ],
+      "description": "ID of the charge this early fraud warning is for, optionally expanded.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "charge.json"
+          }
+        ]
+      }
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "fraud_type": {
+      "description": "The type of fraud labelled by the issuer. One of `card_never_received`, `fraudulent_card_application`, `made_with_counterfeit_card`, `made_with_lost_card`, `made_with_stolen_card`, `misc`, `unauthorized_use_of_card`.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "radar.early_fraud_warning"
+      ],
+      "type": "string"
+    },
+    "payment_intent": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "payment_intent.json"
+        }
+      ],
+      "description": "ID of the Payment Intent this early fraud warning is for, optionally expanded.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "payment_intent.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "actionable",
+    "charge",
+    "created",
+    "fraud_type",
+    "id",
+    "livemode",
+    "object"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "charge",
+    "payment_intent"
+  ],
+  "x-resourceId": "radar.early_fraud_warning"
+}

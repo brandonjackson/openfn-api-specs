@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kobotoolbox/PriceWithProduct",
+  "title": "PriceWithProduct",
+  "x-openfn-adaptor": "kobotoolbox",
+  "x-source": {
+    "openapi": "#/components/schemas/PriceWithProduct",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "nickname": {
+      "type": "string",
+      "description": "A brief description of the plan, hidden from customers.",
+      "maxLength": 250
+    },
+    "currency": {
+      "type": "string",
+      "description": "Three-letter ISO currency code",
+      "maxLength": 3
+    },
+    "type": {
+      "allOf": [
+        {
+          "$ref": "StripePriceType.json"
+        }
+      ],
+      "description": "Whether the price is for a one-time purchase or a recurring (subscription) purchase.\n\n* `one_time` - One-time\n* `recurring` - Recurring"
+    },
+    "recurring": {
+      "allOf": [
+        {
+          "$ref": "Recurring.json"
+        }
+      ]
+    },
+    "unit_amount": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "maximum": 9223372036854776000,
+      "minimum": -9223372036854776000,
+      "format": "int64",
+      "description": "The unit amount in cents to be charged, represented as a whole integer if possible. Null if a sub-cent precision is required."
+    },
+    "human_readable_price": {
+      "type": "string",
+      "readOnly": true
+    },
+    "metadata": {
+      "description": "A set of key/value pairs that you can attach to an object. It can be useful for storing additional information about an object in a structured format."
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether the price can be used for new purchases."
+    },
+    "product": {
+      "$ref": "BaseProduct.json"
+    },
+    "transform_quantity": {
+      "description": "Apply a transformation to the reported usage or set quantity before computing the amount billed. Cannot be combined with `tiers`."
+    }
+  },
+  "required": [
+    "active",
+    "currency",
+    "human_readable_price",
+    "id",
+    "product",
+    "recurring",
+    "type"
+  ]
+}

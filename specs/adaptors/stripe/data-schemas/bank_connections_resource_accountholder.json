@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/bank_connections_resource_accountholder",
+  "title": "BankConnectionsResourceAccountholder",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/bank_connections_resource_accountholder",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "account": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "account.json"
+        }
+      ],
+      "description": "The ID of the Stripe account that this account belongs to. Only available when `account_holder.type` is `account`.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "account.json"
+          }
+        ]
+      }
+    },
+    "customer": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "customer.json"
+        }
+      ],
+      "description": "The ID for an Account representing a customer that this account belongs to. Only available when `account_holder.type` is `customer`.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "customer.json"
+          }
+        ]
+      }
+    },
+    "customer_account": {
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "type": {
+      "description": "Type of account holder that this account belongs to.",
+      "enum": [
+        "account",
+        "customer"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "account",
+    "customer"
+  ]
+}

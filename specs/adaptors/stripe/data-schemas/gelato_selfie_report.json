@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/gelato_selfie_report",
+  "title": "GelatoSelfieReport",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/gelato_selfie_report",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Result from a selfie check",
+  "properties": {
+    "document": {
+      "description": "ID of the [File](https://docs.stripe.com/api/files) holding the image of the identity document used in this check.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "gelato_selfie_report_error.json"
+        }
+      ],
+      "description": "Details on the verification error. Present when status is `unverified`."
+    },
+    "selfie": {
+      "description": "ID of the [File](https://docs.stripe.com/api/files) holding the image of the selfie used in this check.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "description": "Status of this `selfie` check.",
+      "enum": [
+        "unverified",
+        "verified"
+      ],
+      "type": "string",
+      "x-stripeBypassValidation": true
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "error"
+  ]
+}

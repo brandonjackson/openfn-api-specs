@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/AiStudioSeatResponse",
+  "title": "AiStudioSeatResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/AiStudioSeatResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "AiStudioSeatCompact.json"
+    },
+    {
+      "type": "object",
+      "description": "A single AI Studio seat allocation (current snapshot).",
+      "properties": {
+        "user": {
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {
+              "type": "object",
+              "readOnly": true,
+              "description": "The user who holds the seat.",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "readOnly": true,
+                  "example": "user@example.com"
+                }
+              }
+            }
+          ]
+        },
+        "license": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The user's effective AI Studio license tier. `/seats` returns only paid seats, so the free tier is not included.",
+          "enum": [
+            "ai_studio_plus",
+            "ai_studio_pro",
+            "ai_studio_max"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The state of the seat.",
+          "enum": [
+            "active",
+            "revoked",
+            "expired"
+          ]
+        },
+        "assigned_at": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "description": "When the seat was granted/assigned.",
+          "example": "2026-03-01T00:00:00.000Z"
+        },
+        "revoked_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "readOnly": true,
+          "description": "When the seat was revoked or expired. `null` for active seats."
+        },
+        "assigned_by": {
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ],
+              "readOnly": true,
+              "description": "The user who assigned the seat. `null` when assigned by the system."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
