@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/CustomFieldCompact",
+  "title": "CustomFieldCompact",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/CustomFieldCompact",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Custom Fields store the metadata that is used in order to add user-specified information to tasks in Asana. Be sure to reference the [custom fields](/reference/custom-fields) developer documentation for more information about how custom fields relate to various resources in Asana.\n\nUsers in Asana can [lock custom fields](https://asana.com/guide/help/premium/custom-fields#gl-lock-fields), which will make them read-only when accessed by other users. Attempting to edit a locked custom field will return HTTP error code `403 Forbidden`.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "custom_field",
+      "x-insert-after": "gid"
+    },
+    "name": {
+      "description": "The name of the custom field.",
+      "type": "string",
+      "example": "Status"
+    },
+    "type": {
+      "description": "*Deprecated: new integrations should prefer the resource_subtype field.* The type of the custom field. Must be one of the given values.\n",
+      "type": "string",
+      "readOnly": true,
+      "enum": [
+        "text",
+        "enum",
+        "multi_enum",
+        "number",
+        "date",
+        "people",
+        "reference"
+      ]
+    },
+    "enum_options": {
+      "description": "*Conditional*. Only relevant for custom fields of type `enum` or `multi_enum`. This array specifies the possible values which an `enum` custom field can adopt. To modify the enum options, refer to [working with enum options](/reference/createenumoptionforcustomfield).",
+      "type": "array",
+      "items": {
+        "$ref": "EnumOption.json"
+      }
+    },
+    "enabled": {
+      "description": "*Conditional*. This field applies only to [custom field values](/docs/custom-fields-guide#/accessing-custom-field-values-on-tasks-or-projects) and is not available for [custom field definitions](/docs/custom-fields-guide#/accessing-custom-field-definitions).\nDetermines if the custom field is enabled or not. For more details, see the [Custom Fields documentation](/docs/custom-fields-guide#/enabled-and-disabled-values).",
+      "type": "boolean",
+      "readOnly": true,
+      "example": true
+    },
+    "representation_type": {
+      "description": "This field tells the type of the custom field.",
+      "type": "string",
+      "example": "number",
+      "readOnly": true,
+      "enum": [
+        "text",
+        "enum",
+        "multi_enum",
+        "number",
+        "date",
+        "people",
+        "formula",
+        "custom_id",
+        "reference"
+      ]
+    },
+    "id_prefix": {
+      "description": "This field is the unique custom ID string for the custom field.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": "ID"
+    },
+    "input_restrictions": {
+      "type": "array",
+      "items": {
+        "description": "*Conditional*. Only relevant for custom fields of type `reference`. This array of strings reflects the allowed types of objects that can be written to a `reference` custom field value.",
+        "type": "string",
+        "enum": [
+          "task",
+          "project",
+          "portfolio",
+          "goal"
+        ]
+      },
+      "example": [
+        "task"
+      ]
+    },
+    "is_formula_field": {
+      "description": "*Conditional*. This flag describes whether a custom field is a formula custom field.",
+      "type": "boolean",
+      "example": false
+    },
+    "date_value": {
+      "description": "*Conditional*. Only relevant for custom fields of type `date`. This object reflects the chosen date (and optionally, time) value of a `date` custom field. If no date is selected, the value of `date_value` will be `null`.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "A string representing the date in YYYY-MM-DD format.",
+          "example": "2024-08-23"
+        },
+        "date_time": {
+          "type": "string",
+          "description": "A string representing the date in ISO 8601 format. If no time value is selected, the value of `date-time` will be `null`.",
+          "example": "2024-08-23T22:00:00.000Z"
+        }
+      }
+    },
+    "enum_value": {
+      "allOf": [
+        {
+          "$ref": "EnumOption.json"
+        },
+        {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "*Conditional*. Only relevant for custom fields of type `enum`. This object is the chosen value of an `enum` custom field."
+        }
+      ]
+    },
+    "multi_enum_values": {
+      "description": "*Conditional*. Only relevant for custom fields of type `multi_enum`. This object is the chosen values of a `multi_enum` custom field.",
+      "type": "array",
+      "items": {
+        "$ref": "EnumOption.json"
+      }
+    },
+    "number_value": {
+      "description": "*Conditional*. This number is the value of a `number` custom field.",
+      "type": [
+        "number",
+        "null"
+      ],
+      "example": 5.2
+    },
+    "text_value": {
+      "description": "*Conditional*. This string is the value of a `text` custom field.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": "Some Value"
+    },
+    "display_value": {
+      "description": "A string representation for the value of the custom field. Integrations that don't require the underlying type should use this field to read values. Using this field will future-proof an app against new custom field types.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "readOnly": true,
+      "example": "blue"
+    }
+  }
+}

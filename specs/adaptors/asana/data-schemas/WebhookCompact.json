@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/WebhookCompact",
+  "title": "WebhookCompact",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/WebhookCompact",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Webhook objects represent the state of an active subscription for a server to be updated with information from Asana. This schema represents the subscription itself, not the objects that are sent to the server. For information on those please refer to the [event](/reference/events) schema.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "webhook",
+      "x-insert-after": "gid"
+    },
+    "active": {
+      "description": "If true, the webhook will send events - if false it is considered inactive and will not generate events.",
+      "type": "boolean",
+      "readOnly": true,
+      "example": false
+    },
+    "resource": {
+      "$ref": "AsanaNamedResource.json"
+    },
+    "target": {
+      "description": "The URL to receive the HTTP POST.",
+      "type": "string",
+      "format": "uri",
+      "readOnly": true,
+      "example": "https://example.com/receive-webhook/7654"
+    }
+  }
+}

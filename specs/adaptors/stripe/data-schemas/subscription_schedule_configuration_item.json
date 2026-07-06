@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/subscription_schedule_configuration_item",
+  "title": "SubscriptionScheduleConfigurationItem",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/subscription_schedule_configuration_item",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A phase item describes the price and quantity of a phase.",
+  "properties": {
+    "billing_thresholds": {
+      "anyOf": [
+        {
+          "$ref": "subscription_item_billing_thresholds.json"
+        }
+      ],
+      "description": "Define thresholds at which an invoice will be sent, and the related subscription advanced to a new billing period"
+    },
+    "discounts": {
+      "description": "The discounts applied to the subscription item. Subscription item discounts are applied before subscription discounts. Use `expand[]=discounts` to expand each discount.",
+      "items": {
+        "$ref": "stackable_discount_with_discount_settings.json"
+      },
+      "type": "array"
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an item. Metadata on this item will update the underlying subscription item's `metadata` when the phase is entered.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "price": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "price.json"
+        },
+        {
+          "$ref": "deleted_price.json"
+        }
+      ],
+      "description": "ID of the price to which the customer should be subscribed.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "price.json"
+          },
+          {
+            "$ref": "deleted_price.json"
+          }
+        ]
+      }
+    },
+    "quantity": {
+      "description": "Quantity of the plan to which the customer should be subscribed.",
+      "type": "integer"
+    },
+    "tax_rates": {
+      "description": "The tax rates which apply to this `phase_item`. When set, the `default_tax_rates` on the phase do not apply to this `phase_item`.",
+      "items": {
+        "$ref": "tax_rate.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "discounts",
+    "price"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "billing_thresholds",
+    "discounts",
+    "price",
+    "tax_rates"
+  ]
+}

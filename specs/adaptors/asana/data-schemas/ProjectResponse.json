@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/ProjectResponse",
+  "title": "ProjectResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/ProjectResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "ProjectBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "custom_fields": {
+          "description": "Array of custom field values applied directly to the project itself. These represent the values set on the project, not the fields available for tasks in the project.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "CustomFieldCompact.json"
+          }
+        },
+        "completed": {
+          "description": "True if the project is currently marked complete, false if not.",
+          "type": "boolean",
+          "readOnly": true,
+          "example": false
+        },
+        "completed_at": {
+          "description": "The time at which this project was completed, or null if the project is not completed.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "completed_by": {
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {
+              "description": "The user that marked this project complete, or null if the project is not completed.",
+              "readOnly": true
+            }
+          ]
+        },
+        "followers": {
+          "description": "Array of users following this project. Followers are a subset of members who have opted in to receive \"tasks added\" notifications for a project.",
+          "type": "array",
+          "items": {
+            "$ref": "UserCompact.json"
+          },
+          "readOnly": true
+        },
+        "owner": {
+          "description": "The current owner of the project, may be null.",
+          "allOf": [
+            {
+              "$ref": "UserCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ]
+        },
+        "team": {
+          "allOf": [
+            {
+              "$ref": "TeamCompact.json"
+            },
+            {
+              "type": "object",
+              "description": "The team that this project is shared with."
+            }
+          ]
+        },
+        "permalink_url": {
+          "type": "string",
+          "readOnly": true,
+          "description": "A url that points directly to the object within Asana.",
+          "example": "https://app.asana.com/1/12345/project/123456789"
+        },
+        "project_brief": {
+          "allOf": [
+            {
+              "$ref": "ProjectBriefCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "[Opt In](/docs/inputoutput-options). The project brief associated with this project."
+            }
+          ]
+        },
+        "created_from_template": {
+          "allOf": [
+            {
+              "$ref": "ProjectTemplateCompact.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "[Opt In](/docs/inputoutput-options). The project template from which this project was created. If the project was not created from a template, this field will be null."
+            }
+          ]
+        },
+        "workspace": {
+          "allOf": [
+            {
+              "$ref": "WorkspaceCompact.json"
+            },
+            {
+              "type": "object",
+              "readOnly": true,
+              "description": "*Create-only*. The workspace or organization this project is associated with. Once created, projects cannot be moved to a different workspace. This attribute can only be specified at creation time. If the workspace for your project is an organization, you must also supply a `team` in the request body."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

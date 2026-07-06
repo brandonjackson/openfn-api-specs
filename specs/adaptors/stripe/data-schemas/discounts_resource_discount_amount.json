@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/discounts_resource_discount_amount",
+  "title": "DiscountsResourceDiscountAmount",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/discounts_resource_discount_amount",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "amount": {
+      "description": "The amount, in cents (or local equivalent), of the discount.",
+      "type": "integer"
+    },
+    "discount": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "discount.json"
+        },
+        {
+          "$ref": "deleted_discount.json"
+        }
+      ],
+      "description": "The discount that was applied to get this discount amount.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "discount.json"
+          },
+          {
+            "$ref": "deleted_discount.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "amount",
+    "discount"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "discount"
+  ]
+}

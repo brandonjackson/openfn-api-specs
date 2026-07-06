@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/customer_session",
+  "title": "CustomerSessionResourceCustomerSession",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/customer_session",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "A Customer Session allows you to grant Stripe's frontend SDKs (like Stripe.js) client-side access\ncontrol over a Customer.\n\nRelated guides: [Customer Session with the Payment Element](/payments/accept-a-payment-deferred?platform=web&type=payment#save-payment-methods),\n[Customer Session with the Pricing Table](/payments/checkout/pricing-table#customer-session),\n[Customer Session with the Buy Button](/payment-links/buy-button#pass-an-existing-customer).",
+  "properties": {
+    "client_secret": {
+      "description": "The client secret of this Customer Session. Used on the client to set up secure access to the given `customer`.\n\nThe client secret can be used to provide access to `customer` from your frontend. It should not be stored, logged, or exposed to anyone other than the relevant customer. Make sure that you have TLS enabled on any page that includes the client secret.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "components": {
+      "$ref": "customer_session_resource_components.json"
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "customer": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "customer.json"
+        }
+      ],
+      "description": "The Customer the Customer Session was created for.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "customer.json"
+          }
+        ]
+      }
+    },
+    "customer_account": {
+      "description": "The Account that the Customer Session was created for.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expires_at": {
+      "description": "The timestamp at which this Customer Session will expire.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "customer_session"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_secret",
+    "created",
+    "customer",
+    "expires_at",
+    "livemode",
+    "object"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "components",
+    "customer"
+  ],
+  "x-resourceId": "customer_session"
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/BudgetEstimateResponse",
+  "title": "BudgetEstimateResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/BudgetEstimateResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "BudgetEstimateRequest.json"
+    },
+    {
+      "type": "object",
+      "description": "Represents the computed estimate portion of a budget. This object includes the calculated estimate value and its corresponding units. The estimate reflects aggregated data from the configured source, and when source is tasks, the specified billable_status_filter determines which tasks contribute. When disabled (enabled: false and source: none), both value and units will be null.",
+      "properties": {
+        "units": {
+          "description": "The units of the estimate value. When `budget_type` is `time`, units are `\"minutes\"`. When `budget_type` is `cost`, units are the ISO 4217 currency code configured at the domain level. When `source` is `none` and `enabled` is `false`, this field will be `null`.",
+          "type": "string",
+          "example": "USD",
+          "readOnly": true
+        },
+        "value": {
+          "description": "The aggregated estimate value for the budget. This value is computed based on the selected `source` and, when `source` is `tasks`, the specified `billable_status_filter`. When `budget_type` is `time`, represents the aggregated estimated minutes on the parent. When `budget_type` is `cost`, represents the aggregated estimated cost on the parent (estimated time x resource rate). When `source` is `none` and `enabled` is `false`, this field will be `null`.",
+          "type": "number",
+          "example": 100,
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}

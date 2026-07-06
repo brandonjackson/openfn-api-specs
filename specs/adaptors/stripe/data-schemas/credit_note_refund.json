@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/credit_note_refund",
+  "title": "CreditNoteRefund",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/credit_note_refund",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "amount_refunded": {
+      "description": "Amount of the refund that applies to this credit note, in cents (or local equivalent).",
+      "type": "integer"
+    },
+    "payment_record_refund": {
+      "anyOf": [
+        {
+          "$ref": "credit_notes_payment_record_refund.json"
+        }
+      ],
+      "description": "The PaymentRecord refund details associated with this credit note refund."
+    },
+    "refund": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "refund.json"
+        }
+      ],
+      "description": "ID of the refund.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "refund.json"
+          }
+        ]
+      }
+    },
+    "type": {
+      "description": "Type of the refund, one of `refund` or `payment_record_refund`.",
+      "enum": [
+        "payment_record_refund",
+        "refund"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "amount_refunded",
+    "refund"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "payment_record_refund",
+    "refund"
+  ]
+}

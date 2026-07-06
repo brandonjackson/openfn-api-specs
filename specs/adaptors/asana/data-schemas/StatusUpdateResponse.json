@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/StatusUpdateResponse",
+  "title": "StatusUpdateResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/StatusUpdateResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "StatusUpdateBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "author": {
+          "$ref": "UserCompact.json"
+        },
+        "created_at": {
+          "description": "The time at which this resource was created.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "created_by": {
+          "$ref": "UserCompact.json"
+        },
+        "hearted": {
+          "description": "*Deprecated - please use liked instead* True if the status is hearted by the authorized user, false if not.",
+          "type": "boolean",
+          "example": true,
+          "readOnly": true
+        },
+        "hearts": {
+          "description": "*Deprecated - please use likes instead* Array of likes for users who have hearted this status.",
+          "type": "array",
+          "items": {
+            "$ref": "Like.json"
+          },
+          "readOnly": true
+        },
+        "liked": {
+          "description": "True if the status is liked by the authorized user, false if not.",
+          "type": "boolean",
+          "example": true
+        },
+        "likes": {
+          "description": "Array of likes for users who have liked this status.",
+          "type": "array",
+          "items": {
+            "$ref": "Like.json"
+          },
+          "readOnly": true
+        },
+        "reaction_summary": {
+          "description": "Summary of emoji reactions on this status.",
+          "type": "array",
+          "items": {
+            "$ref": "ReactionSummaryItemCompact.json"
+          },
+          "readOnly": true
+        },
+        "modified_at": {
+          "description": "The time at which this project status was last modified.\n*Note: This does not currently reflect any changes in associations such as comments that may have been added or removed from the status.*",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "num_hearts": {
+          "description": "*Deprecated - please use likes instead* The number of users who have hearted this status.",
+          "type": "integer",
+          "example": 5,
+          "readOnly": true
+        },
+        "num_likes": {
+          "description": "The number of users who have liked this status.",
+          "type": "integer",
+          "example": 5,
+          "readOnly": true
+        },
+        "parent": {
+          "allOf": [
+            {
+              "$ref": "ProjectCompact.json"
+            },
+            {
+              "type": "object",
+              "description": "The parent of the status update. This can be a project, goal or portfolio, and indicates that this status was sent on that object."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

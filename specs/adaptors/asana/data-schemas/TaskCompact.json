@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/TaskCompact",
+  "title": "TaskCompact",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/TaskCompact",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "<p><strong style={{ color: \"#4573D2\" }}>Full object requires scope: </strong><code>tasks:read</code></p>\n\nThe *task* is the basic object around which many operations in Asana are centered.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "readOnly": true,
+      "example": "task",
+      "x-insert-after": "gid"
+    },
+    "name": {
+      "description": "The name of the task.",
+      "type": "string",
+      "example": "Bug Task"
+    },
+    "resource_subtype": {
+      "type": "string",
+      "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.\nThe resource_subtype `milestone` represent a single moment in time. This means tasks with this subtype cannot have a start_date.",
+      "enum": [
+        "default_task",
+        "milestone",
+        "approval",
+        "custom"
+      ],
+      "example": "default_task"
+    },
+    "created_by": {
+      "type": "object",
+      "readOnly": true,
+      "description": "[Opt In](/docs/inputoutput-options). A *user* object represents an account in Asana that can be given access to various workspaces, projects, and tasks.",
+      "properties": {
+        "gid": {
+          "description": "Globally unique identifier of the resource.",
+          "type": "string",
+          "example": "1111"
+        },
+        "resource_type": {
+          "description": "The type of resource.",
+          "type": "string",
+          "example": "user"
+        }
+      }
+    }
+  }
+}

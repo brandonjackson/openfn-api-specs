@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/CustomFieldSettingResponse",
+  "title": "CustomFieldSettingResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/CustomFieldSettingResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "CustomFieldSettingBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "project": {
+          "allOf": [
+            {
+              "$ref": "ProjectCompact.json"
+            },
+            {
+              "type": "object",
+              "description": "*Deprecated: new integrations should prefer the `parent` field.* The id of the project that this custom field settings refers to.",
+              "readOnly": true
+            }
+          ]
+        },
+        "is_important": {
+          "description": "`is_important` is used in the Asana web application to determine if this custom field is displayed in the list/grid view of a project or portfolio.",
+          "type": "boolean",
+          "readOnly": true,
+          "example": false
+        },
+        "parent": {
+          "allOf": [
+            {
+              "$ref": "ProjectCompact.json"
+            },
+            {
+              "type": "object",
+              "description": "The parent to which the custom field is applied. This can be a project or portfolio and indicates that the tasks or projects that the parent contains may be given custom field values for this custom field.",
+              "readOnly": true
+            }
+          ]
+        },
+        "custom_field": {
+          "allOf": [
+            {
+              "$ref": "CustomFieldResponse.json"
+            },
+            {
+              "type": "object",
+              "description": "The custom field that is applied to the `parent`.",
+              "readOnly": true
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

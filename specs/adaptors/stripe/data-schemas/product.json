@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/product",
+  "title": "Product",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/product",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Products describe the specific goods or services you offer to your customers.\nFor example, you might offer a Standard and Premium version of your goods or service; each version would be a separate Product.\nThey can be used in conjunction with [Prices](https://api.stripe.com#prices) to configure pricing in Payment Links, Checkout, and Subscriptions.\n\nRelated guides: [Set up a subscription](https://docs.stripe.com/billing/subscriptions/set-up-subscription),\n[share a Payment Link](https://docs.stripe.com/payment-links),\n[accept payments with Checkout](https://docs.stripe.com/payments/accept-a-payment#create-product-prices-upfront),\nand more about [Products and Prices](https://docs.stripe.com/products-prices/overview)",
+  "properties": {
+    "active": {
+      "description": "Whether the product is currently available for purchase.",
+      "type": "boolean"
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "default_price": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "price.json"
+        }
+      ],
+      "description": "The ID of the [Price](https://docs.stripe.com/api/prices) object that is the default price for this product.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "price.json"
+          }
+        ]
+      }
+    },
+    "description": {
+      "description": "The product's description, meant to be displayable to the customer. Use this field to optionally store a long form explanation of the product being sold for your own rendering purposes.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "images": {
+      "description": "A list of up to 8 URLs of images for this product, meant to be displayable to the customer.",
+      "items": {
+        "maxLength": 5000,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "marketing_features": {
+      "description": "A list of up to 15 marketing features for this product. These are displayed in [pricing tables](https://docs.stripe.com/payments/checkout/pricing-table).",
+      "items": {
+        "$ref": "product_marketing_feature.json"
+      },
+      "type": "array"
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+      "type": "object"
+    },
+    "name": {
+      "description": "The product's name, meant to be displayable to the customer.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "product"
+      ],
+      "type": "string"
+    },
+    "package_dimensions": {
+      "anyOf": [
+        {
+          "$ref": "package_dimensions.json"
+        }
+      ],
+      "description": "The dimensions of this product for shipping purposes."
+    },
+    "shippable": {
+      "description": "Whether this product is shipped (i.e., physical goods).",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "statement_descriptor": {
+      "description": "Extra information about a product which will appear on your customer's credit card statement. In the case that multiple products are billed at once, the first statement descriptor will be used. Only used for subscription payments.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax_code": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "tax_code.json"
+        }
+      ],
+      "description": "A [tax code](https://docs.stripe.com/tax/tax-categories) ID.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "tax_code.json"
+          }
+        ]
+      }
+    },
+    "unit_label": {
+      "description": "A label that represents units of this product. When set, this will be included in customers' receipts, invoices, Checkout, and the customer portal.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated": {
+      "description": "Time at which the object was last updated. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "url": {
+      "description": "A URL of a publicly-accessible webpage for this product.",
+      "maxLength": 2048,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "active",
+    "created",
+    "id",
+    "images",
+    "livemode",
+    "marketing_features",
+    "metadata",
+    "name",
+    "object",
+    "updated"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "default_price",
+    "marketing_features",
+    "package_dimensions",
+    "tax_code"
+  ],
+  "x-resourceId": "product"
+}

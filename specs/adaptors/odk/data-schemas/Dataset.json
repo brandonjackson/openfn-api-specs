@@ -7,25 +7,75 @@
     "openapi": "#/components/schemas/Dataset",
     "capturedAt": "2026-07-06"
   },
+  "required": [
+    "createdAt",
+    "name",
+    "projectId"
+  ],
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
+      "description": "The name of the Dataset",
       "example": "people"
     },
     "createdAt": {
       "type": "string",
-      "format": "date-time"
+      "description": "ISO date format.",
+      "example": "2018-01-19T23:58:03.395Z"
     },
     "projectId": {
-      "type": "integer",
-      "example": 22
+      "type": "number",
+      "description": "The numerical ID of the Project that the Dataset belongs to.",
+      "example": 1
     },
     "approvalRequired": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Control whether a Submission should be approved before an Entity is created from it.",
+      "example": true
     },
     "ownerOnly": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Legacy flag. If `ownerOnly` is `true`, and an Actor only has access to the Dataset CSV file via linked Form Attachments, then only Entities created by the Actor will be downloaded to the OpenRosa client. Superseded by `accessFilter` when set.",
+      "example": false
+    },
+    "accessFilter": {
+      "description": "Controls which Entities are visible to restricted Actors (App Users, Data Collectors, Public Links) via linked Form Attachments. `null` means no restrictions. When present, supersedes `ownerOnly`.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "ownerOnly",
+            "property"
+          ],
+          "description": "`ownerOnly` restricts each Actor to Entities they created. `property` restricts based on matching dataset and actor property values.",
+          "example": "property"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Present when `type` is `property`. Each rule specifies a Dataset property and an Actor property that must match.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "datasetProperty": {
+                "type": "string",
+                "example": "state"
+              },
+              "actorProperty": {
+                "type": "string",
+                "example": "region"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

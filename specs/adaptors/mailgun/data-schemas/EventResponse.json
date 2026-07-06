@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mailgun/EventResponse",
+  "title": "EventResponse",
+  "x-openfn-adaptor": "mailgun",
+  "x-source": {
+    "openapi": "#/components/schemas/EventResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "properties": {
+    "method": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "description": "GUID identifying the individual event"
+    },
+    "event": {
+      "$ref": "EventType.json"
+    },
+    "timestamp": {
+      "type": "number",
+      "description": "Unix epoch, in nanoseconds, when the event was first created"
+    },
+    "log-level": {
+      "type": "string",
+      "description": "Logging categorization between",
+      "enum": [
+        "info",
+        "warn",
+        "error"
+      ],
+      "x-enumDescriptions": {
+        "info": "Info event",
+        "warn": "Warn event",
+        "error": "Error event"
+      }
+    },
+    "flags": {
+      "type": "object",
+      "properties": {
+        "is-authenticated": {
+          "type": "boolean",
+          "description": "`true` if it’s an outgoing message. `false` if it’s incoming."
+        },
+        "is-routed": {
+          "type": "boolean",
+          "description": "`true` if the message was sent as a result of a Route match"
+        },
+        "is-amp": {
+          "type": "boolean",
+          "description": "Tells if the message has AMP component in"
+        },
+        "is-encrypted": {
+          "type": "boolean",
+          "description": "Tells if the message has been encrypted before stored"
+        },
+        "is-test-mode": {
+          "type": "boolean",
+          "description": "If `true`, the message has been marked as delivered but the actual send stop before sending to the ESP"
+        }
+      }
+    },
+    "reject": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "message": {
+      "$ref": "MessageObject.json"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "user-variables": {
+      "type": "object",
+      "description": "Variables included in the email"
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Key ID for the stored MIME"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL for the stored MIME for retrieval, if required"
+        },
+        "region": {
+          "type": "string",
+          "description": "The datacenter region the message is stored in"
+        }
+      }
+    },
+    "geolocation": {
+      "type": "object",
+      "description": "Location data based on the client IP",
+      "properties": {
+        "country": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        }
+      }
+    },
+    "client-info": {
+      "type": "object",
+      "properties": {
+        "client-type": {
+          "type": "string",
+          "description": "Categorize client between: mobile browser, library, email client, robot, feed reader or other"
+        },
+        "client-os": {
+          "type": "string",
+          "description": "The client Operating System"
+        },
+        "device-type": {
+          "type": "string",
+          "description": "Could be: desktop, mobile, table or unknown"
+        },
+        "client-name": {
+          "type": "string",
+          "description": "The client product identifier"
+        },
+        "user-agent": {
+          "type": "string"
+        }
+      }
+    },
+    "ip": {
+      "type": "string"
+    },
+    "delivery-status": {
+      "$ref": "DeliveryStatusObject.json"
+    },
+    "batch": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "severity": {
+      "$ref": "EventSeverityType.json"
+    },
+    "recipient-domain": {
+      "type": "string",
+      "description": "ESP domain"
+    },
+    "recipient-provider": {
+      "type": "string",
+      "description": "Name of the Inbox Provider for the given recipient, if known"
+    },
+    "template": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the template the message was rendered from, if given"
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the template that was rendered"
+        },
+        "is-text": {
+          "type": "string",
+          "description": "Tell if the template is considered as plain text (in opposition to ‘html’)"
+        }
+      }
+    },
+    "envelope": {
+      "$ref": "EnvelopeObject.json"
+    }
+  }
+}

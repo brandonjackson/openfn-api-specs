@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/tax_product_resource_customer_details",
+  "title": "TaxProductResourceCustomerDetails",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/tax_product_resource_customer_details",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "address": {
+      "anyOf": [
+        {
+          "$ref": "tax_product_resource_postal_address.json"
+        }
+      ],
+      "description": "The customer's postal address (for example, home or business location)."
+    },
+    "address_source": {
+      "description": "The type of customer address provided.",
+      "enum": [
+        "billing",
+        "shipping"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ip_address": {
+      "description": "The customer's IP address (IPv4 or IPv6).",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax_ids": {
+      "description": "The customer's tax IDs (for example, EU VAT numbers).",
+      "items": {
+        "$ref": "tax_product_resource_customer_details_resource_tax_id.json"
+      },
+      "type": "array"
+    },
+    "taxability_override": {
+      "description": "The taxability override used for taxation.",
+      "enum": [
+        "customer_exempt",
+        "none",
+        "reverse_charge"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "tax_ids",
+    "taxability_override"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "address",
+    "tax_ids"
+  ]
+}

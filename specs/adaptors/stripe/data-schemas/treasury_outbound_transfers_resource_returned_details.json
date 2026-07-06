@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/treasury_outbound_transfers_resource_returned_details",
+  "title": "TreasuryOutboundTransfersResourceReturnedDetails",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/treasury_outbound_transfers_resource_returned_details",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "code": {
+      "description": "Reason for the return.",
+      "enum": [
+        "account_closed",
+        "account_frozen",
+        "bank_account_restricted",
+        "bank_ownership_changed",
+        "declined",
+        "incorrect_account_holder_name",
+        "invalid_account_number",
+        "invalid_currency",
+        "no_account",
+        "other"
+      ],
+      "type": "string"
+    },
+    "transaction": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "treasury.transaction.json"
+        }
+      ],
+      "description": "The Transaction associated with this object.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "treasury.transaction.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "code",
+    "transaction"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "transaction"
+  ]
+}

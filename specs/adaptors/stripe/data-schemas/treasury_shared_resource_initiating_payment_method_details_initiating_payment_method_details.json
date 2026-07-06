@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/treasury_shared_resource_initiating_payment_method_details_initiating_payment_method_details",
+  "title": "TreasurySharedResourceInitiatingPaymentMethodDetailsInitiatingPaymentMethodDetails",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/treasury_shared_resource_initiating_payment_method_details_initiating_payment_method_details",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "balance": {
+      "description": "Set when `type` is `balance`.",
+      "enum": [
+        "payments"
+      ],
+      "type": "string"
+    },
+    "billing_details": {
+      "$ref": "treasury_shared_resource_billing_details.json"
+    },
+    "financial_account": {
+      "$ref": "received_payment_method_details_financial_account.json"
+    },
+    "issuing_card": {
+      "description": "Set when `type` is `issuing_card`. This is an [Issuing Card](https://api.stripe.com#issuing_cards) ID.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "type": {
+      "description": "Polymorphic type matching the originating money movement's source. This can be an external account, a Stripe balance, or a FinancialAccount.",
+      "enum": [
+        "balance",
+        "financial_account",
+        "issuing_card",
+        "stripe",
+        "us_bank_account"
+      ],
+      "type": "string",
+      "x-stripeBypassValidation": true
+    },
+    "us_bank_account": {
+      "$ref": "treasury_shared_resource_initiating_payment_method_details_us_bank_account.json"
+    }
+  },
+  "required": [
+    "billing_details",
+    "type"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "billing_details",
+    "financial_account",
+    "us_bank_account"
+  ]
+}

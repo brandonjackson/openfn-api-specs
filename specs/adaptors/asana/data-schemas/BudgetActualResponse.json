@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/BudgetActualResponse",
+  "title": "BudgetActualResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/BudgetActualResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "allOf": [
+    {
+      "$ref": "BudgetActualRequest.json"
+    },
+    {
+      "type": "object",
+      "description": "Represents the computed actual portion of a budget. The actual value is derived from time tracking entries attributed to the budget’s parent, filtered according to the specified billable_status_filter. When budget_type is time, it represents minutes; when budget_type is cost, it represents total cost (actual time × resource rate). When no applicable entries exist, value will be 0.",
+      "properties": {
+        "value": {
+          "description": "The aggregated actual value for the budget. * When `budget_type` is `time`, represents the total actual minutes from time tracking entries. * When `budget_type` is `cost`, represents the total actual cost, computed as (actual time × resource rate).",
+          "type": "number",
+          "example": 100,
+          "readOnly": true
+        },
+        "units": {
+          "description": "The units of the actual value. * When `budget_type` is `time`, units are `\"minutes\"`. * When `budget_type` is `cost`, units are the ISO 4217 currency code configured at the domain level.",
+          "type": "string",
+          "example": "USD",
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}

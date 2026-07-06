@@ -73,6 +73,13 @@ export interface SpecSource {
   capturedAt: string;
   /** ISO date (YYYY-MM-DD) we last verified this spec against upstream (staleness clock). */
   lastCheckedAt?: string;
+  /**
+   * Content edits applied to a verbatim upstream, if ANY were unavoidable (e.g. a
+   * secret-scanner-tripping example value redacted). MUST be empty/absent for a
+   * clean verbatim copy — every entry is a loud, reviewable exception to the
+   * "never edit a published spec" rule. One human-readable string per change.
+   */
+  modifications?: string[];
   /** Free-text notes: coverage scope, caveats, what was omitted. */
   notes?: string;
 }

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/issuing_authorization_verification_data",
+  "title": "IssuingAuthorizationVerificationData",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/issuing_authorization_verification_data",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "",
+  "properties": {
+    "address_line1_check": {
+      "description": "Whether the cardholder provided an address first line and if it matched the cardholder’s `billing.address.line1`.",
+      "enum": [
+        "match",
+        "mismatch",
+        "not_provided"
+      ],
+      "type": "string"
+    },
+    "address_postal_code_check": {
+      "description": "Whether the cardholder provided a postal code and if it matched the cardholder’s `billing.address.postal_code`.",
+      "enum": [
+        "match",
+        "mismatch",
+        "not_provided"
+      ],
+      "type": "string"
+    },
+    "authentication_exemption": {
+      "anyOf": [
+        {
+          "$ref": "issuing_authorization_authentication_exemption.json"
+        }
+      ],
+      "description": "The exemption applied to this authorization."
+    },
+    "cvc_check": {
+      "description": "Whether the cardholder provided a CVC and if it matched Stripe’s record.",
+      "enum": [
+        "match",
+        "mismatch",
+        "not_provided"
+      ],
+      "type": "string"
+    },
+    "expiry_check": {
+      "description": "Whether the cardholder provided an expiry date and if it matched Stripe’s record.",
+      "enum": [
+        "match",
+        "mismatch",
+        "not_provided"
+      ],
+      "type": "string"
+    },
+    "postal_code": {
+      "description": "The postal code submitted as part of the authorization used for postal code verification.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "three_d_secure": {
+      "anyOf": [
+        {
+          "$ref": "issuing_authorization_three_d_secure.json"
+        }
+      ],
+      "description": "3D Secure details."
+    }
+  },
+  "required": [
+    "address_line1_check",
+    "address_postal_code_check",
+    "cvc_check",
+    "expiry_check"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "authentication_exemption",
+    "three_d_secure"
+  ]
+}

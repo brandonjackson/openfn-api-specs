@@ -59,9 +59,18 @@ export function openapiPath(name: string): string {
   return join(adaptorDir(name), 'openapi.json');
 }
 
-/** Verbatim upstream machine spec (source of truth), when one exists. */
+/**
+ * Verbatim upstream machine spec (source of truth), when one exists. Stored under
+ * its native extension so YAML specs stay byte-for-byte verbatim — resolves an
+ * existing `upstream.{json,yaml,yml}`, falling back to the `.json` path.
+ */
 export function upstreamPath(name: string): string {
-  return join(adaptorDir(name), 'upstream.json');
+  const dir = adaptorDir(name);
+  for (const ext of ['json', 'yaml', 'yml']) {
+    const p = join(dir, `upstream.${ext}`);
+    if (existsSync(p)) return p;
+  }
+  return join(dir, 'upstream.json');
 }
 
 /** Append-only maintenance audit log (JSON Lines). */

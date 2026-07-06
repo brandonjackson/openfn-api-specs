@@ -7,63 +7,72 @@
     "openapi": "#/components/schemas/Form",
     "capturedAt": "2026-07-06"
   },
+  "required": [
+    "createdAt",
+    "hash",
+    "projectId",
+    "state",
+    "version",
+    "xmlFormId"
+  ],
   "type": "object",
   "properties": {
     "projectId": {
-      "type": "integer",
-      "example": 22
+      "type": "number",
+      "description": "The `id` of the project this form belongs to.",
+      "example": 1
     },
     "xmlFormId": {
       "type": "string",
-      "example": "patient-follow-up"
+      "description": "The `id` of this form as given in its XForms XML definition",
+      "example": "simple"
     },
     "name": {
       "type": "string",
-      "example": "Patient Follow Up"
+      "description": "The friendly name of this form. It is given by the `<title>` in the XForms XML definition.",
+      "example": "Simple"
     },
     "version": {
       "type": "string",
-      "example": "1"
+      "description": "The `version` of this form as given in its XForms XML definition. If no `version` was specified in the Form, a blank string will be given.",
+      "example": "2.1"
     },
     "enketoId": {
-      "type": "string"
+      "type": "string",
+      "description": "If it exists, this is the survey ID of this Form on Enketo at `/-`. This will be the ID of the published version if it exists, otherwise it will be the draft ID. Only a cookie-authenticated user may access the preview through Enketo.",
+      "example": "abcdef"
     },
     "hash": {
       "type": "string",
+      "description": "An MD5 sum automatically computed based on the XForms XML definition. This is required for OpenRosa compliance.",
       "example": "51a93eab3a1974dbffc4c7913fa5a16a"
     },
     "keyId": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": "number",
+      "description": "If a public encryption key is present on the form, its numeric ID as tracked by Central is given here.",
+      "example": 3
     },
     "state": {
-      "type": "string",
-      "enum": [
-        "open",
-        "closing",
-        "closed"
-      ],
-      "example": "open"
+      "$ref": "FormState.json"
     },
     "publishedAt": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
+      "type": "string",
+      "description": "Indicates when a draft has most recently been published for this Form. If this value is `null`, this Form has never been published yet, and contains only a draft.",
+      "example": "2018-01-21T00:04:11.153Z"
     },
     "createdAt": {
       "type": "string",
-      "format": "date-time"
+      "description": "ISO date format",
+      "example": "2018-01-19T23:58:03.395Z"
     },
     "updatedAt": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
+      "type": "string",
+      "description": "ISO date format",
+      "example": "2018-03-21T12:45:02.312Z"
+    },
+    "webformsEnabled": {
+      "type": "boolean",
+      "description": "Enables use of ODK Web Forms instead of Enketo for filling Forms via web browsers."
     }
   }
 }

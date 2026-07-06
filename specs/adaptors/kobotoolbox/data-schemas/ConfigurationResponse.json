@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kobotoolbox/ConfigurationResponse",
+  "title": "ConfigurationResponse",
+  "x-openfn-adaptor": "kobotoolbox",
+  "x-source": {
+    "openapi": "#/components/schemas/ConfigurationResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "AccountConfiguration.json"
+        },
+        "socialaccount": {
+          "$ref": "SocialAccountConfiguration.json"
+        },
+        "mfa": {
+          "$ref": "MFAConfiguration.json"
+        },
+        "usersessions": {
+          "$ref": "UserSessionsConfiguration.json"
+        }
+      },
+      "required": [
+        "account"
+      ]
+    },
+    "status": {
+      "$ref": "StatusOK.json"
+    }
+  },
+  "required": [
+    "status",
+    "data"
+  ],
+  "example": {
+    "status": 200,
+    "data": {
+      "account": {
+        "authentication_method": "email"
+      },
+      "socialaccount": {
+        "providers": [
+          {
+            "id": "google",
+            "name": "Google",
+            "flows": [
+              "provider_redirect",
+              "provider_token"
+            ],
+            "client_id": "123.apps.googleusercontent.com",
+            "openid_configuration_url": "https://accounts.google.com/.well-known/openid-configuration"
+          }
+        ]
+      },
+      "mfa": {
+        "supported_types": [
+          "recovery_codes",
+          "totp"
+        ]
+      },
+      "usersessions": {
+        "track_activity": false
+      }
+    }
+  }
+}

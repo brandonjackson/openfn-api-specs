@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/invoice_payment",
+  "title": "InvoicesInvoicePayment",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/invoice_payment",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Invoice Payments represent payments made against invoices. Invoice Payments can\nbe accessed in two ways:\n1. By expanding the `payments` field on the [Invoice](https://api.stripe.com#invoice) resource.\n2. By using the Invoice Payment retrieve and list endpoints.\n\nInvoice Payments include the mapping between payment objects, such as Payment Intent, and Invoices.\nThis resource and its endpoints allows you to easily track if a payment is associated with a specific invoice and\nmonitor the allocation details of the payments.",
+  "properties": {
+    "amount_paid": {
+      "description": "Amount that was actually paid for this invoice, in cents (or local equivalent). This field is null until the payment is `paid`. This amount can be less than the `amount_requested` if the PaymentIntent’s `amount_received` is not sufficient to pay all of the invoices that it is attached to.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "amount_requested": {
+      "description": "Amount intended to be paid toward this invoice, in cents (or local equivalent)",
+      "type": "integer"
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "currency": {
+      "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "invoice": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "invoice.json"
+        },
+        {
+          "$ref": "deleted_invoice.json"
+        }
+      ],
+      "description": "The invoice that was paid.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "invoice.json"
+          },
+          {
+            "$ref": "deleted_invoice.json"
+          }
+        ]
+      }
+    },
+    "is_default": {
+      "description": "Stripe automatically creates a default InvoicePayment when the invoice is finalized, and keeps it synchronized with the invoice’s `amount_remaining`. The PaymentIntent associated with the default payment can’t be edited or canceled directly.",
+      "type": "boolean"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "invoice_payment"
+      ],
+      "type": "string"
+    },
+    "payment": {
+      "$ref": "invoices_payments_invoice_payment_associated_payment.json"
+    },
+    "status": {
+      "description": "The status of the payment, one of `open`, `paid`, or `canceled`.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "status_transitions": {
+      "$ref": "invoices_payments_invoice_payment_status_transitions.json"
+    }
+  },
+  "required": [
+    "amount_requested",
+    "created",
+    "currency",
+    "id",
+    "invoice",
+    "is_default",
+    "livemode",
+    "object",
+    "payment",
+    "status",
+    "status_transitions"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "invoice",
+    "payment",
+    "status_transitions"
+  ],
+  "x-resourceId": "invoice_payment"
+}

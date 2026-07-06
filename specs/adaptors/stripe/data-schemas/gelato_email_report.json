@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/gelato_email_report",
+  "title": "GelatoEmailReport",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/gelato_email_report",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "Result from a email check",
+  "properties": {
+    "email": {
+      "description": "Email to be verified.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "gelato_email_report_error.json"
+        }
+      ],
+      "description": "Details on the verification error. Present when status is `unverified`."
+    },
+    "status": {
+      "description": "Status of this `email` check.",
+      "enum": [
+        "unverified",
+        "verified"
+      ],
+      "type": "string",
+      "x-stripeBypassValidation": true
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "error"
+  ]
+}

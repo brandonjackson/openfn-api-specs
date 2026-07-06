@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/GoalMembershipBase",
+  "title": "GoalMembershipBase",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/GoalMembershipBase",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "This object represents a user's connection to a goal.",
+  "type": "object",
+  "properties": {
+    "gid": {
+      "description": "Globally unique identifier of the resource, as a string.",
+      "type": "string",
+      "readOnly": true,
+      "example": "12345",
+      "x-insert-after": false
+    },
+    "resource_type": {
+      "description": "The base type of this resource.",
+      "type": "string",
+      "example": "membership"
+    },
+    "resource_subtype": {
+      "type": "string",
+      "readOnly": true,
+      "description": "The type of membership.",
+      "example": "goal_membership"
+    },
+    "member": {
+      "$ref": "MemberCompact.json"
+    },
+    "parent": {
+      "allOf": [
+        {
+          "$ref": "GoalCompact.json"
+        },
+        {
+          "type": "object",
+          "readOnly": true
+        }
+      ]
+    },
+    "role": {
+      "type": "string",
+      "description": "*Deprecated: Describes if the member is a commenter or editor in goal.*",
+      "enum": [
+        "commenter",
+        "editor"
+      ],
+      "deprecated": true,
+      "example": "editor"
+    },
+    "access_level": {
+      "type": "string",
+      "description": "\"Describes the membership access level for the goal. This is preferred over role.\"",
+      "enum": [
+        "viewer",
+        "commenter",
+        "editor",
+        "admin"
+      ],
+      "example": "editor"
+    },
+    "goal": {
+      "allOf": [
+        {
+          "$ref": "GoalCompact.json"
+        },
+        {
+          "type": "object",
+          "readOnly": true,
+          "deprecated": true,
+          "description": "*Deprecated: new integrations should prefer the `parent` field.* A *Goal* is an object in the goal-tracking system that helps your organization drive measurable results."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/climate_removals_order_deliveries",
+  "title": "ClimateRemovalsOrderDeliveries",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/climate_removals_order_deliveries",
+    "capturedAt": "2026-07-06"
+  },
+  "description": "The delivery of a specified quantity of carbon for an order.",
+  "properties": {
+    "delivered_at": {
+      "description": "Time at which the delivery occurred. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "location": {
+      "anyOf": [
+        {
+          "$ref": "climate_removals_location.json"
+        }
+      ],
+      "description": "Specific location of this delivery."
+    },
+    "metric_tons": {
+      "description": "Quantity of carbon removal supplied by this delivery.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "registry_url": {
+      "description": "Once retired, a URL to the registry entry for the tons from this delivery.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "supplier": {
+      "$ref": "climate.supplier.json"
+    }
+  },
+  "required": [
+    "delivered_at",
+    "metric_tons",
+    "supplier"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "location",
+    "supplier"
+  ]
+}
