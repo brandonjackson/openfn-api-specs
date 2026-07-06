@@ -19,15 +19,32 @@ other:
    and testing — built on "what the data coming in looks like". This needs the
    object types pristine, so no seed/mocker shape is baked in here.
 
+## Full coverage, not a slice
+
+Every adaptor inherits generic `get()`/`post()`/`request()` builders, so a
+workflow can call **any** endpoint of the vendor's API — not just the adaptor's
+named operations. Each `openapi.json` therefore aims to describe the **whole
+vendor API**. Where a machine spec exists upstream it is committed **verbatim**
+as `upstream.json` (the source of truth) and the served spec is derived from it.
+A narrowed view, if ever needed, is derived from the full spec — never
+hand-authored on its own.
+
+The agent-run **maintenance loop** that keeps this copy correct and current —
+the environment definition, the feedback buckets (new / missing / stale /
+incomplete / at-risk / wrong), the provenance schema, and the audit log — lives
+in [`AGENTS.md`](./AGENTS.md).
+
 ## Layout
 
 ```
 specs/adaptors/
   _adaptors.json          cached adaptor list from openfn/adaptors
   manifest.json           aggregate coverage index
+  maintenance-log.jsonl   append-only audit log (scrapes, problems, fixes)
   <adaptor>/
-    openapi.json          the OpenAPI 3.x spec (found, converted, or generated)
-    source.json           provenance: origin, upstream format, source URLs, date
+    upstream.json         verbatim upstream machine spec (source of truth), when one exists
+    openapi.json          full-coverage OpenAPI 3.x (found, converted, or generated)
+    source.json           provenance: origin, coverage, completeness, upstream, dates
     data-schemas/
       <Object>.json       one standalone JSON Schema per data object
       index.json          lists the objects + which are top-level resources

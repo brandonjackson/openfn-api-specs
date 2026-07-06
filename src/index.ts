@@ -24,7 +24,18 @@ import {
 import type { Manifest, SpecSource } from './types.js';
 
 export type { AdaptorInfo } from './adaptors.js';
-export type { Manifest, ManifestEntry, SpecSource, SpecOrigin } from './types.js';
+export type {
+  Manifest,
+  ManifestEntry,
+  SpecSource,
+  SpecOrigin,
+  SpecCoverage,
+  SpecCompleteness,
+  SpecUpstream,
+  SpecAttempt,
+  FeedbackStatus,
+  MaintenanceLogEntry,
+} from './types.js';
 
 function readJson<T>(path: string): T | undefined {
   if (!existsSync(path)) return undefined;
@@ -89,10 +100,12 @@ export {
   registryRoot,
   adaptorDir,
   openapiPath,
+  upstreamPath,
   sourcePath,
   dataSchemasDir,
   dataSchemasIndexPath,
   manifestPath,
+  maintenanceLogPath,
 } from './paths.js';
 
 /* ------------------------------------------------------------------ *

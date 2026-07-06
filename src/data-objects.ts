@@ -73,10 +73,18 @@ function toJsonSchema(node: any, fileFor: (name: string) => string): any {
 
   if (typeof node.$ref === 'string') {
     const m = node.$ref.match(SCHEMA_REF);
+    const nullable = node.nullable === true;
     const out: any = {};
     for (const [k, v] of Object.entries(node)) {
+      if (k === 'nullable') continue;
       if (k === '$ref') out.$ref = m ? fileFor(decodeURIComponent(m[1])) : v;
       else out[k] = toJsonSchema(v, fileFor);
+    }
+    // A nullable ref (OpenAPI 3.0 `{ $ref, nullable: true }`) can't stay a bare
+    // $ref in JSON Schema — express it as anyOf so the ref target is preserved.
+    if (nullable) {
+      const { $ref, ...rest } = out;
+      return { anyOf: [{ $ref }, { type: 'null' }], ...rest };
     }
     return out;
   }
@@ -107,11 +115,9 @@ function toJsonSchema(node: any, fileFor: (name: string) => string): any {
       if (!out.type.includes('null')) out.type = [...out.type, 'null'];
     } else if (typeof out.type === 'string') {
       out.type = [out.type, 'null'];
-    } else if (typeof out.$ref === 'string') {
-      // nullable ref: express as anyOf so the ref stays intact.
-      const { $ref, ...rest } = out;
-      return { anyOf: [{ $ref }, { type: 'null' }], ...rest };
     }
+    // Nullable $ref nodes are handled in the $ref branch above (as anyOf); a
+    // node reaching here has no $ref, so there is nothing more to do.
   }
 
   return out;
