@@ -59,6 +59,16 @@ export function openapiPath(name: string): string {
   return join(adaptorDir(name), 'openapi.json');
 }
 
+/** Verbatim upstream machine spec (source of truth), when one exists. */
+export function upstreamPath(name: string): string {
+  return join(adaptorDir(name), 'upstream.json');
+}
+
+/** Append-only maintenance audit log (JSON Lines). */
+export function maintenanceLogPath(): string {
+  return join(registryRoot(), 'maintenance-log.jsonl');
+}
+
 export function sourcePath(name: string): string {
   return join(adaptorDir(name), 'source.json');
 }

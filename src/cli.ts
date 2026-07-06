@@ -23,7 +23,9 @@ import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
 import { extractDataObjects } from './data-objects.js';
 import { instructionsFor } from './instructions.js';
 import { buildManifest } from './manifest.js';
+import { report as buildReport, orphanDirs, type FeedbackRow } from './report.js';
 import { dataSchemasDir, dataSchemasIndexPath, manifestPath, openapiPath } from './paths.js';
+import type { FeedbackStatus } from './types.js';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
 
@@ -126,6 +128,39 @@ async function cmdDataObjects(argv: string[]): Promise<void> {
   }
 }
 
+async function cmdReport(argv: string[]): Promise<void> {
+  const adaptors = await loadAdaptors(argv.includes('--refresh'));
+  const staleArg = argv.find((a) => a.startsWith('--stale='));
+  const staleAfterDays = staleArg ? parseInt(staleArg.slice('--stale='.length), 10) : 90;
+  const rows = buildReport(adaptors, new Date(), staleAfterDays);
+
+  if (argv.includes('--json')) {
+    console.log(JSON.stringify({ staleAfterDays, rows, orphans: orphanDirs(adaptors) }, null, 2));
+    return;
+  }
+
+  const counts: Record<FeedbackStatus, FeedbackRow[]> = {
+    wrong: [], 'at-risk': [], missing: [], new: [], incomplete: [], stale: [], ok: [],
+  };
+  for (const r of rows) counts[r.status].push(r);
+
+  const ICON: Record<FeedbackStatus, string> = {
+    ok: '✓', new: '+', missing: '?', stale: '~', incomplete: '◐', 'at-risk': '!', wrong: '✗',
+  };
+  // Show everything that isn't ok, grouped; ok is just a tally.
+  for (const status of ['wrong', 'at-risk', 'missing', 'new', 'incomplete', 'stale'] as FeedbackStatus[]) {
+    for (const r of counts[status]) console.log(`  ${ICON[status]} ${status.padEnd(10)} ${r.adaptor.padEnd(20)} ${r.reason}`);
+  }
+  const orphans = orphanDirs(adaptors);
+  for (const name of orphans) console.log(`  ✗ orphan     ${name.padEnd(20)} directory not in adaptor list`);
+
+  console.log(`\n${'─'.repeat(60)}`);
+  const summary = (['ok', 'incomplete', 'stale', 'missing', 'new', 'at-risk', 'wrong'] as FeedbackStatus[])
+    .map((s) => `${s}:${counts[s].length}`)
+    .join('  ');
+  console.log(`  ${summary}${orphans.length ? `  orphan:${orphans.length}` : ''}   (stale > ${staleAfterDays}d)`);
+}
+
 async function cmdManifest(): Promise<void> {
   const adaptors = await loadAdaptors();
   const manifest = buildManifest(adaptors, new Date().toISOString());
@@ -142,6 +177,8 @@ const USAGE = `Usage: pnpm specs <command>
 
   list [--refresh]              List adaptors from openfn/adaptors (cached).
   status [--json]               Coverage: which adaptors have openapi + data-schemas.
+  report [--json] [--refresh] [--stale=<days>]
+                                Feedback buckets (ok/incomplete/stale/missing/new/wrong).
   missing                       Print adaptors with no OpenAPI spec (newline-separated).
   instructions <a…|--missing|--all>
                                 Emit agentic work order(s) for finding/generating specs.
@@ -156,6 +193,8 @@ async function main(): Promise<void> {
       return cmdList(argv);
     case 'status':
       return cmdStatus(argv);
+    case 'report':
+      return cmdReport(argv);
     case 'missing':
       return cmdMissing();
     case 'instructions':
