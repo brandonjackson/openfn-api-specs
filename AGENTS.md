@@ -21,10 +21,17 @@ adaptor's named operations. Therefore:
 
 | situation | source of truth | what "full" means | completeness |
 | --------- | --------------- | ----------------- | ------------ |
-| machine spec exists (OpenAPI/Swagger/Discovery/GraphQL/CSDL) | the upstream spec (`upstream.json`) | the entire documented API | `complete` |
+| vendor OpenAPI, saved verbatim (`found-openapi`) | the upstream spec (`upstream.json`) | the vendor's own complete spec — the gold standard | `complete` (by definition; needs no separate claim) |
+| other machine spec, converted (Swagger/Discovery/GraphQL/CSDL) | the upstream spec (`upstream.json`) | the entire documented API, once the conversion covers it | `complete` when declared (conversion can lose fidelity) |
 | docs only, no machine spec | the vendor docs | the entire *documented* API, best-effort | `best-effort` |
 | non-REST (SQL/Redis/SFTP/…) | the adaptor's operation surface | every operation the adaptor exposes | `complete` (bounded surface) |
 | private / undocumented API | reverse-engineered from adaptor source + mocks | as much as can be recovered | `best-effort` |
+
+A vendor-provided OpenAPI is the authoritative baseline, so `found-openapi` is
+treated as `complete` without a separate claim. Authority still decays: a
+`complete` spec is re-checked against `upstream.contentHash` and ages into
+`stale`, and an explicit `coverage: subset` in `source.json` always overrides
+the default (e.g. if we knowingly ship a narrowed view).
 
 ## The environment (what we track)
 

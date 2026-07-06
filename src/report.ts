@@ -55,11 +55,18 @@ export function classify(info: AdaptorInfo, now: Date, staleAfterDays: number): 
   if (!Array.isArray(src.sources) || src.sources.length === 0) return row('wrong', 'empty sources[]');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(src.capturedAt ?? '')) return row('wrong', `bad capturedAt "${src.capturedAt}"`);
 
-  // Coverage/completeness claims. A spec that predates the full-coverage model
-  // (no explicit claim) is treated as not-yet-verified, i.e. incomplete.
-  if (src.coverage !== 'full') return row('incomplete', src.coverage ? `coverage=${src.coverage}` : 'coverage unverified (no full-coverage claim)');
-  if (src.completeness === 'best-effort') return row('incomplete', `best-effort${src.completenessReason ? ` (${src.completenessReason})` : ''}`);
-  if (src.completeness !== 'complete') return row('incomplete', 'completeness unverified');
+  // Coverage/completeness. A vendor-provided complete OpenAPI spec saved
+  // verbatim (origin=found-openapi) is full + complete by definition, so it
+  // needs no separate claim. Every other origin must declare completeness;
+  // absent a claim it is treated as not-yet-verified (incomplete). Explicit
+  // source.json fields always win (and can downgrade found-openapi to subset).
+  const impliedComplete = src.origin === 'found-openapi';
+  const coverage = src.coverage ?? (impliedComplete ? 'full' : undefined);
+  const completeness = src.completeness ?? (impliedComplete ? 'complete' : undefined);
+
+  if (coverage !== 'full') return row('incomplete', coverage ? `coverage=${coverage}` : 'coverage unverified (no full-coverage claim)');
+  if (completeness === 'best-effort') return row('incomplete', `best-effort${src.completenessReason ? ` (${src.completenessReason})` : ''}`);
+  if (completeness !== 'complete') return row('incomplete', 'completeness unverified');
 
   // Staleness clock: prefer lastCheckedAt, fall back to capturedAt.
   const clock = src.lastCheckedAt ?? src.capturedAt;
@@ -67,7 +74,7 @@ export function classify(info: AdaptorInfo, now: Date, staleAfterDays: number): 
   if (age === undefined) return row('wrong', `bad date "${clock}"`);
   if (age > staleAfterDays) return row('stale', `last checked ${age}d ago (> ${staleAfterDays}d)`);
 
-  return row('ok', `${src.origin}, ${src.completeness}, checked ${age}d ago`);
+  return row('ok', `${src.origin}, ${completeness}, checked ${age}d ago`);
 }
 
 const ORDER: FeedbackStatus[] = ['wrong', 'at-risk', 'missing', 'new', 'incomplete', 'stale', 'ok'];
