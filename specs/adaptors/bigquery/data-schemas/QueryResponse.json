@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/QueryResponse",
+  "title": "QueryResponse",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/QueryResponse",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "properties": {
+    "schema": {
+      "$ref": "TableSchema.json"
+    },
+    "arrowRecordBatch": {
+      "$ref": "ArrowRecordBatch.json"
+    },
+    "endTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. End time of this query, in milliseconds since the epoch. This field will be present whenever a query job is in the DONE state.",
+      "readOnly": true
+    },
+    "queryId": {
+      "type": "string",
+      "description": "Auto-generated ID for the query."
+    },
+    "rows": {
+      "type": "array",
+      "description": "An object with as many results as can be contained within the maximum permitted reply size. To get any additional rows, you can call GetQueryResults and specify the jobReference returned above.",
+      "items": {
+        "$ref": "TableRow.json"
+      }
+    },
+    "pageToken": {
+      "type": "string",
+      "description": "A token used for paging results. A non-empty token indicates that additional results are available. To see additional results, query the [`jobs.getQueryResults`](https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/getQueryResults) method. For more information, see [Paging through table data](https://cloud.google.com/bigquery/docs/paging-results)."
+    },
+    "totalRows": {
+      "type": "string",
+      "format": "uint64",
+      "description": "The total number of rows in the complete query result set, which can be more than the number of rows in this single page of results."
+    },
+    "totalSlotMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Number of slot ms the user is actually billed for.",
+      "readOnly": true
+    },
+    "errors": {
+      "type": "array",
+      "description": "Output only. The first errors or warnings encountered during the running of the job. The final message includes the number of errors that caused the process to stop. Errors here do not necessarily mean that the job has completed or was unsuccessful. For more information about error messages, see [Error messages](https://cloud.google.com/bigquery/docs/error-messages).",
+      "readOnly": true,
+      "items": {
+        "$ref": "ErrorProto.json"
+      }
+    },
+    "jobReference": {
+      "$ref": "JobReference.json"
+    },
+    "numDmlAffectedRows": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The number of rows affected by a DML statement. Present only for DML statements INSERT, UPDATE or DELETE.",
+      "readOnly": true
+    },
+    "sessionInfo": {
+      "$ref": "SessionInfo.json"
+    },
+    "totalBytesBilled": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. If the project is configured to use on-demand pricing, then this field contains the total bytes billed for the job. If the project is configured to use flat-rate pricing, then you are not billed for bytes and this field is informational only.",
+      "readOnly": true
+    },
+    "creationTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Creation time of this query, in milliseconds since the epoch. This field will be present on all queries.",
+      "readOnly": true
+    },
+    "kind": {
+      "type": "string",
+      "description": "The resource type.",
+      "default": "bigquery#queryResponse"
+    },
+    "location": {
+      "type": "string",
+      "description": "Output only. The geographic location of the query. For more information about BigQuery locations, see: https://cloud.google.com/bigquery/docs/locations",
+      "readOnly": true
+    },
+    "dmlStats": {
+      "$ref": "DmlStatistics.json"
+    },
+    "pageRowCount": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The number of rows out of `total_rows` returned in this response. This feature is not yet available.",
+      "readOnly": true
+    },
+    "cacheHit": {
+      "type": "boolean",
+      "description": "Whether the query result was fetched from the query cache."
+    },
+    "jobComplete": {
+      "type": "boolean",
+      "description": "Whether the query has completed or not. If rows or totalRows are present, this will always be true. If this is false, totalRows will not be available."
+    },
+    "jobCreationReason": {
+      "$ref": "JobCreationReason.json"
+    },
+    "arrowSchema": {
+      "$ref": "ArrowSchema.json"
+    },
+    "totalBytesProcessed": {
+      "type": "string",
+      "format": "int64",
+      "description": "The total number of bytes processed for this query. If this query was a dry run, this is the number of bytes that would be processed if the query were run."
+    },
+    "startTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Start time of this query, in milliseconds since the epoch. This field will be present when the query job transitions from the PENDING state to either RUNNING or DONE.",
+      "readOnly": true
+    }
+  }
+}

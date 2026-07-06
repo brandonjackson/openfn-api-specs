@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googlehealthcare/DicomConfig",
+  "title": "DicomConfig",
+  "x-openfn-adaptor": "googlehealthcare",
+  "x-source": {
+    "openapi": "#/components/schemas/DicomConfig",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Specifies the parameters needed for de-identification of DICOM stores.",
+  "properties": {
+    "skipIdRedaction": {
+      "type": "boolean",
+      "description": "Optional. If true, skip replacing StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID, and MediaStorageSOPInstanceUID and leave them untouched. The Cloud Healthcare API regenerates these UIDs by default based on the DICOM Standard's reasoning: \"Whilst these UIDs cannot be mapped directly to an individual out of context, given access to the original images, or to a database of the original images containing the UIDs, it would be possible to recover the individual's identity.\" https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.9.html"
+    },
+    "keepList": {
+      "$ref": "TagFilterList.json"
+    },
+    "removeList": {
+      "$ref": "TagFilterList.json"
+    },
+    "filterProfile": {
+      "type": "string",
+      "description": "Tag filtering profile that determines which tags to keep/remove.",
+      "enum": [
+        "TAG_FILTER_PROFILE_UNSPECIFIED",
+        "MINIMAL_KEEP_LIST_PROFILE",
+        "ATTRIBUTE_CONFIDENTIALITY_BASIC_PROFILE",
+        "KEEP_ALL_PROFILE",
+        "DEIDENTIFY_TAG_CONTENTS"
+      ]
+    }
+  }
+}

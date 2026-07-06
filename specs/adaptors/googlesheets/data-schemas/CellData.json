@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googlesheets/CellData",
+  "title": "CellData",
+  "x-openfn-adaptor": "googlesheets",
+  "x-source": {
+    "openapi": "#/components/schemas/CellData",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Data about a specific cell.",
+  "properties": {
+    "effectiveValue": {
+      "$ref": "ExtendedValue.json"
+    },
+    "textFormatRuns": {
+      "type": "array",
+      "description": "Runs of rich text applied to subsections of the cell. Runs are only valid on user entered strings, not formulas, bools, or numbers. Properties of a run start at a specific index in the text and continue until the next run. Runs will inherit the properties of the cell unless explicitly changed. When writing, the new runs will overwrite any prior runs. When writing a new user_entered_value, previous runs are erased.",
+      "items": {
+        "$ref": "TextFormatRun.json"
+      }
+    },
+    "effectiveFormat": {
+      "$ref": "CellFormat.json"
+    },
+    "note": {
+      "type": "string",
+      "description": "Any note on the cell."
+    },
+    "chipRuns": {
+      "type": "array",
+      "description": "Optional. Runs of chips applied to subsections of the cell. Properties of a run start at a specific index in the text and continue until the next run. When reading, all chipped and non-chipped runs are included. Non-chipped runs will have an empty Chip. When writing, only runs with chips are included. Runs containing chips are of length 1 and are represented in the user-entered text by an “@” placeholder symbol. New runs will overwrite any prior runs. Writing a new user_entered_value will erase previous runs.",
+      "items": {
+        "$ref": "ChipRun.json"
+      }
+    },
+    "userEnteredFormat": {
+      "$ref": "CellFormat.json"
+    },
+    "pivotTable": {
+      "$ref": "PivotTable.json"
+    },
+    "dataValidation": {
+      "$ref": "DataValidationRule.json"
+    },
+    "userEnteredValue": {
+      "$ref": "ExtendedValue.json"
+    },
+    "hyperlink": {
+      "type": "string",
+      "description": "A hyperlink this cell points to, if any. If the cell contains multiple hyperlinks, this field will be empty. This field is read-only. To set it, use a `=HYPERLINK` formula in the userEnteredValue.formulaValue field. A cell-level link can also be set from the userEnteredFormat.textFormat field. Alternatively, set a hyperlink in the textFormatRun.format.link field that spans the entire cell."
+    },
+    "dataSourceTable": {
+      "$ref": "DataSourceTable.json"
+    },
+    "formattedValue": {
+      "type": "string",
+      "description": "The formatted value of the cell. This is the value as it's shown to the user. This field is read-only."
+    },
+    "dataSourceFormula": {
+      "$ref": "DataSourceFormula.json"
+    }
+  }
+}

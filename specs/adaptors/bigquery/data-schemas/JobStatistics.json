@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/JobStatistics",
+  "title": "JobStatistics",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/JobStatistics",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Statistics for a single job execution.",
+  "properties": {
+    "completionRatio": {
+      "type": "number",
+      "format": "double",
+      "description": "Output only. [TrustedTester] Job progress (0.0 -> 1.0) for LOAD and EXTRACT jobs.",
+      "readOnly": true
+    },
+    "rowLevelSecurityStatistics": {
+      "$ref": "RowLevelSecurityStatistics.json"
+    },
+    "endTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. End time of this job, in milliseconds since the epoch. This field will be present whenever a job is in the DONE state.",
+      "readOnly": true
+    },
+    "extract": {
+      "$ref": "JobStatistics4.json"
+    },
+    "totalSlotMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Slot-milliseconds for the job.",
+      "readOnly": true
+    },
+    "dataMaskingStatistics": {
+      "$ref": "DataMaskingStatistics.json"
+    },
+    "reservationGroupPath": {
+      "type": "array",
+      "description": "Output only. The reservation group path of the reservation assigned to this job. This field has a limit of 10 nested reservation groups. This is to maintain consistency between reservatins info schema and jobs info schema. The first reservation group is the root reservation group and the last is the leaf or lowest level reservation group.",
+      "readOnly": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reservationUsage": {
+      "type": "array",
+      "description": "Output only. Job resource usage breakdown by reservation. This field reported misleading information and will no longer be populated.",
+      "readOnly": true,
+      "deprecated": true,
+      "items": {
+        "type": "object",
+        "description": "Job resource usage breakdown by reservation.",
+        "properties": {
+          "slotMs": {
+            "type": "string",
+            "format": "int64",
+            "description": "Total slot milliseconds used by the reservation for a particular job."
+          },
+          "name": {
+            "type": "string",
+            "description": "Reservation name or \"unreserved\" for on-demand resource usage and multi-statement queries."
+          }
+        }
+      }
+    },
+    "sessionInfo": {
+      "$ref": "SessionInfo.json"
+    },
+    "numChildJobs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Number of child jobs executed.",
+      "readOnly": true
+    },
+    "quotaDeferments": {
+      "type": "array",
+      "description": "Output only. Quotas which delayed this job's start time.",
+      "readOnly": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "transactionInfo": {
+      "$ref": "TransactionInfo.json"
+    },
+    "copy": {
+      "$ref": "JobStatistics5.json"
+    },
+    "creationTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Creation time of this job, in milliseconds since the epoch. This field will be present on all jobs.",
+      "readOnly": true
+    },
+    "parentJobId": {
+      "type": "string",
+      "description": "Output only. If this is a child job, specifies the job ID of the parent.",
+      "readOnly": true
+    },
+    "load": {
+      "$ref": "JobStatistics3.json"
+    },
+    "scriptStatistics": {
+      "$ref": "ScriptStatistics.json"
+    },
+    "reservation_id": {
+      "type": "string",
+      "description": "Output only. Name of the primary reservation assigned to this job. Note that this could be different than reservations reported in the reservation usage field if parent reservations were used to execute this job.",
+      "readOnly": true
+    },
+    "finalExecutionDurationMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The duration in milliseconds of the execution of the final attempt of this job, as BigQuery may internally re-attempt to execute the job.",
+      "readOnly": true
+    },
+    "startTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Start time of this job, in milliseconds since the epoch. This field will be present when the job transitions from the PENDING state to either RUNNING or DONE.",
+      "readOnly": true
+    },
+    "edition": {
+      "type": "string",
+      "description": "Output only. Name of edition corresponding to the reservation for this job at the time of this update.",
+      "enum": [
+        "RESERVATION_EDITION_UNSPECIFIED",
+        "STANDARD",
+        "ENTERPRISE",
+        "ENTERPRISE_PLUS"
+      ],
+      "readOnly": true
+    },
+    "query": {
+      "$ref": "JobStatistics2.json"
+    },
+    "totalBytesProcessed": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Total bytes processed for the job.",
+      "readOnly": true
+    }
+  }
+}

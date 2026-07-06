@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/MaterializedView",
+  "title": "MaterializedView",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/MaterializedView",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A materialized view considered for a query job.",
+  "properties": {
+    "rejectedReason": {
+      "type": "string",
+      "description": "If present, specifies the reason why the materialized view was not chosen for the query.",
+      "enum": [
+        "REJECTED_REASON_UNSPECIFIED",
+        "NO_DATA",
+        "COST",
+        "BASE_TABLE_TRUNCATED",
+        "BASE_TABLE_DATA_CHANGE",
+        "BASE_TABLE_PARTITION_EXPIRATION_CHANGE",
+        "BASE_TABLE_EXPIRED_PARTITION",
+        "BASE_TABLE_INCOMPATIBLE_METADATA_CHANGE",
+        "TIME_ZONE",
+        "OUT_OF_TIME_TRAVEL_WINDOW",
+        "BASE_TABLE_FINE_GRAINED_SECURITY_POLICY",
+        "BASE_TABLE_TOO_STALE"
+      ]
+    },
+    "tableReference": {
+      "$ref": "TableReference.json"
+    },
+    "chosen": {
+      "type": "boolean",
+      "description": "Whether the materialized view is chosen for the query. A materialized view can be chosen to rewrite multiple parts of the same query. If a materialized view is chosen to rewrite any part of the query, then this field is true, even if the materialized view was not chosen to rewrite others parts."
+    },
+    "estimatedBytesSaved": {
+      "type": "string",
+      "format": "int64",
+      "description": "If present, specifies a best-effort estimation of the bytes saved by using the materialized view rather than its base tables."
+    }
+  }
+}

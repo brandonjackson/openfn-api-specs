@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/ProjectList",
+  "title": "ProjectList",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/ProjectList",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Response object of ListProjects",
+  "properties": {
+    "totalItems": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The total number of projects in the page. A wrapper is used here because the field should still be in the response when the value is 0."
+    },
+    "projects": {
+      "type": "array",
+      "description": "Projects to which the user has at least READ access. This field can be omitted if `totalItems` is 0.",
+      "items": {
+        "type": "object",
+        "description": "Information about a single project.",
+        "properties": {
+          "numericId": {
+            "type": "string",
+            "format": "uint64",
+            "description": "The numeric ID of this project."
+          },
+          "friendlyName": {
+            "type": "string",
+            "description": "A descriptive name for this project. A wrapper is used here because friendlyName can be set to the empty string."
+          },
+          "id": {
+            "type": "string",
+            "description": "An opaque ID of this project."
+          },
+          "kind": {
+            "type": "string",
+            "description": "The resource type."
+          },
+          "projectReference": {
+            "$ref": "ProjectReference.json"
+          }
+        }
+      }
+    },
+    "nextPageToken": {
+      "type": "string",
+      "description": "Use this token to request the next page of results."
+    },
+    "etag": {
+      "type": "string",
+      "description": "A hash of the page of results."
+    },
+    "kind": {
+      "type": "string",
+      "description": "The resource type of the response.",
+      "default": "bigquery#projectList"
+    }
+  }
+}

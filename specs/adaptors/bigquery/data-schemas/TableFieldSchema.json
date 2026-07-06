@@ -8,20 +8,134 @@
     "capturedAt": "2026-07-06"
   },
   "type": "object",
+  "description": "A field in TableSchema",
   "properties": {
+    "defaultValueExpression": {
+      "type": "string",
+      "description": "Optional. A SQL expression to specify the [default value] (https://cloud.google.com/bigquery/docs/default-values) for this field."
+    },
+    "timestampPrecision": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. Precision (maximum number of total digits in base 10) for seconds of TIMESTAMP type. Possible values include: * 6 (Default, for TIMESTAMP type with microsecond precision) * 12 (For TIMESTAMP type with picosecond precision)",
+      "default": "6"
+    },
+    "generatedColumn": {
+      "$ref": "GeneratedColumn.json"
+    },
+    "collation": {
+      "type": "string",
+      "description": "Optional. Field collation can be set only when the type of field is STRING. The following values are supported: * 'und:ci': undetermined locale, case insensitive. * '': empty string. Default to case-sensitive behavior."
+    },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Required. The field name. The name must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_), and must start with a letter or underscore. The maximum length is 300 characters."
+    },
+    "precision": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. Precision (maximum number of total digits in base 10) and scale (maximum number of digits in the fractional part in base 10) constraints for values of this field for NUMERIC or BIGNUMERIC. It is invalid to set precision or scale if type ≠ \"NUMERIC\" and ≠ \"BIGNUMERIC\". If precision and scale are not specified, no value range constraint is imposed on this field insofar as values are permitted by the type. Values of this NUMERIC or BIGNUMERIC field must be in this range when: * Precision (P) and scale (S) are specified: [-10P-S + 10-S, 10P-S - 10-S] * Precision (P) is specified but not scale (and thus scale is interpreted to be equal to zero): [-10P + 1, 10P - 1]. Acceptable values for precision and scale if both are specified: * If type = \"NUMERIC\": 1 ≤ precision - scale ≤ 29 and 0 ≤ scale ≤ 9. * If type = \"BIGNUMERIC\": 1 ≤ precision - scale ≤ 38 and 0 ≤ scale ≤ 38. Acceptable values for precision if only precision is specified but not scale (and thus scale is interpreted to be equal to zero): * If type = \"NUMERIC\": 1 ≤ precision ≤ 29. * If type = \"BIGNUMERIC\": 1 ≤ precision ≤ 38. If scale is specified but not precision, then it is invalid."
+    },
+    "dataGovernanceTagsInfo": {
+      "type": "object",
+      "description": "Optional. Specifies the data governance tags on this field. This field works with other column-level security fields as follows: - Precedence: If a data governance tag is attached to a column, it takes precedence over the policy tag attached to the column. However, if a data policy is attached to a column, it takes precedence over the data governance tag. - Patching behavior (how this field behaves during a `Table.patch` schema update): - Unset: If the `data_governance_tags_info` field is omitted from the update request, the existing tags on the column are preserved. - Empty Field: To clear data governance tags from a column, send the `data_governance_tags_info` field as an empty object. This will remove all tags from the column. - Updating tags: To replace existing tag, send the field with the new tag.",
+      "properties": {
+        "dataGovernanceTags": {
+          "type": "object",
+          "description": "Optional. The data governance tags added to this field are used for field-level access control. Only one data governance tag is currently supported on a field. Tag keys are globally unique. Tag key is expected to be in the namespaced format, for example \"123456789012/pii\" where 123456789012 is the ID of the parent organization or project resource for this tag key. Tag value is expected to be the short name, for example \"sensitive\". See [Tag definitions](https://cloud.google.com/iam/docs/tags-access-control#definitions) for more details. For example: \"123456789012/pii\": \"sensitive\", \"myProject/cost_center\": \"sales\"",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "description": "Optional. Describes the nested schema fields if the type property is set to RECORD.",
+      "items": {
+        "$ref": "TableFieldSchema.json"
+      }
+    },
+    "categories": {
+      "type": "object",
+      "description": "Deprecated.",
+      "properties": {
+        "names": {
+          "type": "array",
+          "description": "Deprecated.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "foreignTypeDefinition": {
+      "type": "string",
+      "description": "Optional. Definition of the foreign data type. Only valid for top-level schema fields (not nested fields). If the type is FOREIGN, this field is required."
+    },
+    "rangeElementType": {
+      "type": "object",
+      "description": "Represents the type of a field element.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Required. The type of a field element. For more information, see TableFieldSchema.type."
+        }
+      }
+    },
+    "maxLength": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. Maximum length of values of this field for STRINGS or BYTES. If max_length is not specified, no maximum length constraint is imposed on this field. If type = \"STRING\", then max_length represents the maximum UTF-8 length of strings in this field. If type = \"BYTES\", then max_length represents the maximum number of bytes in this field. It is invalid to set this field if type ≠ \"STRING\" and ≠ \"BYTES\"."
+    },
+    "policyTags": {
+      "type": "object",
+      "description": "Optional. The policy tags attached to this field, used for field-level access control. If not set, defaults to empty policy_tags.",
+      "properties": {
+        "names": {
+          "type": "array",
+          "description": "A list of policy tag resource names. For example, \"projects/1/locations/eu/taxonomies/2/policyTags/3\". At most 1 policy tag is currently allowed.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scale": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. See documentation for precision."
     },
     "type": {
       "type": "string",
-      "example": "STRING"
+      "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY * NUMERIC * BIGNUMERIC * JSON * RECORD (or STRUCT) * RANGE Use of RECORD/STRUCT indicates that the field contains a nested schema."
+    },
+    "dataPolicies": {
+      "type": "array",
+      "description": "Optional. Data policies attached to this field, used for field-level access control.",
+      "items": {
+        "$ref": "DataPolicyOption.json"
+      }
+    },
+    "dataPolicyList": {
+      "$ref": "DataPolicyList.json"
     },
     "mode": {
       "type": "string",
-      "example": "NULLABLE"
+      "description": "Optional. The field mode. Possible values include NULLABLE, REQUIRED and REPEATED. The default value is NULLABLE."
+    },
+    "roundingMode": {
+      "type": "string",
+      "description": "Optional. Specifies the rounding mode to be used when storing values of NUMERIC and BIGNUMERIC type.",
+      "enum": [
+        "ROUNDING_MODE_UNSPECIFIED",
+        "ROUND_HALF_AWAY_FROM_ZERO",
+        "ROUND_HALF_EVEN"
+      ]
     },
     "description": {
-      "type": "string"
+      "type": "string",
+      "description": "Optional. The field description. The maximum length is 1,024 characters."
     }
   }
 }

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/TableReplicationInfo",
+  "title": "TableReplicationInfo",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/TableReplicationInfo",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "Replication info of a table created using `AS REPLICA` DDL like: `CREATE MATERIALIZED VIEW mv1 AS REPLICA OF src_mv`",
+  "properties": {
+    "replicatedSourceLastRefreshTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. Output only. If source is a materialized view, this field signifies the last refresh time of the source.",
+      "readOnly": true
+    },
+    "replicationError": {
+      "$ref": "ErrorProto.json"
+    },
+    "sourceTable": {
+      "$ref": "TableReference.json"
+    },
+    "replicationIntervalMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. Specifies the interval at which the source table is polled for updates. It's Optional. If not specified, default replication interval would be applied."
+    },
+    "replicationStatus": {
+      "type": "string",
+      "description": "Optional. Output only. Replication status of configured replication.",
+      "enum": [
+        "REPLICATION_STATUS_UNSPECIFIED",
+        "ACTIVE",
+        "SOURCE_DELETED",
+        "PERMISSION_DENIED",
+        "UNSUPPORTED_CONFIGURATION"
+      ],
+      "readOnly": true
+    }
+  }
+}

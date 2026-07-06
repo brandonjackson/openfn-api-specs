@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bigquery/ExternalDataConfiguration",
+  "title": "ExternalDataConfiguration",
+  "x-openfn-adaptor": "bigquery",
+  "x-source": {
+    "openapi": "#/components/schemas/ExternalDataConfiguration",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "properties": {
+    "compression": {
+      "type": "string",
+      "description": "Optional. The compression type of the data source. Possible values include GZIP and NONE. The default value is NONE. This setting is ignored for Google Cloud Bigtable, Google Cloud Datastore backups, Avro, ORC and Parquet formats. An empty string is an invalid value."
+    },
+    "timestampTargetPrecision": {
+      "type": "array",
+      "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV, PARQUET, AVRO, and Iceberg External Table. Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
+      "items": {
+        "type": "integer",
+        "format": "int32"
+      }
+    },
+    "timestampFormat": {
+      "type": "string",
+      "description": "Optional. Format used to parse TIMESTAMP values. Supports C-style and SQL-style values."
+    },
+    "autodetect": {
+      "type": "boolean",
+      "description": "Try to detect schema and format options automatically. Any option specified explicitly will be honored."
+    },
+    "referenceFileSchemaUri": {
+      "type": "string",
+      "description": "Optional. When creating an external table, the user can provide a reference file with the table schema. This is enabled for the following formats: AVRO, PARQUET, ORC."
+    },
+    "dateFormat": {
+      "type": "string",
+      "description": "Optional. Format used to parse DATE values. Supports C-style and SQL-style values."
+    },
+    "avroOptions": {
+      "$ref": "AvroOptions.json"
+    },
+    "metadataCacheMode": {
+      "type": "string",
+      "description": "Optional. Metadata Cache Mode for the table. Set this to enable caching of metadata from external data source.",
+      "enum": [
+        "METADATA_CACHE_MODE_UNSPECIFIED",
+        "AUTOMATIC",
+        "MANUAL"
+      ]
+    },
+    "parquetOptions": {
+      "$ref": "ParquetOptions.json"
+    },
+    "jsonOptions": {
+      "$ref": "JsonOptions.json"
+    },
+    "timeZone": {
+      "type": "string",
+      "description": "Optional. Time zone used when parsing timestamp values that do not have specific time zone information (e.g. 2024-04-20 12:34:56). The expected format is a IANA timezone string (e.g. America/Los_Angeles)."
+    },
+    "sourceUris": {
+      "type": "array",
+      "description": "[Required] The fully-qualified URIs that point to your data in Google Cloud. For Google Cloud Storage URIs: Each URI can contain one '*' wildcard character and it must come after the 'bucket' name. Size limits related to load jobs apply to external data sources. For Google Cloud Bigtable URIs: Exactly one URI can be specified and it has be a fully specified and valid HTTPS URL for a Google Cloud Bigtable table. For Google Cloud Datastore backups, exactly one URI can be specified. Also, the '*' wildcard character is not allowed.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sourceFormat": {
+      "type": "string",
+      "description": "[Required] The data format. For CSV files, specify \"CSV\". For Google sheets, specify \"GOOGLE_SHEETS\". For newline-delimited JSON, specify \"NEWLINE_DELIMITED_JSON\". For Avro files, specify \"AVRO\". For Google Cloud Datastore backups, specify \"DATASTORE_BACKUP\". For Apache Iceberg tables, specify \"ICEBERG\". For ORC files, specify \"ORC\". For Parquet files, specify \"PARQUET\". [Beta] For Google Cloud Bigtable, specify \"BIGTABLE\"."
+    },
+    "objectMetadata": {
+      "type": "string",
+      "description": "Optional. ObjectMetadata is used to create Object Tables. Object Tables contain a listing of objects (with their metadata) found at the source_uris. If ObjectMetadata is set, source_format should be omitted. Currently SIMPLE is the only supported Object Metadata type.",
+      "enum": [
+        "OBJECT_METADATA_UNSPECIFIED",
+        "DIRECTORY",
+        "SIMPLE"
+      ]
+    },
+    "timeFormat": {
+      "type": "string",
+      "description": "Optional. Format used to parse TIME values. Supports C-style and SQL-style values."
+    },
+    "connectionId": {
+      "type": "string",
+      "description": "Optional. The connection specifying the credentials to be used to read external storage, such as Azure Blob, Cloud Storage, or S3. The connection_id can have the form `{project_id}.{location_id};{connection_id}` or `projects/{project_id}/locations/{location_id}/connections/{connection_id}`."
+    },
+    "decimalTargetTypes": {
+      "type": "array",
+      "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exceeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "DECIMAL_TARGET_TYPE_UNSPECIFIED",
+          "NUMERIC",
+          "BIGNUMERIC",
+          "STRING"
+        ]
+      }
+    },
+    "fileSetSpecType": {
+      "type": "string",
+      "description": "Optional. Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems.",
+      "enum": [
+        "FILE_SET_SPEC_TYPE_FILE_SYSTEM_MATCH",
+        "FILE_SET_SPEC_TYPE_NEW_LINE_DELIMITED_MANIFEST"
+      ]
+    },
+    "jsonExtension": {
+      "type": "string",
+      "description": "Optional. Load option to be used together with source_format newline-delimited JSON to indicate that a variant of JSON is being loaded. To load newline-delimited GeoJSON, specify GEOJSON (and source_format must be set to NEWLINE_DELIMITED_JSON).",
+      "enum": [
+        "JSON_EXTENSION_UNSPECIFIED",
+        "GEOJSON"
+      ]
+    },
+    "bigtableOptions": {
+      "$ref": "BigtableOptions.json"
+    },
+    "googleSheetsOptions": {
+      "$ref": "GoogleSheetsOptions.json"
+    },
+    "datetimeFormat": {
+      "type": "string",
+      "description": "Optional. Format used to parse DATETIME values. Supports C-style and SQL-style values."
+    },
+    "maxBadRecords": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Optional. The maximum number of bad records that BigQuery can ignore when reading data. If the number of bad records exceeds this value, an invalid error is returned in the job result. The default value is 0, which requires that all records are valid. This setting is ignored for Google Cloud Bigtable, Google Cloud Datastore backups, Avro, ORC and Parquet formats."
+    },
+    "csvOptions": {
+      "$ref": "CsvOptions.json"
+    },
+    "hivePartitioningOptions": {
+      "$ref": "HivePartitioningOptions.json"
+    },
+    "ignoreUnknownValues": {
+      "type": "boolean",
+      "description": "Optional. Indicates if BigQuery should allow extra values that are not represented in the table schema. If true, the extra values are ignored. If false, records with extra columns are treated as bad records, and if there are too many bad records, an invalid error is returned in the job result. The default value is false. The sourceFormat property determines what BigQuery treats as an extra value: CSV: Trailing columns JSON: Named values that don't match any column names Google Cloud Bigtable: This setting is ignored. Google Cloud Datastore backups: This setting is ignored. Avro: This setting is ignored. ORC: This setting is ignored. Parquet: This setting is ignored."
+    },
+    "schema": {
+      "$ref": "TableSchema.json"
+    }
+  }
+}

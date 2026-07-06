@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googledrive/ContentRestriction",
+  "title": "ContentRestriction",
+  "x-openfn-adaptor": "googledrive",
+  "x-source": {
+    "openapi": "#/components/schemas/ContentRestriction",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "A restriction for accessing the content of the file.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Output only. The type of the content restriction. Currently the only possible value is `globalContentRestriction`."
+    },
+    "restrictingUser": {
+      "$ref": "User.json"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for why the content of the file is restricted. This is only mutable on requests that also set `readOnly=true`."
+    },
+    "systemRestricted": {
+      "type": "boolean",
+      "description": "Output only. Whether the content restriction was applied by the system, for example due to an esignature. Users cannot modify or remove system restricted content restrictions."
+    },
+    "readOnly": {
+      "type": "boolean",
+      "description": "Whether the content of the file is read-only. If a file is read-only, a new revision of the file may not be added, comments may not be added or modified, and the title of the file may not be modified."
+    },
+    "restrictionTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time at which the content restriction was set (formatted RFC 3339 timestamp). Only populated if readOnly is true."
+    },
+    "ownerRestricted": {
+      "type": "boolean",
+      "description": "Whether the content restriction can only be modified or removed by a user who owns the file. For files in shared drives, any user with `organizer` capabilities can modify or remove this content restriction."
+    }
+  }
+}

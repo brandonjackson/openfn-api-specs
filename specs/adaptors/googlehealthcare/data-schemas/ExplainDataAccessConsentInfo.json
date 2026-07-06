@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "googlehealthcare/ExplainDataAccessConsentInfo",
+  "title": "ExplainDataAccessConsentInfo",
+  "x-openfn-adaptor": "googlehealthcare",
+  "x-source": {
+    "openapi": "#/components/schemas/ExplainDataAccessConsentInfo",
+    "capturedAt": "2026-07-06"
+  },
+  "type": "object",
+  "description": "The enforcing consent's metadata.",
+  "properties": {
+    "cascadeOrigins": {
+      "type": "array",
+      "description": "The compartment base resources that matched a cascading policy. Each resource has the following format: `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/{resource_type}/{resource_id}`",
+      "items": {
+        "type": "string"
+      }
+    },
+    "type": {
+      "type": "string",
+      "description": "The policy type of consent resource (e.g. PATIENT, ADMIN).",
+      "enum": [
+        "CONSENT_POLICY_TYPE_UNSPECIFIED",
+        "CONSENT_POLICY_TYPE_PATIENT",
+        "CONSENT_POLICY_TYPE_ADMIN"
+      ]
+    },
+    "patientConsentOwner": {
+      "type": "string",
+      "description": "The patient owning the consent (only applicable for patient consents), in the format: `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/Patient/{patient_id}`"
+    },
+    "consentResource": {
+      "type": "string",
+      "description": "The resource name of this consent resource, in the format: `projects/{project_id}/locations/{location}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/Consent/{resource_id}`."
+    },
+    "matchingAccessorScopes": {
+      "type": "array",
+      "description": "A list of all the matching accessor scopes of this consent policy that enforced ExplainDataAccessConsentScope.accessor_scope.",
+      "items": {
+        "$ref": "ConsentAccessorScope.json"
+      }
+    },
+    "enforcementTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Last enforcement timestamp of this consent resource."
+    },
+    "variants": {
+      "type": "array",
+      "description": "The consent's variant combinations. A single consent may have multiple variants.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "CONSENT_VARIANT_UNSPECIFIED",
+          "CONSENT_VARIANT_STANDARD",
+          "CONSENT_VARIANT_CASCADE"
+        ]
+      }
+    }
+  }
+}

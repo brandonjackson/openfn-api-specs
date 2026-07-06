@@ -8,51 +8,56 @@
     "capturedAt": "2026-07-06"
   },
   "type": "object",
-  "description": "A Gmail message.",
+  "description": "An email message.",
   "properties": {
-    "id": {
-      "type": "string",
-      "example": "18f1a2b3c4d5e6f7"
-    },
     "threadId": {
       "type": "string",
-      "example": "18f1a2b3c4d5e6f0"
+      "description": "The ID of the thread the message belongs to. To add a message or draft to a thread, the following criteria must be met: 1. The requested `threadId` must be specified on the `Message` or `Draft.Message` you supply with your request. 2. The `References` and `In-Reply-To` headers must be set in compliance with the [RFC 2822](https://tools.ietf.org/html/rfc2822) standard. 3. The `Subject` headers must match. "
     },
     "labelIds": {
       "type": "array",
+      "description": "List of IDs of labels applied to this message.",
       "items": {
         "type": "string"
-      },
-      "example": [
-        "INBOX",
-        "UNREAD"
-      ]
-    },
-    "snippet": {
-      "type": "string",
-      "example": "Hi there, just following up on the report..."
+      }
     },
     "historyId": {
       "type": "string",
-      "example": "123456"
-    },
-    "internalDate": {
-      "type": "string",
-      "description": "Epoch ms as string",
-      "example": "1709641234000"
+      "format": "uint64",
+      "description": "The ID of the last history record that modified this message."
     },
     "sizeEstimate": {
       "type": "integer",
       "format": "int32",
-      "example": 4096
+      "description": "Estimated size in bytes of the message."
+    },
+    "payload": {
+      "$ref": "MessagePart.json"
+    },
+    "internalDate": {
+      "type": "string",
+      "format": "int64",
+      "description": "The internal message creation timestamp (epoch ms), which determines ordering in the inbox. For normal SMTP-received email, this represents the time the message was originally accepted by Google, which is more reliable than the `Date` header. However, for API-migrated mail, it can be configured by client to be based on the `Date` header."
+    },
+    "id": {
+      "type": "string",
+      "description": "The immutable ID of the message."
     },
     "raw": {
       "type": "string",
       "format": "byte",
-      "description": "The entire email message in an RFC 2822 formatted and base64url encoded string. Used when sending."
+      "description": "The entire email message in an RFC 2822 formatted and base64url encoded string. Returned in `messages.get` and `drafts.get` responses when the `format=RAW` parameter is supplied. @required gmail.users.drafts.create gmail.users.drafts.update"
     },
-    "payload": {
-      "$ref": "MessagePart.json"
+    "classificationLabelValues": {
+      "type": "array",
+      "description": "Classification Label values on the message. Available Classification Label schemas can be queried using the Google Drive Labels API. Each classification label ID must be unique. If duplicate IDs are provided, only one will be retained, and the selection is arbitrary. Only used for Google Workspace accounts. There's a limit of 20 Classification Label values per request. If the Classification Label values exceeds the maximum allowed number, the request fails.",
+      "items": {
+        "$ref": "ClassificationLabelValue.json"
+      }
+    },
+    "snippet": {
+      "type": "string",
+      "description": "A short part of the message text."
     }
   }
 }
