@@ -69,6 +69,7 @@ pnpm specs missing                    # adaptors with no OpenAPI spec
 pnpm specs instructions <a|--missing> # per-adaptor agentic work order (the finding step)
 pnpm specs data-objects <a|--all>     # extract standalone data-object schemas
 pnpm specs manifest                   # rebuild manifest.json
+pnpm specs site                       # build the static status dashboard (site/index.html)
 ```
 
 The **finding step is agentic**: `pnpm specs instructions` emits a precise work
@@ -76,6 +77,26 @@ order (which endpoints the adaptor calls, where to look for a spec, the required
 OpenAPI shape, where to save files). An AI agent — or a human — executes it,
 doing the web research a fixed scraper can't. The tool handles the deterministic
 parts: listing, status, data-object extraction, and the manifest.
+
+## Status dashboard
+
+`pnpm specs site` builds a single self-contained `site/index.html` — a static
+dashboard, styled to match the [openfn-mocker](https://openfn-mocker-production.up.railway.app/)
+sandbox, that shows for every adaptor:
+
+- **What quality of spec we hold** — the provenance tier (Vendor OpenAPI →
+  Converted → Synthesized → Documented) plus its coverage/completeness claim and
+  the feedback bucket (`ok` / `incomplete` / `stale` / `at-risk` / `wrong`),
+  computed with the same logic as `pnpm specs report`.
+- **How recently it was updated** — captured / last-checked dates shown as live
+  relative time, flagged once past the staleness threshold.
+- **Any notes** — the free-text provenance notes from `source.json`, in an
+  expandable row alongside the upstream URL and links to the spec files.
+
+The [`Deploy status dashboard`](.github/workflows/pages.yml) workflow rebuilds
+and publishes it to **GitHub Pages** on every push to `main`, on a weekly
+schedule (so the staleness clock re-evaluates without a push), and on demand.
+Enable it once under **Settings → Pages → Source: GitHub Actions**.
 
 ## Data objects
 

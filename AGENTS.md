@@ -121,6 +121,11 @@ Every adaptor lands in exactly one bucket:
 - **wrong** — fails validation: invalid OpenAPI, data-schema drift, dangling
   `$ref`, or malformed provenance.
 
+These same buckets, plus each adaptor's quality tier, freshness and notes, are
+published as a static dashboard by `pnpm specs site` (a self-contained
+`site/index.html`). The `Deploy status dashboard` GitHub Action rebuilds it on
+every push to `main` and weekly, so the staleness clock re-evaluates over time.
+
 ## The loop (the agentic process)
 
 1. **Refresh the environment.** `pnpm specs list --refresh`; diff against
