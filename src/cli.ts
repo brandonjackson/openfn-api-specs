@@ -24,6 +24,7 @@ import { extractDataObjects } from './data-objects.js';
 import { instructionsFor } from './instructions.js';
 import { buildManifest } from './manifest.js';
 import { report as buildReport, orphanDirs, type FeedbackRow } from './report.js';
+import { buildStatusData, renderSite } from './site.js';
 import { dataSchemasDir, dataSchemasIndexPath, manifestPath, openapiPath } from './paths.js';
 import type { FeedbackStatus } from './types.js';
 
@@ -161,6 +162,30 @@ async function cmdReport(argv: string[]): Promise<void> {
   console.log(`  ${summary}${orphans.length ? `  orphan:${orphans.length}` : ''}   (stale > ${staleAfterDays}d)`);
 }
 
+async function cmdSite(argv: string[]): Promise<void> {
+  const adaptors = await loadAdaptors(argv.includes('--refresh'));
+  const staleArg = argv.find((a) => a.startsWith('--stale='));
+  const staleAfterDays = staleArg ? parseInt(staleArg.slice('--stale='.length), 10) : 90;
+  const outArg = argv.find((a) => a.startsWith('--out='));
+  const outDir = outArg ? outArg.slice('--out='.length) : join(process.cwd(), 'site');
+
+  const data = buildStatusData(adaptors, new Date(), staleAfterDays);
+  const html = renderSite(data);
+
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, 'index.html'), html);
+  // .nojekyll keeps GitHub Pages from running the static files through Jekyll.
+  writeFileSync(join(outDir, '.nojekyll'), '');
+
+  const { byStatus } = data.totals;
+  console.log(`site → ${join(outDir, 'index.html')}`);
+  console.log(
+    `  ${data.totals.adaptors} adaptors — ` +
+      `ok:${byStatus.ok} incomplete:${byStatus.incomplete} stale:${byStatus.stale} ` +
+      `missing:${byStatus.missing} new:${byStatus.new} at-risk:${byStatus['at-risk']} wrong:${byStatus.wrong}`
+  );
+}
+
 async function cmdManifest(): Promise<void> {
   const adaptors = await loadAdaptors();
   const manifest = buildManifest(adaptors, new Date().toISOString());
@@ -184,6 +209,8 @@ const USAGE = `Usage: pnpm specs <command>
                                 Emit agentic work order(s) for finding/generating specs.
   data-objects <a…|--all>       Extract standalone data-object schemas into data-schemas/.
   manifest                      Rebuild specs/adaptors/manifest.json.
+  site [--out=<dir>] [--stale=<days>] [--refresh]
+                                Build the static status dashboard (index.html) for GitHub Pages.
 `;
 
 async function main(): Promise<void> {
@@ -203,6 +230,8 @@ async function main(): Promise<void> {
       return cmdDataObjects(argv);
     case 'manifest':
       return cmdManifest();
+    case 'site':
+      return cmdSite(argv);
     case undefined:
     case '--help':
     case '-h':

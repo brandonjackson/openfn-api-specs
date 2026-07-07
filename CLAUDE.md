@@ -11,4 +11,5 @@ Quick reference:
 - `pnpm specs instructions <adaptor>` — the per-adaptor work order (agentic finding step).
 - `pnpm specs data-objects <adaptor>` — derive data-schemas from openapi.json.
 - `pnpm specs manifest` — rebuild the aggregate index.
+- `pnpm specs site` — build the static status dashboard (`site/index.html`, published to GitHub Pages).
 - `pnpm test` — enforce the invariants (drift, dangling refs, provenance, OpenAPI shape).
