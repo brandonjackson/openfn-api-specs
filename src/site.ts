@@ -97,8 +97,16 @@ export interface StatusRow {
 }
 
 export interface StatusData {
-  /** ISO-8601 build time. */
+  /** ISO-8601 build time (when this page was rendered). */
   generatedAt: string;
+  /**
+   * Freshest actual data timestamp across all adaptors — the most recent
+   * `lastCheckedAt ?? capturedAt`. This is when the registry was genuinely
+   * updated, as opposed to when the page was last (re)built. The hero "Updated"
+   * chip reads this so a no-op weekly rebuild doesn't misreport "updated today".
+   * Undefined only when no adaptor has any recorded date.
+   */
+  dataUpdatedAt?: string;
   /** owner/repo for links back to the source. */
   repo: string;
   /** Staleness threshold in days used to bucket adaptors. */
@@ -193,15 +201,27 @@ export function buildStatusData(
   const byOrigin: Record<string, number> = {};
   let operations = 0;
   let dataObjects = 0;
+  let dataUpdatedAt: string | undefined;
+  let newest = -Infinity;
   for (const r of rows) {
     byStatus[r.status] += 1;
     if (r.origin) byOrigin[r.origin] = (byOrigin[r.origin] ?? 0) + 1;
     operations += r.operations ?? 0;
     dataObjects += r.dataObjects ?? 0;
+    // Track the freshest real data timestamp (last-checked, else captured).
+    const clock = r.lastCheckedAt ?? r.capturedAt;
+    if (clock) {
+      const t = Date.parse(clock);
+      if (!Number.isNaN(t) && t > newest) {
+        newest = t;
+        dataUpdatedAt = clock;
+      }
+    }
   }
 
   return {
     generatedAt: now.toISOString(),
+    dataUpdatedAt,
     repo,
     staleAfterDays,
     totals: { adaptors: rows.length, byStatus, byOrigin, operations, dataObjects },

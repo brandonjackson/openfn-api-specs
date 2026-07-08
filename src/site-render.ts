@@ -436,8 +436,14 @@ const CLIENT_JS = `
   // ---- boot ------------------------------------------------------------
   function boot(){
     document.getElementById('hero-count').textContent = DATA.totals.adaptors + ' adaptors';
-    document.getElementById('hero-updated').textContent = relTime(DATA.generatedAt);
-    document.getElementById('hero-updated').title = DATA.generatedAt;
+    // "Updated" reflects the freshest real data timestamp, not the build time,
+    // so a no-op weekly rebuild doesn't reset it to "today". relTime() still
+    // ages it live against the viewer's clock.
+    var updatedAt = DATA.dataUpdatedAt || DATA.generatedAt;
+    var heroUpdated = document.getElementById('hero-updated');
+    heroUpdated.textContent = relTime(updatedAt);
+    heroUpdated.title = 'Latest spec update: ' + updatedAt
+      + (DATA.generatedAt ? '  ·  page built ' + DATA.generatedAt : '');
 
     var okN = DATA.totals.byStatus.ok||0;
     document.getElementById('hero-ok').textContent = okN + ' OK';
