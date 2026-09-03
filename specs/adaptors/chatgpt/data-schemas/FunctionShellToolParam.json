@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/FunctionShellToolParam",
+  "title": "Shell tool",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/FunctionShellToolParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "shell"
+      ],
+      "description": "The type of the shell tool. Always `shell`.",
+      "default": "shell",
+      "x-stainless-const": true
+    },
+    "environment": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "$ref": "ContainerAutoParam.json"
+            },
+            {
+              "$ref": "LocalEnvironmentParam.json"
+            },
+            {
+              "$ref": "ContainerReferenceParam.json"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "type"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "allowed_callers": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "CallableToolAllowedCaller.json"
+          },
+          "type": "array",
+          "minItems": 1,
+          "description": "The tool invocation context(s)."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "description": "A tool that allows the model to execute shell commands."
+}

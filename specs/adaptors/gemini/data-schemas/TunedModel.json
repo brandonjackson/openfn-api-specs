@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gemini/TunedModel",
+  "title": "TunedModel",
+  "x-openfn-adaptor": "gemini",
+  "x-source": {
+    "openapi": "#/components/schemas/TunedModel",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A fine-tuned model created using ModelService.CreateTunedModel.",
+  "properties": {
+    "state": {
+      "type": "string",
+      "description": "Output only. The state of the tuned model.",
+      "enum": [
+        "STATE_UNSPECIFIED",
+        "CREATING",
+        "ACTIVE",
+        "FAILED"
+      ],
+      "readOnly": true
+    },
+    "tunedModelSource": {
+      "$ref": "TunedModelSource.json"
+    },
+    "name": {
+      "type": "string",
+      "description": "Output only. The tuned model name. A unique name will be generated on create. Example: `tunedModels/az2mb0bpw6i` If display_name is set on create, the id portion of the name will be set by concatenating the words of the display_name with hyphens and adding a random portion for uniqueness. Example: * display_name = `Sentence Translator` * name = `tunedModels/sentence-translator-u3b7m`",
+      "readOnly": true
+    },
+    "baseModel": {
+      "type": "string",
+      "description": "Immutable. The name of the `Model` to tune. Example: `models/gemini-1.5-flash-001`"
+    },
+    "temperature": {
+      "type": "number",
+      "format": "float",
+      "description": "Optional. Controls the randomness of the output. Values can range over `[0.0,1.0]`, inclusive. A value closer to `1.0` will produce responses that are more varied, while a value closer to `0.0` will typically result in less surprising responses from the model. This value specifies default to be the one used by the base model while creating the model."
+    },
+    "topK": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Optional. For Top-k sampling. Top-k sampling considers the set of `top_k` most probable tokens. This value specifies default to be used by the backend while making the call to the model. This value specifies default to be the one used by the base model while creating the model."
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Optional. The name to display for this model in user interfaces. The display name must be up to 40 characters including spaces."
+    },
+    "tuningTask": {
+      "$ref": "TuningTask.json"
+    },
+    "readerProjectNumbers": {
+      "type": "array",
+      "description": "Optional. List of project numbers that have read access to the tuned model.",
+      "items": {
+        "type": "string",
+        "format": "int64"
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional. A short description of this model."
+    },
+    "updateTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. The timestamp when this model was updated.",
+      "readOnly": true
+    },
+    "createTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. The timestamp when this model was created.",
+      "readOnly": true
+    },
+    "topP": {
+      "type": "number",
+      "format": "float",
+      "description": "Optional. For Nucleus sampling. Nucleus sampling considers the smallest set of tokens whose probability sum is at least `top_p`. This value specifies default to be the one used by the base model while creating the model."
+    }
+  }
+}

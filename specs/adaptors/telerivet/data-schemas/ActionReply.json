@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionReply",
+  "title": "ActionReply",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionReply",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Sends a text reply to the sender.\n\nOptionally, the reply can be scheduled after a predefined delay, or sent via a different phone than the one that received the message.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "reply",
+      "description": "Action type identifier"
+    },
+    "body": {
+      "$ref": "MessageBody.json",
+      "description": "Message body."
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the route to send the message from. If not specified, uses the default route."
+    },
+    "label_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of label names to apply to the sent message.",
+      "x-supports-variables": true
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Schedule to send the message at a later time."
+    }
+  },
+  "required": [
+    "type",
+    "body"
+  ],
+  "example": {
+    "type": "reply",
+    "body": {
+      "content": "Hello, [[contact.name]]."
+    }
+  }
+}

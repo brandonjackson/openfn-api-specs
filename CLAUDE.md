@@ -9,6 +9,9 @@ Quick reference:
 
 - `pnpm specs report` — what's new / missing / stale / incomplete / wrong.
 - `pnpm specs instructions <adaptor>` — the per-adaptor work order (agentic finding step).
+- `pnpm specs convert <adaptor> --url=<specUrl>` — capture an upstream machine spec
+  (OpenAPI 3.x / Swagger 2.0 / Google Discovery) verbatim and derive `openapi.json`.
+  With no `--url`, re-derives `openapi.json` from the committed upstream.
 - `pnpm specs data-objects <adaptor>` — derive data-schemas from openapi.json.
 - `pnpm specs manifest` — rebuild the aggregate index.
 - `pnpm specs site` — build the static status dashboard (`site/index.html`, published to GitHub Pages).

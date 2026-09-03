@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionCondition",
+  "title": "ActionCondition",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionCondition",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "\nA rule that only matches if a certain condition is true (e.g. the message has a particular keyword or sender). Always combined with one or more other rules.\n\n\"If ... then ...\" rules can use the following types of conditions:\n\n* is\n* is not\n* has word\n* does not have word\n* contains\n* does not contain\n* starts with\n* does not start with\n* ends with\n* does not end with\n* alphabetically before\n* alphabetically after\n* equals\n* does not equal\n* less than\n* greater than\n* less than or equal to\n* greater than or equal to\n* contact is in group\n* contact is not in group\n\nA single \"If ... then ...\" rule can contain multiple conditions, joined together with either 'and' or 'or'.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "condition",
+      "description": "Action type identifier"
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Condition type. Values: <code>is</code>, <code>is_not</code>, <code>has_word</code>, <code>contains</code>, <code>does_not_contain</code>, <code>starts_with</code>, <code>does_not_start_with</code>, <code>ends_with</code>, <code>does_not_end_with</code>, <code>alpha_before</code>, <code>alpha_after</code>, <code>equals</code>, <code>does_not_equal</code>, <code>less_than</code>, <code>greater_than</code>, <code>less_or_equal</code>, <code>greater_or_equal</code>, <code>contact_is_in_group</code>, <code>contact_not_in_group</code>."
+          },
+          "variable": {
+            "type": "string",
+            "description": "Variable to test, e.g. <code>[[word1]]</code>, <code>[[contact.name]]</code>. Not required for <code>contact_is_in_group</code> and <code>contact_not_in_group</code> conditions."
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to compare against (or group name for group membership conditions)."
+          }
+        },
+        "required": [
+          "type",
+          "variable",
+          "value"
+        ]
+      },
+      "description": "Array of condition objects. Required unless <code>if_mode</code> is <code>else</code>."
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "Action.json"
+      },
+      "description": "Array of actions to execute if the conditions match."
+    },
+    "op": {
+      "type": "string",
+      "description": "Operator to join multiple conditions. Values: <code>and</code> (all conditions must match), <code>or</code> (any condition must match). Default: <code>or</code>."
+    },
+    "if_mode": {
+      "type": "string",
+      "description": "Controls how this condition relates to previous conditions. Values: <code>if</code> (default, starts a new conditional block), <code>else_if</code> (only evaluated if the previous <code>if</code> or <code>else_if</code> did not match), <code>else</code> (executed if none of the previous <code>if</code>/<code>else_if</code> conditions matched; does not require <code>conditions</code> array)."
+    }
+  },
+  "required": [
+    "type",
+    "actions"
+  ]
+}

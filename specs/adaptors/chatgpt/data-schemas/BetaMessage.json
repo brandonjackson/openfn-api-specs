@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaMessage",
+  "title": "Message",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaMessage",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "agent": {
+      "$ref": "BetaAgentTag.json",
+      "description": "The agent that produced this item."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "message"
+      ],
+      "description": "The type of the message. Always set to `message`.",
+      "default": "message",
+      "x-stainless-const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the message."
+    },
+    "status": {
+      "$ref": "BetaMessageStatus.json",
+      "description": "The status of item. One of `in_progress`, `completed`, or `incomplete`. Populated when items are returned via API."
+    },
+    "role": {
+      "$ref": "BetaMessageRole.json",
+      "description": "The role of the message. One of `unknown`, `user`, `assistant`, `system`, `critic`, `discriminator`, `developer`, or `tool`."
+    },
+    "content": {
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "BetaInputTextContent.json"
+          },
+          {
+            "$ref": "BetaOutputTextContent.json"
+          },
+          {
+            "$ref": "BetaTextContent.json"
+          },
+          {
+            "$ref": "BetaSummaryTextContent.json"
+          },
+          {
+            "$ref": "BetaReasoningTextContent.json"
+          },
+          {
+            "$ref": "BetaRefusalContent.json"
+          },
+          {
+            "$ref": "BetaInputImageContent.json"
+          },
+          {
+            "$ref": "BetaComputerScreenshotContent.json"
+          },
+          {
+            "$ref": "BetaInputFileContent.json"
+          },
+          {
+            "$ref": "BetaEncryptedContent.json"
+          }
+        ],
+        "description": "A content part that makes up an input or output item.",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "type": "array",
+      "description": "The content of the message"
+    },
+    "phase": {
+      "anyOf": [
+        {
+          "$ref": "BetaMessagePhase-2.json",
+          "description": "Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "status",
+    "role",
+    "content"
+  ],
+  "description": "A message to or from the model."
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaNamespaceToolParam",
+  "title": "Namespace",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaNamespaceToolParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "namespace"
+      ],
+      "description": "The type of the tool. Always `namespace`.",
+      "default": "namespace",
+      "x-stainless-const": true
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The namespace name used in tool calls (for example, `crm`)."
+    },
+    "description": {
+      "type": "string",
+      "description": "A description of the namespace shown to the model."
+    },
+    "tools": {
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "BetaFunctionToolParam.json"
+          },
+          {
+            "$ref": "BetaCustomToolParam.json"
+          }
+        ],
+        "description": "A function or custom tool that belongs to a namespace.",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "type": "array",
+      "minItems": 1,
+      "description": "The function/custom tools available inside this namespace."
+    }
+  },
+  "type": "object",
+  "required": [
+    "type",
+    "name",
+    "description",
+    "tools"
+  ],
+  "description": "Groups function/custom tools under a shared namespace."
+}

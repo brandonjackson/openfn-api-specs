@@ -9,5 +9,11 @@
     "https://min.io/docs/minio/linux/developers/javascript/API.html"
   ],
   "capturedAt": "2026-07-06",
-  "notes": "MinIO is an S3-compatible object store, not a REST/JSON API; the adaptor wraps the minio JS client (AWS S3 XML protocol). Synthesized a focused OpenAPI 3.0.3 from the adaptor surface, modelling each operation the adaptor exposes (createBucket, listObjects, getObject, putObject, getObjectTags, setObjectTags) as JSON REST shapes so mocker can seed bucket/object/tag collections. Tag operations placed under /{bucketName}/{objectName}/tagging (S3 uses a ?tagging subresource, which cannot be distinguished by method in OpenAPI paths). Server URL is a MinIO default placeholder."
+  "notes": "MinIO is an S3-compatible object store addressed through the minio JS client (AWS S3 XML protocol), not a JSON REST API, so this OpenAPI document is synthesized from the adaptor surface (ast.json). Verified against ast.json: all 6 public operations are covered — createBucket, listObjects, getObject, putObject, getObjectTags, setObjectTags. Common/utility exports are excluded as they are not external calls. Note this is the MinIO adaptor surface, not the full S3 REST API (that lives under the aws-s3 adaptor).",
+  "coverage": "full",
+  "completeness": "complete",
+  "verifiedAgainst": [
+    "ast.json"
+  ],
+  "lastCheckedAt": "2026-09-03"
 }

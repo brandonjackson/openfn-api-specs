@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaAutoCodeInterpreterToolParam",
+  "title": "CodeInterpreterToolAuto",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAutoCodeInterpreterToolParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "auto"
+      ],
+      "description": "Always `auto`.",
+      "default": "auto",
+      "x-stainless-const": true
+    },
+    "file_ids": {
+      "items": {
+        "type": "string",
+        "example": "file-123"
+      },
+      "type": "array",
+      "maxItems": 50,
+      "description": "An optional list of uploaded files to make available to your code."
+    },
+    "memory_limit": {
+      "anyOf": [
+        {
+          "$ref": "BetaContainerMemoryLimit.json",
+          "description": "The memory limit for the code interpreter container."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "network_policy": {
+      "oneOf": [
+        {
+          "$ref": "BetaContainerNetworkPolicyDisabledParam.json"
+        },
+        {
+          "$ref": "BetaContainerNetworkPolicyAllowlistParam.json"
+        }
+      ],
+      "description": "Network access policy for the container.",
+      "discriminator": {
+        "propertyName": "type"
+      }
+    }
+  },
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "description": "Configuration for a code interpreter container. Optionally specify the IDs of the files to run the code on."
+}

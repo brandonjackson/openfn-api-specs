@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/CostsResult",
+  "title": "CostsResult",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/CostsResult",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "The aggregated costs details of the specific time bucket.",
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "organization.costs.result"
+      ],
+      "x-stainless-const": true
+    },
+    "amount": {
+      "type": "object",
+      "description": "The monetary value in its associated currency.",
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "The numeric value of the cost."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Lowercase ISO-4217 currency e.g. \"usd\""
+        }
+      }
+    },
+    "line_item": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "When `group_by=line_item`, this field provides the line item of the grouped costs result."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "When `group_by=project_id`, this field provides the project ID of the grouped costs result."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "api_key_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "When `group_by=api_key_id`, this field provides the API Key ID of the grouped costs result."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "quantity": {
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "When `group_by=line_item`, this field provides the quantity of the grouped costs result."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "quantity_unit": {
+      "description": "The unit of the `quantity` value. If no single supported unit applies to the result, this field is `null`.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "tokens",
+            "1000_tokens",
+            "duration_seconds",
+            "duration_minutes",
+            "duration_hours",
+            "gibibyte_hours",
+            "images",
+            "characters"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "object"
+  ],
+  "x-oaiMeta": {
+    "name": "Costs object",
+    "example": "{\n    \"object\": \"organization.costs.result\",\n    \"amount\": {\n      \"value\": 0.06,\n      \"currency\": \"usd\"\n    },\n    \"line_item\": \"gpt-5.6-sol, input_tokens\",\n    \"project_id\": \"proj_abc\",\n    \"quantity\": 10000,\n    \"quantity_unit\": \"tokens\"\n}\n"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/EvalStoredCompletionsSource",
+  "title": "StoredCompletionsRunDataSource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/EvalStoredCompletionsSource",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A StoredCompletionsRunDataSource configuration describing a set of filters\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "stored_completions"
+      ],
+      "default": "stored_completions",
+      "description": "The type of source. Always `stored_completions`.",
+      "x-stainless-const": true
+    },
+    "metadata": {
+      "$ref": "Metadata.json"
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "An optional model to filter by (e.g., 'gpt-5.6-sol')."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_after": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "description": "An optional Unix timestamp to filter items created after this time."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_before": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "description": "An optional Unix timestamp to filter items created before this time."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limit": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "description": "An optional maximum number of items to return."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "x-oaiMeta": {
+    "name": "The stored completions data source object used to configure an individual run",
+    "group": "eval runs",
+    "example": "{\n  \"type\": \"stored_completions\",\n  \"model\": \"gpt-5.6-sol\",\n  \"created_after\": 1668124800,\n  \"created_before\": 1668124900,\n  \"limit\": 100,\n  \"metadata\": {}\n}\n"
+  }
+}

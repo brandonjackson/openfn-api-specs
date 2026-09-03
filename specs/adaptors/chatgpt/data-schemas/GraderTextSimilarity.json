@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/GraderTextSimilarity",
+  "title": "TextSimilarityGrader",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/GraderTextSimilarity",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A TextSimilarityGrader object which grades text based on similarity metrics.\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "text_similarity"
+      ],
+      "default": "text_similarity",
+      "description": "The type of grader.",
+      "x-stainless-const": true
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the grader."
+    },
+    "input": {
+      "type": "string",
+      "description": "The text being graded."
+    },
+    "reference": {
+      "type": "string",
+      "description": "The text being graded against."
+    },
+    "evaluation_metric": {
+      "type": "string",
+      "enum": [
+        "cosine",
+        "fuzzy_match",
+        "bleu",
+        "gleu",
+        "meteor",
+        "rouge_1",
+        "rouge_2",
+        "rouge_3",
+        "rouge_4",
+        "rouge_5",
+        "rouge_l"
+      ],
+      "description": "The evaluation metric to use. One of `cosine`, `fuzzy_match`, `bleu`, \n`gleu`, `meteor`, `rouge_1`, `rouge_2`, `rouge_3`, `rouge_4`, `rouge_5`, \nor `rouge_l`.\n"
+    }
+  },
+  "required": [
+    "type",
+    "name",
+    "input",
+    "reference",
+    "evaluation_metric"
+  ],
+  "x-oaiMeta": {
+    "name": "Text Similarity Grader",
+    "group": "graders",
+    "example": "{\n  \"type\": \"text_similarity\",\n  \"name\": \"Example text similarity grader\",\n  \"input\": \"{{sample.output_text}}\",\n  \"reference\": \"{{item.label}}\",\n  \"evaluation_metric\": \"fuzzy_match\"\n}\n"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionSendTextToContact",
+  "title": "ActionSendTextToContact",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionSendTextToContact",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Sends a text message to the current contact.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "send_text_to_contact",
+      "description": "Action type identifier"
+    },
+    "body": {
+      "$ref": "MessageBody.json",
+      "description": "Message body."
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the route to send the message from. If not specified, uses the default route."
+    },
+    "label_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of label names to apply to the sent message.",
+      "x-supports-variables": true
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Schedule to send the message at a later time."
+    }
+  },
+  "required": [
+    "type",
+    "body"
+  ],
+  "example": {
+    "type": "send_text_to_contact",
+    "body": {
+      "content": "Hello, [[contact.name]]."
+    }
+  }
+}

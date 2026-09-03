@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ProjectApiKey",
+  "title": "ProjectApiKey",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ProjectApiKey",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents an individual API key in a project.",
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "organization.project.api_key"
+      ],
+      "description": "The object type, which is always `organization.project.api_key`",
+      "x-stainless-const": true
+    },
+    "redacted_value": {
+      "type": "string",
+      "description": "The redacted value of the API key"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the API key"
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "The Unix timestamp (in seconds) of when the API key was created"
+    },
+    "last_used_at": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The Unix timestamp (in seconds) of when the API key was last used."
+    },
+    "id": {
+      "type": "string",
+      "description": "The identifier, which can be referenced in API endpoints"
+    },
+    "owner_project_access": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "description": "Whether the API key's owner currently has effective access to the project."
+    },
+    "owner": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "user",
+            "service_account"
+          ],
+          "description": "`user` or `service_account`"
+        },
+        "user": {
+          "$ref": "ProjectApiKeyOwnerUser.json"
+        },
+        "service_account": {
+          "$ref": "ProjectApiKeyOwnerServiceAccount.json"
+        }
+      }
+    }
+  },
+  "required": [
+    "object",
+    "redacted_value",
+    "name",
+    "created_at",
+    "last_used_at",
+    "id",
+    "owner_project_access",
+    "owner"
+  ],
+  "x-oaiMeta": {
+    "name": "The project API key object",
+    "example": "{\n    \"object\": \"organization.project.api_key\",\n    \"redacted_value\": \"sk-abc...def\",\n    \"name\": \"My API Key\",\n    \"created_at\": 1711471533,\n    \"last_used_at\": 1711471534,\n    \"id\": \"key_abc\",\n    \"owner_project_access\": \"active\",\n    \"owner\": {\n        \"type\": \"user\",\n        \"user\": {\n            \"id\": \"user_abc\",\n            \"name\": \"First Last\",\n            \"email\": \"user@example.com\",\n            \"role\": \"owner\",\n            \"created_at\": 1711471533\n        }\n    }\n}\n"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaAdditionalToolsItemParam",
+  "title": "BetaAdditionalToolsItemParam",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAdditionalToolsItemParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "Beta_AgentTagParam.json",
+          "description": "The agent that produced this item."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The unique ID of this additional tools item.",
+          "example": "at_123"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "additional_tools"
+      ],
+      "description": "The item type. Always `additional_tools`.",
+      "default": "additional_tools",
+      "x-stainless-const": true
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "developer"
+      ],
+      "description": "The role that provided the additional tools. Only `developer` is supported.",
+      "default": "developer",
+      "x-stainless-const": true
+    },
+    "tools": {
+      "items": {
+        "$ref": "BetaTool.json"
+      },
+      "type": "array",
+      "description": "A list of additional tools made available at this item."
+    }
+  },
+  "type": "object",
+  "required": [
+    "type",
+    "role",
+    "tools"
+  ]
+}

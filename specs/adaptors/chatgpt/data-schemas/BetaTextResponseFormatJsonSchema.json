@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaTextResponseFormatJsonSchema",
+  "title": "JSON schema",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaTextResponseFormatJsonSchema",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "JSON Schema response format. Used to generate structured JSON responses.\nLearn more about [Structured Outputs](/docs/guides/structured-outputs).\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "The type of response format being defined. Always `json_schema`.",
+      "enum": [
+        "json_schema"
+      ],
+      "x-stainless-const": true
+    },
+    "description": {
+      "type": "string",
+      "description": "A description of what the response format is for, used by the model to\ndetermine how to respond in the format.\n"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the response format. Must be a-z, A-Z, 0-9, or contain\nunderscores and dashes, with a maximum length of 64.\n"
+    },
+    "schema": {
+      "$ref": "BetaResponseFormatJsonSchemaSchema.json"
+    },
+    "strict": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to enable strict schema adherence when generating the output.\nIf set to true, the model will always follow the exact schema defined\nin the `schema` field. Only a subset of JSON Schema is supported when\n`strict` is `true`. To learn more, read the [Structured Outputs\nguide](/docs/guides/structured-outputs).\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "schema",
+    "name"
+  ]
+}

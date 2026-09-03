@@ -135,13 +135,22 @@ every push to `main` and weekly, so the staleness clock re-evaluates over time.
    `incomplete` → `stale`.
 4. **Do the finding step.** `pnpm specs instructions <adaptor>` emits a precise
    work order. Execute it — this is the agentic part, deliberately not a scraper:
-   - Prefer a machine spec. Save it verbatim to `upstream.json`, set `upstream.*`
-     (incl. `contentHash`), produce full `openapi.json`, `coverage: full`,
-     `completeness: complete`.
+   - Prefer a machine spec. `pnpm specs convert <adaptor> --url=<specUrl>` does
+     the capture: it recognises OpenAPI 3.x (JSON or YAML), Swagger 2.0 and
+     Google Discovery, writes the fetched bytes verbatim to `upstream.<ext>`,
+     derives the full `openapi.json`, and records `origin`, `upstreamFormat` and
+     `upstream.*` (incl. `contentHash`). Then verify the coverage yourself and
+     claim `coverage: full` / `completeness: complete` (`--complete` writes both).
    - No machine spec → author the full documented API from vendor docs.
      `completeness: best-effort` with a reason.
    - Non-REST → synthesize the full operation surface from the adaptor.
    - Record every `attempt` (including the misses) and `verifiedAgainst`.
+
+   The `coverage`/`completeness` claim is always the agent's, never the tool's: a
+   fetch can prove what a document contains, not that the document covers the
+   vendor's whole API. Where it doesn't, say so — a third-party rendering that
+   lags the vendor, or an RPC surface that can't be enumerated, is
+   `best-effort` with a reason, and stays visible in the report.
 5. **Derive.** `pnpm specs data-objects <adaptor>` regenerates the data-schemas.
 6. **Validate.** `pnpm test` (drift, dangling refs, provenance, OpenAPI shape).
    Fix and repeat until green.

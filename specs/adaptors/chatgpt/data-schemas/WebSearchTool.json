@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/WebSearchTool",
+  "title": "Web search",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/WebSearchTool",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Search the Internet for sources related to the prompt. Learn more about the\n[web search tool](/docs/guides/tools-web-search).\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "web_search",
+        "web_search_2025_08_26"
+      ],
+      "description": "The type of the web search tool. One of `web_search` or `web_search_2025_08_26`.",
+      "default": "web_search"
+    },
+    "external_web_access": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow live internet access for web search. Defaults to true when omitted. When false, the web search tool runs in offline/cache-only mode and will not fetch new external content."
+    },
+    "filters": {
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "Filters for the search.\n",
+          "properties": {
+            "allowed_domains": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "title": "Allowed domains for the search.",
+                  "description": "Allowed domains for the search. If not provided, all domains are allowed.\nSubdomains of the provided domains are allowed as well.\n\nExample: `[\"pubmed.ncbi.nlm.nih.gov\"]`\n",
+                  "items": {
+                    "type": "string",
+                    "description": "Allowed domain for the search."
+                  },
+                  "default": []
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "user_location": {
+      "$ref": "WebSearchApproximateLocation.json"
+    },
+    "search_context_size": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "High level guidance for the amount of context window space to use for the search. One of `low`, `medium`, or `high`. `medium` is the default."
+    }
+  },
+  "required": [
+    "type"
+  ]
+}

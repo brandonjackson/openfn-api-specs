@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ContainerResource",
+  "title": "The container object",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ContainerResource",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the container."
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the container."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "Unix timestamp (in seconds) when the container was created."
+    },
+    "status": {
+      "type": "string",
+      "description": "Status of the container (e.g., active, deleted)."
+    },
+    "last_active_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "Unix timestamp (in seconds) when the container was last active."
+    },
+    "expires_after": {
+      "type": "object",
+      "description": "The container will expire after this time period.\nThe anchor is the reference point for the expiration.\nThe minutes is the number of minutes after the anchor before the container expires.\n",
+      "properties": {
+        "anchor": {
+          "type": "string",
+          "description": "The reference point for the expiration.",
+          "enum": [
+            "last_active_at"
+          ]
+        },
+        "minutes": {
+          "type": "integer",
+          "description": "The number of minutes after the anchor before the container expires."
+        }
+      }
+    },
+    "memory_limit": {
+      "type": "string",
+      "description": "The memory limit configured for the container.",
+      "enum": [
+        "1g",
+        "4g",
+        "16g",
+        "64g"
+      ]
+    },
+    "network_policy": {
+      "description": "Network access policy for the container.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The network policy mode.",
+          "enum": [
+            "allowlist",
+            "disabled"
+          ]
+        },
+        "allowed_domains": {
+          "type": "array",
+          "description": "Allowed outbound domains when `type` is `allowlist`.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "name",
+    "created_at",
+    "status",
+    "id",
+    "name",
+    "created_at",
+    "status"
+  ],
+  "x-oaiMeta": {
+    "name": "The container object",
+    "example": "{\n   \"id\": \"cntr_682dfebaacac8198bbfe9c2474fb6f4a085685cbe3cb5863\",\n   \"object\": \"container\",\n   \"created_at\": 1747844794,\n   \"status\": \"running\",\n   \"expires_after\": {\n     \"anchor\": \"last_active_at\",\n     \"minutes\": 20\n   },\n   \"last_active_at\": 1747844794,\n   \"memory_limit\": \"1g\",\n   \"name\": \"My Container\"\n}\n"
+  }
+}

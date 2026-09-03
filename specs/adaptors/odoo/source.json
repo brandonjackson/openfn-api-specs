@@ -10,5 +10,12 @@
     "https://cdn.jsdelivr.net/npm/@openfn/language-odoo/ast.json"
   ],
   "capturedAt": "2026-07-06",
-  "notes": "The odoo adaptor delegates to the odoo-await npm client, which actually transports over XML-RPC (POST /xmlrpc/2/common and /xmlrpc/2/object, text/xml) using authenticate() and execute_kw(). OpenAPI cannot faithfully model XML-RPC method dispatch and the mocker needs JSON, so this document synthesizes Odoo's equivalent JSON-RPC web endpoints (/web/session/authenticate and /jsonrpc) which carry the same semantics. Operation coverage maps create/read/write/unlink/search/search_read; seed schemas model a generic Record and res.partner (Partner)."
+  "notes": "Odoo's external API is RPC method dispatch, not REST: the adaptor (via odoo-await) authenticates and then routes every one of its six operations — create, read, update, deleteRecord, searchRecord, searchReadRecord — through a single execute_kw call. This document models Odoo's JSON-RPC equivalents of that transport (POST /web/session/authenticate and POST /jsonrpc), which is the whole externally reachable surface: verified against ast.json, all 6 operations funnel through callObject. BEST-EFFORT rather than complete because execute_kw dispatches by method name at runtime — the set of callable model methods is open-ended and cannot be enumerated in OpenAPI — and because the underlying transport is really XML-RPC (POST /xmlrpc/2/common and /xmlrpc/2/object, text/xml), which OpenAPI cannot describe at all. Request/response schemas are therefore models of the JSON-RPC envelope, not a captured vendor spec.",
+  "coverage": "full",
+  "completeness": "best-effort",
+  "completenessReason": "rpc-transport",
+  "verifiedAgainst": [
+    "ast.json"
+  ],
+  "lastCheckedAt": "2026-09-03"
 }

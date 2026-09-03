@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Solution",
+  "title": "Solution",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Solution",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the solution",
+      "example": "SO2ad0100821a98bea"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the solution, which must be unique within the project",
+      "example": "Text to Win"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Description of the solution",
+      "example": "Customers text WIN to enter the monthly prize draw."
+    },
+    "skillbook_slug": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Slug of the Skillbook solution template that this solution is an instance of, if applicable",
+      "example": "sol-text-to-win"
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the service"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the service"
+          },
+          "service_type": {
+            "type": "string",
+            "description": "Type of the service"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the service is active"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the service in the Telerivet web app"
+          }
+        }
+      },
+      "description": "Summaries of up to 50 services that belong to this solution. Only returned when retrieving a single solution by ID; if `truncated` includes `services`, the solution has more services than are listed here."
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the data table"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the data table"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the data table in the Telerivet web app"
+          }
+        }
+      },
+      "description": "Summaries of up to 50 data tables that belong to this solution. Only returned when retrieving a single solution by ID; if `truncated` includes `tables`, the solution has more data tables than are listed here."
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the group"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the group"
+          },
+          "dynamic": {
+            "type": "boolean",
+            "description": "Whether this is a dynamic or normal group"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the group in the Telerivet web app"
+          }
+        }
+      },
+      "description": "Summaries of up to 50 contact groups that belong to this solution. Only returned when retrieving a single solution by ID; if `truncated` includes `groups`, the solution has more contact groups than are listed here."
+    },
+    "campaigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the campaign"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the campaign"
+          },
+          "campaign_type": {
+            "type": "string",
+            "description": "Type of the campaign"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the campaign"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the campaign in the Telerivet web app"
+          }
+        }
+      },
+      "description": "Summaries of up to 50 campaigns that belong to this solution. Only returned when retrieving a single solution by ID; if `truncated` includes `campaigns`, the solution has more campaigns than are listed here."
+    },
+    "message_templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the message template"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the message template"
+          },
+          "readonly": {
+            "type": "boolean",
+            "description": "True if the template was synchronized from a WhatsApp Business Account and cannot be modified via the API"
+          }
+        }
+      },
+      "description": "Summaries of up to 50 message templates that belong to this solution. Only returned when retrieving a single solution by ID; if `truncated` includes `message_templates`, the solution has more message templates than are listed here."
+    },
+    "dashboards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the dashboard"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the dashboard"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the dashboard in the Telerivet web app"
+          }
+        }
+      },
+      "description": "Summaries of up to 50 dashboards that belong to this solution. Only returned when retrieving a single solution by ID; if `truncated` includes `dashboards`, the solution has more dashboards than are listed here."
+    },
+    "truncated": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of member types (`services`, `tables`, `groups`, `campaigns`, `message_templates`, `dashboards`) for which the solution has more members than are included in this response (more than 50). To list all members of a type, query that type with the `solution_id` filter (e.g. project.queryServices). Only returned when retrieving a single solution by ID."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this solution. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the solution was created in Telerivet",
+      "example": 1392254503
+    },
+    "time_updated": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the solution was last updated in Telerivet",
+      "example": 1392254503
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this solution belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents a solution: a named group of related services, data tables, contact groups, campaigns, message templates, and dashboards within a project that together implement a particular use case (for example, a \"Text to Win\" contest).\n\n Solutions make it easy to find all of the objects that were created for a particular purpose. A solution may optionally be an instance of a solution template from Telerivet's Skillbook (see `skillbook_slug`).\n\n To add an object to a solution, set its `solution_id` field when creating or updating the object. Each object can belong to at most one solution."
+}

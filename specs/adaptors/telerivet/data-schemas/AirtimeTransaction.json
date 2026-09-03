@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/AirtimeTransaction",
+  "title": "AirtimeTransaction",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/AirtimeTransaction",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the airtime transaction",
+      "example": "ATb11111211217d11f"
+    },
+    "to_number": {
+      "type": "string",
+      "description": "Destination phone number in international format (no leading +)",
+      "example": "639123123123"
+    },
+    "operator_name": {
+      "type": "string",
+      "description": "Operator name",
+      "example": "Globe Philippines"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country code",
+      "example": "PH"
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "The time that the airtime transaction was created on Telerivet's servers",
+      "example": 1390347812
+    },
+    "transaction_time": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "The time that the airtime transaction was sent, or null if it has not been sent",
+      "example": 1390347813
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of airtime transaction (`successful`, `failed`, `cancelled`, `queued`, `processing`, `submitted`, `pending_approval`, or `pending_payment`)",
+      "enum": [
+        "successful",
+        "failed",
+        "cancelled",
+        "queued",
+        "processing",
+        "submitted",
+        "pending_approval",
+        "pending_payment"
+      ],
+      "example": "successful"
+    },
+    "status_text": {
+      "type": "string",
+      "description": "Error or success message returned by airtime provider, if available",
+      "example": "Transaction successful"
+    },
+    "value": {
+      "type": "string",
+      "description": "Value of airtime sent to destination phone number, in units of value_currency",
+      "example": 25
+    },
+    "value_currency": {
+      "type": "string",
+      "description": "Currency code of price",
+      "example": "PHP"
+    },
+    "price": {
+      "type": "string",
+      "description": "Price charged for airtime transaction, in units of price_currency",
+      "example": 0.63
+    },
+    "price_currency": {
+      "type": "string",
+      "description": "Currency code of price",
+      "example": "USD"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "ID of the contact the airtime was sent to",
+      "example": "CTa01111211217d24e"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "ID of the service that sent the airtime",
+      "example": "SVb12345211217d35f"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project that the airtime transaction belongs to",
+      "example": "PJ012345211217c11a"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "The ID of this transaction from an external airtime gateway provider, if available.",
+      "example": "GLYV2R8GHY8LS17Y0S0G"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the Telerivet user who sent the airtime transaction (if applicable)",
+      "example": "URba3e403e98f49735"
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this transaction. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    }
+  },
+  "description": "Represents a transaction where airtime is sent to a mobile phone number. This also is used to represent non-airtime value transfers such as data bundles or gift cards.\n\nTo send airtime, first [create a Custom Actions service to send a particular amount of airtime](https://telerivet.com/dashboard/add_service?subtype_id=main.service.rules.contact&action_id=main.rule.sendairtime), then trigger the service using service.invoke, project.sendBroadcast, or project.scheduleMessage."
+}

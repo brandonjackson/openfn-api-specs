@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ToolSearchToolParam",
+  "title": "Tool search tool",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ToolSearchToolParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "tool_search"
+      ],
+      "description": "The type of the tool. Always `tool_search`.",
+      "default": "tool_search",
+      "x-stainless-const": true
+    },
+    "execution": {
+      "$ref": "ToolSearchExecutionType.json",
+      "description": "Whether tool search is executed by the server or by the client."
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Description shown to the model for a client-executed tool search tool."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "parameters": {
+      "anyOf": [
+        {
+          "$ref": "EmptyModelParam.json",
+          "description": "Parameter schema for a client-executed tool search tool."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "description": "Hosted or BYOT tool search configuration for deferred tools."
+}

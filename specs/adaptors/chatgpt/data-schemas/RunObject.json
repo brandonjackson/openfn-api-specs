@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/RunObject",
+  "title": "A run on a thread",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/RunObject",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents an execution run on a [thread](/docs/api-reference/threads).",
+  "properties": {
+    "id": {
+      "description": "The identifier, which can be referenced in API endpoints.",
+      "type": "string"
+    },
+    "object": {
+      "description": "The object type, which is always `thread.run`.",
+      "type": "string",
+      "enum": [
+        "thread.run"
+      ],
+      "x-stainless-const": true
+    },
+    "created_at": {
+      "description": "The Unix timestamp (in seconds) for when the run was created.",
+      "type": "integer",
+      "format": "unixtime"
+    },
+    "thread_id": {
+      "description": "The ID of the [thread](/docs/api-reference/threads) that was executed on as a part of this run.",
+      "type": "string"
+    },
+    "assistant_id": {
+      "description": "The ID of the [assistant](/docs/api-reference/assistants) used for execution of this run.",
+      "type": "string"
+    },
+    "status": {
+      "description": "The status of the run, which can be either `queued`, `in_progress`, `requires_action`, `cancelling`, `cancelled`, `failed`, `completed`, `incomplete`, or `expired`.",
+      "type": "string",
+      "enum": [
+        "queued",
+        "in_progress",
+        "requires_action",
+        "cancelling",
+        "cancelled",
+        "failed",
+        "completed",
+        "incomplete",
+        "expired"
+      ]
+    },
+    "required_action": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Details on the action required to continue the run. Will be `null` if no action is required.",
+      "properties": {
+        "type": {
+          "description": "For now, this is always `submit_tool_outputs`.",
+          "type": "string",
+          "enum": [
+            "submit_tool_outputs"
+          ],
+          "x-stainless-const": true
+        },
+        "submit_tool_outputs": {
+          "type": "object",
+          "description": "Details on the tool outputs needed for this run to continue.",
+          "properties": {
+            "tool_calls": {
+              "type": "array",
+              "description": "A list of the relevant tool calls.",
+              "items": {
+                "$ref": "RunToolCallObject.json"
+              }
+            }
+          },
+          "required": [
+            "tool_calls"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "submit_tool_outputs"
+      ]
+    },
+    "last_error": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "The last error associated with this run. Will be `null` if there are no errors.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "One of `server_error`, `rate_limit_exceeded`, or `invalid_prompt`.",
+          "enum": [
+            "server_error",
+            "rate_limit_exceeded",
+            "invalid_prompt"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "A human-readable description of the error."
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ]
+    },
+    "expires_at": {
+      "description": "The Unix timestamp (in seconds) for when the run will expire.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unixtime"
+    },
+    "started_at": {
+      "description": "The Unix timestamp (in seconds) for when the run was started.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unixtime"
+    },
+    "cancelled_at": {
+      "description": "The Unix timestamp (in seconds) for when the run was cancelled.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unixtime"
+    },
+    "failed_at": {
+      "description": "The Unix timestamp (in seconds) for when the run failed.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unixtime"
+    },
+    "completed_at": {
+      "description": "The Unix timestamp (in seconds) for when the run was completed.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unixtime"
+    },
+    "incomplete_details": {
+      "description": "Details on why the run is incomplete. Will be `null` if the run is not incomplete.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "reason": {
+          "description": "The reason why the run is incomplete. This will point to which specific token limit was reached over the course of the run.",
+          "type": "string",
+          "enum": [
+            "max_completion_tokens",
+            "max_prompt_tokens"
+          ]
+        }
+      }
+    },
+    "model": {
+      "description": "The model that the [assistant](/docs/api-reference/assistants) used for this run.",
+      "type": "string"
+    },
+    "instructions": {
+      "description": "The instructions that the [assistant](/docs/api-reference/assistants) used for this run.",
+      "type": "string"
+    },
+    "tools": {
+      "description": "The list of tools that the [assistant](/docs/api-reference/assistants) used for this run.",
+      "default": [],
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "AssistantToolsCode.json"
+          },
+          {
+            "$ref": "AssistantToolsFileSearch.json"
+          },
+          {
+            "$ref": "AssistantToolsFunction.json"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "$ref": "Metadata.json"
+    },
+    "usage": {
+      "$ref": "RunCompletionUsage.json"
+    },
+    "temperature": {
+      "description": "The sampling temperature used for this run. If not set, defaults to 1.",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "top_p": {
+      "description": "The nucleus sampling value used for this run. If not set, defaults to 1.",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "max_prompt_tokens": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "The maximum number of prompt tokens specified to have been used over the course of the run.\n",
+      "minimum": 256
+    },
+    "max_completion_tokens": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "The maximum number of completion tokens specified to have been used over the course of the run.\n",
+      "minimum": 256
+    },
+    "truncation_strategy": {
+      "allOf": [
+        {
+          "$ref": "TruncationObject.json"
+        },
+        {}
+      ]
+    },
+    "tool_choice": {
+      "allOf": [
+        {
+          "$ref": "AssistantsApiToolChoiceOption.json"
+        },
+        {}
+      ]
+    },
+    "parallel_tool_calls": {
+      "$ref": "ParallelToolCalls.json"
+    },
+    "response_format": {
+      "anyOf": [
+        {
+          "$ref": "AssistantsApiResponseFormatOption.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "created_at",
+    "thread_id",
+    "assistant_id",
+    "status",
+    "required_action",
+    "last_error",
+    "expires_at",
+    "started_at",
+    "cancelled_at",
+    "failed_at",
+    "completed_at",
+    "model",
+    "instructions",
+    "tools",
+    "metadata",
+    "usage",
+    "incomplete_details",
+    "max_prompt_tokens",
+    "max_completion_tokens",
+    "truncation_strategy",
+    "tool_choice",
+    "parallel_tool_calls",
+    "response_format"
+  ],
+  "x-oaiMeta": {
+    "name": "The run object",
+    "beta": true,
+    "example": "{\n  \"id\": \"run_abc123\",\n  \"object\": \"thread.run\",\n  \"created_at\": 1698107661,\n  \"assistant_id\": \"asst_abc123\",\n  \"thread_id\": \"thread_abc123\",\n  \"status\": \"completed\",\n  \"started_at\": 1699073476,\n  \"expires_at\": null,\n  \"cancelled_at\": null,\n  \"failed_at\": null,\n  \"completed_at\": 1699073498,\n  \"last_error\": null,\n  \"model\": \"gpt-5\",\n  \"instructions\": null,\n  \"tools\": [{\"type\": \"file_search\"}, {\"type\": \"code_interpreter\"}],\n  \"metadata\": {},\n  \"incomplete_details\": null,\n  \"usage\": {\n    \"prompt_tokens\": 123,\n    \"completion_tokens\": 456,\n    \"total_tokens\": 579\n  },\n  \"temperature\": 1.0,\n  \"top_p\": 1.0,\n  \"max_prompt_tokens\": 1000,\n  \"max_completion_tokens\": 1000,\n  \"truncation_strategy\": {\n    \"type\": \"auto\",\n    \"last_messages\": null\n  },\n  \"response_format\": \"auto\",\n  \"tool_choice\": \"auto\",\n  \"parallel_tool_calls\": true\n}\n"
+  }
+}

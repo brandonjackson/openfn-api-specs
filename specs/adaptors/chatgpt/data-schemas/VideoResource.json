@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/VideoResource",
+  "title": "Video job",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/VideoResource",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the video job."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "video"
+      ],
+      "description": "The object type, which is always `video`.",
+      "default": "video",
+      "x-stainless-const": true
+    },
+    "model": {
+      "$ref": "VideoModel.json",
+      "description": "The video generation model that produced the job."
+    },
+    "status": {
+      "$ref": "VideoStatus.json",
+      "description": "Current lifecycle status of the video job."
+    },
+    "progress": {
+      "type": "integer",
+      "description": "Approximate completion percentage for the generation task."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "Unix timestamp (seconds) for when the job was created."
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "unixtime",
+          "description": "Unix timestamp (seconds) for when the job completed, if finished."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "unixtime",
+          "description": "Unix timestamp (seconds) for when the downloadable assets expire, if set."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prompt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The prompt that was used to generate the video."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "size": {
+      "$ref": "VideoSize.json",
+      "description": "The resolution of the generated video."
+    },
+    "seconds": {
+      "type": "string",
+      "description": "Duration of the generated clip in seconds. For extensions, this is the stitched total duration."
+    },
+    "remixed_from_video_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Identifier of the source video if this video is a remix."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "Error-2.json",
+          "description": "Error payload that explains why generation failed, if applicable."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "model",
+    "status",
+    "progress",
+    "created_at",
+    "completed_at",
+    "expires_at",
+    "prompt",
+    "size",
+    "seconds",
+    "remixed_from_video_id",
+    "error"
+  ],
+  "description": "Structured information describing a generated video job."
+}

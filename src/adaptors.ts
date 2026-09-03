@@ -31,7 +31,6 @@ export const NON_REST_ADAPTORS: Record<string, string> = {
   openfn: 'OpenFn platform (internal Lightning API)',
   testing: 'test/dev harness, no external system',
   ping: 'connectivity probe, no external system',
-  dagu: 'workflow engine, thin surface',
   memento: 'note-taking app, thin surface',
   postgresql: 'SQL database (protocol adaptor, not REST)',
   mysql: 'SQL database (protocol adaptor, not REST)',
@@ -39,6 +38,10 @@ export const NON_REST_ADAPTORS: Record<string, string> = {
   mongodb: 'document database (driver adaptor, not REST)',
   redis: 'key-value store (protocol adaptor, not REST)',
   sftp: 'file transfer (protocol adaptor, not REST)',
+  hive: 'SQL warehouse (Thrift/JDBC client, not REST)',
+  motherduck: 'DuckDB cloud warehouse (SQL client, not REST)',
+  minio: 'S3-compatible object store (SDK client, not a JSON REST API)',
+  odoo: 'ERP over XML-RPC/JSON-RPC method dispatch, not REST',
 };
 
 export interface AdaptorInfo {

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionSetVariable",
+  "title": "ActionSetVariable",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionSetVariable",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Updates the value of any writable variable within the Rules Engine.\n\nOptionally, you can use this rule to perform simple numeric operations between two variables such as addition, subtraction, multiplication and division.\n\nRead-only variables cannot be updated via this rule.\n\n[See available variables](#message_variables)",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "set_variable",
+      "description": "Action type identifier"
+    },
+    "variable": {
+      "type": "string",
+      "description": "Name of the variable to set (e.g. $foo, contact.vars.bar, phone.vars.baz)."
+    },
+    "value": {
+      "type": "string",
+      "description": "Value to assign to the variable.",
+      "x-supports-variables": true
+    },
+    "op": {
+      "type": "string",
+      "description": "Optional arithmetic operation to perform between value and value2.",
+      "enum": [
+        "plus",
+        "minus",
+        "times",
+        "div"
+      ]
+    },
+    "value2": {
+      "type": "string",
+      "description": "Second operand for the arithmetic operation (required if op is specified).",
+      "x-supports-variables": true
+    }
+  },
+  "required": [
+    "type",
+    "variable",
+    "value"
+  ],
+  "example": {
+    "type": "set_variable",
+    "variable": "$foo",
+    "value": "[[word1]]"
+  }
+}

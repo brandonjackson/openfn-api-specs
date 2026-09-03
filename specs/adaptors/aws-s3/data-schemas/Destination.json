@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aws-s3/Destination",
+  "title": "Destination",
+  "x-openfn-adaptor": "aws-s3",
+  "x-source": {
+    "openapi": "#/components/schemas/Destination",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "required": [
+    "Bucket"
+  ],
+  "properties": {
+    "Bucket": {
+      "allOf": [
+        {
+          "$ref": "BucketName.json"
+        },
+        {
+          "description": " The Amazon Resource Name (ARN) of the bucket where you want Amazon S3 to store the results."
+        }
+      ]
+    },
+    "Account": {
+      "allOf": [
+        {
+          "$ref": "AccountId.json"
+        },
+        {
+          "description": "Destination bucket owner account ID. In a cross-account scenario, if you direct Amazon S3 to change replica ownership to the Amazon Web Services account that owns the destination bucket by specifying the <code>AccessControlTranslation</code> property, this is the account ID of the destination bucket owner. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-change-owner.html\">Replication Additional Configuration: Changing the Replica Owner</a> in the <i>Amazon S3 User Guide</i>."
+        }
+      ]
+    },
+    "StorageClass": {
+      "allOf": [
+        {
+          "$ref": "StorageClass.json"
+        },
+        {
+          "description": "<p> The storage class to use when replicating objects, such as S3 Standard or reduced redundancy. By default, Amazon S3 uses the storage class of the source object to create the object replica. </p> <p>For valid values, see the <code>StorageClass</code> element of the <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTreplication.html\">PUT Bucket replication</a> action in the <i>Amazon S3 API Reference</i>.</p>"
+        }
+      ]
+    },
+    "AccessControlTranslation": {
+      "allOf": [
+        {
+          "$ref": "AccessControlTranslation.json"
+        },
+        {
+          "description": "Specify this only in a cross-account scenario (where source and destination bucket owners are not the same), and you want to change replica ownership to the Amazon Web Services account that owns the destination bucket. If this is not specified in the replication configuration, the replicas are owned by same Amazon Web Services account that owns the source object."
+        }
+      ]
+    },
+    "EncryptionConfiguration": {
+      "allOf": [
+        {
+          "$ref": "EncryptionConfiguration.json"
+        },
+        {
+          "description": "A container that provides information about encryption. If <code>SourceSelectionCriteria</code> is specified, you must specify this element."
+        }
+      ]
+    },
+    "ReplicationTime": {
+      "allOf": [
+        {
+          "$ref": "ReplicationTime.json"
+        },
+        {
+          "description": " A container specifying S3 Replication Time Control (S3 RTC), including whether S3 RTC is enabled and the time when all objects and operations on objects must be replicated. Must be specified together with a <code>Metrics</code> block. "
+        }
+      ]
+    },
+    "Metrics": {
+      "allOf": [
+        {
+          "$ref": "Metrics.json"
+        },
+        {
+          "description": " A container specifying replication metrics-related settings enabling replication metrics and events. "
+        }
+      ]
+    }
+  },
+  "description": "Specifies information about where to publish analysis or configuration results for an Amazon S3 bucket and S3 Replication Time Control (S3 RTC)."
+}

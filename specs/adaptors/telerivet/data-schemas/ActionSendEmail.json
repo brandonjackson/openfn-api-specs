@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionSendEmail",
+  "title": "ActionSendEmail",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionSendEmail",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Sends a plain-text email with custom subject line and body.\n\nEach rule can only send to a single email address; if you need multiple recipients, we recommend setting up a mailing list on your own server.\n\nWhen receiving MMS and chat messages, you can optionally send the multimedia files as email attachments.\n\nTo prevent abuse, it isn't possible to change the 'From' name or email address of the email, although these settings can be configured when using Telerivet on a custom domain.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "send_email",
+      "description": "Action type identifier"
+    },
+    "to_email": {
+      "type": "string",
+      "description": "Recipient email address.",
+      "x-supports-variables": true
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line.",
+      "x-supports-variables": true
+    },
+    "body_text": {
+      "type": "string",
+      "description": "Email body text.",
+      "x-supports-variables": true
+    },
+    "reply_to": {
+      "type": "string",
+      "description": "Reply-to email address.",
+      "x-supports-variables": true
+    },
+    "include_message_attachments": {
+      "type": "boolean",
+      "description": "If true, include any attachments from the current message as email attachments."
+    }
+  },
+  "required": [
+    "type",
+    "to_email",
+    "subject",
+    "body_text"
+  ],
+  "example": {
+    "type": "send_email",
+    "to_email": "admin@example.com",
+    "subject": "New message from [[contact.name]]",
+    "body_text": "Phone Number: [[from_number]]\n\n[[content]]"
+  }
+}

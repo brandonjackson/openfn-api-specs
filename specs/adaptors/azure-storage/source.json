@@ -1,14 +1,39 @@
 {
   "adaptor": "azure-storage",
   "npm": "@openfn/language-azure-storage",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://learn.microsoft.com/en-us/rest/api/storageservices/put-blob",
-    "https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob",
-    "https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-properties",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-azure-storage/types/Adaptor.d.ts"
+  "origin": "converted",
+  "upstreamFormat": "swagger-2.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/storage/data-plane/Microsoft.BlobStorage/stable/2021-12-02/blob.json",
+    "format": "swagger-2.0",
+    "contentHash": "sha256:c18611fc51cc0bf066df00a90722a9986e1aaba9c050e7faca66a318629d9f75",
+    "fetchedAt": "2026-09-03"
+  },
+  "attempts": [
+    {
+      "kind": "swagger",
+      "url": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/storage/data-plane/Microsoft.BlobStorage/stable/2021-12-02/blob.json",
+      "result": "used"
+    },
+    {
+      "kind": "openapi",
+      "url": "no OpenAPI 3.x; Azure publishes its data-plane APIs as Swagger 2.0 in Azure/azure-rest-api-specs",
+      "result": "not-found"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored from the Azure Blob Storage REST API docs, covering the three blob operations the adaptor wraps: uploadBlob (Put Blob), downloadBlob (Get Blob), getBlobProperties (Get Blob Properties / HEAD). The adaptor uses the @azure/storage-blob SDK; the real REST responses carry metadata in headers with binary/no bodies, so responses are modelled as JSON objects matching the SDK/adaptor result shapes. Server URL uses the {account}.blob.core.windows.net template."
+  "verifiedAgainst": [
+    "ast.json"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/storage/data-plane/Microsoft.BlobStorage/stable/2021-12-02/blob.json",
+    "https://learn.microsoft.com/en-us/rest/api/storageservices/blob-service-rest-api"
+  ],
+  "capturedAt": "2026-09-03",
+  "lastCheckedAt": "2026-09-03",
+  "notes": "Full coverage of the Azure Blob Storage data-plane API (api-version 2021-12-02, the current stable version in Azure/azure-rest-api-specs), converted from Microsoft's own Swagger 2.0 document committed verbatim as upstream.json — 69 operations and 56 component schemas: service properties/stats, containers, leases, block/append/page blobs, blocks, pages, snapshots, copy, tiers, tags, immutability and legal hold. Replaces a 5 KiB hand-authored spec. Two Azure Swagger extensions are normalised on the way through: x-ms-paths (operations that differ only by query string, which plain OpenAPI paths cannot key) merge into paths with the ? rendered as a # fragment, and x-ms-parameterized-host becomes a templated server with a {url} variable, since the account name is part of the hostname. Blob is the only Azure Storage service the adaptor speaks (uploadBlob, downloadBlob, getBlobProperties — all present); Queue, Table and File are separate services with their own specs."
 }

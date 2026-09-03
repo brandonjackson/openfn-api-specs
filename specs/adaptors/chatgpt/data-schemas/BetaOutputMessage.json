@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaOutputMessage",
+  "title": "Output message",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaOutputMessage",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "An output message from the model.\n",
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "BetaAgentTag.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The agent that produced this item."
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the output message.\n"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the output message. Always `message`.\n",
+      "enum": [
+        "message"
+      ],
+      "x-stainless-const": true
+    },
+    "role": {
+      "type": "string",
+      "description": "The role of the output message. Always `assistant`.\n",
+      "enum": [
+        "assistant"
+      ],
+      "x-stainless-const": true
+    },
+    "content": {
+      "type": "array",
+      "description": "The content of the output message.\n",
+      "items": {
+        "$ref": "BetaOutputMessageContent.json"
+      }
+    },
+    "phase": {
+      "anyOf": [
+        {
+          "$ref": "BetaMessagePhase.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "The status of the message input. One of `in_progress`, `completed`, or\n`incomplete`. Populated when input items are returned via API.\n",
+      "enum": [
+        "in_progress",
+        "completed",
+        "incomplete"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "role",
+    "content",
+    "status"
+  ]
+}

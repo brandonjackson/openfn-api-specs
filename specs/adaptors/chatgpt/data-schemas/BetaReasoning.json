@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaReasoning",
+  "title": "Reasoning",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaReasoning",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Configuration options for\n[reasoning models](https://platform.openai.com/docs/guides/reasoning).\n",
+  "properties": {
+    "mode": {
+      "$ref": "BetaReasoningModeEnum.json",
+      "description": "Controls the reasoning execution mode for the request.\n\nWhen returned on a response, this is the effective execution mode.\n"
+    },
+    "effort": {
+      "$ref": "BetaReasoningEffort.json"
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "A summary of the reasoning performed by the model. This can be\nuseful for debugging and understanding the model's reasoning process.\nOne of `auto`, `concise`, or `detailed`.\n\n`concise` is supported for `computer-use-preview` models and all reasoning models after `gpt-5`.\n",
+          "enum": [
+            "auto",
+            "concise",
+            "detailed"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "context": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Controls which reasoning items are rendered back to the model on later turns.\nIf omitted or set to `auto`, the model determines the context mode. The\n`gpt-5.6` model family defaults to `all_turns`; earlier models default to\n`current_turn`.\n\nWhen returned on a response, this is the effective reasoning context mode\nused for the response.\n",
+          "enum": [
+            "auto",
+            "current_turn",
+            "all_turns"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "generate_summary": {
+      "anyOf": [
+        {
+          "type": "string",
+          "deprecated": true,
+          "description": "**Deprecated:** use `summary` instead.\n\nA summary of the reasoning performed by the model. This can be\nuseful for debugging and understanding the model's reasoning process.\nOne of `auto`, `concise`, or `detailed`.\n",
+          "enum": [
+            "auto",
+            "concise",
+            "detailed"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

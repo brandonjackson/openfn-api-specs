@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/UserMessageItem",
+  "title": "User Message Item",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/UserMessageItem",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identifier of the thread item."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "chatkit.thread_item"
+      ],
+      "description": "Type discriminator that is always `chatkit.thread_item`.",
+      "default": "chatkit.thread_item",
+      "x-stainless-const": true
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "Unix timestamp (in seconds) for when the item was created."
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "Identifier of the parent thread."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "chatkit.user_message"
+      ],
+      "default": "chatkit.user_message",
+      "x-stainless-const": true
+    },
+    "content": {
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "UserMessageInputText.json"
+          },
+          {
+            "$ref": "UserMessageQuotedText.json"
+          }
+        ],
+        "description": "Content blocks that comprise a user message.",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "type": "array",
+      "description": "Ordered content elements supplied by the user."
+    },
+    "attachments": {
+      "items": {
+        "$ref": "Attachment.json"
+      },
+      "type": "array",
+      "description": "Attachments associated with the user message. Defaults to an empty list."
+    },
+    "inference_options": {
+      "anyOf": [
+        {
+          "$ref": "InferenceOptions.json",
+          "description": "Inference overrides applied to the message. Defaults to null when unset."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "created_at",
+    "thread_id",
+    "type",
+    "content",
+    "attachments",
+    "inference_options"
+  ],
+  "description": "User-authored messages within a thread."
+}

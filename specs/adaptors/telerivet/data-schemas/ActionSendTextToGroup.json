@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionSendTextToGroup",
+  "title": "ActionSendTextToGroup",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionSendTextToGroup",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Sends a SMS message to a group defined on your Contacts page.\n\nOptionally, you can exclude the message sender from receiving the message (common when implementing a group chat system).",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "send_text_to_group",
+      "description": "Action type identifier"
+    },
+    "body": {
+      "$ref": "MessageBody.json",
+      "description": "Message body."
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the route to send the message from. If not specified, uses the default route."
+    },
+    "label_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of label names to apply to the sent message.",
+      "x-supports-variables": true
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Schedule to send the message at a later time."
+    },
+    "group_name": {
+      "type": "string",
+      "description": "Name of the group to send the message to.",
+      "x-supports-variables": true
+    },
+    "exclude_sender": {
+      "type": "boolean",
+      "description": "If true, exclude the message sender from receiving the group message."
+    }
+  },
+  "required": [
+    "type",
+    "body",
+    "group_name"
+  ],
+  "example": {
+    "type": "send_text_to_group",
+    "body": {
+      "content": "[[contact.name]] said: [[content]]."
+    },
+    "group_name": "subscribers",
+    "exclude_sender": null
+  }
+}

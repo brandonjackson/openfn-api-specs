@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaInputFileContentParam",
+  "title": "Input file",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaInputFileContentParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "input_file"
+      ],
+      "description": "The type of the input item. Always `input_file`.",
+      "default": "input_file",
+      "x-stainless-const": true
+    },
+    "file_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The ID of the file to be sent to the model.",
+          "example": "file-123"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "filename": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The name of the file to be sent to the model."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "file_data": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 73400320,
+          "description": "The base64-encoded data of the file to be sent to the model."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "file_url": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the file to be sent to the model."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "detail": {
+      "$ref": "BetaFileDetailEnum.json",
+      "description": "The detail level of the file to be sent to the model. Use `auto` to let the system select the detail level; for GPT-5.6 and later models, `auto` uses high-quality rendering, which may increase input token usage. Use `low` for lower-cost rendering, or `high` to render the file at higher quality. Defaults to `auto`."
+    },
+    "prompt_cache_breakpoint": {
+      "anyOf": [
+        {
+          "$ref": "BetaPromptCacheBreakpointParam.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "description": "A file input to the model."
+}

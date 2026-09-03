@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/MessageObject",
+  "title": "The message object",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/MessageObject",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents a message within a [thread](/docs/api-reference/threads).",
+  "properties": {
+    "id": {
+      "description": "The identifier, which can be referenced in API endpoints.",
+      "type": "string"
+    },
+    "object": {
+      "description": "The object type, which is always `thread.message`.",
+      "type": "string",
+      "enum": [
+        "thread.message"
+      ],
+      "x-stainless-const": true
+    },
+    "created_at": {
+      "description": "The Unix timestamp (in seconds) for when the message was created.",
+      "type": "integer",
+      "format": "unixtime"
+    },
+    "thread_id": {
+      "description": "The [thread](/docs/api-reference/threads) ID that this message belongs to.",
+      "type": "string"
+    },
+    "status": {
+      "description": "The status of the message, which can be either `in_progress`, `incomplete`, or `completed`.",
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "incomplete",
+        "completed"
+      ]
+    },
+    "incomplete_details": {
+      "anyOf": [
+        {
+          "description": "On an incomplete message, details about why the message is incomplete.",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string",
+              "description": "The reason the message is incomplete.",
+              "enum": [
+                "content_filter",
+                "max_tokens",
+                "run_cancelled",
+                "run_expired",
+                "run_failed"
+              ]
+            }
+          },
+          "required": [
+            "reason"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "description": "The Unix timestamp (in seconds) for when the message was completed.",
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "incomplete_at": {
+      "anyOf": [
+        {
+          "description": "The Unix timestamp (in seconds) for when the message was marked as incomplete.",
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "role": {
+      "description": "The entity that produced the message. One of `user` or `assistant`.",
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant"
+      ]
+    },
+    "content": {
+      "description": "The content of the message in array of text and/or images.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "MessageContentImageFileObject.json"
+          },
+          {
+            "$ref": "MessageContentImageUrlObject.json"
+          },
+          {
+            "$ref": "MessageContentTextObject.json"
+          },
+          {
+            "$ref": "MessageContentRefusalObject.json"
+          }
+        ]
+      }
+    },
+    "assistant_id": {
+      "anyOf": [
+        {
+          "description": "If applicable, the ID of the [assistant](/docs/api-reference/assistants) that authored this message.",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "run_id": {
+      "anyOf": [
+        {
+          "description": "The ID of the [run](/docs/api-reference/runs) associated with the creation of this message. Value is `null` when messages are created manually using the create message or create thread endpoints.",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "attachments": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file_id": {
+                "type": "string",
+                "description": "The ID of the file to attach to the message."
+              },
+              "tools": {
+                "description": "The tools to add this file to.",
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "AssistantToolsCode.json"
+                    },
+                    {
+                      "$ref": "AssistantToolsFileSearchTypeOnly.json"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "description": "A list of files attached to the message, and the tools they were added to."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata": {
+      "$ref": "Metadata.json"
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "created_at",
+    "thread_id",
+    "status",
+    "incomplete_details",
+    "completed_at",
+    "incomplete_at",
+    "role",
+    "content",
+    "assistant_id",
+    "run_id",
+    "attachments",
+    "metadata"
+  ],
+  "x-oaiMeta": {
+    "name": "The message object",
+    "beta": true,
+    "example": "{\n  \"id\": \"msg_abc123\",\n  \"object\": \"thread.message\",\n  \"created_at\": 1698983503,\n  \"thread_id\": \"thread_abc123\",\n  \"role\": \"assistant\",\n  \"content\": [\n    {\n      \"type\": \"text\",\n      \"text\": {\n        \"value\": \"Hi! How can I help you today?\",\n        \"annotations\": []\n      }\n    }\n  ],\n  \"assistant_id\": \"asst_abc123\",\n  \"run_id\": \"run_abc123\",\n  \"attachments\": [],\n  \"metadata\": {}\n}\n"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/MessageTemplate",
+  "title": "MessageTemplate",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/MessageTemplate",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the message template",
+      "example": "MTd34f8c1d71a3e2b4"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the template (max 127 characters)",
+      "example": "Welcome Message"
+    },
+    "content": {
+      "type": "string",
+      "description": "Content of the message template (max 2000 characters)",
+      "example": "Hello, [[contact.name]]! Welcome to our service."
+    },
+    "track_clicks": {
+      "type": "boolean",
+      "description": "If true, URLs in the content will be replaced with short links that track clicks when the template is used"
+    },
+    "readonly": {
+      "type": "boolean",
+      "description": "True if the template cannot be modified or deleted (i.e., it was synchronized from a WhatsApp Business Account)",
+      "example": false
+    },
+    "short_link_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Custom parameters for short links (only if track_clicks is true)"
+    },
+    "media": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the media file. Note: For files stored by Telerivet (including uploaded files and incoming media attachments), the URL is temporary and may not be valid for more than 1 day."
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type of the media file"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes"
+          },
+          "file_id": {
+            "type": "string",
+            "description": "ID of the stored file, if applicable"
+          }
+        }
+      },
+      "description": "Array of media attachments to include when sending messages with this template. When updating this field, each item is an object with a `url` or `file_id` property (and optionally `type` and `filename`), in the same format as the `media` parameter of project.sendMessage."
+    },
+    "route_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Route-specific parameters to use when sending messages with this template. \n\n When sending messages via chat apps such as WhatsApp, the route_params parameter can be used to send messages with app-specific features such as quick replies and link buttons.\n\n For more details, see Route-Specific Parameters."
+    },
+    "waba_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the WhatsApp Business Account that this template is associated with (only present for WhatsApp templates)"
+    },
+    "whatsapp_template": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "For templates synchronized from a WhatsApp Business Account, contains the full template data from WhatsApp with properties including `id`, `name`, `language`, `status`, `category`, and `components`. The full format is defined in the [WhatsApp Template API documentation](https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-account/template-api#get-version-template-id). Only present for WhatsApp templates."
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the template was created in Telerivet",
+      "example": 1390343800
+    },
+    "time_updated": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the template was last updated",
+      "example": 1390343845
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this template. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "solution_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the solution that this message template belongs to, if any",
+      "example": "SO2ad0100821a98bea"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this template belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents a reusable message template that can be used when composing or scheduling messages.\n\n Message templates can include placeholder variables using double square brackets (e.g. `[[contact.name]]`) that are replaced with actual values when the message is sent. For available variables, see Variable Reference. The double square brackets may also include [filters](https://telerivet.com/api/rules_engine#filters) to transform variables, such as to set a default value.\n\n Templates synchronized from a WhatsApp Business Account are read-only and cannot be modified or deleted via the API.\n (When using Telerivet to send messages via a WhatsApp route, Telerivet tries to match the content of each outgoing message to one of these WhatsApp message templates. If a template matches, Telerivet sends a WhatsApp template message instead of a session message.)"
+}

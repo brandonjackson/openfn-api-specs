@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Task",
+  "title": "Task",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Task",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the task",
+      "example": "DE1189812e59c5c781"
+    },
+    "task_type": {
+      "type": "string",
+      "description": "The task type",
+      "example": "add_group_members"
+    },
+    "task_params": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Parameters applied to all matching rows (specific to `task_type`). See project.createTask."
+    },
+    "filter_type": {
+      "type": "string",
+      "description": "Type of filter defining the rows that the task is applied to",
+      "example": "query_contacts"
+    },
+    "filter_params": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Parameters defining the rows that the task is applied to (specific to `filter_type`). See project.createTask."
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the task was created in Telerivet",
+      "example": 1390348075
+    },
+    "time_active": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time Telerivet started executing the task",
+      "example": 1390348076
+    },
+    "time_complete": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time Telerivet finished executing the task"
+    },
+    "total_rows": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "The total number of rows matching the filter (null if not known)",
+      "example": 12000
+    },
+    "current_row": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "The number of rows that have been processed so far",
+      "example": 3000
+    },
+    "status": {
+      "type": "string",
+      "description": "The current status of the task",
+      "enum": [
+        "created",
+        "queued",
+        "active",
+        "complete",
+        "failed",
+        "cancelled"
+      ],
+      "example": "active"
+    },
+    "error_message": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Error message if the task failed"
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this task. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "table_id": {
+      "type": "string",
+      "description": "ID of the data table this task is applied to (if applicable)"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the Telerivet user who created the task (if applicable)",
+      "example": "URba3e403e98f49735"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this task belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents an asynchronous task that is applied to all entities matching a filter.\n\n Tasks include services applied to contacts, messages, or data rows; adding or removing contacts from a group; blocking or unblocking sending messages to a contact;\n updating a custom variable; deleting contacts, messages, or data rows; or exporting data to CSV."
+}

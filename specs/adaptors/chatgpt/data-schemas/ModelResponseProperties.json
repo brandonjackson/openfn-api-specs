@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ModelResponseProperties",
+  "title": "ModelResponseProperties",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ModelResponseProperties",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "$ref": "Metadata.json"
+    },
+    "top_logprobs": {
+      "anyOf": [
+        {
+          "description": "An integer between 0 and 20 specifying the maximum number of most likely\ntokens to return at each token position, each with an associated log\nprobability. In some cases, the number of returned tokens may be fewer than\nrequested.\n",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "temperature": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 1,
+          "example": 1,
+          "description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.\nWe generally recommend altering this or `top_p` but not both.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "top_p": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "example": 1,
+          "description": "An alternative to sampling with temperature, called nucleus sampling,\nwhere the model considers the results of the tokens with top_p probability\nmass. So 0.1 means only the tokens comprising the top 10% probability mass\nare considered.\n\nWe generally recommend altering this or `temperature` but not both.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "user": {
+      "type": "string",
+      "example": "user-1234",
+      "deprecated": true,
+      "description": "This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use `prompt_cache_key` instead to maintain caching optimizations.\nA stable identifier for your end-users.\nUsed to boost cache hit rates by better bucketing similar requests and  to help OpenAI detect and prevent abuse. [Learn more](/docs/guides/safety-best-practices#safety-identifiers).\n"
+    },
+    "safety_identifier": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 64,
+          "example": "safety-identifier-1234",
+          "description": "A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies.\nThe IDs should be a string that uniquely identifies each user, with a maximum length of 64 characters. We recommend hashing their username or email address, in order to avoid sending us any identifying information. [Learn more](/docs/guides/safety-best-practices#safety-identifiers).\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prompt_cache_key": {
+      "anyOf": [
+        {
+          "type": "string",
+          "example": "prompt-cache-key-1234",
+          "description": "Used by OpenAI to cache responses for similar requests to optimize your cache hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prompt_cache_retention": {
+      "deprecated": true,
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "in_memory",
+            "24h"
+          ],
+          "description": "Deprecated. Use `prompt_cache_options.ttl` instead.\n\nThe retention policy for the prompt cache. Set to `24h` to enable extended prompt caching, which keeps cached prefixes active for longer, up to a maximum of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).\nThis field expresses a maximum retention policy, while\n`prompt_cache_options.ttl` expresses a minimum cache lifetime. The two\nfields are independent and do not interact.\nFor `gpt-5.5`, `gpt-5.5-pro`, and future models, only `24h` is supported.\n\nFor older models that support both `in_memory` and `24h`, the default depends on your organization's data retention policy:\n  - Organizations without ZDR enabled default to `24h`.\n  - Organizations with ZDR enabled default to `in_memory` when `prompt_cache_retention` is not specified.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

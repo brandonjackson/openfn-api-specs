@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaMultiAgentCallItemParam",
+  "title": "BetaMultiAgentCallItemParam",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaMultiAgentCallItemParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "Beta_AgentTagParam.json",
+          "description": "The agent that produced this item."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The unique ID of this multi-agent call.",
+          "example": "mac_123"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "call_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "description": "The unique ID linking this call to its output."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "multi_agent_call"
+      ],
+      "description": "The item type. Always `multi_agent_call`.",
+      "default": "multi_agent_call",
+      "x-stainless-const": true
+    },
+    "action": {
+      "$ref": "BetaMultiAgentAction1.json",
+      "description": "The multi-agent action that was executed."
+    },
+    "arguments": {
+      "type": "string",
+      "description": "The action arguments as a JSON string."
+    }
+  },
+  "type": "object",
+  "required": [
+    "call_id",
+    "type",
+    "action",
+    "arguments"
+  ],
+  "x-oai-beta": "responses_multi_agent=v1"
+}

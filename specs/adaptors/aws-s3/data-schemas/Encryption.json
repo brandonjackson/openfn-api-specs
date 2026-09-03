@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aws-s3/Encryption",
+  "title": "Encryption",
+  "x-openfn-adaptor": "aws-s3",
+  "x-source": {
+    "openapi": "#/components/schemas/Encryption",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "required": [
+    "EncryptionType"
+  ],
+  "properties": {
+    "EncryptionType": {
+      "allOf": [
+        {
+          "$ref": "ServerSideEncryption.json"
+        },
+        {
+          "description": "The server-side encryption algorithm used when storing job results in Amazon S3 (for example, AES256, aws:kms)."
+        }
+      ]
+    },
+    "KMSKeyId": {
+      "allOf": [
+        {
+          "$ref": "SSEKMSKeyId.json"
+        },
+        {
+          "description": "If the encryption type is <code>aws:kms</code>, this optional value specifies the ID of the symmetric customer managed key to use for encryption of job results. Amazon S3 only supports symmetric keys. For more information, see <a href=\"https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html\">Using symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management Service Developer Guide</i>."
+        }
+      ]
+    },
+    "KMSContext": {
+      "allOf": [
+        {
+          "$ref": "KMSContext.json"
+        },
+        {
+          "description": "If the encryption type is <code>aws:kms</code>, this optional value can be used to specify the encryption context for the restore results."
+        }
+      ]
+    }
+  },
+  "description": "Contains the type of server-side encryption used."
+}

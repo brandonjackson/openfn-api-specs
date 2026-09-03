@@ -5,35 +5,48 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/GroundingMetadata",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-03"
   },
   "type": "object",
+  "description": "Metadata returned to client when grounding is enabled.",
   "properties": {
-    "webSearchQueries": {
+    "groundingSupports": {
       "type": "array",
+      "description": "List of grounding support.",
       "items": {
-        "type": "string"
+        "$ref": "GoogleAiGenerativelanguageV1betaGroundingSupport.json"
       }
     },
     "groundingChunks": {
       "type": "array",
+      "description": "List of supporting references retrieved from specified grounding source. When streaming, this only contains the grounding chunks that have not been included in the grounding metadata of previous responses.",
       "items": {
-        "type": "object",
-        "properties": {
-          "web": {
-            "type": "object",
-            "properties": {
-              "uri": {
-                "type": "string",
-                "format": "uri"
-              },
-              "title": {
-                "type": "string"
-              }
-            }
-          }
-        }
+        "$ref": "GroundingChunk.json"
       }
+    },
+    "webSearchQueries": {
+      "type": "array",
+      "description": "Web search queries for the following-up web search.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "retrievalMetadata": {
+      "$ref": "RetrievalMetadata.json"
+    },
+    "googleMapsWidgetContextToken": {
+      "type": "string",
+      "description": "Optional. Resource name of the Google Maps widget context token that can be used with the PlacesContextElement widget in order to render contextual data. Only populated in the case that grounding with Google Maps is enabled."
+    },
+    "imageSearchQueries": {
+      "type": "array",
+      "description": "Image search queries used for grounding.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "searchEntryPoint": {
+      "$ref": "SearchEntryPoint.json"
     }
   }
 }

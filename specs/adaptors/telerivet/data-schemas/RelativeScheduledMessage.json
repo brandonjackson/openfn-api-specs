@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/RelativeScheduledMessage",
+  "title": "RelativeScheduledMessage",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/RelativeScheduledMessage",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the relative scheduled message",
+      "example": "SEfaf2411ed3584f08"
+    },
+    "content": {
+      "type": "string",
+      "description": "Text content of the relative scheduled message",
+      "example": "hello world!"
+    },
+    "time_of_day": {
+      "type": "string",
+      "description": "Time of day when scheduled messages will be sent in HH:MM format (with hours from 00 to 23)",
+      "example": "15:07"
+    },
+    "date_variable": {
+      "type": "string",
+      "description": "Custom contact variable storing date or date/time values relative to which messages will be scheduled.",
+      "example": "date"
+    },
+    "offset_scale": {
+      "type": "string",
+      "description": "The type of interval that will be used to adjust the scheduled date relative to the date stored in the contact's date_variable, when offset_count is non-zero (I=minutes, D=day, W=week, M=month, Y=year)",
+      "enum": [
+        "I",
+        "D",
+        "W",
+        "M",
+        "Y"
+      ],
+      "example": "D"
+    },
+    "offset_count": {
+      "type": "integer",
+      "description": "The number of days/weeks/months/years to adjust the date of the scheduled message relative relative to the date stored in the contact's date_variable. May be positive, negative, or zero.",
+      "example": 3
+    },
+    "rrule": {
+      "type": "string",
+      "description": "Recurrence rule for recurring scheduled messages, e.g. 'FREQ=MONTHLY' or 'FREQ=WEEKLY;INTERVAL=2'; see [RFC2445](https://tools.ietf.org/html/rfc2445#section-4.3.10).",
+      "example": "COUNT=1"
+    },
+    "end_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time after which recurring messages will stop (not applicable to non-recurring scheduled messages)"
+    },
+    "timezone_id": {
+      "type": "string",
+      "description": "Timezone ID used to compute times for recurring messages; see [List of tz database time zones Wikipedia article](http://en.wikipedia.org/wiki/List_of_tz_database_time_zones).",
+      "example": "America/Los_Angeles"
+    },
+    "recipients_str": {
+      "type": "string",
+      "description": "A string with a human readable description of the recipient",
+      "example": "Subscribers"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "ID of the group to send the message to (null if the recipient is an individual contact)"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "ID of the contact to send the message to (null if the recipient is a group)"
+    },
+    "to_number": {
+      "type": "string",
+      "description": "Phone number to send the message to (null if the recipient is a group)"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the phone or route the message will be sent from",
+      "example": "PN4d246818d0ecd1fa"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "The service associated with this message (for voice calls, the service defines the call flow)",
+      "example": "SV3d246818d0e3d1fb"
+    },
+    "audio_url": {
+      "type": "string",
+      "description": "For voice calls, the URL of an MP3 file to play when the contact answers the call"
+    },
+    "tts_lang": {
+      "type": "string",
+      "description": "For voice calls, the language of the text-to-speech voice",
+      "enum": [
+        "en-US",
+        "en-GB",
+        "en-GB-WLS",
+        "en-AU",
+        "en-IN",
+        "da-DK",
+        "nl-NL",
+        "fr-FR",
+        "fr-CA",
+        "de-DE",
+        "is-IS",
+        "it-IT",
+        "pl-PL",
+        "pt-BR",
+        "pt-PT",
+        "ru-RU",
+        "es-ES",
+        "es-US",
+        "sv-SE"
+      ]
+    },
+    "tts_voice": {
+      "type": "string",
+      "description": "For voice calls, the text-to-speech voice",
+      "enum": [
+        "female",
+        "male"
+      ]
+    },
+    "message_type": {
+      "type": "string",
+      "description": "Type of scheduled message",
+      "enum": [
+        "sms",
+        "mms",
+        "ussd",
+        "ussd_session",
+        "call",
+        "chat",
+        "service"
+      ],
+      "example": "sms"
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the relative scheduled message was created in Telerivet",
+      "example": 1395617416
+    },
+    "replace_variables": {
+      "type": "boolean",
+      "description": "Set to true if Telerivet will render variables like [[contact.name]] in the message content, false otherwise",
+      "example": false
+    },
+    "track_clicks": {
+      "type": "boolean",
+      "description": "If true, URLs in the message content will automatically be replaced with unique short URLs"
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the media file. Note: For files stored by Telerivet (including uploaded files and incoming media attachments), the URL is temporary and may not be valid for more than 1 day."
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type of the media file"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes"
+          },
+          "file_id": {
+            "type": "string",
+            "description": "ID of the stored file, if applicable"
+          }
+        }
+      },
+      "description": "Array of media attachments for the text message. This property is undefined for messages that do not contain media files."
+    },
+    "route_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Route-specific parameters to use when sending the message. \n\n When sending messages via chat apps such as WhatsApp, the route_params parameter can be used to send messages with app-specific features such as quick replies and link buttons.\n\n For more details, see Route-Specific Parameters."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this scheduled message (copied to each ScheduledMessage and Message when sent). Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "label_ids": {
+      "type": "string",
+      "description": "IDs of labels to add to the Message"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this relative scheduled message belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "A relative scheduled message is a message that is scheduled relative to a date stored as a custom field for each recipient contact.\n This allows scheduling messages on a different date for each contact, for example on their birthday, a certain number of days before an appointment, or a certain number of days after enrolling in a campaign.\n\n Telerivet will automatically create a ScheduledMessage for each contact matching a RelativeScheduledMessage.\n\n Any service that can be manually triggered for a contact (including polls) may also be scheduled via a relative scheduled message, whether or not the service actually sends a message."
+}

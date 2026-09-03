@@ -17,16 +17,25 @@
  *
  * See specs/adaptors/README.md for the on-disk layout.
  */
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
+import { capture, staleUpstreams } from './convert.js';
 import { extractDataObjects } from './data-objects.js';
 import { instructionsFor } from './instructions.js';
 import { buildManifest } from './manifest.js';
 import { report as buildReport, orphanDirs, type FeedbackRow } from './report.js';
 import { buildStatusData, renderSite } from './site.js';
-import { dataSchemasDir, dataSchemasIndexPath, manifestPath, openapiPath } from './paths.js';
-import type { FeedbackStatus } from './types.js';
+import {
+  adaptorDir,
+  dataSchemasDir,
+  dataSchemasIndexPath,
+  manifestPath,
+  openapiPath,
+  sourcePath,
+  upstreamPath,
+} from './paths.js';
+import type { FeedbackStatus, SpecSource } from './types.js';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
 
@@ -129,6 +138,120 @@ async function cmdDataObjects(argv: string[]): Promise<void> {
   }
 }
 
+/** Read the `--flag=value` form out of argv. */
+function flag(argv: string[], name: string): string | undefined {
+  const hit = argv.find((a) => a.startsWith(`--${name}=`));
+  return hit?.slice(name.length + 3);
+}
+
+/**
+ * `convert <adaptor> --url=<specUrl>` — the capture step of the loop. Fetches an
+ * upstream machine spec, commits it verbatim as `upstream.<ext>`, derives the
+ * full-coverage `openapi.json`, and records the provenance (origin, format,
+ * contentHash, the `used` attempt) in source.json.
+ *
+ * With no `--url`, it re-derives `openapi.json` from the upstream already
+ * committed for that adaptor. Use that after changing a converter: the upstream
+ * bytes (and so `upstream.contentHash`) have not moved, only the derivation has,
+ * and nothing should be refetched to rebuild it.
+ *
+ * The `coverage`/`completeness` claims are NOT written here: whether a spec
+ * really covers the whole vendor API is the agent's judgement to make and
+ * record, not something a fetch can assert. Pass `--complete` once verified.
+ */
+async function cmdConvert(argv: string[]): Promise<void> {
+  const adaptors = await loadAdaptors();
+  const targets = selectTargets(adaptors, argv);
+  if (targets.length !== 1) throw new Error('Specify exactly one adaptor name.');
+  const [adaptor] = targets;
+
+  const dir = adaptorDir(adaptor.name);
+  mkdirSync(dir, { recursive: true });
+
+  const existing: Partial<SpecSource> = existsSync(sourcePath(adaptor.name))
+    ? JSON.parse(readFileSync(sourcePath(adaptor.name), 'utf8'))
+    : {};
+
+  // No --url: rebuild from the upstream we already hold, and leave the curated
+  // provenance (claims, notes, attempt trail) exactly as it is.
+  const url = flag(argv, 'url');
+  if (!url) {
+    const committed = upstreamPath(adaptor.name);
+    if (!existsSync(committed)) {
+      throw new Error(`No upstream committed for ${adaptor.name} — specify --url=<upstream spec URL>.`);
+    }
+    const before = readFileSync(openapiPath(adaptor.name), 'utf8');
+    const rebuilt = await capture({
+      adaptor: adaptor.name,
+      specUrl: existing.upstream?.specUrl ?? committed,
+      upstreamBase: join(dir, 'upstream'),
+      openapiTarget: openapiPath(adaptor.name),
+      today: today(),
+      bytes: readFileSync(committed, 'utf8'),
+    });
+    const after = readFileSync(openapiPath(adaptor.name), 'utf8');
+    console.log(
+      `  ${before === after ? '=' : '~'} ${adaptor.name}: re-derived from ${committed.split('/').pop()} — ` +
+        `${before === after ? 'unchanged' : `rebuilt (${before.length} → ${after.length} bytes)`} ` +
+        `(${rebuilt.operations} operations)`
+    );
+    for (const w of rebuilt.warnings.slice(0, 10)) console.log(`    ! ${w}`);
+    if (before !== after) console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm test`);
+    return;
+  }
+
+  const result = await capture({
+    adaptor: adaptor.name,
+    specUrl: url,
+    upstreamBase: join(dir, 'upstream'),
+    openapiTarget: openapiPath(adaptor.name),
+    today: today(),
+  });
+
+  // A re-capture in a different format must not leave the old file behind:
+  // upstreamPath() resolves json before yaml, so a leftover would shadow it.
+  const keepExt = result.upstreamPath.split('.').pop()!;
+  for (const stale of staleUpstreams(join(dir, 'upstream'), keepExt)) {
+    unlinkSync(stale);
+    console.log(`  removed stale ${stale.split('/').pop()}`);
+  }
+
+  // Merge into any existing provenance rather than clobbering hand-written
+  // notes and the attempt trail that got us here.
+  const attempts = (existing.attempts ?? []).filter((a) => a.url !== url);
+  attempts.push({ kind: result.detected.kind, url, result: 'used' });
+
+  const source: SpecSource = {
+    ...existing,
+    adaptor: adaptor.name,
+    npm: adaptor.npm,
+    origin: result.detected.origin,
+    upstreamFormat: result.detected.format,
+    upstream: result.upstream,
+    attempts,
+    sources: [...new Set([url, ...(existing.sources ?? [])])],
+    capturedAt: today(),
+    lastCheckedAt: today(),
+  };
+  if (argv.includes('--complete')) {
+    source.coverage = 'full';
+    source.completeness = 'complete';
+  }
+  const note = flag(argv, 'note');
+  if (note) source.notes = note;
+  writeJson(sourcePath(adaptor.name), source);
+
+  const schemas = Object.keys(result.openapi.components?.schemas ?? {}).length;
+  console.log(
+    `  ✓ ${adaptor.name}: ${result.detected.format} → ${result.openapi.openapi} ` +
+      `(${result.operations} operations, ${schemas} schemas)`
+  );
+  console.log(`    upstream: ${result.upstreamPath.split('/').pop()} (${(result.bytes / 1024).toFixed(0)} KiB, ${result.contentHash.slice(0, 19)}…)`);
+  for (const w of result.warnings.slice(0, 10)) console.log(`    ! ${w}`);
+  if (result.warnings.length > 10) console.log(`    ! …and ${result.warnings.length - 10} more warning(s)`);
+  console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm test`);
+}
+
 async function cmdReport(argv: string[]): Promise<void> {
   const adaptors = await loadAdaptors(argv.includes('--refresh'));
   const staleArg = argv.find((a) => a.startsWith('--stale='));
@@ -207,6 +330,11 @@ const USAGE = `Usage: pnpm specs <command>
   missing                       Print adaptors with no OpenAPI spec (newline-separated).
   instructions <a…|--missing|--all>
                                 Emit agentic work order(s) for finding/generating specs.
+  convert <a> [--url=<specUrl>] [--complete] [--note=<text>]
+                                Capture an upstream machine spec (OpenAPI 3.x / Swagger 2.0 /
+                                Google Discovery): commit it verbatim as upstream.<ext>, derive
+                                openapi.json, record provenance + contentHash. With no --url,
+                                re-derive openapi.json from the committed upstream.
   data-objects <a…|--all>       Extract standalone data-object schemas into data-schemas/.
   manifest                      Rebuild specs/adaptors/manifest.json.
   site [--out=<dir>] [--stale=<days>] [--refresh]
@@ -226,6 +354,8 @@ async function main(): Promise<void> {
       return cmdMissing();
     case 'instructions':
       return cmdInstructions(argv);
+    case 'convert':
+      return cmdConvert(argv);
     case 'data-objects':
       return cmdDataObjects(argv);
     case 'manifest':

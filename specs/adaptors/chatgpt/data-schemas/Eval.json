@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/Eval",
+  "title": "Eval",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/Eval",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "An Eval object with a data source config and testing criteria.\nAn Eval represents a task to be done for your LLM integration.\nLike:\n - Improve the quality of my chatbot\n - See how well my chatbot handles customer support\n - Check if o4-mini is better at my usecase than gpt-5.6-sol\n",
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "eval"
+      ],
+      "default": "eval",
+      "description": "The object type.",
+      "x-stainless-const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the evaluation."
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the evaluation.",
+      "example": "Chatbot effectiveness Evaluation"
+    },
+    "data_source_config": {
+      "type": "object",
+      "description": "Configuration of data sources used in runs of the evaluation.",
+      "oneOf": [
+        {
+          "$ref": "EvalCustomDataSourceConfig.json"
+        },
+        {
+          "$ref": "EvalLogsDataSourceConfig.json"
+        },
+        {
+          "$ref": "EvalStoredCompletionsDataSourceConfig.json"
+        }
+      ]
+    },
+    "testing_criteria": {
+      "description": "A list of testing criteria.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "EvalGraderLabelModel.json"
+          },
+          {
+            "$ref": "EvalGraderStringCheck.json"
+          },
+          {
+            "$ref": "EvalGraderTextSimilarity.json"
+          },
+          {
+            "$ref": "EvalGraderPython.json"
+          },
+          {
+            "$ref": "EvalGraderScoreModel.json"
+          }
+        ]
+      }
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "The Unix timestamp (in seconds) for when the eval was created."
+    },
+    "metadata": {
+      "$ref": "Metadata.json"
+    }
+  },
+  "required": [
+    "id",
+    "data_source_config",
+    "object",
+    "testing_criteria",
+    "name",
+    "created_at",
+    "metadata"
+  ],
+  "x-oaiMeta": {
+    "name": "The eval object",
+    "group": "evals",
+    "example": "{\n  \"object\": \"eval\",\n  \"id\": \"eval_67abd54d9b0081909a86353f6fb9317a\",\n  \"data_source_config\": {\n    \"type\": \"custom\",\n    \"item_schema\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"label\": {\"type\": \"string\"},\n      },\n      \"required\": [\"label\"]\n    },\n    \"include_sample_schema\": true\n  },\n  \"testing_criteria\": [\n    {\n      \"name\": \"My string check grader\",\n      \"type\": \"string_check\",\n      \"input\": \"{{sample.output_text}}\",\n      \"reference\": \"{{item.label}}\",\n      \"operation\": \"eq\",\n    }\n  ],\n  \"name\": \"External Data Eval\",\n  \"created_at\": 1739314509,\n  \"metadata\": {\n    \"test\": \"synthetics\",\n  }\n}\n"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ThreadResource",
+  "title": "The thread object",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ThreadResource",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identifier of the thread."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "chatkit.thread"
+      ],
+      "description": "Type discriminator that is always `chatkit.thread`.",
+      "default": "chatkit.thread",
+      "x-stainless-const": true
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "Unix timestamp (in seconds) for when the thread was created."
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Optional human-readable title for the thread. Defaults to null when no title has been generated."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "oneOf": [
+        {
+          "$ref": "ActiveStatus.json"
+        },
+        {
+          "$ref": "LockedStatus.json"
+        },
+        {
+          "$ref": "ClosedStatus.json"
+        }
+      ],
+      "description": "Current status for the thread. Defaults to `active` for newly created threads.",
+      "discriminator": {
+        "propertyName": "type"
+      }
+    },
+    "user": {
+      "type": "string",
+      "description": "Free-form string that identifies your end user who owns the thread."
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "created_at",
+    "title",
+    "status",
+    "user"
+  ],
+  "description": "Represents a ChatKit thread and its current status.",
+  "example": {
+    "id": "cthr_def456",
+    "object": "chatkit.thread",
+    "created_at": 1712345600,
+    "title": "Demo feedback",
+    "status": {
+      "type": "active"
+    },
+    "user": "user_456"
+  }
+}

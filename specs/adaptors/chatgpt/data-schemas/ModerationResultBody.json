@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ModerationResultBody",
+  "title": "Moderation result",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ModerationResultBody",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "moderation_result"
+      ],
+      "description": "The object type, which was always `moderation_result` for successful moderation results.",
+      "default": "moderation_result",
+      "x-stainless-const": true
+    },
+    "model": {
+      "type": "string",
+      "description": "The moderation model that produced this result."
+    },
+    "flagged": {
+      "type": "boolean",
+      "description": "A boolean indicating whether the content was flagged by any category."
+    },
+    "categories": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "type": "object",
+      "description": "A dictionary of moderation categories to booleans, True if the input is flagged under this category.",
+      "x-oaiTypeLabel": "map"
+    },
+    "category_scores": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "type": "object",
+      "description": "A dictionary of moderation categories to scores.",
+      "x-oaiTypeLabel": "map"
+    },
+    "category_applied_input_types": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "ModerationInputType.json"
+        },
+        "type": "array"
+      },
+      "type": "object",
+      "description": "Which modalities of input are reflected by the score for each category.",
+      "x-oaiTypeLabel": "map"
+    }
+  },
+  "type": "object",
+  "required": [
+    "type",
+    "model",
+    "flagged",
+    "categories",
+    "category_scores",
+    "category_applied_input_types"
+  ],
+  "description": "A moderation result produced for the response input or output."
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaFunctionTool",
+  "title": "Function",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaFunctionTool",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "function"
+      ],
+      "description": "The type of the function tool. Always `function`.",
+      "default": "function",
+      "x-stainless-const": true
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the function to call."
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "A description of the function. Used by the model to determine whether or not to call the function."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "parameters": {
+      "anyOf": [
+        {
+          "additionalProperties": {},
+          "type": "object",
+          "description": "A JSON schema object describing the parameters of the function.",
+          "x-oaiTypeLabel": "map"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "output_schema": {
+      "anyOf": [
+        {
+          "additionalProperties": {},
+          "type": "object",
+          "description": "A JSON schema object describing the JSON value encoded in string outputs for this function.",
+          "x-oaiTypeLabel": "map"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "strict": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "description": "Whether strict parameter validation is enforced for this function tool."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "defer_loading": {
+      "type": "boolean",
+      "description": "Whether this function is deferred and loaded via tool search."
+    },
+    "allowed_callers": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "BetaCallableToolAllowedCaller.json"
+          },
+          "type": "array",
+          "description": "The tool invocation context(s)."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "type",
+    "name",
+    "strict",
+    "parameters"
+  ],
+  "description": "Defines a function in your own code the model can choose to call. Learn more about [function calling](https://platform.openai.com/docs/guides/function-calling)."
+}

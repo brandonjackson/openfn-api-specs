@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/OrganizationSpendLimitResource",
+  "title": "OrganizationSpendLimitResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/OrganizationSpendLimitResource",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "organization.spend_limit"
+      ],
+      "description": "The object type, which is always `organization.spend_limit`.",
+      "default": "organization.spend_limit",
+      "x-stainless-const": true
+    },
+    "threshold_amount": {
+      "type": "integer",
+      "description": "The hard spend limit amount, in cents."
+    },
+    "currency": {
+      "$ref": "SpendLimitCurrency.json",
+      "description": "The currency for the threshold amount. Currently, only `USD` is supported."
+    },
+    "interval": {
+      "$ref": "SpendLimitInterval.json",
+      "description": "The time interval for evaluating spend against the threshold. Currently, only `month` is supported."
+    },
+    "enforcement": {
+      "$ref": "SpendLimitEnforcement.json",
+      "description": "The current enforcement state of the hard spend limit."
+    }
+  },
+  "type": "object",
+  "required": [
+    "object",
+    "threshold_amount",
+    "currency",
+    "interval",
+    "enforcement"
+  ],
+  "description": "Represents a hard spend limit configured at the organization level."
+}
