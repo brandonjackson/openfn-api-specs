@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaToolChoiceAllowed",
+  "title": "Allowed tools",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaToolChoiceAllowed",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Constrains the tools available to the model to a pre-defined set.\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "allowed_tools"
+      ],
+      "description": "Allowed tool configuration type. Always `allowed_tools`.",
+      "x-stainless-const": true
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "required"
+      ],
+      "description": "Constrains the tools available to the model to a pre-defined set.\n\n`auto` allows the model to pick from among the allowed tools and generate a\nmessage.\n\n`required` requires the model to call one or more of the allowed tools.\n"
+    },
+    "tools": {
+      "type": "array",
+      "description": "A list of tool definitions that the model should be allowed to call.\n\nFor the Responses API, the list of tool definitions might look like:\n```json\n[\n  { \"type\": \"function\", \"name\": \"get_weather\" },\n  { \"type\": \"mcp\", \"server_label\": \"deepwiki\" },\n  { \"type\": \"image_generation\" }\n]\n```\n",
+      "items": {
+        "type": "object",
+        "description": "A tool definition that the model should be allowed to call.\n",
+        "additionalProperties": true,
+        "x-oaiExpandable": false
+      }
+    }
+  },
+  "required": [
+    "type",
+    "mode",
+    "tools"
+  ]
+}

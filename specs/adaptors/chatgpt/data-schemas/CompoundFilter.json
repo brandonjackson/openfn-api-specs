@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/CompoundFilter",
+  "title": "Compound Filter",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/CompoundFilter",
+    "capturedAt": "2026-09-03"
+  },
+  "$recursiveAnchor": true,
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Combine multiple filters using `and` or `or`.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type of operation: `and` or `or`.",
+      "enum": [
+        "and",
+        "or"
+      ]
+    },
+    "filters": {
+      "type": "array",
+      "description": "Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "ComparisonFilter.json"
+          },
+          {
+            "$recursiveRef": "#"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      }
+    }
+  },
+  "required": [
+    "type",
+    "filters"
+  ],
+  "x-oaiMeta": {
+    "name": "CompoundFilter"
+  }
+}

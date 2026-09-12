@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaAgentMessage",
+  "title": "BetaAgentMessage",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAgentMessage",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "agent": {
+      "$ref": "BetaAgentTag.json",
+      "description": "The agent that produced this item."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "agent_message"
+      ],
+      "description": "The type of the item. Always `agent_message`.",
+      "default": "agent_message",
+      "x-stainless-const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the agent message."
+    },
+    "author": {
+      "type": "string",
+      "description": "The sending agent identity."
+    },
+    "recipient": {
+      "type": "string",
+      "description": "The destination agent identity."
+    },
+    "content": {
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "BetaInputTextContent.json"
+          },
+          {
+            "$ref": "BetaOutputTextContent.json"
+          },
+          {
+            "$ref": "BetaTextContent.json"
+          },
+          {
+            "$ref": "BetaSummaryTextContent.json"
+          },
+          {
+            "$ref": "BetaReasoningTextContent.json"
+          },
+          {
+            "$ref": "BetaRefusalContent.json"
+          },
+          {
+            "$ref": "BetaInputImageContent.json"
+          },
+          {
+            "$ref": "BetaComputerScreenshotContent.json"
+          },
+          {
+            "$ref": "BetaInputFileContent.json"
+          },
+          {
+            "$ref": "BetaEncryptedContent.json"
+          }
+        ],
+        "description": "A content part that makes up an input or output item.",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "type": "array",
+      "description": "Encrypted content sent between agents."
+    }
+  },
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "author",
+    "recipient",
+    "content"
+  ],
+  "x-oai-beta": "responses_multi_agent=v1"
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Group",
+  "title": "Group",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Group",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the group",
+      "example": "CGb0b7201b222fa609"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the group",
+      "example": "Subscribers"
+    },
+    "dynamic": {
+      "type": "boolean",
+      "description": "Whether this is a dynamic or normal group",
+      "example": false
+    },
+    "filters": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Key-value pairs of conditions that contacts must match to be members of a dynamic group. To filter by a custom variable, precede the variable name with 'vars.' (conditions on custom variables may also be provided as a nested object under a `vars` key, e.g. `{\"vars\": {\"city\": \"Manila\"}}`); other supported keys are `id`, `name`, `phone_number`, `time_created`, `time_updated`, `incoming_message_count`, `outgoing_message_count`, `last_incoming_message_time`, `last_outgoing_message_time`, `conversation_status`, `send_blocked`, `group` (ID of a normal group whose members should be included), `not_group` (ID of a normal group whose members should be excluded), and `q` (full-text search query matching contacts like the search box in the web app). Each value is either a value to match exactly, or an object with an operator such as `ne`, `prefix`, `gte`, `lt`, `exists`, or `not_exists` as the key (e.g. `{\"gte\": 10}`). Null if this is a normal group. Filter conditions can only be updated on dynamic groups."
+    },
+    "num_members": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Number of contacts in the group (null if the group is dynamic)",
+      "example": 142
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the group was created in Telerivet",
+      "example": 1390343845
+    },
+    "allow_sending": {
+      "type": "boolean",
+      "description": "True if messages can be sent to this group, false otherwise."
+    },
+    "add_time_variable": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Variable name of a custom contact field that will automatically be set to the current date/time on any contact that is added to the group. This variable will only be set if the contact does not already have a value for this variable.",
+      "example": "subscription_time"
+    },
+    "solution_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the solution that this group belongs to, if any",
+      "example": "SO2ad0100821a98bea"
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this group. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to this group in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/group/CGb0b7201b222fa609"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this group belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents a group used to organize contacts within Telerivet."
+}

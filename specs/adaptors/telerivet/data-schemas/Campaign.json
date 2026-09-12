@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Campaign",
+  "title": "Campaign",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Campaign",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the campaign",
+      "example": "CM2ad0100821a98bea"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the campaign, which must be unique within the project. The campaign name is only visible within Telerivet, and does not appear in the messages sent to contacts.",
+      "example": "Test Campaign"
+    },
+    "campaign_type": {
+      "type": "string",
+      "description": "Type of the campaign. The following campaign types are available:\n\n - `broadcast_text` - Send a text message to a group of contacts\n - `broadcast_call` - Send a voice call to a group of contacts\n - `broadcast_svc` - Trigger a service for a group of contacts\n - `relative` - Send a series of messages over time relative to when each contact was added to a group\n - `anniversary` - Send messages on recurring dates (e.g. birthdays, anniversaries)",
+      "enum": [
+        "broadcast_text",
+        "broadcast_call",
+        "broadcast_svc",
+        "relative",
+        "anniversary"
+      ],
+      "example": "broadcast_text"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of the campaign",
+      "enum": [
+        "draft",
+        "scheduled",
+        "sent",
+        "pending_review"
+      ],
+      "example": "draft"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "ID of the group of contacts that the campaign will be sent to",
+      "example": "CG02139128391fa"
+    },
+    "exclude_group_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of a group of contacts to exclude from the campaign"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the phone or route used to send the campaign",
+      "example": "RT2a586298d3412adf"
+    },
+    "broadcast_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the most recent broadcast created by this campaign, if applicable",
+      "example": "MB2489812e59c5c781"
+    },
+    "estimated_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Estimated number of messages that will be sent in this campaign",
+      "example": 12942
+    },
+    "message_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Number of messages that have been sent in this campaign",
+      "example": 8358
+    },
+    "respondent_group_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of a group to add contacts to after they respond to the campaign"
+    },
+    "clicked_group_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of a group to add contacts to after they click a link in the campaign"
+    },
+    "label_ids": {
+      "type": "string",
+      "description": "List of IDs of labels applied to messages sent by this campaign"
+    },
+    "solution_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the solution that this campaign belongs to, if any",
+      "example": "SO2ad0100821a98bea"
+    },
+    "schedule_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Indicates whether the campaign should be sent immediately or at a future time (applies to broadcast campaign types). If `schedule_time` is set, `schedule_mode` is automatically set to `at_time`. If `schedule_mode` is set to `immediate` or `null`, `schedule_time` is automatically cleared.\n\n Note that after setting schedule_mode to \"immediate\" on a campaign with the `draft` status, the campaign will not actually be sent until the API method is called to send the campaign.",
+      "enum": [
+        "immediate",
+        "at_time"
+      ],
+      "example": "immediate"
+    },
+    "schedule_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "The time to send the campaign, as a UNIX timestamp (applies to broadcast campaign types). Setting this to a non-null value automatically sets `schedule_mode` to `at_time`.\n\n Note that after setting schedule_time on a campaign with the `draft` status, the campaign will not actually be scheduled until the API method is called to schedule the campaign."
+    },
+    "content": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Text content of the message (applies to `broadcast_text` campaigns), or the text-to-speech text for voice calls (applies to `broadcast_call` campaigns). May contain variables like `[[contact.name]]`.\n\n (See available variables)",
+      "example": "Hello world"
+    },
+    "media": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the media file. Note: For files stored by Telerivet (including uploaded files and incoming media attachments), the URL is temporary and may not be valid for more than 1 day."
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type of the media file"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes"
+          },
+          "file_id": {
+            "type": "string",
+            "description": "ID of the stored file, if applicable"
+          }
+        }
+      },
+      "description": "Array of media attachments (applies to `broadcast_text` campaigns)."
+    },
+    "route_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Route-specific parameters for the message (applies to `broadcast_text` campaigns). See Route-Specific Parameters."
+    },
+    "track_clicks": {
+      "type": "boolean",
+      "description": "Whether to shorten links and track link clicks (applies to `broadcast_text` campaigns)."
+    },
+    "short_link_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Custom domain for short links. Must be configured for this project."
+        },
+        "expiration_sec": {
+          "type": "integer",
+          "description": "Expiration time in seconds for short links."
+        }
+      },
+      "description": "Parameters for short links when `track_clicks` is enabled (applies to `broadcast_text` campaigns)."
+    },
+    "audio_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "For voice calls, the URL of an MP3 file to play when the contact answers the call (applies to `broadcast_call` campaigns)"
+    },
+    "tts_lang": {
+      "type": "string",
+      "description": "For voice calls, the language of the text-to-speech voice (applies to `broadcast_call` campaigns)",
+      "enum": [
+        "en-US",
+        "en-GB",
+        "en-GB-WLS",
+        "en-AU",
+        "en-IN",
+        "da-DK",
+        "nl-NL",
+        "fr-FR",
+        "fr-CA",
+        "de-DE",
+        "is-IS",
+        "it-IT",
+        "pl-PL",
+        "pt-BR",
+        "pt-PT",
+        "ru-RU",
+        "es-ES",
+        "es-US",
+        "sv-SE"
+      ]
+    },
+    "tts_voice": {
+      "type": "string",
+      "description": "For voice calls, the text-to-speech voice (applies to `broadcast_call` campaigns)",
+      "enum": [
+        "female",
+        "male"
+      ]
+    },
+    "service_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the service associated with this campaign (applies to `broadcast_call` or `broadcast_svc` campaigns)",
+      "example": "SV3d246818d0e3d1fb"
+    },
+    "date_variable": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Custom contact variable storing date or date/time values relative to which messages will be scheduled (applies to `relative` and `anniversary` campaigns)"
+    },
+    "items": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Type of message to send: `\"text\"`, `\"service\"`, or `\"call\"`"
+          },
+          "offset_count": {
+            "type": "integer",
+            "description": "The number of days/weeks/months/years to adjust the date of the scheduled message relative to the date stored in the contact variable. May be positive (after), negative (before), or zero (on the date)."
+          },
+          "offset_scale": {
+            "type": "string",
+            "description": "The type of interval for the offset (I=minutes, D=day, W=week, M=month, Y=year)."
+          },
+          "time_of_day": {
+            "type": "string",
+            "description": "Time of day when messages will be sent, in HH:MM format (with hours from 00 to 23)."
+          },
+          "content": {
+            "type": "string",
+            "description": "Text content of the message (when `mode` is `\"text\"`), or the text-to-speech text for voice calls (when `mode` is `\"call\"`). May contain variables  like `[[contact.name]]`.\n\n            [(See available variables)](#variables)"
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "URL of the media file. Note: For files stored by Telerivet (including uploaded files and incoming media attachments), the URL is temporary and may not be valid for more than 1 day."
+                },
+                "type": {
+                  "type": "string",
+                  "description": "MIME type of the media file"
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "Original filename"
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "File size in bytes"
+                },
+                "file_id": {
+                  "type": "string",
+                  "description": "ID of the stored file, if applicable"
+                }
+              }
+            },
+            "description": "Array of media attachments (when `mode` is `\"text\"`)."
+          },
+          "route_params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Route-specific parameters for the message (when `mode` is `\"text\"`). See [Route-Specific Parameters](#route_params)."
+          },
+          "track_clicks": {
+            "type": "boolean",
+            "description": "Whether to shorten links and track link clicks (when `mode` is `\"text\"`)."
+          },
+          "short_link_params": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "description": "Custom domain for short links. Must be configured for this project."
+              },
+              "expiration_sec": {
+                "type": "integer",
+                "description": "Expiration time in seconds for short links."
+              }
+            },
+            "description": "Parameters for short links when `track_clicks` is enabled (when `mode` is `\"text\"`)."
+          },
+          "service_id": {
+            "type": "string",
+            "description": "ID of the service to trigger (when `mode` is `\"service\"` or `\"call\"`)"
+          },
+          "audio_url": {
+            "type": "string",
+            "description": "URL of an MP3 file to play for voice calls (when `mode` is `\"call\"`)"
+          },
+          "tts_lang": {
+            "type": "string",
+            "description": "Language for text-to-speech voice calls (when `mode` is `\"call\"`)"
+          },
+          "tts_voice": {
+            "type": "string",
+            "description": "Voice for text-to-speech voice calls (when `mode` is `\"call\"`)"
+          }
+        }
+      },
+      "description": "Array of campaign items (applies to `relative` and `anniversary` campaigns). Each item defines a scheduled message with timing and content."
+    },
+    "message_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Type of messages sent by this campaign, or null if not applicable",
+      "example": "sms"
+    },
+    "timezone_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The ID of the timezone used for scheduling messages in this campaign, or null to use the project's default timezone",
+      "example": "America/Los_Angeles"
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the campaign was created in Telerivet",
+      "example": 1390348075
+    },
+    "time_updated": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the campaign was last updated in Telerivet",
+      "example": 1390348075
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this campaign. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to view the campaign in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/campaign/CM2ad0100821a98bea"
+    },
+    "url_edit": {
+      "type": "string",
+      "description": "URL to edit the campaign in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/campaign/CM2ad0100821a98bea/edit"
+    },
+    "url_send": {
+      "type": "string",
+      "description": "URL to preview and send the campaign in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/campaign/CM2ad0100821a98bea/preview"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the Telerivet user who created the campaign",
+      "example": "URba3e403e98f49735"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this campaign belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "A campaign is something that is sent to a group of contacts on a particular schedule.\n\n Depending on the campaign type, a campaign may send a text message, make a voice call, or trigger an automated service. A campaign may either send a single broadcast at once, or send multiple broadcasts to different contacts over time.\n\n Campaigns are initially created as a draft and can be edited and previewed before being sent. This supports a workflow where campaigns can be drafted via the API, and subsequently edited, approved, and sent via either the web app or the API. Once sent, a campaign creates one or more broadcasts to deliver messages to the target recipients.\n\n Campaigns build on top of other core entity types including broadcasts and scheduled messages. Although it is possible to send broadcasts or schedule messages directly via the API, campaigns can be used in order to provide the ability to save drafts, allow manual editing and approval before sending, or to organize broadcasts within Telerivet."
+}

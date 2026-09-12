@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/EvalResponsesSource",
+  "title": "EvalResponsesSource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/EvalResponsesSource",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A EvalResponsesSource object describing a run data source configuration.\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "responses"
+      ],
+      "description": "The type of run data source. Always `responses`."
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "Metadata filter for the responses. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The name of the model to find responses for. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "instructions_search": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Optional string to search the 'instructions' field. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_after": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Only include items created after this timestamp (inclusive). This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_before": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Only include items created before this timestamp (inclusive). This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reasoning_effort": {
+      "anyOf": [
+        {
+          "$ref": "ReasoningEffort.json",
+          "description": "Optional reasoning effort parameter. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "temperature": {
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "Sampling temperature. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "top_p": {
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "Nucleus sampling parameter. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "users": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of user identifiers. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tools": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of tool names. This is a query parameter used to select responses."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "x-oaiMeta": {
+    "name": "The run data source object used to configure an individual run",
+    "group": "eval runs",
+    "example": "{\n  \"type\": \"responses\",\n  \"model\": \"gpt-5.6-sol\",\n  \"users\": [\"user1\", \"user2\"],\n  \"tools\": [\"tool1\", \"tool2\"],\n  \"instructions_search\": \"You are a coding assistant\"\n}\n"
+  }
+}

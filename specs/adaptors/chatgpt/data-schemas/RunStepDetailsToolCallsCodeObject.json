@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/RunStepDetailsToolCallsCodeObject",
+  "title": "Code Interpreter tool call",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/RunStepDetailsToolCallsCodeObject",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Details of the Code Interpreter tool call the run step was involved in.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The ID of the tool call."
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of tool call. This is always going to be `code_interpreter` for this type of tool call.",
+      "enum": [
+        "code_interpreter"
+      ],
+      "x-stainless-const": true
+    },
+    "code_interpreter": {
+      "type": "object",
+      "description": "The Code Interpreter tool call definition.",
+      "required": [
+        "input",
+        "outputs"
+      ],
+      "properties": {
+        "input": {
+          "type": "string",
+          "description": "The input to the Code Interpreter tool call."
+        },
+        "outputs": {
+          "type": "array",
+          "description": "The outputs from the Code Interpreter tool call. Code Interpreter can output one or more items, including text (`logs`) or images (`image`). Each of these are represented by a different object type.",
+          "items": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "RunStepDetailsToolCallsCodeOutputLogsObject.json"
+              },
+              {
+                "$ref": "RunStepDetailsToolCallsCodeOutputImageObject.json"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "code_interpreter"
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/CreateCompletionResponse",
+  "title": "CreateCompletionResponse",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/CreateCompletionResponse",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents a completion response from the API. Note: both the streamed and non-streamed response objects share the same shape (unlike the chat endpoint).\n",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "A unique identifier for the completion."
+    },
+    "choices": {
+      "type": "array",
+      "description": "The list of completion choices the model generated for the input prompt.",
+      "items": {
+        "type": "object",
+        "required": [
+          "finish_reason",
+          "index",
+          "logprobs",
+          "text"
+        ],
+        "properties": {
+          "finish_reason": {
+            "type": "string",
+            "description": "The reason the model stopped generating tokens. This will be `stop` if the model hit a natural stop point or a provided stop sequence,\n`length` if the maximum number of tokens specified in the request was reached,\nor `content_filter` if content was omitted due to a flag from our content filters.\n",
+            "enum": [
+              "stop",
+              "length",
+              "content_filter"
+            ]
+          },
+          "index": {
+            "type": "integer"
+          },
+          "logprobs": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "text_offset": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "token_logprobs": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "tokens": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "top_logprobs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "created": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "The Unix timestamp (in seconds) of when the completion was created."
+    },
+    "model": {
+      "type": "string",
+      "description": "The model used for completion."
+    },
+    "system_fingerprint": {
+      "type": "string",
+      "description": "This fingerprint represents the backend configuration that the model runs with.\n\nCan be used in conjunction with the `seed` request parameter to understand when backend changes have been made that might impact determinism.\n"
+    },
+    "object": {
+      "type": "string",
+      "description": "The object type, which is always \"text_completion\"",
+      "enum": [
+        "text_completion"
+      ],
+      "x-stainless-const": true
+    },
+    "usage": {
+      "$ref": "CompletionUsage.json"
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "created",
+    "model",
+    "choices"
+  ],
+  "x-oaiMeta": {
+    "name": "The completion object",
+    "legacy": true,
+    "example": "{\n  \"id\": \"cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7\",\n  \"object\": \"text_completion\",\n  \"created\": 1589478378,\n  \"model\": \"gpt-3.5-turbo-instruct\",\n  \"choices\": [\n    {\n      \"text\": \"\\n\\nThis is indeed a test\",\n      \"index\": 0,\n      \"logprobs\": null,\n      \"finish_reason\": \"length\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 5,\n    \"completion_tokens\": 7,\n    \"total_tokens\": 12\n  }\n}\n"
+  }
+}

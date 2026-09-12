@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/VectorStoreFileContentResponse",
+  "title": "VectorStoreFileContentResponse",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/VectorStoreFileContentResponse",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents the parsed content of a vector store file.",
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "vector_store.file_content.page"
+      ],
+      "description": "The object type, which is always `vector_store.file_content.page`",
+      "x-stainless-const": true
+    },
+    "data": {
+      "type": "array",
+      "description": "Parsed content of the file.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The content type (currently only `\"text\"`)"
+          },
+          "text": {
+            "type": "string",
+            "description": "The text content"
+          }
+        }
+      }
+    },
+    "has_more": {
+      "type": "boolean",
+      "description": "Indicates if there are more content pages to fetch."
+    },
+    "next_page": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The token for the next page, if any."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "object",
+    "data",
+    "has_more",
+    "next_page"
+  ]
+}

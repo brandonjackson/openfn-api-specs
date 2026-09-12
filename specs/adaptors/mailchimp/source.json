@@ -1,14 +1,45 @@
 {
   "adaptor": "mailchimp",
   "npm": "@openfn/language-mailchimp",
-  "origin": "generated",
+  "origin": "converted",
   "upstreamFormat": "swagger-2.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://api.mailchimp.com/schema/3.0/Swagger.json?expand",
+    "format": "swagger-2.0",
+    "contentHash": "sha256:3d3c9a4a003659335a1a0ad96491c88da83f1768f31a5c8e36d29bff946b34b3",
+    "fetchedAt": "2026-09-03"
+  },
+  "attempts": [
+    {
+      "kind": "swagger",
+      "url": "https://api.mailchimp.com/schema/3.0/Swagger.json?expand",
+      "result": "used"
+    },
+    {
+      "kind": "swagger",
+      "url": "https://api.mailchimp.com/schema/3.0/Swagger.json",
+      "result": "rejected",
+      "note": "un-expanded form $refs external URLs (api.mailchimp.com/schema/3.0/Definitions/…) that do not resolve offline"
+    },
+    {
+      "kind": "openapi",
+      "url": "no vendor OpenAPI 3.x; Mailchimp publishes Swagger 2.0",
+      "result": "not-found"
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json"
+  ],
+  "modifications": [],
   "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-mailchimp/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/mailchimp",
-    "https://us1.api.mailchimp.com/schema/3.0/Swagger.json?expand",
+    "https://api.mailchimp.com/schema/3.0/Swagger.json?expand",
     "https://mailchimp.com/developer/marketing/api/"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Focused subset authored from Mailchimp's official Marketing API v3 Swagger 2.0 machine spec (~10MB, 181 paths) plus the developer docs. Covers only the endpoints the adaptor calls via @mailchimp/mailchimp_marketing: getAllLists (listAudiences), getList (listAudienceInfo), getListMembersInfo (listMembers), addListMember (addMember), getListMember, updateListMember (updateMember), deleteListMember (archiveMember), deleteListMemberPermanent (deleteMember), get/updateListMemberTags (updateMemberTags), batchListMembers POST /lists/{id} (upsertMembers), batchSegmentMembers POST /lists/{id}/segments/{sid} (tagMembers), startBatch and listBatches (POST/GET /batches). Response schemas were derived from the official spec and reduced to the load-bearing fields; large sub-objects (campaign_defaults, modules, marketing_permissions, detailed stats) are simplified. The generic request/get/post adaptor helpers can hit any /3.0 path and are not enumerated. Origin is generated (hand-authored subset), not verbatim, and converted from Swagger 2.0 shapes to OpenAPI 3.0.3."
+  "capturedAt": "2026-09-03",
+  "lastCheckedAt": "2026-09-03",
+  "notes": "Full coverage of the Mailchimp Marketing API v3.0.91, converted from Mailchimp's own Swagger 2.0 document committed verbatim as upstream.json — every one of the upstream's 298 operations survives the conversion (298 in, 298 out; the upstream declares no named definitions, so 0 schemas in and 0 out), across all 181 documented paths (lists/audiences, members, segments, campaigns, automations, templates, reports, e-commerce stores, batches, webhooks, file manager, landing pages, connected sites, verified domains). Replaces a 22 KiB hand-authored spec covering ~15 endpoints. CAVEAT on data-schemas: only the `?expand` form of the document is self-contained (the plain form $refs external URLs), and expanding inlines every schema at its use site, so the spec has no named components and therefore no data objects to extract. Coverage of the API surface is unaffected; the request/response shapes are all present inline."
 }

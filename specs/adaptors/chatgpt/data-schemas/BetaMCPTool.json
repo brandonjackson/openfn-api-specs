@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaMCPTool",
+  "title": "MCP tool",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaMCPTool",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Give the model access to additional tools via remote Model Context Protocol\n(MCP) servers. [Learn more about MCP](/docs/guides/tools-remote-mcp).\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "mcp"
+      ],
+      "description": "The type of the MCP tool. Always `mcp`.",
+      "x-stainless-const": true
+    },
+    "server_label": {
+      "type": "string",
+      "description": "A label for this MCP server, used to identify it in tool calls.\n"
+    },
+    "server_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "The URL for the MCP server. One of `server_url`, `connector_id`, or\n`tunnel_id` must be provided.\n"
+    },
+    "connector_id": {
+      "type": "string",
+      "enum": [
+        "connector_dropbox",
+        "connector_gmail",
+        "connector_googlecalendar",
+        "connector_googledrive",
+        "connector_microsoftteams",
+        "connector_outlookcalendar",
+        "connector_outlookemail",
+        "connector_sharepoint"
+      ],
+      "description": "Identifier for service connectors, like those available in ChatGPT. One of\n`server_url`, `connector_id`, or `tunnel_id` must be provided. Learn more\nabout service connectors [here](/docs/guides/tools-remote-mcp#connectors).\n\nCurrently supported `connector_id` values are:\n\n- Dropbox: `connector_dropbox`\n- Gmail: `connector_gmail`\n- Google Calendar: `connector_googlecalendar`\n- Google Drive: `connector_googledrive`\n- Microsoft Teams: `connector_microsoftteams`\n- Outlook Calendar: `connector_outlookcalendar`\n- Outlook Email: `connector_outlookemail`\n- SharePoint: `connector_sharepoint`\n"
+    },
+    "tunnel_id": {
+      "type": "string",
+      "pattern": "^tunnel_[a-z0-9]{32}$",
+      "description": "The Secure MCP Tunnel ID to use instead of a direct server URL. One of\n`server_url`, `connector_id`, or `tunnel_id` must be provided.\n"
+    },
+    "authorization": {
+      "type": "string",
+      "description": "An OAuth access token that can be used with a remote MCP server, either\nwith a custom MCP server URL or a service connector. Your application\nmust handle the OAuth authorization flow and provide the token here.\n"
+    },
+    "server_description": {
+      "type": "string",
+      "description": "Optional description of the MCP server, used to provide more context.\n"
+    },
+    "headers": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional HTTP headers to send to the MCP server. Use for authentication\nor other purposes.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "allowed_tools": {
+      "anyOf": [
+        {
+          "description": "List of allowed tool names or a filter object.\n",
+          "oneOf": [
+            {
+              "type": "array",
+              "title": "MCP allowed tools",
+              "description": "A string array of allowed tool names",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "$ref": "BetaMCPToolFilter.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "allowed_callers": {
+      "anyOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "BetaCallableToolAllowedCaller.json"
+          },
+          "description": "The tool invocation context(s)."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "require_approval": {
+      "anyOf": [
+        {
+          "description": "Specify which of the MCP server's tools require approval.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "MCP tool approval filter",
+              "description": "Specify which of the MCP server's tools require approval. Can be\n`always`, `never`, or a filter object associated with tools\nthat require approval.\n",
+              "properties": {
+                "always": {
+                  "$ref": "BetaMCPToolFilter.json"
+                },
+                "never": {
+                  "$ref": "BetaMCPToolFilter.json"
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "string",
+              "title": "MCP tool approval setting",
+              "description": "Specify a single approval policy for all tools. One of `always` or\n`never`. When set to `always`, all tools will require approval. When\nset to `never`, all tools will not require approval.\n",
+              "enum": [
+                "always",
+                "never"
+              ]
+            }
+          ],
+          "default": "always"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "defer_loading": {
+      "type": "boolean",
+      "description": "Whether this MCP tool is deferred and discovered via tool search.\n"
+    }
+  },
+  "required": [
+    "type",
+    "server_label"
+  ]
+}

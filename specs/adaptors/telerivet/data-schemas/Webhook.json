@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Webhook",
+  "title": "Webhook",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Webhook",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the webhook",
+      "example": "WH4f3dac27154653e0"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL that webhook requests are sent to",
+      "example": "https://example.com/webhook"
+    },
+    "secret": {
+      "type": "string",
+      "description": "Secret included with webhook requests for authentication (sent as HTTP basic auth password with username 'telerivet')",
+      "example": "my-webhook-secret"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of event types that trigger this webhook. Possible values: `send_status` (message status updates), `send_broadcast` (broadcast sent), `contact_update` (contact added/updated/deleted), `message_metadata` (message metadata updated)"
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this webhook. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this webhook belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents a webhook that is triggered when specific events occur within a project.\n\n Webhooks allow your server to receive HTTP POST requests when certain events happen, such as when a message's status changes or when a contact is updated.\n\n When an event occurs that matches a webhook's event types, Telerivet will send an HTTP POST request to the webhook URL with information about the event. For more information about the webhook request format, see the [Webhook API](https://telerivet.com/api/webhook) documentation.\n\n Note: The Webhook object is not used for notifying your server when incoming messages are received. To notify a URL when incoming messages are received, you can configure a webhook by creating a Service with type incoming_message_webhook."
+}

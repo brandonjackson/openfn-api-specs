@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/FineTuningJob",
+  "title": "FineTuningJob",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/FineTuningJob",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "The `fine_tuning.job` object represents a fine-tuning job that has been created through the API.\n",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The object identifier, which can be referenced in the API endpoints."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "The Unix timestamp (in seconds) for when the fine-tuning job was created."
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "For fine-tuning jobs that have `failed`, this will contain more information on the cause of the failure.",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "A machine-readable error code."
+            },
+            "message": {
+              "type": "string",
+              "description": "A human-readable error message."
+            },
+            "param": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "The parameter that was invalid, usually `training_file` or `validation_file`. This field will be null if the failure was not parameter-specific."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "param"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fine_tuned_model": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The name of the fine-tuned model that is being created. The value will be null if the fine-tuning job is still running."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "unixtime",
+          "description": "The Unix timestamp (in seconds) for when the fine-tuning job was finished. The value will be null if the fine-tuning job is still running."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hyperparameters": {
+      "type": "object",
+      "description": "The hyperparameters used for the fine-tuning job. This value will only be returned when running `supervised` jobs.",
+      "properties": {
+        "batch_size": {
+          "anyOf": [
+            {
+              "description": "Number of examples in each batch. A larger batch size means that model parameters\nare updated less frequently, but with lower variance.\n",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "auto"
+                  ],
+                  "x-stainless-const": true
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 256
+                }
+              ],
+              "default": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "learning_rate_multiplier": {
+          "description": "Scaling factor for the learning rate. A smaller learning rate may be useful to avoid\noverfitting.\n",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "auto"
+              ],
+              "x-stainless-const": true
+            },
+            {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          ],
+          "default": "auto"
+        },
+        "n_epochs": {
+          "description": "The number of epochs to train the model for. An epoch refers to one full cycle\nthrough the training dataset.\n",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "auto"
+              ],
+              "x-stainless-const": true
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          ],
+          "default": "auto"
+        }
+      }
+    },
+    "model": {
+      "type": "string",
+      "description": "The base model that is being fine-tuned."
+    },
+    "object": {
+      "type": "string",
+      "description": "The object type, which is always \"fine_tuning.job\".",
+      "enum": [
+        "fine_tuning.job"
+      ],
+      "x-stainless-const": true
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "The organization that owns the fine-tuning job."
+    },
+    "result_files": {
+      "type": "array",
+      "description": "The compiled results file ID(s) for the fine-tuning job. You can retrieve the results with the [Files API](/docs/api-reference/files/retrieve-contents).",
+      "items": {
+        "type": "string",
+        "example": "file-abc123"
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "The current status of the fine-tuning job, which can be either `validating_files`, `queued`, `running`, `succeeded`, `failed`, or `cancelled`.",
+      "enum": [
+        "validating_files",
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "trained_tokens": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "description": "The total number of billable tokens processed by this fine-tuning job. The value will be null if the fine-tuning job is still running."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "training_file": {
+      "type": "string",
+      "description": "The file ID used for training. You can retrieve the training data with the [Files API](/docs/api-reference/files/retrieve-contents)."
+    },
+    "validation_file": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The file ID used for validation. You can retrieve the validation results with the [Files API](/docs/api-reference/files/retrieve-contents)."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "integrations": {
+      "anyOf": [
+        {
+          "type": "array",
+          "description": "A list of integrations to enable for this fine-tuning job.",
+          "maxItems": 5,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "FineTuningIntegration.json"
+              }
+            ]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "seed": {
+      "type": "integer",
+      "description": "The seed used for the fine-tuning job."
+    },
+    "estimated_finish": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "unixtime",
+          "description": "The Unix timestamp (in seconds) for when the fine-tuning job is estimated to finish. The value will be null if the fine-tuning job is not running."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "method": {
+      "$ref": "FineTuneMethod.json"
+    },
+    "metadata": {
+      "$ref": "Metadata.json"
+    }
+  },
+  "required": [
+    "created_at",
+    "error",
+    "finished_at",
+    "fine_tuned_model",
+    "hyperparameters",
+    "id",
+    "model",
+    "object",
+    "organization_id",
+    "result_files",
+    "status",
+    "trained_tokens",
+    "training_file",
+    "validation_file",
+    "seed"
+  ],
+  "x-oaiMeta": {
+    "name": "The fine-tuning job object",
+    "example": "{\n  \"object\": \"fine_tuning.job\",\n  \"id\": \"ftjob-abc123\",\n  \"model\": \"davinci-002\",\n  \"created_at\": 1692661014,\n  \"finished_at\": 1692661190,\n  \"fine_tuned_model\": \"ft:davinci-002:my-org:custom_suffix:7q8mpxmy\",\n  \"organization_id\": \"org-123\",\n  \"result_files\": [\n      \"file-abc123\"\n  ],\n  \"status\": \"succeeded\",\n  \"validation_file\": null,\n  \"training_file\": \"file-abc123\",\n  \"hyperparameters\": {\n      \"n_epochs\": 4,\n      \"batch_size\": 1,\n      \"learning_rate_multiplier\": 1.0\n  },\n  \"trained_tokens\": 5768,\n  \"integrations\": [],\n  \"seed\": 0,\n  \"estimated_finish\": 0,\n  \"method\": {\n    \"type\": \"supervised\",\n    \"supervised\": {\n      \"hyperparameters\": {\n        \"n_epochs\": 4,\n        \"batch_size\": 1,\n        \"learning_rate_multiplier\": 1.0\n      }\n    }\n  },\n  \"metadata\": {\n    \"key\": \"value\"\n  }\n}\n"
+  }
+}

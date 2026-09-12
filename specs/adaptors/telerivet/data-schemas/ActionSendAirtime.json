@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionSendAirtime",
+  "title": "ActionSendAirtime",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionSendAirtime",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Sends airtime to the current contact if they are on a particular mobile network. Acts like a condition, and allows running other actions if the contact is on one of the supported networks. An 'else' condition can be added below this action to handle contacts that are not on the supported mobile networks.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "send_airtime",
+      "description": "Action type identifier"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID of the airtime provider to use."
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "description": "Two-letter country code (e.g., KE for Kenya)."
+          },
+          "operator_id": {
+            "type": "string",
+            "description": "ID of the mobile network operator (according to the airtime provider). Required if the provider supports multiple operators."
+          },
+          "product_id": {
+            "type": "string",
+            "description": "ID of the airtime product to send (according to the airtime provider)."
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount of airtime to send. Required for variable-amount products."
+          }
+        },
+        "required": [
+          "country",
+          "product_id"
+        ]
+      },
+      "description": "Array of product configurations for different mobile networks or countries."
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "Action.json"
+      },
+      "description": "Array of actions to execute if the contact is on a supported mobile network."
+    },
+    "on_success": {
+      "type": "string",
+      "description": "Name of subroutine to execute when the airtime transaction succeeds."
+    },
+    "on_failure": {
+      "type": "string",
+      "description": "Name of subroutine to execute when the airtime transaction fails."
+    }
+  },
+  "required": [
+    "type",
+    "provider_id",
+    "products"
+  ]
+}

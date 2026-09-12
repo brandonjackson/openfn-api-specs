@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ContactServiceState",
+  "title": "ContactServiceState",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ContactServiceState",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Arbitrary string representing the contact's current state for this service, e.g. 'q1', 'q2', etc.",
+      "example": "q1"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "ID of the contact",
+      "example": "CTa1299c3d0e371023"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "ID of the service",
+      "example": "SVee45c8ae4e32889a"
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this contact/service state. Only persisted when the state 'id' is non-null; saving with a null 'id' deletes the state and its variables. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the state was first created in Telerivet",
+      "example": 1395617416
+    },
+    "time_updated": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the state was last updated in Telerivet",
+      "example": 1395617440
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this contact/service state belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents the current state of a particular contact for a particular Telerivet service.\n\n Some automated services (including polls) are 'stateful'. For polls, Telerivet needs to keep track of which question the contact is currently answering, and stores store the ID of each contact's current question (e.g. 'q1' or 'q2') as the ID of the contact's state for the poll service. Any type of conversation-like service will also need to store state for each contact.\n\n For this type of entity, the 'id' field is NOT a read-only unique ID (unlike all other types of entities). Instead it is an arbitrary string that identifies the contact's current state within your poll/conversation; many contacts may have the same state ID, and it may change over time. Additional custom fields may be stored in the 'vars'.\n\n Initially, the state 'id' for any contact is null. When saving the state, setting the 'id' to null is equivalent to resetting the state (so all 'vars' will be deleted); if you want to save custom variables, the state 'id' must be non-null.\n\n Many Telerivet services are stateless, such as auto-replies or keyword-based services where the behavior only depends on the current message, and not any previous messages sent by the same contact. Telerivet doesn't store any state for contacts that interact with stateless services."
+}

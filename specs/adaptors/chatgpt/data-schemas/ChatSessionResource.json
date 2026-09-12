@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ChatSessionResource",
+  "title": "The chat session object",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ChatSessionResource",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identifier for the ChatKit session."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "chatkit.session"
+      ],
+      "description": "Type discriminator that is always `chatkit.session`.",
+      "default": "chatkit.session",
+      "x-stainless-const": true
+    },
+    "expires_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "Unix timestamp (in seconds) for when the session expires."
+    },
+    "client_secret": {
+      "type": "string",
+      "description": "Ephemeral client secret that authenticates session requests."
+    },
+    "workflow": {
+      "$ref": "ChatkitWorkflow.json",
+      "description": "Workflow metadata for the session."
+    },
+    "user": {
+      "type": "string",
+      "description": "User identifier associated with the session."
+    },
+    "rate_limits": {
+      "$ref": "ChatSessionRateLimits.json",
+      "description": "Resolved rate limit values."
+    },
+    "max_requests_per_1_minute": {
+      "type": "integer",
+      "description": "Convenience copy of the per-minute request limit."
+    },
+    "status": {
+      "$ref": "ChatSessionStatus.json",
+      "description": "Current lifecycle state of the session."
+    },
+    "chatkit_configuration": {
+      "$ref": "ChatSessionChatkitConfiguration.json",
+      "description": "Resolved ChatKit feature configuration for the session."
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "expires_at",
+    "client_secret",
+    "workflow",
+    "user",
+    "rate_limits",
+    "max_requests_per_1_minute",
+    "status",
+    "chatkit_configuration"
+  ],
+  "description": "Represents a ChatKit session and its resolved configuration.",
+  "example": {
+    "id": "cksess_123",
+    "object": "chatkit.session",
+    "client_secret": "ek_token_123",
+    "expires_at": 1712349876,
+    "workflow": {
+      "id": "workflow_alpha",
+      "version": "2024-10-01"
+    },
+    "user": "user_789",
+    "rate_limits": {
+      "max_requests_per_1_minute": 60
+    },
+    "max_requests_per_1_minute": 60,
+    "status": "cancelled",
+    "chatkit_configuration": {
+      "automatic_thread_titling": {
+        "enabled": true
+      },
+      "file_upload": {
+        "enabled": true,
+        "max_file_size": 16,
+        "max_files": 20
+      },
+      "history": {
+        "enabled": true,
+        "recent_threads": 10
+      }
+    }
+  }
+}

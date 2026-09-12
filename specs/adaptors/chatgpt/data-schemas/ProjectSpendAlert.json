@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ProjectSpendAlert",
+  "title": "ProjectSpendAlert",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ProjectSpendAlert",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents a spend alert configured at the project level.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identifier, which can be referenced in API endpoints."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "project.spend_alert"
+      ],
+      "description": "The object type, which is always `project.spend_alert`.",
+      "x-stainless-const": true
+    },
+    "threshold_amount": {
+      "type": "integer",
+      "description": "The alert threshold amount, in cents."
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "USD"
+      ],
+      "description": "The currency for the threshold amount."
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "month"
+      ],
+      "description": "The time interval for evaluating spend against the threshold."
+    },
+    "notification_channel": {
+      "$ref": "SpendAlertNotificationChannel.json"
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "threshold_amount",
+    "currency",
+    "interval",
+    "notification_channel"
+  ],
+  "x-oaiMeta": {
+    "name": "The project spend alert object",
+    "example": "{\n    \"id\": \"alert_abc123\",\n    \"object\": \"project.spend_alert\",\n    \"threshold_amount\": 100000,\n    \"currency\": \"USD\",\n    \"interval\": \"month\",\n    \"notification_channel\": {\n        \"type\": \"email\",\n        \"recipients\": [\"finance@example.com\"],\n        \"subject_prefix\": \"OpenAI spend alert\"\n    }\n}\n"
+  }
+}

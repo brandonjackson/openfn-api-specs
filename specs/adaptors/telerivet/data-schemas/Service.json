@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Service",
+  "title": "Service",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Service",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the service",
+      "example": "SVee45c8ae4e32889a"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the service",
+      "example": "Poll Service"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Type of the service.",
+      "example": "messaging_poll"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether the service is active or inactive. Inactive services are not automatically triggered and cannot be invoked via the API.",
+      "example": true
+    },
+    "priority": {
+      "type": "integer",
+      "description": "A number that determines the order that services are triggered when a particular event occurs (smaller numbers are triggered first). Any service can determine whether or not execution \"falls-through\" to subsequent services (with larger priority values) by setting the return_value variable within Telerivet's Rules Engine.",
+      "example": 1
+    },
+    "contexts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "A key/value map where the keys are the names of contexts supported by this service (e.g. message, contact), and the values are themselves key/value maps where the keys are event names and the values are all true. (This structure makes it easy to test whether a service can be invoked for a particular context and event.)"
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this service. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to this service in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/service/SVee45c8ae4e32889a"
+    },
+    "url_edit": {
+      "type": "string",
+      "description": "URL to edit the service in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/service/SV2ad0100821a98bea/edit"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this service belongs to",
+      "example": "PJ2ad0100821a98bea"
+    },
+    "response_table_id": {
+      "type": "string",
+      "description": "ID of the data table where responses to this service will be stored",
+      "example": "DTf9fe14d9c306aed9"
+    },
+    "phone_ids": {
+      "type": "string",
+      "description": "IDs of phones (basic routes) associated with this service, or null if the service is associated with all routes. Only applies for service types that handle incoming messages, voice calls, or USSD sessions."
+    },
+    "message_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types of messages that this service handles. Only provided for service types that handle incoming messages.",
+      "enum": [
+        "text",
+        "call",
+        "ussd"
+      ]
+    },
+    "table_ids": {
+      "type": "string",
+      "description": "IDs of data tables that this service applies to, or null if this service applies to all data tables. Only provided for data row services (`data_row_script` and `data_row_actions`)."
+    },
+    "message_statuses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Message statuses that this service handles. Only provided for `message_status_actions` services.",
+      "enum": [
+        "sent",
+        "delivered",
+        "failed",
+        "failed_queued",
+        "not_delivered"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags used to organize this service. Each tag can be up to 32 characters in length."
+    },
+    "apply_mode": {
+      "type": "string",
+      "description": "If apply_mode is `unhandled`, the service will not be triggered if another service has already handled the incoming message. If apply_mode is `always`, the service will always be triggered regardless of other services. Only applies to services that handle incoming messages.",
+      "enum": [
+        "always",
+        "unhandled"
+      ]
+    },
+    "contact_number_filter": {
+      "type": "string",
+      "description": "If contact_number_filter is `long_number`, this service will only be triggered if the contact phone number has at least 7 digits (ignoring messages from shortcodes and alphanumeric senders). If contact_number_filter is `all`, the service will be triggered for all contact phone numbers. Only applies to services that handle incoming messages.",
+      "enum": [
+        "long_number",
+        "all"
+      ]
+    },
+    "show_action": {
+      "type": "boolean",
+      "description": "Whether this service is shown in the 'Actions' menu within the Telerivet web app when the service is active. Only provided for service types that are manually triggered."
+    },
+    "direction": {
+      "type": "string",
+      "description": "Determines whether the service handles incoming voice calls, outgoing voice calls, or both. Only applies to services that handle voice calls.",
+      "enum": [
+        "incoming",
+        "outgoing",
+        "both"
+      ]
+    },
+    "webhook_url": {
+      "type": "string",
+      "description": "URL that a third-party can invoke to trigger this service. Only provided for services that are triggered by a webhook request."
+    },
+    "is_custom_template": {
+      "type": "boolean",
+      "description": "Whether this service was created from a custom service template"
+    },
+    "solution_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the solution that this service belongs to, if any",
+      "example": "SO2ad0100821a98bea"
+    }
+  },
+  "description": "Represents an automated service on Telerivet, for example a poll, auto-reply, webhook service, etc.\n\n A service, generally, defines some automated behavior that can be invoked/triggered in a particular context, and may be invoked either manually or when a particular event occurs.\n\n Most commonly, services work in the context of a particular message, when the message is originally received by Telerivet."
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ScheduledService",
+  "title": "ScheduledService",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ScheduledService",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the scheduled service",
+      "example": "SEfaf2411ed3584f08"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "ID of the service to be triggered",
+      "example": "SVa1299c3d0e371023"
+    },
+    "rrule": {
+      "type": "string",
+      "description": "Recurrence rule for recurring scheduled services, e.g. 'FREQ=MONTHLY' or 'FREQ=WEEKLY;INTERVAL=2'; see [RFC2445](https://tools.ietf.org/html/rfc2445#section-4.3.10).",
+      "example": "COUNT=1"
+    },
+    "timezone_id": {
+      "type": "string",
+      "description": "Timezone ID used to compute times for recurring scheduled services; see [List of tz database time zones Wikipedia article](http://en.wikipedia.org/wiki/List_of_tz_database_time_zones).",
+      "example": "America/Los_Angeles"
+    },
+    "time_created": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the scheduled service was created in Telerivet",
+      "example": 1395617416
+    },
+    "start_time": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "The time that the service will be triggered (or first triggered for recurring scheduled services)",
+      "example": 1395617516
+    },
+    "end_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time after which a recurring scheduled service will stop (not applicable to non-recurring scheduled services)"
+    },
+    "prev_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "The most recent time that Telerivet triggered this scheduled service (null if it has never been triggered)"
+    },
+    "next_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "The next upcoming time that Telerivet will trigger this scheduled service (null if it will not be triggered again)",
+      "example": 1395617516
+    },
+    "occurrences": {
+      "type": "integer",
+      "description": "Number of times this scheduled service has already been triggered",
+      "example": 0
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this scheduled service. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this scheduled service belongs to",
+      "example": "PJ2ad0100821a98bea"
+    }
+  },
+  "description": "Represents a scheduled service within Telerivet.\n\n Scheduled services allow services to be triggered automatically at specified times.\n The ScheduledService object is only used for services that are triggered for a project (e.g. `scheduled_actions` or `scheduled_script`).\n\n Note: To schedule services that are triggered for a contact, the ScheduledMessage object should be used instead, with `message_type`=`service`."
+}

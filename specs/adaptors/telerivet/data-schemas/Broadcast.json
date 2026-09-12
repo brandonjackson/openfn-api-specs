@@ -5,65 +5,289 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Broadcast",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-03"
   },
   "type": "object",
-  "description": "A Telerivet broadcast object.",
   "properties": {
     "id": {
-      "type": "string"
-    },
-    "object": {
       "type": "string",
-      "example": "broadcast"
+      "description": "ID of the broadcast",
+      "example": "MB2489812e59c5c781"
     },
     "recipients": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": true
-      }
+        "type": "string"
+      },
+      "description": "List of recipients. Each recipient is an object with a string `type` property, which may be `\"phone_number\"`, `\"group\"`, or `\"filter\"`.\n\n If the type is `\"phone_number\"`, the `phone_number` property will be set to the recipient's phone number.\n\n If the type is `\"group\"`, the `group_id` property will be set to the ID of the group, and the `group_name` property will be set to the name of the group.\n\n If the type is `\"filter\"`, the `filter_type` property (string) and `filter_params` property (object) describe the filter used to send the broadcast. (API clients should not rely on a particular value or format of the `filter_type` or `filter_params` properties, as they may change without notice.)"
     },
     "title": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "Title of the broadcast. If a title was not provided when the broadcast was sent, it is automatically set to a human readable description of the first few recipients (possibly truncated)",
+      "example": "+16505550123, Subscribers, Contact Filter"
     },
     "time_created": {
-      "type": "integer"
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the broadcast was sent in Telerivet",
+      "example": 1390348075
     },
     "last_message_time": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "format": "unix-timestamp",
+      "description": "Time the most recent message was queued to send in this broadcast",
+      "example": 1390348085
     },
-    "status": {
-      "type": "string"
+    "last_send_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time the most recent message was sent (or failed to send) in this broadcast, or null if no messages have been sent yet",
+      "example": 1390348086
+    },
+    "status_counts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "An object whose keys are the possible status codes (`\"queued\"`, `\"sent\"`, `\"failed\"`, `\"failed_queued\"`, `\"delivered\"`, `\"not_delivered\"`, and `\"cancelled\"`), and whose values are the number of messages in the broadcast currently in that status."
+    },
+    "message_count": {
+      "type": "integer",
+      "description": "The total number of messages created for this broadcast. For large broadcasts, the messages may not be created immediately after the broadcast is sent. The `message_count` includes messages in any status, including messages that are still queued.",
+      "example": 8358
+    },
+    "estimated_count": {
+      "type": "integer",
+      "description": "The estimated number of messages in this broadcast when it is complete. The `estimated_count` is calculated at the time the broadcast is sent. When the broadcast is completed, the `estimated_count` may differ from `message_count` if there are any blocked contacts among the recipients (blocked contacts are included in `estimated_count` but not in `message_count`), if any contacts don't have phone numbers, or if the group membership changed while the broadcast was being sent.",
+      "example": 12942
+    },
+    "num_parts": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The total number of SMS parts that have been sent in this broadcast. The number of SMS parts does not include messages that are still queued, or messages that failed to send.",
+      "example": 12321
     },
     "message_type": {
       "type": "string",
+      "description": "Type of message sent from this broadcast",
+      "enum": [
+        "sms",
+        "mms",
+        "ussd",
+        "ussd_session",
+        "call",
+        "chat",
+        "service"
+      ],
       "example": "sms"
     },
     "content": {
-      "type": [
-        "string",
-        "null"
+      "type": "string",
+      "description": "The text content of the message (null for USSD messages and calls)",
+      "example": "Hello [[contact.name]]!"
+    },
+    "audio_url": {
+      "type": "string",
+      "description": "For voice calls, the URL of an MP3 file to play when the contact answers the call"
+    },
+    "tts_lang": {
+      "type": "string",
+      "description": "For voice calls, the language of the text-to-speech voice",
+      "enum": [
+        "en-US",
+        "en-GB",
+        "en-GB-WLS",
+        "en-AU",
+        "en-IN",
+        "da-DK",
+        "nl-NL",
+        "fr-FR",
+        "fr-CA",
+        "de-DE",
+        "is-IS",
+        "it-IT",
+        "pl-PL",
+        "pt-BR",
+        "pt-PT",
+        "ru-RU",
+        "es-ES",
+        "es-US",
+        "sv-SE"
       ]
     },
-    "message_count": {
-      "type": "integer"
+    "tts_voice": {
+      "type": "string",
+      "description": "For voice calls, the text-to-speech voice",
+      "enum": [
+        "female",
+        "male"
+      ]
     },
-    "estimated_count": {
-      "type": "integer"
+    "replace_variables": {
+      "type": "boolean",
+      "description": "Set to true if Telerivet will render variables like [[contact.name]] in the message content, false otherwise",
+      "example": true
+    },
+    "status": {
+      "type": "string",
+      "description": "The current status of the broadcast.",
+      "enum": [
+        "queuing",
+        "sending",
+        "complete",
+        "cancelled"
+      ],
+      "example": "queuing"
+    },
+    "source": {
+      "type": "string",
+      "description": "How the message originated within Telerivet",
+      "enum": [
+        "phone",
+        "provider",
+        "web",
+        "api",
+        "service",
+        "webhook",
+        "scheduled",
+        "integration",
+        "mcp",
+        "welcome"
+      ],
+      "example": "service"
+    },
+    "simulated": {
+      "type": "boolean",
+      "description": "Whether this message was simulated within Telerivet for testing (and not actually sent to or received by a real phone)",
+      "example": false
+    },
+    "track_clicks": {
+      "type": "boolean",
+      "description": "If true, URLs in the message content will automatically be replaced with unique short URLs."
+    },
+    "clicked_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "The number of messages in this broadcast containing short links that were clicked. At most one click per message is counted. If track_clicks is false, this property will be null.",
+      "example": 12
+    },
+    "label_ids": {
+      "type": "string",
+      "description": "List of IDs of labels applied to all messages in the broadcast"
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the media file. Note: For files stored by Telerivet (including uploaded files and incoming media attachments), the URL is temporary and may not be valid for more than 1 day."
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type of the media file"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes"
+          },
+          "file_id": {
+            "type": "string",
+            "description": "ID of the stored file, if applicable"
+          }
+        }
+      },
+      "description": "Array of media attachments for the text message. This property is undefined for messages that do not contain media files."
     },
     "vars": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "description": "Custom variables stored for this broadcast. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "route_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Route-specific parameters for the messages in the broadcast. \n\n When sending messages via chat apps such as WhatsApp, the route_params parameter can be used to send messages with app-specific features such as quick replies and link buttons.\n\n For more details, see Route-Specific Parameters."
+    },
+    "price": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The total price of all messages in this broadcast, if known.",
+      "example": 13.34
+    },
+    "price_currency": {
+      "type": "string",
+      "description": "The currency of the message price, if applicable.",
+      "example": "USD"
+    },
+    "reply_count": {
+      "type": "integer",
+      "description": "The number of replies received in response to a message sent in this broadcast. (Replies are not included in `message_count` ,`status_counts`, or `price`.)",
+      "example": 43
+    },
+    "last_reply_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time the most recent reply was received in response to a message sent in this broadcast, or null if no replies have been sent yet",
+      "example": 1390348132
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the phone or route used to send the broadcast (if applicable)",
+      "example": "RT2a586298d3412adf"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "The service associated with this broadcast (for voice calls, the service defines the call flow)",
+      "example": "SV3d246818d0e3d1fb"
+    },
+    "url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "URL to this broadcast in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/broadcast/MB2489812e59c5c781"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the Telerivet user who sent the broadcast (if applicable)",
+      "example": "URba3e403e98f49735"
     },
     "project_id": {
-      "type": "string"
+      "type": "string",
+      "description": "ID of the project this broadcast belongs to",
+      "example": "PJ2ad0100821a98bea"
+    },
+    "is_template": {
+      "type": "boolean",
+      "description": "Set to true if Telerivet will render variables like [[contact.name]] in the message content"
+    },
+    "recipients_str": {
+      "type": "string",
+      "description": "A string with a human readable description of the first few recipients (possibly truncated)"
     }
-  }
+  },
+  "description": "Represents a collection of related outgoing messages.\n Typically, messages in a broadcast have the same content template and were sent at the same time; however, a broadcast can also contain messages with unrelated content and messages that were sent at different times.\n A broadcast is automatically created when sending a message to a group of contacts."
 }

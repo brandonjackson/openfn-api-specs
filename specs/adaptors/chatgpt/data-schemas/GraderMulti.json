@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/GraderMulti",
+  "title": "MultiGrader",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/GraderMulti",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A MultiGrader object combines the output of multiple graders to produce a single score.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "multi"
+      ],
+      "default": "multi",
+      "description": "The object type, which is always `multi`.",
+      "x-stainless-const": true
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the grader."
+    },
+    "graders": {
+      "oneOf": [
+        {
+          "$ref": "GraderStringCheck.json"
+        },
+        {
+          "$ref": "GraderTextSimilarity.json"
+        },
+        {
+          "$ref": "GraderPython.json"
+        },
+        {
+          "$ref": "GraderScoreModel.json"
+        },
+        {
+          "$ref": "GraderLabelModel.json"
+        }
+      ]
+    },
+    "calculate_output": {
+      "type": "string",
+      "description": "A formula to calculate the output based on grader results."
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "graders",
+    "calculate_output"
+  ],
+  "x-oaiMeta": {
+    "name": "Multi Grader",
+    "group": "graders",
+    "example": "{\n  \"type\": \"multi\",\n  \"name\": \"example multi grader\",\n  \"graders\": [\n    {\n      \"type\": \"text_similarity\",\n      \"name\": \"example text similarity grader\",\n      \"input\": \"The graded text\",\n      \"reference\": \"The reference text\",\n      \"evaluation_metric\": \"fuzzy_match\"\n    },\n    {\n      \"type\": \"string_check\",\n      \"name\": \"Example string check grader\",\n      \"input\": \"{{sample.output_text}}\",\n      \"reference\": \"{{item.label}}\",\n      \"operation\": \"eq\"\n    }\n  ],\n  \"calculate_output\": \"0.5 * text_similarity_score +  0.5 * string_check_score)\"\n}\n"
+  }
+}

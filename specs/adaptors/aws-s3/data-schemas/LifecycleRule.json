@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aws-s3/LifecycleRule",
+  "title": "LifecycleRule",
+  "x-openfn-adaptor": "aws-s3",
+  "x-source": {
+    "openapi": "#/components/schemas/LifecycleRule",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "required": [
+    "Status"
+  ],
+  "properties": {
+    "Expiration": {
+      "allOf": [
+        {
+          "$ref": "LifecycleExpiration.json"
+        },
+        {
+          "description": "Specifies the expiration for the lifecycle of the object in the form of date, days and, whether the object has a delete marker."
+        }
+      ]
+    },
+    "ID": {
+      "allOf": [
+        {
+          "$ref": "ID.json"
+        },
+        {
+          "description": "Unique identifier for the rule. The value cannot be longer than 255 characters."
+        }
+      ]
+    },
+    "Prefix": {
+      "allOf": [
+        {
+          "$ref": "Prefix.json"
+        },
+        {
+          "deprecated": true,
+          "description": "<p>Prefix identifying one or more objects to which the rule applies. This is no longer used; use <code>Filter</code> instead.</p> <important> <p>Replacement must be made for object keys containing special characters (such as carriage returns) when using XML requests. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints\"> XML related object key constraints</a>.</p> </important>"
+        }
+      ]
+    },
+    "Filter": {
+      "allOf": [
+        {
+          "$ref": "LifecycleRuleFilter.json"
+        },
+        {
+          "description": "The <code>Filter</code> is used to identify objects that a Lifecycle Rule applies to. A <code>Filter</code> must have exactly one of <code>Prefix</code>, <code>Tag</code>, or <code>And</code> specified. <code>Filter</code> is required if the <code>LifecycleRule</code> does not contain a <code>Prefix</code> element."
+        }
+      ]
+    },
+    "Status": {
+      "allOf": [
+        {
+          "$ref": "ExpirationStatus.json"
+        },
+        {
+          "description": "If 'Enabled', the rule is currently being applied. If 'Disabled', the rule is not currently being applied."
+        }
+      ]
+    },
+    "Transitions": {
+      "allOf": [
+        {
+          "$ref": "TransitionList.json"
+        },
+        {
+          "xml": {
+            "name": "Transition"
+          },
+          "description": "Specifies when an Amazon S3 object transitions to a specified storage class."
+        }
+      ]
+    },
+    "NoncurrentVersionTransitions": {
+      "allOf": [
+        {
+          "$ref": "NoncurrentVersionTransitionList.json"
+        },
+        {
+          "xml": {
+            "name": "NoncurrentVersionTransition"
+          },
+          "description": " Specifies the transition rule for the lifecycle rule that describes when noncurrent objects transition to a specific storage class. If your bucket is versioning-enabled (or versioning is suspended), you can set this action to request that Amazon S3 transition noncurrent object versions to a specific storage class at a set period in the object's lifetime. "
+        }
+      ]
+    },
+    "NoncurrentVersionExpiration": {
+      "$ref": "NoncurrentVersionExpiration.json"
+    },
+    "AbortIncompleteMultipartUpload": {
+      "$ref": "AbortIncompleteMultipartUpload.json"
+    }
+  },
+  "description": "A lifecycle rule for individual objects in an Amazon S3 bucket."
+}

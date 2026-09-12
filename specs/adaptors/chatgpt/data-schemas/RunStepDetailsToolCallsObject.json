@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/RunStepDetailsToolCallsObject",
+  "title": "Tool calls",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/RunStepDetailsToolCallsObject",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Details of the tool call.",
+  "properties": {
+    "type": {
+      "description": "Always `tool_calls`.",
+      "type": "string",
+      "enum": [
+        "tool_calls"
+      ],
+      "x-stainless-const": true
+    },
+    "tool_calls": {
+      "type": "array",
+      "description": "An array of tool calls the run step was involved in. These can be associated with one of three types of tools: `code_interpreter`, `file_search`, or `function`.\n",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "RunStepDetailsToolCallsCodeObject.json"
+          },
+          {
+            "$ref": "RunStepDetailsToolCallsFileSearchObject.json"
+          },
+          {
+            "$ref": "RunStepDetailsToolCallsFunctionObject.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "type",
+    "tool_calls"
+  ]
+}

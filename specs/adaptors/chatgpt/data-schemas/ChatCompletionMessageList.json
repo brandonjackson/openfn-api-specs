@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ChatCompletionMessageList",
+  "title": "ChatCompletionMessageList",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ChatCompletionMessageList",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "An object representing a list of chat completion messages.\n",
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "list"
+      ],
+      "default": "list",
+      "description": "The type of this object. It is always set to \"list\".\n",
+      "x-stainless-const": true
+    },
+    "data": {
+      "type": "array",
+      "description": "An array of chat completion message objects.\n",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "ChatCompletionResponseMessage.json"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The identifier of the chat message."
+              },
+              "content_parts": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "description": "If a content parts array was provided, this is an array of `text` and `image_url` parts.\nOtherwise, null.\n",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "$ref": "ChatCompletionRequestMessageContentPartText.json"
+                        },
+                        {
+                          "$ref": "ChatCompletionRequestMessageContentPartImage.json"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "first_id": {
+      "type": "string",
+      "description": "The identifier of the first chat message in the data array."
+    },
+    "last_id": {
+      "type": "string",
+      "description": "The identifier of the last chat message in the data array."
+    },
+    "has_more": {
+      "type": "boolean",
+      "description": "Indicates whether there are more chat messages available."
+    }
+  },
+  "required": [
+    "object",
+    "data",
+    "first_id",
+    "last_id",
+    "has_more"
+  ],
+  "x-oaiMeta": {
+    "name": "The chat completion message list object",
+    "group": "chat",
+    "example": "{\n  \"object\": \"list\",\n  \"data\": [\n    {\n      \"id\": \"chatcmpl-AyPNinnUqUDYo9SAdA52NobMflmj2-0\",\n      \"role\": \"user\",\n      \"content\": \"write a haiku about ai\",\n      \"name\": null,\n      \"content_parts\": null\n    }\n  ],\n  \"first_id\": \"chatcmpl-AyPNinnUqUDYo9SAdA52NobMflmj2-0\",\n  \"last_id\": \"chatcmpl-AyPNinnUqUDYo9SAdA52NobMflmj2-0\",\n  \"has_more\": false\n}\n"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionRunScript",
+  "title": "ActionRunScript",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionRunScript",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Runs custom JavaScript code on Telerivet's servers using Telerivet's Cloud Script API.\n\nThis makes it possible to define custom actions such as calling the Telerivet REST API or third-party APIs, or parsing structured data from incoming messages.\n\nFor more details, see the [Cloud Script API documentation](/api/script).\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "run_script",
+      "description": "Action type identifier"
+    },
+    "code": {
+      "type": "string",
+      "description": "JavaScript code to execute. See <a href=\"https://telerivet.com/api/script\">Cloud Script API</a> for available functions and variables."
+    }
+  },
+  "required": [
+    "type",
+    "code"
+  ],
+  "example": {
+    "type": "run_script",
+    "code": "var response = httpClient.request(\n    \"http://api.coindesk.com/v1/bpi/currentprice.json\");\n\nvar bitcoinInfo = JSON.parse(response.content);\nsendReply(\"1 BTC = $\" + bitcoinInfo.bpi.USD.rate);"
+  }
+}

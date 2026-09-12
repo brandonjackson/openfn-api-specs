@@ -5,100 +5,389 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Message",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-03"
   },
   "type": "object",
-  "description": "A Telerivet message object.",
   "properties": {
     "id": {
-      "type": "string"
-    },
-    "object": {
       "type": "string",
-      "example": "message"
+      "description": "ID of the message",
+      "example": "SM1629708e59c5c781"
     },
     "direction": {
       "type": "string",
+      "description": "Direction of the message: incoming messages are sent from one of your contacts to your phone; outgoing messages are sent from your phone to one of your contacts",
       "enum": [
         "incoming",
         "outgoing"
-      ]
+      ],
+      "example": "outgoing"
     },
     "status": {
       "type": "string",
-      "example": "queued"
+      "description": "Current status of the message",
+      "enum": [
+        "ignored",
+        "processing",
+        "received",
+        "sent",
+        "queued",
+        "failed",
+        "failed_queued",
+        "cancelled",
+        "delivered",
+        "not_delivered",
+        "read"
+      ],
+      "example": "sent"
     },
     "message_type": {
       "type": "string",
+      "description": "Type of the message",
+      "enum": [
+        "sms",
+        "mms",
+        "ussd",
+        "ussd_session",
+        "call",
+        "chat",
+        "service"
+      ],
       "example": "sms"
     },
     "source": {
-      "type": "string"
+      "type": "string",
+      "description": "How the message originated within Telerivet",
+      "enum": [
+        "phone",
+        "provider",
+        "web",
+        "api",
+        "service",
+        "webhook",
+        "scheduled",
+        "integration",
+        "mcp",
+        "welcome"
+      ],
+      "example": "service"
     },
     "time_created": {
       "type": "integer",
-      "description": "Unix timestamp"
+      "format": "unix-timestamp",
+      "description": "The time that the message was created on Telerivet's servers",
+      "example": 1390347812
     },
     "time_sent": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "format": "unix-timestamp",
+      "description": "The time that the message was reported to have been sent (null for incoming messages and messages that have not yet been sent)",
+      "example": 1390347814
+    },
+    "time_updated": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "The time that the message was last updated in Telerivet.",
+      "example": 1390347818
     },
     "from_number": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "The phone number that the message originated from (your number for outgoing messages, the contact's number for incoming messages)",
+      "example": "+16505550001"
     },
     "to_number": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "The phone number that the message was sent to (your number for incoming messages, the contact's number for outgoing messages)",
+      "example": "+16505550123"
     },
     "content": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "The text content of the message (null for USSD messages and calls)",
+      "example": "Thank you for registering!"
     },
     "starred": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether this message is starred in Telerivet",
+      "example": true
     },
     "simulated": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether this message was simulated within Telerivet for testing (and not actually sent to or received by a real phone)",
+      "example": false
     },
     "label_ids": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "type": "string",
+      "description": "List of IDs of labels applied to this message"
+    },
+    "route_params": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Route-specific parameters for the message. \n\n When sending messages via chat apps such as WhatsApp, the route_params parameter can be used to send messages with app-specific features such as quick replies and link buttons.\n\n For more details, see Route-Specific Parameters."
     },
     "vars": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "description": "Custom variables stored for this message. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
     },
-    "route_id": {
+    "priority": {
+      "type": "integer",
+      "description": "Priority of this message. Telerivet will attempt to send messages with higher priority numbers first. Only defined for outgoing messages.",
+      "example": 1
+    },
+    "send_attempts": {
       "type": [
-        "string",
+        "number",
         "null"
+      ],
+      "description": "The number of times Telerivet has attempted to send the message. Will be greater than 1 if the message has been resent. Only defined for outgoing messages.",
+      "example": 1
+    },
+    "error_message": {
+      "type": "string",
+      "description": "A description of the error encountered while sending a message. (This field is omitted from the API response if there is no error message.)"
+    },
+    "error_code": {
+      "type": "string",
+      "description": "A route-specific error code encountered while sending a message. The error code values depend on the provider and may be described in the provider's API documentation. Error codes may be strings or numbers, depending on the provider. (This field is omitted from the API response if there is no error code.)"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "The ID of this message from an external SMS gateway provider (e.g. Twilio or Vonage), if available.",
+      "example": "142092393"
+    },
+    "num_parts": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The number of SMS parts associated with the message, if applicable and if known.",
+      "example": 1
+    },
+    "price": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The price of this message, if known.",
+      "example": 0.01
+    },
+    "price_currency": {
+      "type": "string",
+      "description": "The currency of the message price, if applicable.",
+      "example": "USD"
+    },
+    "duration": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The duration of the call in seconds, if known, or -1 if the call was not answered."
+    },
+    "ring_time": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The length of time the call rang in seconds before being answered or hung up, if known."
+    },
+    "audio_url": {
+      "type": "string",
+      "description": "For voice calls, the URL of an MP3 file to play when the contact answers the call"
+    },
+    "tts_lang": {
+      "type": "string",
+      "description": "For voice calls, the language of the text-to-speech voice",
+      "enum": [
+        "en-US",
+        "en-GB",
+        "en-GB-WLS",
+        "en-AU",
+        "en-IN",
+        "da-DK",
+        "nl-NL",
+        "fr-FR",
+        "fr-CA",
+        "de-DE",
+        "is-IS",
+        "it-IT",
+        "pl-PL",
+        "pt-BR",
+        "pt-PT",
+        "ru-RU",
+        "es-ES",
+        "es-US",
+        "sv-SE"
       ]
+    },
+    "tts_voice": {
+      "type": "string",
+      "description": "For voice calls, the text-to-speech voice",
+      "enum": [
+        "female",
+        "male"
+      ]
+    },
+    "track_clicks": {
+      "type": "boolean",
+      "description": "If true, URLs in the message content are short URLs that redirect to a destination URL."
+    },
+    "short_urls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "short_url": {
+            "type": "string",
+            "description": "The short URL"
+          },
+          "link_type": {
+            "type": "string",
+            "description": "Type of link: redirect, media, or service"
+          },
+          "time_clicked": {
+            "type": "integer",
+            "format": "unix-timestamp",
+            "description": "First time this URL was clicked"
+          },
+          "expiration_time": {
+            "type": "integer",
+            "format": "unix-timestamp",
+            "description": "When this short URL expires"
+          },
+          "destination_url": {
+            "type": "string",
+            "description": "Destination URL (when link_type is redirect)"
+          },
+          "media_index": {
+            "type": "integer",
+            "description": "Index in media array (when link_type is media)"
+          },
+          "service_id": {
+            "type": "string",
+            "description": "Service ID (when link_type is service)"
+          }
+        }
+      },
+      "description": "For text messages containing short URLs, this is an array of objects with the properties `short_url`, `link_type`, `time_clicked` (the first time that URL was clicked), and `expiration_time`. If `link_type` is \"redirect\", the object also contains a `destination_url` property. If `link_type` is \"media\", the object also contains an `media_index` property (the index in the media array). If `link_type` is \"service\", the object also contains a `service_id` property. This property is undefined for messages that do not contain short URLs."
+    },
+    "network_code": {
+      "type": "string",
+      "description": "A string identifying the network that sent or received the message, if known. For mobile networks, this string contains the 3-digit mobile country code (MCC) followed by the 2- or 3-digit mobile network code (MNC), which results in a 5- or 6-digit number. For lists of mobile network operators and their corresponding MCC/MNC values, see [Mobile country code Wikipedia article](https://en.wikipedia.org/wiki/Mobile_country_code). The network_code property may be non-numeric for messages not sent via mobile networks."
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the media file. Note: For files stored by Telerivet (including uploaded files and incoming media attachments), the URL is temporary and may not be valid for more than 1 day."
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type of the media file"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes"
+          },
+          "file_id": {
+            "type": "string",
+            "description": "ID of the stored file, if applicable"
+          }
+        }
+      },
+      "description": "Array of media attachments for the text message. This property is undefined for messages that do not contain media files."
+    },
+    "mms_parts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cid": {
+            "type": "string",
+            "description": "MMS content-id"
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Number of bytes"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL where the content is stored"
+          }
+        }
+      },
+      "description": "A list of parts in the MMS message (only for incoming MMS messages received via Telerivet Gateway Android app).\n\n Each MMS part in the list is an object with the following properties:\n\n - cid: MMS content-id\n - type: MIME type\n - filename: original filename\n - size (int): number of bytes\n - url: URL where the content for this part is stored (secret but publicly accessible, so you could link/embed it in a web page without having to re-host it yourself)\n\n In general, the `media` property of the message is recommended for retrieving information about MMS media files, instead of `mms_parts`.\n The `mms_parts` property is also only present when retrieving an individual MMS message by ID, not when querying a list of messages."
+    },
+    "time_clicked": {
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "If the message contains any short URLs, this is the first time that a short URL in the message was clicked. This property is undefined for messages that do not contain short URLs."
+    },
+    "service_id": {
+      "type": "string",
+      "description": "ID of the service that handled the message (for voice calls, the service defines the call flow)",
+      "example": "SV3d246818d0e3d1fb"
     },
     "phone_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "ID of the phone (basic route) that sent or received the message",
+      "example": "PN4d246818d0ecd1fa"
     },
     "contact_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "ID of the contact that sent or received the message",
+      "example": "CTa1299c3d0e371023"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the custom route that sent the message (if applicable)",
+      "example": "RT2a586298d3412adf"
+    },
+    "broadcast_id": {
+      "type": "string",
+      "description": "ID of the broadcast that this message is part of (if applicable)",
+      "example": "MB98918598dab29800"
+    },
+    "scheduled_id": {
+      "type": "string",
+      "description": "ID of the scheduled message that created this message is part of (if applicable)",
+      "example": "SEa502e6f9d23f1cb6"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the Telerivet user who sent the message (if applicable)",
+      "example": "URba3e403e98f49735"
     },
     "project_id": {
-      "type": "string"
+      "type": "string",
+      "description": "ID of the project this contact belongs to",
+      "example": "PJ2ad0100821a98bea"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to the message detail page in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/message/SM1629708e59c5c781"
     }
-  }
+  },
+  "description": "Represents a single message."
 }

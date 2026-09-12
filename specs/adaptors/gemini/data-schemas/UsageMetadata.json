@@ -5,18 +5,85 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/UsageMetadata",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-03"
   },
   "type": "object",
+  "description": "Metadata on the generation request's token usage.",
   "properties": {
-    "promptTokenCount": {
-      "type": "integer"
-    },
     "candidatesTokenCount": {
-      "type": "integer"
+      "type": "integer",
+      "format": "int32",
+      "description": "Total number of tokens across all the generated response candidates."
+    },
+    "promptTokenCount": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of tokens in the prompt. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content."
+    },
+    "cacheTokensDetails": {
+      "type": "array",
+      "description": "Output only. List of modalities of the cached content in the request input.",
+      "readOnly": true,
+      "items": {
+        "$ref": "ModalityTokenCount.json"
+      }
+    },
+    "thoughtsTokenCount": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Output only. Number of tokens of thoughts for thinking models.",
+      "readOnly": true
+    },
+    "cachedContentTokenCount": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of tokens in the cached part of the prompt (the cached content)"
+    },
+    "serviceTier": {
+      "type": "string",
+      "description": "Output only. Service tier of the request.",
+      "enum": [
+        "unspecified",
+        "standard",
+        "flex",
+        "priority"
+      ],
+      "readOnly": true
+    },
+    "promptTokensDetails": {
+      "type": "array",
+      "description": "Output only. List of modalities that were processed in the request input.",
+      "readOnly": true,
+      "items": {
+        "$ref": "ModalityTokenCount.json"
+      }
     },
     "totalTokenCount": {
-      "type": "integer"
+      "type": "integer",
+      "format": "int32",
+      "description": "Total token count for the generation request (prompt + thoughts + response candidates)."
+    },
+    "toolUsePromptTokensDetails": {
+      "type": "array",
+      "description": "Output only. List of modalities that were processed for tool-use request inputs.",
+      "readOnly": true,
+      "items": {
+        "$ref": "ModalityTokenCount.json"
+      }
+    },
+    "toolUsePromptTokenCount": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Output only. Number of tokens present in tool-use prompt(s).",
+      "readOnly": true
+    },
+    "candidatesTokensDetails": {
+      "type": "array",
+      "description": "Output only. List of modalities that were returned in the response.",
+      "readOnly": true,
+      "items": {
+        "$ref": "ModalityTokenCount.json"
+      }
     }
   }
 }

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaComputerToolCallOutput",
+  "title": "Computer tool call output",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaComputerToolCallOutput",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "The output of a computer tool call.\n",
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "BetaAgentTag.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The agent that produced this item."
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the computer tool call output. Always `computer_call_output`.\n",
+      "enum": [
+        "computer_call_output"
+      ],
+      "default": "computer_call_output",
+      "x-stainless-const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "The ID of the computer tool call output.\n"
+    },
+    "call_id": {
+      "type": "string",
+      "description": "The ID of the computer tool call that produced the output.\n"
+    },
+    "acknowledged_safety_checks": {
+      "type": "array",
+      "description": "The safety checks reported by the API that have been acknowledged by the\ndeveloper.\n",
+      "items": {
+        "$ref": "BetaComputerCallSafetyCheckParam.json"
+      }
+    },
+    "output": {
+      "$ref": "BetaComputerScreenshotImage.json"
+    },
+    "status": {
+      "type": "string",
+      "description": "The status of the message input. One of `in_progress`, `completed`, or\n`incomplete`. Populated when input items are returned via API.\n",
+      "enum": [
+        "in_progress",
+        "completed",
+        "incomplete"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "call_id",
+    "output"
+  ]
+}

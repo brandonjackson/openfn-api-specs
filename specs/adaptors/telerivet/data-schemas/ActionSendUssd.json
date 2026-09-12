@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionSendUssd",
+  "title": "ActionSendUssd",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionSendUssd",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Sends a USSD request from your Android phone to your mobile network.\n\nOn some mobile networks, USSD requests can be used to check your airtime balance, transfer airtime to other phone numbers, and more.\n\nNote that this requires a compatible Android phone running the Telerivet Gateway app. Also, Telerivet cannot automatically invoke USSD requests that return menus or prompts.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "send_ussd",
+      "description": "Action type identifier"
+    },
+    "mmi_code": {
+      "type": "string",
+      "description": "USSD/MMI code to send (e.g. *123#).",
+      "x-supports-variables": true
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID of the route to send the USSD request from. If not specified, uses the default route."
+    }
+  },
+  "required": [
+    "type",
+    "mmi_code"
+  ],
+  "example": {
+    "type": "send_ussd",
+    "mmi_code": "*104*1000*[[from_number.national_raw]]#"
+  }
+}

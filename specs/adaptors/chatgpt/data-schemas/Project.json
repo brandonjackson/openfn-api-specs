@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/Project",
+  "title": "Project",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/Project",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents an individual project.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identifier, which can be referenced in API endpoints"
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "organization.project"
+      ],
+      "description": "The object type, which is always `organization.project`",
+      "x-stainless-const": true
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The name of the project. This appears in reporting."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "unixtime",
+      "description": "The Unix timestamp (in seconds) of when the project was created."
+    },
+    "archived_at": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "unixtime",
+          "description": "The Unix timestamp (in seconds) of when the project was archived or `null`."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`active` or `archived`"
+    },
+    "external_key_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The external key associated with the project."
+    },
+    "residency": {
+      "$ref": "PublicProjectResidency.json",
+      "description": "The residency configuration for the project."
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "created_at"
+  ],
+  "x-oaiMeta": {
+    "name": "The project object",
+    "example": "{\n    \"id\": \"proj_abc\",\n    \"object\": \"organization.project\",\n    \"name\": \"Project example\",\n    \"created_at\": 1711471533,\n    \"archived_at\": null,\n    \"status\": \"active\",\n    \"external_key_id\": null\n}\n"
+  }
+}

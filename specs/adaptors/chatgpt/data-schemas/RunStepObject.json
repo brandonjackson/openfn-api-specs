@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/RunStepObject",
+  "title": "Run steps",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/RunStepObject",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Represents a step in execution of a run.\n",
+  "properties": {
+    "id": {
+      "description": "The identifier of the run step, which can be referenced in API endpoints.",
+      "type": "string"
+    },
+    "object": {
+      "description": "The object type, which is always `thread.run.step`.",
+      "type": "string",
+      "enum": [
+        "thread.run.step"
+      ],
+      "x-stainless-const": true
+    },
+    "created_at": {
+      "description": "The Unix timestamp (in seconds) for when the run step was created.",
+      "type": "integer",
+      "format": "unixtime"
+    },
+    "assistant_id": {
+      "description": "The ID of the [assistant](/docs/api-reference/assistants) associated with the run step.",
+      "type": "string"
+    },
+    "thread_id": {
+      "description": "The ID of the [thread](/docs/api-reference/threads) that was run.",
+      "type": "string"
+    },
+    "run_id": {
+      "description": "The ID of the [run](/docs/api-reference/runs) that this run step is a part of.",
+      "type": "string"
+    },
+    "type": {
+      "description": "The type of run step, which can be either `message_creation` or `tool_calls`.",
+      "type": "string",
+      "enum": [
+        "message_creation",
+        "tool_calls"
+      ]
+    },
+    "status": {
+      "description": "The status of the run step, which can be either `in_progress`, `cancelled`, `failed`, `completed`, or `expired`.",
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "cancelled",
+        "failed",
+        "completed",
+        "expired"
+      ]
+    },
+    "step_details": {
+      "type": "object",
+      "description": "The details of the run step.",
+      "oneOf": [
+        {
+          "$ref": "RunStepDetailsMessageCreationObject.json"
+        },
+        {
+          "$ref": "RunStepDetailsToolCallsObject.json"
+        }
+      ]
+    },
+    "last_error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "The last error associated with this run step. Will be `null` if there are no errors.",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "One of `server_error` or `rate_limit_exceeded`.",
+              "enum": [
+                "server_error",
+                "rate_limit_exceeded"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "description": "A human-readable description of the error."
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "expired_at": {
+      "anyOf": [
+        {
+          "description": "The Unix timestamp (in seconds) for when the run step expired. A step is considered expired if the parent run is expired.",
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cancelled_at": {
+      "anyOf": [
+        {
+          "description": "The Unix timestamp (in seconds) for when the run step was cancelled.",
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "failed_at": {
+      "anyOf": [
+        {
+          "description": "The Unix timestamp (in seconds) for when the run step failed.",
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "description": "The Unix timestamp (in seconds) for when the run step completed.",
+          "type": "integer",
+          "format": "unixtime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata": {
+      "$ref": "Metadata.json"
+    },
+    "usage": {
+      "$ref": "RunStepCompletionUsage.json"
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "created_at",
+    "assistant_id",
+    "thread_id",
+    "run_id",
+    "type",
+    "status",
+    "step_details",
+    "last_error",
+    "expired_at",
+    "cancelled_at",
+    "failed_at",
+    "completed_at",
+    "metadata",
+    "usage"
+  ],
+  "x-oaiMeta": {
+    "name": "The run step object",
+    "beta": true,
+    "example": "{\n  \"id\": \"step_abc123\",\n  \"object\": \"thread.run.step\",\n  \"created_at\": 1699063291,\n  \"run_id\": \"run_abc123\",\n  \"assistant_id\": \"asst_abc123\",\n  \"thread_id\": \"thread_abc123\",\n  \"type\": \"message_creation\",\n  \"status\": \"completed\",\n  \"cancelled_at\": null,\n  \"completed_at\": 1699063291,\n  \"expired_at\": null,\n  \"failed_at\": null,\n  \"last_error\": null,\n  \"step_details\": {\n    \"type\": \"message_creation\",\n    \"message_creation\": {\n      \"message_id\": \"msg_abc123\"\n    }\n  },\n  \"usage\": {\n    \"prompt_tokens\": 123,\n    \"completion_tokens\": 456,\n    \"total_tokens\": 579\n  }\n}\n"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/Dashboard",
+  "title": "Dashboard",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/Dashboard",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the dashboard, or `default` for an automatically generated dashboard that has not been saved yet",
+      "example": "DB2ad0100821a98bea"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the dashboard",
+      "example": "Election Monitoring"
+    },
+    "solution_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the solution that this dashboard belongs to, if any",
+      "example": "SO2ad0100821a98bea"
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the card"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the card"
+          },
+          "title": {
+            "type": "string",
+            "description": "Displayed title of the card"
+          }
+        }
+      },
+      "description": "Summaries of the cards on this dashboard, in display order. Only returned when retrieving a single dashboard by ID."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom variables stored for this dashboard. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
+    },
+    "time_created": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time the dashboard was created in Telerivet (null for an automatically generated dashboard that has not been saved)",
+      "example": 1392254503
+    },
+    "time_updated": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "unix-timestamp",
+      "description": "Time the dashboard was last updated in Telerivet",
+      "example": 1392254503
+    },
+    "project_id": {
+      "type": "string",
+      "description": "ID of the project this dashboard belongs to",
+      "example": "PJ2ad0100821a98bea"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to this dashboard in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/dashboard/DB2ad0100821a98bea"
+    }
+  },
+  "description": "Represents a dashboard in a Telerivet project: a page of cards displaying statistics, charts, and summaries of objects within the project.\n\n Each project has a primary dashboard (identified by the project's `primary_dashboard_id` property), which is shown by default when opening the project in the Telerivet web app. If the project's dashboards have never been customized, the primary dashboard is generated automatically and has the ID `default`; it is saved with a permanent ID the first time it is updated via the API or web app. To make a different dashboard the primary dashboard, update the project's `primary_dashboard_id` property.\n\n The cards on an automatically generated dashboard (whether or not the dashboard itself has been saved) do not have IDs and cannot be updated or deleted individually until the dashboard has been customized, which happens the first time it is updated via the API (e.g. via dashboard.save) or web app, and which assigns an ID to each card."
+}

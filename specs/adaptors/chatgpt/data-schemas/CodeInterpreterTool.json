@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/CodeInterpreterTool",
+  "title": "Code interpreter",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/CodeInterpreterTool",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A tool that runs Python code to help generate a response to a prompt.\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "code_interpreter"
+      ],
+      "description": "The type of the code interpreter tool. Always `code_interpreter`.\n",
+      "x-stainless-const": true
+    },
+    "container": {
+      "description": "The code interpreter container. Can be a container ID or an object that\nspecifies uploaded file IDs to make available to your code, along with an\noptional `memory_limit` setting.\n",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "The container ID."
+        },
+        {
+          "$ref": "AutoCodeInterpreterToolParam.json"
+        }
+      ]
+    },
+    "allowed_callers": {
+      "anyOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "CallableToolAllowedCaller.json"
+          },
+          "description": "The tool invocation context(s)."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "container"
+  ]
+}

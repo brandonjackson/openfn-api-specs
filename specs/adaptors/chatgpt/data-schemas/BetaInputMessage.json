@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaInputMessage",
+  "title": "Input message",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaInputMessage",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A message input to the model with a role indicating instruction following\nhierarchy. Instructions given with the `developer` or `system` role take\nprecedence over instructions given with the `user` role.\n",
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "BetaAgentTag.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The agent that produced this item."
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the message input. Always set to `message`.\n",
+      "enum": [
+        "message"
+      ],
+      "x-stainless-const": true
+    },
+    "role": {
+      "type": "string",
+      "description": "The role of the message input. One of `user`, `system`, or `developer`.\n",
+      "enum": [
+        "user",
+        "system",
+        "developer"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "The status of item. One of `in_progress`, `completed`, or\n`incomplete`. Populated when items are returned via API.\n",
+      "enum": [
+        "in_progress",
+        "completed",
+        "incomplete"
+      ]
+    },
+    "content": {
+      "$ref": "BetaInputMessageContentList.json"
+    }
+  },
+  "required": [
+    "role",
+    "content"
+  ]
+}

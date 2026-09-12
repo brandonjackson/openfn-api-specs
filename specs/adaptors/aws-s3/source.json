@@ -1,14 +1,47 @@
 {
   "adaptor": "aws-s3",
   "npm": "@openfn/language-aws-s3",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-aws-s3/types/Adaptor.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-aws-s3/ast.json",
-    "https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html",
-    "https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html"
+  "origin": "converted",
+  "upstreamFormat": "aws-api-model",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "third-party-spec",
+  "upstream": {
+    "specUrl": "https://api.apis.guru/v2/specs/amazonaws.com/s3/2006-03-01/openapi.json",
+    "format": "aws-api-model",
+    "contentHash": "sha256:1503e59f693ab475b165ab210a3f330fbeceff42e6edf5e9eda02eefa3a23e8c",
+    "fetchedAt": "2026-09-03"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "AWS publishes no OpenAPI document for S3; its own machine spec is the SDK service model",
+      "result": "not-found"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/s3-2006-03-01.normal.json",
+      "result": "rejected",
+      "note": "AWS's own service model — the true upstream, but converting it needs an aws2openapi-equivalent this repo does not have yet"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/specs/amazonaws.com/s3/2006-03-01/openapi.json",
+      "result": "used",
+      "note": "apis.guru's aws2openapi rendering of that AWS model"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Synthesized from the adaptor surface (put/get/list) and the S3 SDK operations they wrap (PutObject, GetObject, ListObjectsV2). The adaptor uses the AWS JS SDK, not raw REST, so the real S3 REST responses are XML; here responses are modelled as JSON to match the shapes the adaptor exposes on state (parsed body or {base64} for get, ListObjectsV2 Contents for list). Server URL is the generic S3 endpoint; real requests are region/bucket scoped and SigV4-signed."
+  "verifiedAgainst": [
+    "ast.json"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://api.apis.guru/v2/specs/amazonaws.com/s3/2006-03-01/openapi.json",
+    "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/s3-2006-03-01.normal.json",
+    "https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html"
+  ],
+  "capturedAt": "2026-09-03",
+  "lastCheckedAt": "2026-09-03",
+  "notes": "Full coverage of the Amazon S3 REST API — 97 operations over 49 paths (query-string variants disambiguated with a # fragment) and 574 component schemas: objects, multipart uploads, buckets, ACLs, policies, CORS, encryption, lifecycle, replication, tagging, versioning, inventory, analytics, object lock and S3 Select. Replaces a 5 KiB spec synthesized from the adaptor's three operations (put/list/get), all three of which are present here. PROVENANCE, per the vendor-published-only rule: AWS hosts no OpenAPI document. Its own machine spec is the SDK service model (aws-sdk-js apis/s3-2006-03-01.normal.json); upstream.json is apis.guru's aws2openapi rendering of that model, which is the only OpenAPI form published anywhere — hence origin=converted, not found-openapi. BEST-EFFORT: the rendering covers S3 through roughly 2021 (GetObjectAttributes and WriteGetObjectResponse are in; the 2023+ S3 Express operations CreateSession/ListDirectoryBuckets and the bucket metadata-configuration operations are not). Converting AWS's model directly would close that gap and is the obvious follow-up."
 }

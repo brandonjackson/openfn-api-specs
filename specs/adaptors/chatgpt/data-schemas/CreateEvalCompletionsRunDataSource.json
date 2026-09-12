@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/CreateEvalCompletionsRunDataSource",
+  "title": "CompletionsRunDataSource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/CreateEvalCompletionsRunDataSource",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A CompletionsRunDataSource object describing a model sampling configuration.\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "completions"
+      ],
+      "default": "completions",
+      "description": "The type of run data source. Always `completions`."
+    },
+    "input_messages": {
+      "description": "Used when sampling from a model. Dictates the structure of the messages passed into the model. Can either be a reference to a prebuilt trajectory (ie, `item.input_trajectory`), or a template with variable references to the `item` namespace.",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "TemplateInputMessages",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "template"
+              ],
+              "description": "The type of input messages. Always `template`."
+            },
+            "template": {
+              "type": "array",
+              "description": "A list of chat messages forming the prompt or context. May include variable references to the `item` namespace, ie {{item.name}}.",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "EasyInputMessage.json"
+                  },
+                  {
+                    "$ref": "EvalItem.json"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "type",
+            "template"
+          ]
+        },
+        {
+          "type": "object",
+          "title": "ItemReferenceInputMessages",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "item_reference"
+              ],
+              "description": "The type of input messages. Always `item_reference`."
+            },
+            "item_reference": {
+              "type": "string",
+              "description": "A reference to a variable in the `item` namespace. Ie, \"item.input_trajectory\""
+            }
+          },
+          "required": [
+            "type",
+            "item_reference"
+          ]
+        }
+      ]
+    },
+    "sampling_params": {
+      "type": "object",
+      "properties": {
+        "reasoning_effort": {
+          "$ref": "ReasoningEffort.json"
+        },
+        "temperature": {
+          "type": "number",
+          "description": "A higher temperature increases randomness in the outputs.",
+          "default": 1
+        },
+        "max_completion_tokens": {
+          "type": "integer",
+          "description": "The maximum number of tokens in the generated output."
+        },
+        "top_p": {
+          "type": "number",
+          "description": "An alternative to temperature for nucleus sampling; 1.0 includes all tokens.",
+          "default": 1
+        },
+        "seed": {
+          "type": "integer",
+          "description": "A seed value to initialize the randomness, during sampling.",
+          "default": 42
+        },
+        "response_format": {
+          "description": "An object specifying the format that the model must output.\n\nSetting to `{ \"type\": \"json_schema\", \"json_schema\": {...} }` enables\nStructured Outputs which ensures the model will match your supplied JSON\nschema. Learn more in the [Structured Outputs\nguide](/docs/guides/structured-outputs).\n\nSetting to `{ \"type\": \"json_object\" }` enables the older JSON mode, which\nensures the message the model generates is valid JSON. Using `json_schema`\nis preferred for models that support it.\n",
+          "oneOf": [
+            {
+              "$ref": "ResponseFormatText.json"
+            },
+            {
+              "$ref": "ResponseFormatJsonSchema.json"
+            },
+            {
+              "$ref": "ResponseFormatJsonObject.json"
+            }
+          ]
+        },
+        "tools": {
+          "type": "array",
+          "description": "A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.\n",
+          "items": {
+            "$ref": "ChatCompletionTool.json"
+          }
+        }
+      }
+    },
+    "model": {
+      "type": "string",
+      "description": "The name of the model to use for generating completions (e.g. \"o3-mini\")."
+    },
+    "source": {
+      "description": "Determines what populates the `item` namespace in this run's data source.",
+      "oneOf": [
+        {
+          "$ref": "EvalJsonlFileContentSource.json"
+        },
+        {
+          "$ref": "EvalJsonlFileIdSource.json"
+        },
+        {
+          "$ref": "EvalStoredCompletionsSource.json"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "source"
+  ],
+  "x-oaiMeta": {
+    "name": "The completions data source object used to configure an individual run",
+    "group": "eval runs",
+    "example": "{\n  \"name\": \"gpt-5.6-sol\",\n  \"data_source\": {\n    \"type\": \"completions\",\n    \"input_messages\": {\n      \"type\": \"item_reference\",\n      \"item_reference\": \"item.input\"\n    },\n    \"model\": \"gpt-5.6-sol\",\n    \"source\": {\n      \"type\": \"stored_completions\",\n      \"model\": \"gpt-5.6-sol\"\n    }\n  }\n}\n"
+  }
+}

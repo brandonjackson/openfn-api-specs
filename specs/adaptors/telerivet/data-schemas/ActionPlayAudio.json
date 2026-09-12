@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/ActionPlayAudio",
+  "title": "ActionPlayAudio",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionPlayAudio",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Plays an audio file in WAV or MP3 format in the voice call, which may be uploaded, linked, or recorded via the Telerivet web app. Alternatively, can use text-to-speech to speak a message.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "play_audio",
+      "description": "Action type identifier"
+    },
+    "mode": {
+      "type": "string",
+      "description": "Audio source mode.",
+      "enum": [
+        "file",
+        "tts"
+      ]
+    },
+    "audio_url": {
+      "type": "string",
+      "description": "URL of the audio file to play (WAV or MP3). Required when mode is \"file\".",
+      "x-supports-variables": true
+    },
+    "audio_title": {
+      "type": "string",
+      "description": "Title for the audio file displayed in the web app (not played to the caller). Used when mode is \"file\"."
+    },
+    "text": {
+      "type": "string",
+      "description": "Text to speak using text-to-speech. Required when mode is \"tts\". If mode is \"file\", the text is not used in the actual call but is displayed as the transcript of the file within the web app.",
+      "x-supports-variables": true
+    },
+    "language": {
+      "type": "string",
+      "description": "Language code for text-to-speech (e.g., \"en-US\"). Used when mode is \"tts\"."
+    },
+    "voice": {
+      "type": "string",
+      "description": "Voice for text-to-speech (e.g., \"man\", \"woman\"). Used when mode is \"tts\"."
+    },
+    "repeat": {
+      "type": "boolean",
+      "description": "If true, repeat the audio once after a short pause."
+    }
+  },
+  "required": [
+    "type",
+    "mode"
+  ],
+  "example": {
+    "type": "play_audio",
+    "mode": "file",
+    "audio_url": "http://localhost/_media/sounds/bell2.mp3"
+  }
+}

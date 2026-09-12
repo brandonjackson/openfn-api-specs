@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaMCPToolCall",
+  "title": "MCP tool call",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaMCPToolCall",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "An invocation of a tool on an MCP server.\n",
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "BetaAgentTag.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The agent that produced this item."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "mcp_call"
+      ],
+      "description": "The type of the item. Always `mcp_call`.\n",
+      "x-stainless-const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the tool call.\n"
+    },
+    "server_label": {
+      "type": "string",
+      "description": "The label of the MCP server running the tool.\n"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the tool that was run.\n"
+    },
+    "arguments": {
+      "type": "string",
+      "description": "A JSON string of the arguments passed to the tool.\n"
+    },
+    "output": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The output from the tool call.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "description": "The error from the tool call, if any.",
+      "anyOf": [
+        {
+          "$ref": "BetaMCPToolCallError.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "$ref": "BetaMCPToolCallStatus.json",
+      "description": "The status of the tool call. One of `in_progress`, `completed`, `incomplete`, `calling`, or `failed`.\n"
+    },
+    "approval_request_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Unique identifier for the MCP tool call approval request.\nInclude this value in a subsequent `mcp_approval_response` input to approve or reject the corresponding tool call.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "server_label",
+    "name",
+    "arguments"
+  ]
+}

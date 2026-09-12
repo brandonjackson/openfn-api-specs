@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gemini/ToolCall",
+  "title": "ToolCall",
+  "x-openfn-adaptor": "gemini",
+  "x-source": {
+    "openapi": "#/components/schemas/ToolCall",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A predicted server-side `ToolCall` returned from the model. This message contains information about a tool that the model wants to invoke. The client is NOT expected to execute this `ToolCall`. Instead, the client should pass this `ToolCall` back to the API in a subsequent turn within a `Content` message, along with the corresponding `ToolResponse`.",
+  "properties": {
+    "toolName": {
+      "type": "string",
+      "description": "Optional. The name of the tool that was called."
+    },
+    "toolType": {
+      "type": "string",
+      "description": "Required. The type of tool that was called.",
+      "enum": [
+        "TOOL_TYPE_UNSPECIFIED",
+        "GOOGLE_SEARCH_WEB",
+        "GOOGLE_SEARCH_IMAGE",
+        "URL_CONTEXT",
+        "GOOGLE_MAPS",
+        "FILE_SEARCH"
+      ]
+    },
+    "args": {
+      "type": "object",
+      "description": "Optional. The tool call arguments. Example: {\"arg1\" : \"value1\", \"arg2\" : \"value2\" , ...}",
+      "additionalProperties": {
+        "description": "Properties of the object."
+      }
+    },
+    "id": {
+      "type": "string",
+      "description": "Optional. Unique identifier of the tool call. The server returns the tool response with the matching `id`."
+    }
+  }
+}

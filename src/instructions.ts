@@ -58,6 +58,12 @@ export function instructionsFor(adaptor: AdaptorInfo): string {
   lines.push('SwaggerHub, and Postman public workspaces. Prefer the COMPLETE spec — do not narrow it;');
   lines.push('full coverage is the goal. Record upstream.specUrl + a sha256 contentHash of upstream.json.');
   lines.push('');
+  lines.push(`Once you have a URL, let the tool do the capture — it handles the verbatim write, the`);
+  lines.push('conversion (OpenAPI 3.x JSON or YAML, Swagger 2.0, Google Discovery) and the hash:');
+  lines.push(`  pnpm specs convert ${name} --url=<specUrl>`);
+  lines.push('Then verify the coverage yourself and record the claim (add --complete to have it');
+  lines.push('written for you). Do NOT claim full/complete on a spec you have not checked.');
+  lines.push('');
   lines.push('## Step 3 — if no machine spec exists, do a documenting pass');
   lines.push(
     'Read the vendor API docs and author OpenAPI 3.x by hand covering the FULL documented API ' +

@@ -67,6 +67,7 @@ pnpm specs list                       # adaptor list from openfn/adaptors (cache
 pnpm specs status                     # who has openapi.json + data-schemas/
 pnpm specs missing                    # adaptors with no OpenAPI spec
 pnpm specs instructions <a|--missing> # per-adaptor agentic work order (the finding step)
+pnpm specs convert <a> [--url=<spec>] # capture an upstream machine spec (the capture step)
 pnpm specs data-objects <a|--all>     # extract standalone data-object schemas
 pnpm specs manifest                   # rebuild manifest.json
 pnpm specs site                       # build the static status dashboard (site/index.html)
@@ -77,6 +78,19 @@ order (which endpoints the adaptor calls, where to look for a spec, the required
 OpenAPI shape, where to save files). An AI agent — or a human — executes it,
 doing the web research a fixed scraper can't. The tool handles the deterministic
 parts: listing, status, data-object extraction, and the manifest.
+
+Once a spec URL is found, `pnpm specs convert <adaptor> --url=<specUrl>` does the
+capture: it recognises OpenAPI 3.x (JSON or YAML), Swagger 2.0 and Google
+Discovery documents, writes the fetched bytes verbatim to `upstream.<ext>`,
+derives the full-coverage `openapi.json`, and records the origin, format and
+`contentHash` in `source.json`. It deliberately does *not* write the
+`coverage`/`completeness` claim — whether a spec really covers the whole vendor
+API is a judgement to make and record, not something a fetch can assert; pass
+`--complete` once you have verified it.
+
+Run it with no `--url` to re-derive `openapi.json` from the upstream already
+committed — what you want after changing a converter, since the upstream bytes
+(and so the `contentHash`) have not moved.
 
 ## Status dashboard
 

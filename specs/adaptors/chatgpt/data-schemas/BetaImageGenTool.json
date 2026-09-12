@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaImageGenTool",
+  "title": "Image generation tool",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaImageGenTool",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A tool that generates images using the GPT image models.\n",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "image_generation"
+      ],
+      "description": "The type of the image generation tool. Always `image_generation`.\n",
+      "x-stainless-const": true
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "gpt-image-1",
+            "gpt-image-1-mini",
+            "gpt-image-1.5",
+            "gpt-image-2",
+            "gpt-image-2-2026-04-21"
+          ],
+          "description": "The image generation model to use. One of `gpt-image-1`,\n`gpt-image-1-mini`, `gpt-image-1.5`, `gpt-image-2`,\n`gpt-image-2-2026-04-21`, or `chatgpt-image-latest`. Default:\n`gpt-image-1`.\n",
+          "default": "gpt-image-1"
+        }
+      ]
+    },
+    "quality": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "auto"
+      ],
+      "description": "The quality of the generated image. One of `low`, `medium`, `high`,\nor `auto`. Default: `auto`.\n",
+      "default": "auto"
+    },
+    "size": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "1024x1024",
+            "1024x1536",
+            "1536x1024",
+            "auto"
+          ]
+        }
+      ],
+      "description": "The size of the generated images. For `gpt-image-2` and `gpt-image-2-2026-04-21`, arbitrary resolutions are supported as `WIDTHxHEIGHT` strings, for example `1536x864`. Width and height must both be divisible by 16 and the requested aspect ratio must be between 1:3 and 3:1. Resolutions above `2560x1440` are experimental, and the maximum supported resolution is `3840x2160`. The requested size must also satisfy the model's current pixel and edge limits. The standard sizes `1024x1024`, `1536x1024`, and `1024x1536` are supported by the GPT image models; `auto` is supported for models that allow automatic sizing. For `dall-e-2`, use one of `256x256`, `512x512`, or `1024x1024`. For `dall-e-3`, use one of `1024x1024`, `1792x1024`, or `1024x1792`.",
+      "default": "auto"
+    },
+    "output_format": {
+      "type": "string",
+      "enum": [
+        "png",
+        "webp",
+        "jpeg"
+      ],
+      "description": "The output format of the generated image. One of `png`, `webp`, or\n`jpeg`. Default: `png`.\n",
+      "default": "png"
+    },
+    "output_compression": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Compression level for the output image. Default: 100.\n",
+      "default": 100
+    },
+    "moderation": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "low"
+      ],
+      "description": "Moderation level for the generated image. Default: `auto`.\n",
+      "default": "auto"
+    },
+    "background": {
+      "type": "string",
+      "enum": [
+        "transparent",
+        "opaque",
+        "auto"
+      ],
+      "description": "Set the background of the generated image. One of `transparent`,\n`opaque`, or `auto`. Transparent backgrounds are available for\nsupported GPT Image models. For `gpt-image-2` and\n`gpt-image-2-2026-04-21`, this support is in preview. When using\n`transparent`, set the output format to `png` or `webp`. Default: `auto`.\n",
+      "default": "auto"
+    },
+    "input_fidelity": {
+      "anyOf": [
+        {
+          "$ref": "BetaInputFidelity.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input_image_mask": {
+      "type": "object",
+      "description": "Optional mask for inpainting. Contains `image_url`\n(string, optional) and `file_id` (string, optional).\n",
+      "properties": {
+        "image_url": {
+          "type": "string",
+          "description": "Base64-encoded mask image.\n"
+        },
+        "file_id": {
+          "type": "string",
+          "description": "File ID for the mask image.\n"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "partial_images": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Number of partial images to generate in streaming mode, from 0 (default value) to 3.\n",
+      "default": 0
+    },
+    "action": {
+      "description": "Whether to generate a new image or edit an existing image. Default: `auto`.\n",
+      "$ref": "BetaImageGenActionEnum.json"
+    }
+  },
+  "required": [
+    "type"
+  ]
+}

@@ -5,15 +5,72 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/Part",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-03"
   },
   "type": "object",
+  "description": "A datatype containing media that is part of a multi-part `Content` message. A `Part` consists of data which has an associated datatype. A `Part` can only contain one of the accepted types in `Part.data`. A `Part` must have a fixed IANA MIME type identifying the type and subtype of the media if the `inline_data` field is filled with raw bytes.",
   "properties": {
+    "partMetadata": {
+      "type": "object",
+      "description": "Custom metadata associated with the Part. Agents using genai.Part as content representation may need to keep track of the additional information. For example it can be name of a file/source from which the Part originates or a way to multiplex multiple Part streams.",
+      "additionalProperties": {
+        "description": "Properties of the object."
+      }
+    },
+    "mediaResolution": {
+      "$ref": "V1mainMediaResolution.json"
+    },
+    "fileData": {
+      "$ref": "FileData.json"
+    },
+    "functionCall": {
+      "$ref": "FunctionCall.json"
+    },
+    "mediaProcessing": {
+      "type": "string",
+      "description": "Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field.",
+      "enum": [
+        "MEDIA_PROCESSING_UNSPECIFIED",
+        "STATIC",
+        "AGENTIC"
+      ]
+    },
     "text": {
-      "type": "string"
+      "type": "string",
+      "description": "Inline text."
+    },
+    "executableCode": {
+      "$ref": "ExecutableCode.json"
+    },
+    "audioTranscription": {
+      "$ref": "AudioTranscription.json"
+    },
+    "thought": {
+      "type": "boolean",
+      "description": "Optional. Indicates if the part is thought from the model."
+    },
+    "toolResponse": {
+      "$ref": "ToolResponse.json"
+    },
+    "videoMetadata": {
+      "$ref": "VideoMetadata.json"
+    },
+    "toolCall": {
+      "$ref": "ToolCall.json"
     },
     "inlineData": {
       "$ref": "Blob.json"
+    },
+    "thoughtSignature": {
+      "type": "string",
+      "format": "byte",
+      "description": "Optional. An opaque signature for the thought so it can be reused in subsequent requests."
+    },
+    "functionResponse": {
+      "$ref": "FunctionResponse.json"
+    },
+    "codeExecutionResult": {
+      "$ref": "CodeExecutionResult.json"
     }
   }
 }

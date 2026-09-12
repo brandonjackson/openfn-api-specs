@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaReasoningItem",
+  "title": "Reasoning",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaReasoningItem",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "A description of the chain of thought used by a reasoning model while generating\na response. Be sure to include these items in your `input` to the Responses API\nfor subsequent turns of a conversation if you are manually\n[managing context](/docs/guides/conversation-state).\n",
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "BetaAgentTag.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The agent that produced this item."
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the object. Always `reasoning`.\n",
+      "enum": [
+        "reasoning"
+      ],
+      "x-stainless-const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique identifier of the reasoning content.\n"
+    },
+    "encrypted_content": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "The encrypted content of the reasoning item. This is populated by default\nfor reasoning items returned by `POST /v1/responses` and WebSocket\n`response.create` requests.\n\nWhen streaming, use the completed reasoning item and its\n`encrypted_content` from the `response.output_item.done` event in\nsubsequent requests. The `encrypted_content` in\n`response.output_item.added` may be incomplete. This is especially\nimportant when `store` is `false` or when using Zero Data Retention.\n"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "summary": {
+      "type": "array",
+      "description": "Reasoning summary content.\n",
+      "items": {
+        "$ref": "BetaSummaryTextContent.json"
+      }
+    },
+    "content": {
+      "type": "array",
+      "description": "Reasoning text content.\n",
+      "items": {
+        "$ref": "BetaReasoningTextContent.json"
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "The status of the item. One of `in_progress`, `completed`, or\n`incomplete`. Populated when items are returned via API.\n",
+      "enum": [
+        "in_progress",
+        "completed",
+        "incomplete"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "summary",
+    "type"
+  ]
+}

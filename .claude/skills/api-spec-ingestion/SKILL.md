@@ -100,12 +100,15 @@ Then produce `openapi.json`:
   to JSON is lossless; keep key order). Add nothing except
   `info.x-openfn-adaptor` if the tests or tooling need it, and if you do, say
   so in `notes`.
-- `converted`: use the repo converter where one exists (`src/discovery.ts` for
-  Google Discovery). For Swagger 2.0 use `swagger2openapi`; for Postman
-  collections use `postman-to-openapi`; for GraphQL/WSDL/CSDL convert with a
-  known tool or by hand and describe the mapping in `notes`. Check that every
-  upstream operation and schema survived: count them on both sides and put the
-  counts in `notes`.
+- `converted`: use the repo converter where one exists — `src/discovery.ts` for
+  Google Discovery, `src/swagger.ts` for Swagger 2.0 (it also handles Azure's
+  `x-ms-paths` and `x-ms-parameterized-host`). Both are wired into
+  `pnpm specs convert <adaptor> --url=<specUrl>`, which writes the verbatim
+  upstream, derives `openapi.json` and records the hash in one pass; run it with
+  no `--url` to re-derive after a converter change. For Postman collections use
+  `postman-to-openapi`; for GraphQL/WSDL/CSDL convert with a known tool or by
+  hand and describe the mapping in `notes`. Check that every upstream operation
+  and schema survived: count them on both sides and put the counts in `notes`.
 
 ## 3. Scrape the docs (docs-only path)
 

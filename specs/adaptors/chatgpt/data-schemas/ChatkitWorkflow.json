@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ChatkitWorkflow",
+  "title": "Workflow",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ChatkitWorkflow",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identifier of the workflow backing the session."
+    },
+    "version": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Specific workflow version used for the session. Defaults to null when using the latest deployment."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "state_variables": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "type": "object",
+          "description": "State variable key-value pairs applied when invoking the workflow. Defaults to null when no overrides were provided.",
+          "x-oaiTypeLabel": "map"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tracing": {
+      "$ref": "ChatkitWorkflowTracing.json",
+      "description": "Tracing settings applied to the workflow."
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "state_variables",
+    "tracing"
+  ],
+  "description": "Workflow metadata and state returned for the session."
+}

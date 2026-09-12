@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/BetaContainerAutoParam",
+  "title": "BetaContainerAutoParam",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaContainerAutoParam",
+    "capturedAt": "2026-09-03"
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "container_auto"
+      ],
+      "description": "Automatically creates a container for this request",
+      "default": "container_auto",
+      "x-stainless-const": true
+    },
+    "file_ids": {
+      "items": {
+        "type": "string",
+        "example": "file-123"
+      },
+      "type": "array",
+      "maxItems": 50,
+      "description": "An optional list of uploaded files to make available to your code."
+    },
+    "memory_limit": {
+      "anyOf": [
+        {
+          "$ref": "BetaContainerMemoryLimit.json",
+          "description": "The memory limit for the container."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "network_policy": {
+      "oneOf": [
+        {
+          "$ref": "BetaContainerNetworkPolicyDisabledParam.json"
+        },
+        {
+          "$ref": "BetaContainerNetworkPolicyAllowlistParam.json"
+        }
+      ],
+      "description": "Network access policy for the container.",
+      "discriminator": {
+        "propertyName": "type"
+      }
+    },
+    "skills": {
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "BetaSkillReferenceParam.json"
+          },
+          {
+            "$ref": "BetaInlineSkillParam.json"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "type": "array",
+      "maxItems": 200,
+      "description": "An optional list of skills referenced by id or inline data."
+    }
+  },
+  "type": "object",
+  "required": [
+    "type"
+  ]
+}

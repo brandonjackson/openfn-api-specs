@@ -5,79 +5,125 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Contact",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-03"
   },
   "type": "object",
-  "description": "A Telerivet contact object.",
   "properties": {
     "id": {
-      "type": "string"
-    },
-    "object": {
       "type": "string",
-      "example": "contact"
+      "description": "ID of the contact",
+      "example": "CTa1299c3d0e371023"
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "description": "Name of the contact",
+      "example": "John Smith"
     },
     "phone_number": {
-      "type": "string"
+      "type": "string",
+      "description": "Phone number of the contact",
+      "example": "+16505550123"
     },
     "time_created": {
       "type": "integer",
-      "description": "Unix timestamp"
+      "format": "unix-timestamp",
+      "description": "Time the contact was added in Telerivet",
+      "example": 1390348075
     },
     "time_updated": {
-      "type": "integer"
+      "type": "integer",
+      "format": "unix-timestamp",
+      "description": "Time the contact was last updated in Telerivet",
+      "example": 1390348099
     },
     "send_blocked": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "True if Telerivet is blocked from sending messages to this contact",
+      "example": false
     },
     "conversation_status": {
-      "type": "string"
+      "type": "string",
+      "description": "Current status of the conversation with this contact",
+      "enum": [
+        "closed",
+        "active",
+        "handled"
+      ],
+      "example": "active"
     },
     "last_message_time": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "format": "unix-timestamp",
+      "description": "Last time the contact sent or received a message (null if no messages have been sent or received)",
+      "example": 1395881121
     },
     "last_incoming_message_time": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "format": "unix-timestamp",
+      "description": "Last time a message was received from this contact",
+      "example": 1395881121
     },
     "last_outgoing_message_time": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "format": "unix-timestamp",
+      "description": "Last time a message was sent to this contact",
+      "example": 1395881032
     },
     "message_count": {
-      "type": "integer"
+      "type": "integer",
+      "description": "Total number of non-deleted messages sent to or received from this contact",
+      "example": 13
+    },
+    "incoming_message_count": {
+      "type": "integer",
+      "description": "Number of messages received from this contact",
+      "example": 2
+    },
+    "outgoing_message_count": {
+      "type": "integer",
+      "description": "Number of messages sent to this contact",
+      "example": 11
+    },
+    "last_message_id": {
+      "type": "string",
+      "description": "ID of the last message sent to or received from this contact (null if no messages have been sent or received)",
+      "example": "SM97f47ac232df154d"
+    },
+    "default_route_id": {
+      "type": "string",
+      "description": "ID of the basic route (phone) or custom route that Telerivet will use by default to send messages to this contact (null if using project default route)"
     },
     "group_ids": {
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "description": "List of IDs of groups that this contact belongs to"
     },
     "vars": {
       "type": "object",
-      "additionalProperties": true
-    },
-    "default_route_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "additionalProperties": true,
+      "description": "Custom variables stored for this contact. Variable names may be up to 32 characters in length and can contain the characters a-z, A-Z, 0-9, and _.\n Values may be strings, numbers, or boolean (true/false).\n String values may be up to 4096 bytes in length when encoded as UTF-8.\n Up to 100 variables are supported per object.\n Setting a variable to null will delete the variable."
     },
     "project_id": {
-      "type": "string"
+      "type": "string",
+      "description": "ID of the project this contact belongs to",
+      "example": "PJ2ad0100821a98bea"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to this contact in the Telerivet web app",
+      "example": "https://telerivet.com/p/asdf/contact/CTa1299c3d0e371023"
     }
-  }
+  },
+  "description": "A contact represents a person or other entity that can be communicated with via phone number or other messaging channel within a project.\n\n Each contact has a name, phone number, and custom variables that can be used to personalize messages. Contacts can belong to one or more groups, and can be used as recipients for broadcasts, campaigns, and other messaging operations.\n\n Contacts can be imported or created individually via the API or web app. If the project's auto_create_contacts setting is enabled, a contact will be automatically created for each unique phone number that a message is sent to or received from."
 }

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/TruncationObject",
+  "title": "Thread Truncation Controls",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/TruncationObject",
+    "capturedAt": "2026-09-03"
+  },
+  "type": "object",
+  "description": "Controls for how a thread will be truncated prior to the run. Use this to control the initial context window of the run.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "The truncation strategy to use for the thread. The default is `auto`. If set to `last_messages`, the thread will be truncated to the n most recent messages in the thread. When set to `auto`, messages in the middle of the thread will be dropped to fit the context length of the model, `max_prompt_tokens`.",
+      "enum": [
+        "auto",
+        "last_messages"
+      ]
+    },
+    "last_messages": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "description": "The number of most recent messages from the thread when constructing the context for the run.",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type"
+  ]
+}
