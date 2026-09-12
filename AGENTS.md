@@ -145,6 +145,9 @@ every push to `main` and weekly, so the staleness clock re-evaluates over time.
      `completeness: best-effort` with a reason.
    - Non-REST → synthesize the full operation surface from the adaptor.
    - Record every `attempt` (including the misses) and `verifiedAgainst`.
+   The standard procedure for this step — spec hunting, docs scraping, the
+   OpenAPI house rules, and the cross-reference pass — is the
+   [`api-spec-ingestion` skill](./.claude/skills/api-spec-ingestion/SKILL.md).
 
    The `coverage`/`completeness` claim is always the agent's, never the tool's: a
    fetch can prove what a document contains, not that the document covers the
