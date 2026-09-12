@@ -142,6 +142,9 @@ every push to `main` and weekly, so the staleness clock re-evaluates over time.
      `completeness: best-effort` with a reason.
    - Non-REST → synthesize the full operation surface from the adaptor.
    - Record every `attempt` (including the misses) and `verifiedAgainst`.
+   The standard procedure for this step — spec hunting, docs scraping, the
+   OpenAPI house rules, and the cross-reference pass — is the
+   [`api-spec-ingestion` skill](./.claude/skills/api-spec-ingestion/SKILL.md).
 5. **Derive.** `pnpm specs data-objects <adaptor>` regenerates the data-schemas.
 6. **Validate.** `pnpm test` (drift, dangling refs, provenance, OpenAPI shape).
    Fix and repeat until green.
