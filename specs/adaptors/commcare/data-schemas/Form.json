@@ -5,76 +5,103 @@
   "x-openfn-adaptor": "commcare",
   "x-source": {
     "openapi": "#/components/schemas/Form",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A submitted CommCare form (XForm instance).",
+  "description": "A form submission. `form` holds the submitted XForm converted to JSON.",
   "properties": {
     "id": {
       "type": "string",
-      "example": "form-abc-123"
+      "description": "Form submission UUID (the XForm instance id)."
     },
     "domain": {
       "type": "string",
-      "example": "demo"
+      "description": "Project space the submission belongs to."
     },
     "app_id": {
-      "type": "string",
-      "example": "app-xyz-789"
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Application the form belongs to."
     },
     "build_id": {
       "type": [
         "string",
         "null"
       ],
-      "example": "build-001"
+      "description": "Application build the form was submitted from."
     },
     "archived": {
       "type": "boolean",
-      "example": false
+      "description": "Whether the submission has been archived."
     },
-    "type": {
-      "type": "string",
-      "example": "data"
-    },
-    "received_on": {
-      "type": "string",
-      "example": "2026-06-30T12:34:56.000000Z"
-    },
-    "server_modified_on": {
-      "type": "string",
-      "example": "2026-06-30T12:34:57.000000Z"
-    },
-    "indexed_on": {
-      "type": "string",
-      "example": "2026-06-30T12:35:00.000000Z"
-    },
-    "metadata": {
+    "attachments": {
       "type": "object",
-      "additionalProperties": true,
-      "description": "Form metadata (deviceID, timeStart, timeEnd, userID, username, instanceID, etc.).",
-      "example": {
-        "deviceID": "cloudcare",
-        "timeStart": "2026-06-30T12:30:00.000000Z",
-        "timeEnd": "2026-06-30T12:34:56.000000Z",
-        "userID": "a1b2c3d4e5f6",
-        "username": "worker@demo.commcarehq.org",
-        "instanceID": "form-abc-123"
-      }
+      "description": "Attachments on the submission, keyed by file name.",
+      "properties": {},
+      "additionalProperties": true
     },
     "form": {
       "type": "object",
-      "additionalProperties": true,
-      "description": "The parsed form question/answer data, keyed by question id.",
-      "example": {
-        "@xmlns": "http://openrosa.org/formdesigner/ABC",
-        "question1": "answer1",
-        "question2": "answer2"
-      }
+      "description": "The submitted form data, as JSON.",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "metadata": {
+      "$ref": "FormMetadata.json"
+    },
+    "initial_processing_complete": {
+      "type": "boolean",
+      "description": "Whether server-side processing finished."
+    },
+    "is_phone_submission": {
+      "type": "boolean",
+      "description": "Whether the submission came from a mobile device."
+    },
+    "problem": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Processing error, when the submission failed."
+    },
+    "received_on": {
+      "type": "string",
+      "description": "When the server received the submission.",
+      "format": "date-time"
+    },
+    "server_modified_on": {
+      "type": "string",
+      "description": "When the submission was last modified on the server.",
+      "format": "date-time"
+    },
+    "type": {
+      "type": "string",
+      "description": "Form document type, normally `data`."
+    },
+    "uiversion": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Form UI version."
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Form version."
+    },
+    "md5": {
+      "type": "string",
+      "description": "Obsolete; always `OBSOLETED`."
     },
     "resource_uri": {
       "type": "string",
-      "example": "/a/demo/api/v0.5/form/form-abc-123/"
+      "description": "Tastypie resource URI."
     }
-  }
+  },
+  "additionalProperties": true
 }

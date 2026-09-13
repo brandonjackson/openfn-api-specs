@@ -1,13 +1,115 @@
 {
   "adaptor": "opencrvs",
   "npm": "@openfn/language-opencrvs",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
+
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.1",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "complete",
+  "completenessReason": null,
+
+  "upstream": {
+    "specUrl": "https://opencrvs.github.io/opencrvs-core/release-v2.0.0/events/openapi.yml",
+    "format": "openapi-3.1",
+    "contentHash": "sha256:ed6c23d534abcda54e8393a5ded1b407bbd4cca8d6f996a48e041d254fe28071",
+    "fetchedAt": "2026-09-13"
+  },
+
+  "attempts": [
+    {
+      "kind": "github-org",
+      "url": "https://github.com/opencrvs",
+      "result": "used",
+      "note": "org-wide code search for 'openapi' found packages/events/src/openapi.ts (trpc-to-openapi over the v2 events tRPC router), packages/commons/src/countryconfig/openapi.ts (zod-openapi over the country-config contract) and .github/workflows/countryconfig-to-openapi.yml, which builds both and publishes them per branch to the opencrvs-core gh-pages branch. That workflow is how the two upstream documents below were located."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://opencrvs.github.io/opencrvs-core/release-v2.0.0/events/openapi.yml",
+      "result": "used",
+      "note": "Vendor-published OpenAPI 3.1 for the v2 events service (13 paths / 15 operations, 134 schemas). Committed verbatim as upstream.yaml."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://opencrvs.github.io/opencrvs-core/release-v2.0.0/countryconfig/openapi.yml",
+      "result": "used",
+      "note": "Vendor-published OpenAPI 3.1 for the country-config implementation contract (2 paths, 128 schemas). Committed verbatim as upstream-countryconfig.yaml, sha256:f5803bcfd54b373e97503d541c668d1ad1795c2167d759451718bc531863ddf1."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://opencrvs.github.io/opencrvs-core/develop/events/openapi.yml",
+      "result": "rejected",
+      "note": "Same generator on the unreleased develop branch (18 paths: adds /administrative-areas and the location write/withdraw operations). Rebuilt on every push, so its hash would never be stable; pinned to release-v2.0.0 instead."
+    },
+    {
+      "kind": "swagger",
+      "url": "https://gateway.farajaland.opencrvs.org/swagger.json",
+      "result": "rejected",
+      "note": "The gateway runs hapi-swagger, and a live deployment does serve /swagger.json, but only routes tagged 'api' appear: 3 paths (GET /config, /publicConfig, /forms) and zero definitions. Too thin to be a source, so it was used only as evidence that those three gateway operations exist."
+    },
+    {
+      "kind": "postman",
+      "url": "https://github.com/opencrvs/opencrvs-countryconfig/blob/master/postman/Event%20Notification.postman_collection.json",
+      "result": "used",
+      "note": "Vendor's own Event Notification collection (4 requests, all POST {{gateway}}/notification). The adaptor's docs link to it. Used as the evidence for the gateway FHIR notification bundle shape, not converted wholesale — it carries no responses."
+    },
+    {
+      "kind": "graphql",
+      "url": "https://gateway.farajaland.opencrvs.org/graphql",
+      "result": "not-found",
+      "note": "Introspection POST returns 404: the GraphQL gateway is gone in OpenCRVS v2. No .graphql SDL file exists anywhere in opencrvs/opencrvs-core either (the v1 schema was assembled from resolver modules), so there is no SDL to convert."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://gateway.farajaland.opencrvs.org/openapi.json",
+      "result": "not-found",
+      "note": "Well-known probes against a live deployment: gateway /openapi.json and /v3/api-docs 404, countryconfig /swagger.json 404, auth host does not resolve publicly. The auth service (packages/auth) registers plain hapi routes with no swagger plugin, so it publishes no spec."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No opencrvs/crvs entry in the directory."
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/apis?query=opencrvs",
+      "result": "rejected",
+      "note": "One hit, AccessHealth-Digital/openCRVS_API 1.0.0 — a third-party unpublished draft last touched in 2023, not owned by the vendor and describing the v1 era. Not a source."
+    },
+    {
+      "kind": "docs",
+      "url": "https://documentation.opencrvs.org/",
+      "result": "not-found",
+      "note": "The documentation site links to no spec file; the API reference is the Swagger UI page the gh-pages workflow deploys, which loads the openapi.yml captured above."
+    }
+  ],
+
+  "verifiedAgainst": ["ast.json", "adaptor-source", "upstream.yaml", "upstream-countryconfig.yaml"],
+
+  "modifications": [],
+
   "sources": [
-    "https://github.com/OpenFn/adaptors/tree/main/packages/opencrvs/src",
+    "https://opencrvs.github.io/opencrvs-core/release-v2.0.0/events/openapi.yml",
+    "https://opencrvs.github.io/opencrvs-core/release-v2.0.0/countryconfig/openapi.yml",
+    "https://github.com/opencrvs/opencrvs-core/blob/develop/packages/events/src/openapi.ts",
+    "https://github.com/opencrvs/opencrvs-core/blob/develop/packages/commons/src/countryconfig/openapi.ts",
+    "https://github.com/opencrvs/opencrvs-core/blob/develop/.github/workflows/countryconfig-to-openapi.yml",
+    "https://github.com/opencrvs/opencrvs-core/blob/develop/packages/testland/e2e/testcases/events-rest-api/events-locations.spec.ts",
+    "https://github.com/opencrvs/opencrvs-core/blob/release-v1.9.0/packages/gateway/src/config/routes.ts",
+    "https://github.com/opencrvs/opencrvs-core/blob/develop/packages/gateway/src/config/routes.ts",
+    "https://github.com/opencrvs/opencrvs-core/blob/develop/packages/auth/src/server.ts",
+    "https://github.com/opencrvs/opencrvs-countryconfig/blob/master/postman/Event%20Notification.postman_collection.json",
+    "https://gateway.farajaland.opencrvs.org/swagger.json",
     "https://documentation.opencrvs.org/",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/opencrvs",
     "https://cdn.jsdelivr.net/npm/@openfn/language-opencrvs/ast.json"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Synthesized from the adaptor surface (Adaptor.js, http.js, Utils.js, query.js). OpenCRVS spans multiple hosts under one domain: gateway (FHIR /notification + GraphQL /graphql), register (v2 events REST /api/events/*), countryconfig (/api/events/locations) and auth (/token). Because the adaptor uses relative paths against a shared domain, all are modeled as paths on a single server. The v2 Event and Location response shapes are inferred (the adaptor only reads data.id from events and does not type locations) and should be verified against the live OpenCRVS v2 API."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "OpenCRVS is an open-source civil registration and vital statistics platform; one deployment serves four hosts under a shared domain, and the adaptor reaches all of them with relative paths (register = the v2 events API under /api/events, countryconfig = the country configuration server, gateway = the v1 FHIR/GraphQL gateway, auth = the token endpoint), so this document models them as paths on one server and stamps every operation with x-opencrvs-service naming its host. OpenCRVS publishes two OpenAPI 3.1 documents per branch to the opencrvs-core gh-pages branch (a CI job runs trpc-to-openapi over the events tRPC router and zod-openapi over the country-config contract); both are captured verbatim here at the release-v2.0.0 tag as upstream.yaml and upstream-countryconfig.yaml, and together they are the source of truth for 17 of the 24 operations. openapi.json is those two documents, unchanged in content, with four mechanical transformations: (1) the events paths are prefixed /api/events, the mount point the vendor's own e2e tests and the adaptor both use, since the upstream declares it as a server URL instead; (2) every country-config schema takes a CountryConfig name prefix because 98 of the 108 names the two documents share carry different bodies (the same zod types serialized at different points); (3) the two country-config operations, which the vendor leaves untagged and unnamed, get an operationId in the vendor's own style and a 'Country configuration' tag so they do not merge into the events group, and POST /api/events/attachments gets the operationId the vendor omits; (4) the gateway and auth operations are added. Those seven added operations have no vendor OpenAPI: POST /token is modelled from packages/auth/src/server.ts and the adaptor's authorize step; POST /notification and POST /graphql are the v1.x gateway endpoints the adaptor's createBirthNotification and queryEvents call, modelled from the vendor's Event Notification Postman collection and the searchEvents document the adaptor ships; GET /ping, /config, /publicConfig and /forms come from the gateway's own live hapi-swagger document, which names them but publishes no response schemas, so they are typed as open objects and say so. Known limits, none of which narrow the captured upstreams: the v1 GraphQL API is one path whose full query/mutation surface is not enumerable as REST (no SDL is published and v2 removed the endpoint); the events service's tRPC transport exposes user, workqueue and announcement routers that the vendor's REST document deliberately omits; the country-config document is the contract every country implements, not any one deployment's routes, and the vendor's own reference server still serves its event configurations at /config/events rather than the contract's /events. The vendor inlines most response schemas rather than $ref-ing them, so data-schemas/ surfaces EventDocument, EventConfig and EventIndex as resources but not Location, whose shape is inline in GET /api/events/locations. Cross-checked against ast.json and the adaptor source: every method+path the adaptor builds (POST /token, POST /notification, POST /graphql, POST /api/events/events, POST /api/events/events/{eventId}/notify, GET /api/events/locations) exists here. Two corrections to the previous synthesized copy: /api/events/locations is served by the events service on the register host, not by countryconfig (the adaptor sends it to the countryconfig host, which the vendor's e2e tests contradict), and the v2 Event and Location response shapes that copy marked as inferred are now the vendor's. The openfn-mocker sandbox calls GET /api/events/events to list events; no such REST endpoint exists in OpenCRVS — events are listed with POST /api/events/events/search — so that exchange is left unmatched rather than invented into this spec."
 }

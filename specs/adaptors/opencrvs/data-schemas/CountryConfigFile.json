@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/CountryConfigFile",
+  "title": "CountryConfigFile",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/CountryConfigFile",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of the field."
+    },
+    "label": {
+      "description": "Human-readable label of the field.",
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "parent": {
+      "description": "Reference to the parent field or fields. When a parent field changes, this field is reset.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "$$field": {
+              "type": "string",
+              "description": "Id of the field to reference"
+            },
+            "$$subfield": {
+              "default": [],
+              "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "$$code": {
+              "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "$$field",
+            "$$subfield"
+          ],
+          "additionalProperties": false,
+          "description": "Reference to a field value, with an optional client-side computation applied."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$$field": {
+                "type": "string",
+                "description": "Id of the field to reference"
+              },
+              "$$subfield": {
+                "default": [],
+                "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "$$code": {
+                "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "$$field",
+              "$$subfield"
+            ],
+            "additionalProperties": false,
+            "description": "Reference to a field value, with an optional client-side computation applied."
+          }
+        }
+      ]
+    },
+    "required": {
+      "description": "Indicates whether the field is mandatory.",
+      "default": false,
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "message": {
+              "description": "Custom required validation message",
+              "$ref": "CountryConfigTranslationConfig.json"
+            }
+          },
+          "required": [
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "conditionals": {
+      "description": "Conditions determining when the field is shown or enabled. By default, the field is always shown and enabled.",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigFieldConditional.json"
+      }
+    },
+    "secured": {
+      "description": "Indicates whether the field is secured. Secured fields are not indexed for search and are only visible when explicitly assigned.",
+      "default": false,
+      "type": "boolean"
+    },
+    "placeholder": {
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "validation": {
+      "description": "Additional validation rules applied to the field.",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigValidationConfig.json"
+      }
+    },
+    "helperText": {
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "hideLabel": {
+      "default": false,
+      "type": "boolean"
+    },
+    "uncorrectable": {
+      "description": "Indicates whether the field can be modified during record correction.",
+      "default": false,
+      "type": "boolean"
+    },
+    "value": {
+      "description": "Reference to the source field or fields. When a value is defined, it is copied from the parent field when changed. If multiple references are provided, the first truthy value is used. A FieldReference with $$code computes the value via a custom client-side function.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "$$field": {
+              "type": "string",
+              "description": "Id of the field to reference"
+            },
+            "$$subfield": {
+              "default": [],
+              "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "$$code": {
+              "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "$$field",
+            "$$subfield"
+          ],
+          "additionalProperties": false,
+          "description": "Reference to a field value, with an optional client-side computation applied."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$$field": {
+                "type": "string",
+                "description": "Id of the field to reference"
+              },
+              "$$subfield": {
+                "default": [],
+                "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "$$code": {
+                "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "$$field",
+              "$$subfield"
+            ],
+            "additionalProperties": false,
+            "description": "Reference to a field value, with an optional client-side computation applied."
+          }
+        }
+      ]
+    },
+    "analytics": {
+      "description": "Indicates whether the field is included in analytics. When enabled, its value becomes available in the analytics dashboard.",
+      "default": false,
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string",
+      "const": "FILE"
+    },
+    "defaultValue": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "A relative path within the S3 bucket, never starting with /. e.g. document-id.jpg or directory/document-id.jpg. The document service constructs the full /bucket/path internally."
+            },
+            "originalFilename": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path",
+            "originalFilename",
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$$code": {
+              "type": "string",
+              "description": "Serialised client-side function body. Receives (undefined, context) where context includes $now, $online, and system variables."
+            }
+          },
+          "required": [
+            "$$code"
+          ],
+          "additionalProperties": false,
+          "description": "A context-only computation used as a field default value."
+        }
+      ]
+    },
+    "configuration": {
+      "default": {
+        "maxFileSize": 5242880
+      },
+      "type": "object",
+      "properties": {
+        "maxFileSize": {
+          "default": 5242880,
+          "type": "number",
+          "description": "Maximum file size in bytes"
+        },
+        "acceptedFileTypes": {
+          "description": "List of allowed file formats for the signature",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpg",
+              "image/jpeg",
+              "image/svg+xml",
+              "application/pdf",
+              "application/msword",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "application/vnd.oasis.opendocument.text"
+            ]
+          }
+        },
+        "maxImageSize": {
+          "type": "object",
+          "properties": {
+            "targetSize": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "number"
+                },
+                "height": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "targetSize"
+          ],
+          "additionalProperties": false
+        },
+        "style": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "description": "Whether the file upload button should take the full width of the container or not",
+              "type": "string",
+              "enum": [
+                "full",
+                "auto"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "fileName": {
+          "$ref": "CountryConfigTranslationConfig.json"
+        }
+      },
+      "required": [
+        "maxFileSize"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "label",
+    "type",
+    "configuration"
+  ],
+  "additionalProperties": false,
+  "description": "A file upload field"
+}

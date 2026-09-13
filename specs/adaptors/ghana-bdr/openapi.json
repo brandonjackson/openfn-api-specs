@@ -1,60 +1,458 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Ghana Births & Deaths Registry (CHIM eTracker) API",
-    "version": "1.0.0",
-    "description": "Focused API surface used by the OpenFn ghana-bdr adaptor. The adaptor posts birth notifications to the Ghana Births & Deaths Registry integration exposed via the CHIM/Lightwave eTracker platform, and also supports generic GET/POST passthrough requests. Synthesized from the adaptor surface (ast.json, types) and the mock client bundled with @openfn/language-ghana-bdr.",
+    "title": "Ghana HBDRP Integration API (Births & Deaths Registry)",
+    "version": "1",
+    "description": "Third-party integration API of Ghana's Harmonised Births and Deaths Registration Platform (HBDRP), operated by the Births & Deaths Registry and hosted by Npontu. It covers token exchange, birth and death registration, record status lookup and the coded-value lookups those payloads depend on, plus the callback events the registry pushes back to an integrator.\n\nThe OpenFn ghana-bdr adaptor reaches it with configuration.baseUrl plus a long-lived configuration.token: it exchanges the token for an access token at /auth/token, sends Authorization: Bearer <access_token> on every call, retries once on a 401, and exposes createBirthRecord() plus generic get/post/request builders that can reach any path here.\n\nConverted from the vendor's published Postman collection (see upstream.json).",
     "x-openfn-adaptor": "ghana-bdr"
   },
-  "servers": [{ "url": "http://tracker.chimgh.org" }],
+  "servers": [
+    {
+      "url": "https://bdrbeta.npontu.com",
+      "description": "Beta / integration environment — the host every request in the vendor's collection targets."
+    },
+    {
+      "url": "https://bdr.npontu.com",
+      "description": "Production host, as named by the adaptor's error message and evidence URLs. The vendor collection's LIVE folder is empty, so no production request is published."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Access and refresh token lifecycle."
+    },
+    {
+      "name": "Birth Registrations",
+      "description": "Submit, update and look up birth records."
+    },
+    {
+      "name": "Death Registrations",
+      "description": "Submit and look up death records."
+    },
+    {
+      "name": "Utilities",
+      "description": "Coded-value lookups (regions, districts, registries, genders, ...)."
+    }
+  ],
+  "security": [
+    {
+      "tokenHeader": []
+    },
+    {
+      "bearerAuth": []
+    }
+  ],
   "paths": {
-    "/api/notification": {
+    "/api/v1/UserManagementService/integrations/auth/token": {
       "post": {
-        "operationId": "sendBirthNotification",
-        "summary": "Send a birth notification / generate a birth certificate",
-        "description": "Submits a birth notification (child, mother, father details) and returns the created birth registry record including the generated birth certificate number.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/BirthNotificationRequest" }
-            }
+        "operationId": "createAccessToken",
+        "summary": "Exchange the API-consumer token for an access token",
+        "description": "Trades the long-lived API-consumer token (sent in the Token header, or as Authorization: Bearer) for a short-lived access token and a refresh token. The request body is empty ({}). The OpenFn adaptor calls this transparently before every other request and caches the token for its lifetime.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "tokenHeader": []
+          },
+          {
+            "bearerAuth": []
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Birth notification saved; registry record returned",
+            "description": "Token pair issued",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/BirthNotificationResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
               }
             }
           },
-          "417": {
-            "description": "Record failed to save",
+          "401": {
+            "description": "Missing or invalid API-consumer token",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
         }
       }
     },
-    "/api/{resource}": {
+    "/api/v1/UserManagementService/integrations/auth/refresh": {
+      "post": {
+        "operationId": "refreshAccessToken",
+        "summary": "Exchange a refresh token for a new token pair",
+        "description": "Trades a valid refresh token for a new access_token / refresh_token pair without re-sending the long-lived API-consumer token. The previous refresh token is rotated and should be treated as invalid.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New token pair issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/UserManagementService/integrations/registrations/birth": {
+      "post": {
+        "operationId": "createBirthRecord",
+        "summary": "Create a birth registration record",
+        "description": "Submits a new birth registration. A unique document_number is minted and returned in the response; no callback is fired at submission. Early vs Late birth is derived from child_dob. This is what the OpenFn adaptor's createBirthRecord() calls.",
+        "tags": [
+          "Birth Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BirthRecordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record accepted; the stored record is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BirthRecordResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The institution is not authorised for this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/UserManagementService/integrations/registrations/birth/{documentNumber}": {
       "get": {
-        "operationId": "get",
-        "summary": "Generic GET request",
-        "description": "Generic passthrough GET request against any resource path on the registry API.",
+        "operationId": "getBirthRecord",
+        "summary": "Look up a birth record and its status",
+        "description": "Returns the current state of a birth record, including process_flow.current_stage and the callback_history of every event dispatched for it. Use it to poll a record's progress.",
+        "tags": [
+          "Birth Registrations"
+        ],
         "parameters": [
-          { "name": "resource", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Resource path segment" }
+          {
+            "name": "documentNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The document_number returned when the record was created, e.g. BIRTH-121234-2026-0000003."
+          }
         ],
         "responses": {
           "200": {
-            "description": "Resource payload",
+            "description": "The record, with its process flow and callback history",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": true }
+                "schema": {
+                  "$ref": "#/components/schemas/BirthRecordResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No record with that document number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "updateBirthRecord",
+        "summary": "Update a birth registration record",
+        "description": "Updates a record that is still in DRAFT/editable state. The payload is the same as for create; submitting it with status COMPLETE moves the record on to verification.",
+        "tags": [
+          "Birth Registrations"
+        ],
+        "parameters": [
+          {
+            "name": "documentNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The document_number returned when the record was created, e.g. BIRTH-121234-2026-0000003."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BirthRecordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record updated; the stored record is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BirthRecordResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No record with that document number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/UserManagementService/integrations/registrations/death": {
+      "post": {
+        "operationId": "createDeathRecord",
+        "summary": "Create a death registration record",
+        "description": "Submits a new death registration. Early vs Late death is derived from deceased_date_of_death (within 14 days is an early death). Only institutions authorised for death services may call it.",
+        "tags": [
+          "Death Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeathRecordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record accepted; the stored record is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeathRecordResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The institution is not authorised for death services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/UserManagementService/integrations/registrations/death/{documentNumber}": {
+      "get": {
+        "operationId": "getDeathRecord",
+        "summary": "Look up a death record and its status",
+        "description": "Returns the current state and callback history of a death record.",
+        "tags": [
+          "Death Registrations"
+        ],
+        "parameters": [
+          {
+            "name": "documentNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The document_number of the death record, e.g. DEATH-121234-2026-0000007."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The record, with its process flow and callback history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeathRecordResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The institution is not authorised for death services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No record with that document number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/UserManagementService/integrations/utility": {
+      "post": {
+        "operationId": "listUtilityValues",
+        "summary": "Fetch a coded-value lookup list",
+        "description": "Returns the allowed coded values used across the birth and death payloads (regions, districts, registries, gender, marital status and so on). Every field marked 'coded' must match a value returned here exactly. Location lookups cascade: COUNTRY gives country_id, REGION (needs country_id) gives region_id, DISTRICT (needs region_id) gives district_id, REGISTRY needs district_id.",
+        "tags": [
+          "Utilities"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UtilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The lookup list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -63,101 +461,1380 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "tokenHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Token",
+        "description": "The API-consumer token on /auth/token, and the issued access_token on every other call — the form the vendor documents."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Authorization: Bearer <access_token>. The form the OpenFn adaptor sends; the token endpoint also accepts the API-consumer token this way."
+      }
+    },
     "schemas": {
-      "BirthNotificationRequest": {
+      "BirthRecord": {
         "type": "object",
-        "description": "Payload posted to create a birth notification.",
+        "description": "A birth registration record as the registry stores it. Names and places are upper-cased by the server. The create/update endpoints return the record as submitted; the status-lookup endpoint additionally returns process_flow and callback_history.",
         "properties": {
-          "registry_code": { "type": "string", "example": "011803" },
-          "child": { "$ref": "#/components/schemas/ChildDetails" },
-          "mother": { "$ref": "#/components/schemas/MotherDetails" },
-          "father": { "$ref": "#/components/schemas/FatherDetails" }
+          "document_number": {
+            "type": "string",
+            "description": "Unique document identifier minted at submission, e.g. BIRTH-121234-2026-0000002."
+          },
+          "service_type": {
+            "type": "string",
+            "description": "EARLY_BIRTH or LATE_BIRTH, derived from child_dob."
+          },
+          "status": {
+            "type": "string",
+            "description": "Record status, e.g. PENDING or COMPLETED."
+          },
+          "type_of_birth": {
+            "type": "string"
+          },
+          "informant_type": {
+            "type": "string"
+          },
+          "informant_national_id_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "informant_national_id_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "informant_first_name": {
+            "type": "string"
+          },
+          "informant_middle_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "informant_last_name": {
+            "type": "string"
+          },
+          "informant_region_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "informant_district_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "informant_town": {
+            "type": "string",
+            "nullable": true
+          },
+          "informant_residential_address": {
+            "type": "string",
+            "nullable": true
+          },
+          "informant_phone_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_first_name": {
+            "type": "string"
+          },
+          "child_middle_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_last_name": {
+            "type": "string"
+          },
+          "child_gender": {
+            "type": "string"
+          },
+          "child_dob": {
+            "type": "string",
+            "format": "date"
+          },
+          "child_national_id_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_national_id_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_place_of_birth": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_birth_attendant": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_birth_institution": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_region_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "child_district_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "child_town": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_house_no": {
+            "type": "string",
+            "nullable": true
+          },
+          "child_street_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_middle_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_age": {
+            "type": "integer",
+            "nullable": true
+          },
+          "mother_marital_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_religion": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_occupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_national_id_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_national_id_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_phone_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_region_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "mother_district_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "mother_town": {
+            "type": "string",
+            "nullable": true
+          },
+          "mother_residence": {
+            "type": "string",
+            "nullable": true
+          },
+          "doubtful_maternity": {
+            "type": "boolean",
+            "description": "Returned as a boolean, although it is submitted as 0/1."
+          },
+          "father_first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_middle_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_national_id_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_national_id_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_phone_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_region_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "father_district_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "father_town": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_residence": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_age": {
+            "type": "integer",
+            "nullable": true
+          },
+          "father_marital_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_religion": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_occupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "father_children_no": {
+            "type": "integer",
+            "nullable": true
+          },
+          "doubtful_paternity": {
+            "type": "boolean",
+            "description": "Returned as a boolean, although it is submitted as 0/1."
+          },
+          "region_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "district_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "registry_id": {
+            "type": "integer",
+            "description": "Registry assigned by the server; it is never supplied by the caller.",
+            "nullable": true
+          },
+          "evidence_content": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Stored evidence file names."
+          },
+          "evidence_url": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Download URLs for the stored evidence files."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Server timestamp, 'YYYY-MM-DD HH:MM:SS'.",
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Server timestamp, 'YYYY-MM-DD HH:MM:SS'.",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "string",
+            "description": "Set once the record is submitted as COMPLETE; null while it is a draft.",
+            "nullable": true
+          },
+          "process_flow": {
+            "$ref": "#/components/schemas/ProcessFlow"
+          },
+          "callback_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CallbackHistoryEntry"
+            },
+            "description": "Every callback event dispatched for this record. Returned by the status-lookup endpoint; not present in the create/update examples the vendor publishes."
+          }
         },
-        "required": ["registry_code", "child", "mother", "father"]
-      },
-      "ChildDetails": {
-        "type": "object",
-        "properties": {
-          "first_name": { "type": "string", "example": "Test" },
-          "middle_name": { "type": "string", "example": "" },
-          "Surname": { "type": "string", "example": "Testerson" },
-          "birth_date": { "type": "string", "example": "2024/03/04" },
-          "birth_type_code": { "type": "string", "example": "1" },
-          "gender_code": { "type": "string", "example": "2" },
-          "place_of_delivery_code": { "type": "string", "example": "7" },
-          "attendant_at_birth_code": { "type": "string", "example": "1" },
-          "bith_attendant_full_name": { "type": "string", "example": "Helen" },
-          "bith_attendant_phone": { "type": "string", "example": "0248403076" }
+        "example": {
+          "document_number": "BIRTH-121234-2026-0000002",
+          "service_type": "EARLY_BIRTH",
+          "status": "PENDING",
+          "type_of_birth": "SINGLETON",
+          "child_first_name": "FIRSTNAME",
+          "child_last_name": "SURNAME",
+          "child_gender": "MALE",
+          "child_dob": "2025-06-26",
+          "region_id": 1,
+          "district_id": 1,
+          "registry_id": 1,
+          "created_at": "2026-01-27 12:14:35",
+          "updated_at": "2026-01-27 12:14:36",
+          "completed_at": null
         }
       },
-      "MotherDetails": {
+      "BirthRecordRequest": {
         "type": "object",
+        "description": "Birth registration payload accepted by both the create and the update endpoint. Only status, region_id and district_id are enforced at submit time; the fields marked 'Required when status=COMPLETE' are validated when the record is submitted as COMPLETE.",
+        "required": [
+          "status",
+          "region_id",
+          "district_id"
+        ],
         "properties": {
-          "national_id_number": { "type": "string", "example": "GHA-000000000-2" },
-          "first_name": { "type": "string", "example": "fake" },
-          "middle_name": { "type": "string", "example": "" },
-          "maiden_name": { "type": "string", "example": "fakerson" },
-          "phone": { "type": "string", "example": "0248403076" },
-          "occupation_code": { "type": "string", "example": "29" },
-          "age": { "type": "integer", "example": 25 }
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "COMPLETE"
+            ],
+            "description": "Validation depth. DRAFT saves the record as-is (returned status PENDING) and only status, region_id and district_id are enforced; COMPLETE validates every field the vendor marks Required before the record moves on to verification, approval and certification."
+          },
+          "region_id": {
+            "type": "integer",
+            "description": "Region of registration. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=REGION."
+          },
+          "district_id": {
+            "type": "integer",
+            "description": "District of registration; must belong to region_id. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=DISTRICT."
+          },
+          "type_of_birth": {
+            "type": "string",
+            "example": "SINGLETON",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=BIRTH_TYPE."
+          },
+          "informant_type": {
+            "type": "string",
+            "example": "MOTHER",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=INFORMANT_TYPE."
+          },
+          "informant_national_id_type": {
+            "type": "string",
+            "example": "GHANA CARD",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "informant_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Required when status=COMPLETE. Alphanumeric and hyphen."
+          },
+          "informant_first_name": {
+            "type": "string",
+            "description": "Required when status=COMPLETE."
+          },
+          "informant_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "informant_last_name": {
+            "type": "string",
+            "description": "Required when status=COMPLETE."
+          },
+          "informant_region_id": {
+            "type": "integer",
+            "description": "Optional. If sent together with informant_district_id, the district must belong to the region."
+          },
+          "informant_district_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "informant_town": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "informant_residential_address": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Required when status=COMPLETE."
+          },
+          "informant_phone_number": {
+            "type": "string",
+            "pattern": "^(\\+)?[0-9]{10,}$",
+            "description": "Required when status=COMPLETE."
+          },
+          "child_first_name": {
+            "type": "string",
+            "description": "Required when status=COMPLETE. Checked against the registry's name blacklist."
+          },
+          "child_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "child_last_name": {
+            "type": "string",
+            "description": "Required when status=COMPLETE. Checked against the registry's name blacklist."
+          },
+          "child_gender": {
+            "type": "string",
+            "example": "MALE",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=GENDER."
+          },
+          "child_dob": {
+            "type": "string",
+            "format": "date",
+            "description": "Required when status=COMPLETE. Not in the future. Determines Early Birth (under 1 year) vs Late Birth; do not send a service type."
+          },
+          "child_national_id_type": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "child_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Optional. Alphanumeric and hyphen."
+          },
+          "child_place_of_birth": {
+            "type": "string",
+            "example": "HOSPITAL",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=PLACE_OF_BIRTH."
+          },
+          "child_birth_attendant": {
+            "type": "string",
+            "example": "MID-WIFE",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=BIRTH_ATTENDANT."
+          },
+          "child_birth_institution": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Required when status=COMPLETE."
+          },
+          "child_town": {
+            "type": "string",
+            "description": "Required when status=COMPLETE. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=TOWN."
+          },
+          "child_house_no": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "child_street_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "mother_nationality": {
+            "type": "string",
+            "example": "GHANA",
+            "description": "Required unless doubtful_maternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONALITY."
+          },
+          "mother_first_name": {
+            "type": "string",
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "mother_last_name": {
+            "type": "string",
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_age": {
+            "type": "integer",
+            "minimum": 11,
+            "maximum": 70,
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_phone_number": {
+            "type": "string",
+            "pattern": "^(\\+)?[0-9]{10,}$",
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_marital_status": {
+            "type": "string",
+            "example": "MARRIED",
+            "description": "Required unless doubtful_maternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=MARITAL_STATUS."
+          },
+          "mother_previous_birth_no": {
+            "type": "integer",
+            "maximum": 50,
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_occupation": {
+            "type": "string",
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_educational_level": {
+            "type": "string",
+            "example": "DIPLOMA",
+            "description": "Required unless doubtful_maternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=EDUCATIONAL_LEVEL."
+          },
+          "mother_residence": {
+            "type": "string",
+            "description": "Required unless doubtful_maternity=1."
+          },
+          "mother_national_id_type": {
+            "type": "string",
+            "description": "Required if the mother is non-Ghanaian. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "mother_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Required if the mother is non-Ghanaian. Alphanumeric and hyphen."
+          },
+          "mother_nationality_issued_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Required if the mother is non-Ghanaian; must be before child_dob."
+          },
+          "mother_religion": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=RELIGION."
+          },
+          "mother_region_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "mother_district_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "mother_town": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=TOWN."
+          },
+          "doubtful_maternity": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Set to 1 to skip the mother requirements."
+          },
+          "father_nationality": {
+            "type": "string",
+            "example": "GHANA",
+            "description": "Required unless doubtful_paternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONALITY."
+          },
+          "father_first_name": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "father_last_name": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_age": {
+            "type": "integer",
+            "minimum": 11,
+            "maximum": 80,
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_phone_number": {
+            "type": "string",
+            "pattern": "^(\\+)?[0-9]{10,}$",
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_marital_status": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=MARITAL_STATUS."
+          },
+          "father_children_no": {
+            "type": "integer",
+            "maximum": 50,
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_occupation": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_religion": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=RELIGION."
+          },
+          "father_educational_level": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=EDUCATIONAL_LEVEL."
+          },
+          "father_residence": {
+            "type": "string",
+            "description": "Required unless doubtful_paternity=1."
+          },
+          "father_national_id_type": {
+            "type": "string",
+            "description": "Required if the father is non-Ghanaian. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "father_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Required if the father is non-Ghanaian. Alphanumeric and hyphen."
+          },
+          "father_nationality_issued_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Required if the father is non-Ghanaian; must be before child_dob."
+          },
+          "father_region_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "father_district_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "father_town": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=TOWN."
+          },
+          "doubtful_paternity": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Set to 1 to skip the father requirements."
+          },
+          "child_file_birth_evidence_name": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional. File names, parallel to child_file_birth_evidence_data."
+          },
+          "child_file_birth_evidence_data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional. Base64 data URLs (PDF, JPG or PNG), parallel to child_file_birth_evidence_name."
+          }
         }
       },
-      "FatherDetails": {
+      "BirthRecordResponse": {
         "type": "object",
+        "description": "Standard response envelope carrying one birth registration record. The OpenFn adaptor puts this whole envelope on state.data.",
         "properties": {
-          "national_id_number": { "type": "string", "example": "" },
-          "first_name": { "type": "string", "example": "john" },
-          "middle_name": { "type": "string", "example": "" },
-          "Surname": { "type": "string", "example": "doe" },
-          "phone": { "type": "string", "example": "0248403076" },
-          "occupation_code": { "type": "string", "example": "5" }
+          "api_code": {
+            "type": "integer",
+            "example": 200,
+            "description": "HTTP-style status code repeated in the body."
+          },
+          "api_status": {
+            "type": "string",
+            "example": "success",
+            "description": "success or error."
+          },
+          "api_message": {
+            "type": "string",
+            "example": "Your action has been processed.",
+            "description": "Human-readable outcome."
+          },
+          "api_data": {
+            "$ref": "#/components/schemas/BirthRecord"
+          }
         }
       },
-      "BirthNotificationResponse": {
+      "CallbackEvent": {
         "type": "object",
-        "description": "Birth registry record returned after a successful notification.",
+        "description": "Payload the registry POSTs to the integrator's configured callback_url as a record moves through review, verification, registration, approval and certification. This is an outbound webhook — it is not an endpoint of this API. The registration_no, ubnc and certificate_number fields carry the same value.",
         "properties": {
-          "birth_certificate_number": { "type": "string", "example": "000000-00-2024" },
-          "first_name": { "type": "string", "example": "Test" },
-          "middle_name": { "type": "string", "example": "" },
-          "Surname": { "type": "string", "example": "sample surname" },
-          "birth_date": { "type": "string", "example": "04 Mar 2024" },
-          "national_id_number": { "type": "string", "example": "" },
-          "place_of_delivery": { "type": "string", "example": "MATERNITY HOME" },
-          "Health_facility": { "type": "string", "example": "" },
-          "birth_type": { "type": "string", "nullable": true, "example": null },
-          "gender": { "type": "string", "example": "MALE" },
-          "house_number": { "type": "string", "example": "" },
-          "street_name": { "type": "string", "example": "" },
-          "district": { "type": "string", "example": "" },
-          "region": { "type": "string", "example": "" },
-          "town_or_village": { "type": "string", "example": "" },
-          "m_first_name": { "type": "string", "example": "sample mom" },
-          "m_middle_name": { "type": "string", "example": "" },
-          "m_maiden_name": { "type": "string", "example": "sample surname" },
-          "m_surname": { "type": "string", "example": "" },
-          "m_national_id_number": { "type": "string", "example": "GHA-000000000-0" },
-          "m_nationality": { "type": "string", "example": "" },
-          "f_first_name": { "type": "string", "example": "father fname" },
-          "f_middle_name": { "type": "string", "example": "" },
-          "f_Surname": { "type": "string", "example": "father sur" },
-          "f_nationality": { "type": "string", "example": "" },
-          "f_national_id_number": { "type": "string", "example": "" },
-          "reference_id": { "type": "string", "example": "abc123de-1995" },
-          "document_number": { "type": "string", "example": "1995/000000/XX0000000A1B2C3" },
-          "created_at": { "type": "string", "example": "05 Mar 2024" },
-          "last_updated_at": { "type": "string", "nullable": true, "example": null },
-          "issuccessful": { "type": "boolean", "example": true },
-          "message": { "type": "string", "example": "record reference_id : abc123de-1995 , created successfully" },
-          "messagecode": { "type": "string", "example": "200" }
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "MARKED_COMPLETE",
+              "VERIFIED",
+              "DUPLICATE_REJECTED",
+              "PUSHED_TO_REGISTRATION",
+              "COMPLETED",
+              "CERTIFIED"
+            ],
+            "description": "MARKED_COMPLETE (status IN_VERIFICATION), VERIFIED (VERIFIED), DUPLICATE_REJECTED (REJECTED, flow ends), PUSHED_TO_REGISTRATION (IN_PROGRESS), COMPLETED (APPROVED, registration number generated) or CERTIFIED (certificate issued, terminal success)."
+          },
+          "record_type": {
+            "type": "string",
+            "enum": [
+              "BIRTH",
+              "DEATH"
+            ]
+          },
+          "document_number": {
+            "type": "string",
+            "description": "The record this event is about."
+          },
+          "status": {
+            "type": "string",
+            "description": "Record status after the event."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp."
+          },
+          "service_type": {
+            "type": "string",
+            "description": "EARLY_BIRTH, LATE_BIRTH, EARLY_DEATH or LATE_DEATH."
+          },
+          "duplicate_message": {
+            "type": "string",
+            "description": "Details of the matched record. DUPLICATE_REJECTED only."
+          },
+          "registration_no": {
+            "type": "string",
+            "description": "Registration number. COMPLETED and CERTIFIED only."
+          },
+          "ubnc": {
+            "type": "string",
+            "description": "Unique Birth Notification Code — same value as registration_no. COMPLETED and CERTIFIED only."
+          },
+          "certificate_number": {
+            "type": "string",
+            "description": "Same value as registration_no. COMPLETED and CERTIFIED only."
+          },
+          "date_of_registration": {
+            "type": "string",
+            "description": "COMPLETED only."
+          },
+          "certified_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "CERTIFIED only."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Record summary — the child's or deceased person's names, and for PUSHED_TO_REGISTRATION a registration_id."
+          }
+        }
+      },
+      "CallbackHistoryEntry": {
+        "type": "object",
+        "description": "One dispatched callback event, as listed by the status-lookup endpoint.",
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "description": "MARKED_COMPLETE, VERIFIED, DUPLICATE_REJECTED, PUSHED_TO_REGISTRATION, COMPLETED or CERTIFIED."
+          },
+          "callback_status": {
+            "type": "string",
+            "description": "Delivery status of the callback."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp.",
+            "nullable": true
+          }
+        }
+      },
+      "DeathRecordRequest": {
+        "type": "object",
+        "description": "Death registration payload. registry_id is system-set (auto-assigned round-robin among the active registries of the submitted district) and must not be sent.",
+        "required": [
+          "region_id",
+          "district_id",
+          "deceased_date_of_death"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "COMPLETE"
+            ],
+            "description": "DRAFT saves the record as-is; COMPLETE submits it for review. At submit only region_id, district_id and deceased_date_of_death are strictly enforced — the remaining Required fields are enforced later during registry review."
+          },
+          "service_type": {
+            "type": "string",
+            "enum": [
+              "EARLY_DEATH",
+              "LATE_DEATH"
+            ],
+            "description": "Optional; recomputed by the server from deceased_date_of_death (within 14 days = EARLY_DEATH, otherwise LATE_DEATH)."
+          },
+          "region_id": {
+            "type": "integer",
+            "description": "Region of registration. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=REGION."
+          },
+          "district_id": {
+            "type": "integer",
+            "description": "District of registration; must belong to region_id. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=DISTRICT."
+          },
+          "informant_type": {
+            "type": "string",
+            "example": "FATHER",
+            "description": "Required. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=INFORMANT_TYPE."
+          },
+          "informant_first_name": {
+            "type": "string",
+            "description": "Required."
+          },
+          "informant_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "informant_last_name": {
+            "type": "string",
+            "description": "Required."
+          },
+          "informant_national_id_type": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "informant_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Optional. Alphanumeric and hyphen."
+          },
+          "informant_region_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "informant_residential_address": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "informant_phone_number": {
+            "type": "string",
+            "pattern": "^(\\+)?[0-9]{10,}$",
+            "description": "Optional."
+          },
+          "deceased_first_name": {
+            "type": "string",
+            "description": "Required. Checked against the registry's name blacklist."
+          },
+          "deceased_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "deceased_last_name": {
+            "type": "string",
+            "description": "Required. Checked against the registry's name blacklist."
+          },
+          "deceased_gender": {
+            "type": "string",
+            "description": "Required. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=GENDER."
+          },
+          "deceased_age": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200,
+            "description": "Required. Paired with deceased_age_unit."
+          },
+          "deceased_age_unit": {
+            "type": "string",
+            "enum": [
+              "HOURS",
+              "DAYS",
+              "MONTHS",
+              "YEARS"
+            ],
+            "description": "Required."
+          },
+          "deceased_nationality": {
+            "type": "string",
+            "description": "Required. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONALITY."
+          },
+          "deceased_nationality_issued_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Required if the deceased is non-Ghanaian."
+          },
+          "deceased_national_id_type": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "deceased_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Optional. Alphanumeric and hyphen."
+          },
+          "deceased_marital_status": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=MARITAL_STATUS."
+          },
+          "deceased_educational_level": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=EDUCATIONAL_LEVEL."
+          },
+          "deceased_occupation": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "deceased_date_of_death": {
+            "type": "string",
+            "format": "date",
+            "description": "Required. Not in the future; determines Early vs Late death."
+          },
+          "deceased_place_of_death": {
+            "type": "string",
+            "description": "Required."
+          },
+          "deceased_region_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "deceased_district_id": {
+            "type": "integer",
+            "description": "Optional."
+          },
+          "deceased_town": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=TOWN."
+          },
+          "deceased_town_id": {
+            "type": "integer",
+            "description": "Optional. Numeric form of deceased_town. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=TOWN."
+          },
+          "deceased_house_no": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "deceased_street_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "deceased_is_buried": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Optional."
+          },
+          "death_region_id": {
+            "type": "integer",
+            "description": "Required. Region where the death occurred. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=REGION."
+          },
+          "death_district_id": {
+            "type": "integer",
+            "description": "Required. District where the death occurred. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=DISTRICT."
+          },
+          "death_town": {
+            "type": "string",
+            "description": "Required. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=TOWN."
+          },
+          "death_institution": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "death_house_no": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "death_street_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "cemetery_name": {
+            "type": "string",
+            "description": "Required."
+          },
+          "cemetery_town": {
+            "type": "string",
+            "description": "Required."
+          },
+          "coroner_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "coroner_issued_by": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_type": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_qualification": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_cause_of_death": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_first_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_middle_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_last_name": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_national_id_type": {
+            "type": "string",
+            "description": "Optional. Coded value — must exactly match a name returned by the Utilities lookup for utility_type=NATIONAL_ID."
+          },
+          "examiner_national_id_number": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Optional. Alphanumeric and hyphen."
+          },
+          "examiner_phone_number": {
+            "type": "string",
+            "pattern": "^(\\+)?[0-9]{10,}$",
+            "description": "Optional."
+          },
+          "examiner_place_of_operation": {
+            "type": "string",
+            "description": "Optional."
+          },
+          "examiner_evidence_of_death_name": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional. File names, parallel to examiner_evidence_of_death_data."
+          },
+          "examiner_evidence_of_death_data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional. Base64 data URLs (PDF, JPG or PNG)."
+          }
+        }
+      },
+      "DeathRecordResponse": {
+        "type": "object",
+        "description": "Standard response envelope carrying one death registration record. The published collection has no successful example for the death endpoints (the sample institution is authorised for birth services only, so both saved examples are 403s), so the returned field set is left open rather than guessed.",
+        "properties": {
+          "api_code": {
+            "type": "integer",
+            "example": 200,
+            "description": "HTTP-style status code repeated in the body."
+          },
+          "api_status": {
+            "type": "string",
+            "example": "success",
+            "description": "success or error."
+          },
+          "api_message": {
+            "type": "string",
+            "example": "Your action has been processed.",
+            "description": "Human-readable outcome."
+          },
+          "api_data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The death registration record. Field set not documented upstream — see the schema description."
+          }
         }
       },
       "ErrorResponse": {
         "type": "object",
+        "description": "Error envelope. api_data is an empty array on errors.",
         "properties": {
-          "issuccessful": { "type": "boolean", "example": false },
-          "message": { "type": "string", "example": "Record failed to save with this error" },
-          "messagecode": { "type": "string", "example": "210" }
+          "api_code": {
+            "type": "integer",
+            "example": 200,
+            "description": "HTTP-style status code repeated in the body."
+          },
+          "api_status": {
+            "type": "string",
+            "example": "success",
+            "description": "success or error."
+          },
+          "api_message": {
+            "type": "string",
+            "example": "Your institution is not authorized for EARLY_DEATH service. Allowed services: EARLY_BIRTH",
+            "description": "Human-readable outcome."
+          },
+          "api_data": {
+            "description": "Empty on errors (the registry returns [])."
+          }
+        }
+      },
+      "ProcessFlow": {
+        "type": "object",
+        "description": "Where the record currently sits in the registry workflow. Returned by the status-lookup endpoint.",
+        "properties": {
+          "current_stage": {
+            "type": "string",
+            "enum": [
+              "SUBMITTED",
+              "DRAFT",
+              "PENDING_REVIEW",
+              "MARKED_COMPLETE",
+              "IN_VERIFICATION",
+              "VERIFIED",
+              "DUPLICATE_REJECTED",
+              "IN_REGISTRATION",
+              "APPROVED",
+              "CERTIFIED"
+            ],
+            "description": "One of SUBMITTED, DRAFT, PENDING_REVIEW, MARKED_COMPLETE, IN_VERIFICATION, VERIFIED, DUPLICATE_REJECTED, IN_REGISTRATION, APPROVED, CERTIFIED. APPROVED is a polling stage only — it is never delivered as a callback."
+          },
+          "stages": {
+            "type": "object",
+            "description": "Per-stage detail. stages.certification.is_certified turns true once the certificate has been issued. The vendor documents the certification flag; the full stage map is not documented field by field.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "description": "The refresh token is itself the credential — no auth header is required.",
+        "required": [
+          "refresh_token"
+        ],
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "description": "The refresh_token returned by the previous token call."
+          }
+        }
+      },
+      "TokenData": {
+        "type": "object",
+        "description": "An issued token pair.",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "example": "REPLACE_WITH_ACCESS_TOKEN",
+            "description": "Short-lived access token; send it as the Token header (the OpenFn adaptor sends it as Authorization: Bearer instead)."
+          },
+          "refresh_token": {
+            "type": "string",
+            "example": "REPLACE_WITH_REFRESH_TOKEN",
+            "description": "Rotating refresh token; trade it at the refresh endpoint for a new pair."
+          },
+          "token_type": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "example": 3600,
+            "description": "Lifetime of access_token in seconds (60 minutes)."
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "Standard response envelope carrying an issued token pair.",
+        "properties": {
+          "api_code": {
+            "type": "integer",
+            "example": 200,
+            "description": "HTTP-style status code repeated in the body."
+          },
+          "api_status": {
+            "type": "string",
+            "example": "success",
+            "description": "success or error."
+          },
+          "api_message": {
+            "type": "string",
+            "example": "Token issued successfully",
+            "description": "Human-readable outcome."
+          },
+          "api_data": {
+            "$ref": "#/components/schemas/TokenData"
+          }
+        }
+      },
+      "UtilityOfficer": {
+        "type": "object",
+        "description": "The officer attached to a district or registry lookup row.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "middle_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UtilityRequest": {
+        "type": "object",
+        "description": "Which coded-value list to fetch.",
+        "required": [
+          "utility_type"
+        ],
+        "properties": {
+          "utility_type": {
+            "type": "string",
+            "enum": [
+              "COUNTRY",
+              "REGION",
+              "NATIONALITY",
+              "DISTRICT",
+              "REGISTRY",
+              "NATIONAL_ID",
+              "TOWN",
+              "GENDER",
+              "BIRTH_TYPE",
+              "BIRTH_ATTENDANT",
+              "RELIGION",
+              "EDUCATIONAL_LEVEL",
+              "INFORMANT_TYPE",
+              "MARITAL_STATUS",
+              "PLACE_OF_BIRTH"
+            ],
+            "description": "The lookup list to fetch."
+          },
+          "country_id": {
+            "type": "integer",
+            "description": "Required when utility_type=REGION."
+          },
+          "region_id": {
+            "type": "integer",
+            "description": "Required when utility_type=DISTRICT."
+          },
+          "district_id": {
+            "type": "integer",
+            "description": "Required when utility_type=REGISTRY."
+          }
+        }
+      },
+      "UtilityValue": {
+        "type": "object",
+        "description": "One row of a coded-value lookup list. Location lookups (COUNTRY, REGION, DISTRICT, REGISTRY) return objects with numeric ids and may embed their parent row; the flat lookups (GENDER, BIRTH_TYPE, RELIGION, ...) return plain strings instead.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Numeric id to send as region_id / district_id / registry_id."
+          },
+          "name": {
+            "type": "string",
+            "example": "Ashanti",
+            "description": "Exact name to send in coded name fields."
+          },
+          "code": {
+            "type": "string",
+            "example": "05",
+            "nullable": true
+          },
+          "country_id": {
+            "type": "integer",
+            "description": "Set on REGION rows.",
+            "nullable": true
+          },
+          "region_id": {
+            "type": "integer",
+            "description": "Set on DISTRICT rows.",
+            "nullable": true
+          },
+          "district_id": {
+            "type": "integer",
+            "description": "Set on REGISTRY rows.",
+            "nullable": true
+          },
+          "officer_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "deleted_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UtilityValue"
+              }
+            ],
+            "nullable": true,
+            "description": "Parent region, embedded on DISTRICT rows."
+          },
+          "district": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UtilityValue"
+              }
+            ],
+            "nullable": true,
+            "description": "Parent district, embedded on REGISTRY rows."
+          },
+          "officer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UtilityOfficer"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "UtilityResponse": {
+        "type": "object",
+        "description": "Standard response envelope carrying a coded-value lookup list.",
+        "properties": {
+          "api_code": {
+            "type": "integer",
+            "example": 200,
+            "description": "HTTP-style status code repeated in the body."
+          },
+          "api_status": {
+            "type": "string",
+            "example": "success",
+            "description": "success or error."
+          },
+          "api_message": {
+            "type": "string",
+            "example": "Your action has been processed.",
+            "description": "Human-readable outcome."
+          },
+          "api_data": {
+            "type": "array",
+            "description": "The lookup rows. Location lookups return objects; flat lookups return plain strings.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/UtilityValue"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
         }
       }
     }

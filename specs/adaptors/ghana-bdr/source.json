@@ -1,14 +1,78 @@
 {
   "adaptor": "ghana-bdr",
   "npm": "@openfn/language-ghana-bdr",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-bdr/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-bdr/types/index.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-bdr/dist/index.cjs",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/ghana-bdr"
+  "origin": "converted",
+  "upstreamFormat": "postman",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://documenter.gw.postman.com/api/collections/26097188/2sB2qZE2N9?segregateAuth=true&versionTag=latest",
+    "format": "postman",
+    "contentHash": "sha256:1286e9f7a23cd0654bf934275d2d52a2a5257e83d01270803d79a5ba32a7457d",
+    "fetchedAt": "2026-09-13"
+  },
+  "attempts": [
+    {
+      "kind": "postman",
+      "url": "https://documenter.getpostman.com/view/26097188/2sB2qZE2N9",
+      "result": "used",
+      "note": "The vendor's published 'HBDRP INTEGRATION' Postman collection — the documentation link the adaptor's own CHANGELOG cites for the 1.0.0 rewrite. Collection JSON fetched from the documenter API (documenter.gw.postman.com/api/collections/26097188/2sB2qZE2N9) and committed verbatim as upstream.json; two consecutive fetches hashed identically."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://bdrbeta.npontu.com/api/v1/UserManagementService/integrations/openapi.json",
+      "result": "not-found",
+      "note": "403 from the API gateway; no spec served on the API host."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://bdrbeta.npontu.com/swagger.json",
+      "result": "not-found",
+      "note": "404. /api/documentation also 404s; the host serves no Swagger UI."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No Ghana / BDR / HBDRP / Npontu entry among the 2529 listed APIs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.swaggerhub.com/specs?query=npontu",
+      "result": "not-found",
+      "note": "Npontu's SwaggerHub account publishes Deywuro SMS APIs only; a 'births deaths registry' query returns nothing related."
+    },
+    {
+      "kind": "docs",
+      "url": "https://bdr.gov.gh/",
+      "result": "not-found",
+      "note": "The registry's institutional site; no developer portal or API reference, and the host did not respond from this environment."
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-bdr/src/schema/request.json",
+      "result": "rejected",
+      "note": "A JSON Schema still shipped in the adaptor package, but it describes the pre-1.0.0 CHIM eTracker payload (registry_code + nested child/mother/father) that the 1.0.0 rewrite replaced. Left out of the spec deliberately."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The Ghana Births & Deaths Registry integration (CHIM/Lightwave eTracker, base http://tracker.chimgh.org) is a private government API with no published OpenAPI or vendor docs. Spec synthesized from the adaptor's public operations and the mock client bundled in the adaptor's dist/index.cjs, which contains the real endpoint path (POST /api/notification) and verbatim sample request/response bodies. The generic get/post operations accept arbitrary resource paths; only the birth-notification endpoint is modeled in detail. Field names (including the source's typos like 'bith_attendant') are preserved as they appear in the adaptor."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-tests"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://documenter.getpostman.com/view/26097188/2sB2qZE2N9",
+    "https://documenter.gw.postman.com/api/collections/26097188/2sB2qZE2N9?segregateAuth=true&versionTag=latest",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/ghana-bdr",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-bdr/src/Utils.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-bdr/test/fixtures.js",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-bdr/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-bdr/configuration-schema.json"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "Ghana's Harmonised Births and Deaths Registration Platform (HBDRP), the Births & Deaths Registry's third-party integration API hosted by Npontu. The vendor publishes no OpenAPI, but it does publish a Postman collection — the documentation link @openfn/language-ghana-bdr@1.0.0 cites for its rewrite — which is committed verbatim as upstream.json and converted here by hand (the repo's converters cover OpenAPI/Swagger/Discovery only). 'Full' means every request in that collection: 2 auth, 3 birth, 2 death and 1 utility operation, all 8 modelled, plus the 8 documented callback events folded into one CallbackEvent schema (an outbound webhook to the integrator, not an endpoint, so it is not a path). Schemas come from the collection's example responses and its Req/Cond/Opt field tables; because required-ness there is conditional on status (DRAFT saves as-is, COMPLETE validates everything), only the three fields enforced in both modes are marked required and the rest carry the condition in their description. Two honest gaps: the collection ships no successful death response (the sample institution is authorised for birth services only, so both saved examples are 403s), so DeathRecordResponse.api_data is left open rather than guessed; and process_flow / callback_history are documented in prose for the status lookup but absent from its saved example, so they are modelled as optional. The collection's LIVE folder is empty — every request targets the beta host — so bdr.npontu.com is listed as a second server on the strength of the adaptor's error message and the evidence URLs in the examples. Cross-checked against ast.json and the adaptor source: createBirthRecord, the token exchange, the integration test's record lookup and the utility endpoint its unit-test mock intercepts all exist here. Conformance note: openfn-mocker's ghana-bdr guide still posts the pre-1.0.0 nested payload and exposes a GET .../registrations/birth list endpoint the vendor does not document; both are mock-side gaps, not spec gaps, and are left for the mocker to fix."
 }

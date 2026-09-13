@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/CountryConfigEventConfig",
+  "title": "CountryConfigEventConfig",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/CountryConfigEventConfig",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Machine-readable identifier of the event (e.g. \"birth\", \"death\")."
+    },
+    "dateOfEvent": {
+      "description": "Reference to the field capturing the date of the event (e.g. date of birth). Defaults to the event creation date if unspecified.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "$$field": {
+              "type": "string",
+              "description": "Id of the field to reference"
+            },
+            "$$subfield": {
+              "default": [],
+              "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "$$code": {
+              "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "$$field",
+            "$$subfield"
+          ],
+          "additionalProperties": false,
+          "description": "Reference to a field value, with an optional client-side computation applied."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$$event": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "legalStatuses.DECLARED.createdAt",
+                "legalStatuses.DECLARED.acceptedAt",
+                "legalStatuses.REGISTERED.createdAt",
+                "legalStatuses.REGISTERED.acceptedAt"
+              ]
+            }
+          },
+          "required": [
+            "$$event"
+          ],
+          "additionalProperties": false,
+          "description": "Reference to a field defined in the event metadata, using the field id."
+        }
+      ]
+    },
+    "placeOfEvent": {
+      "description": "Reference to the field capturing the place of the event (e.g. place of birth). Defaults to the meta.createdAtLocation if unspecified.",
+      "type": "object",
+      "properties": {
+        "$$field": {
+          "type": "string",
+          "description": "Id of the field to reference"
+        },
+        "$$subfield": {
+          "default": [],
+          "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "$$code": {
+          "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "$$field",
+        "$$subfield"
+      ],
+      "additionalProperties": false
+    },
+    "title": {
+      "description": "Title template for the singular event, supporting variables (e.g. \"{applicant.name.firstname} {applicant.name.surname}\").",
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "fallbackTitle": {
+      "description": "Fallback title shown when the main title resolves to an empty value.",
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "summary": {
+      "description": "Summary information displayed in the event overview.",
+      "$ref": "CountryConfigSummaryConfig.json"
+    },
+    "label": {
+      "description": "Human-readable label for the event type.",
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigActionConfig.json"
+      },
+      "description": "Configuration of core and custom actions associated with the event."
+    },
+    "actionOrder": {
+      "description": "Order of actions in the action menu. Use either the action type for core actions or the customActionType for custom actions.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "declaration": {
+      "description": "Configuration of the form used to gather event data.",
+      "$ref": "CountryConfigDeclarationFormConfig.json"
+    },
+    "advancedSearch": {
+      "default": [],
+      "description": "Configuration of fields available in the advanced search feature.",
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigAdvancedSearchConfig.json"
+      }
+    },
+    "flags": {
+      "default": [],
+      "description": "Configuration of custom flags associated with the actions of this event type.",
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigFlagConfig.json"
+      }
+    },
+    "analytics": {
+      "default": true,
+      "description": "Indicates whether the records of this event type are included in analytics",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "label",
+    "actions",
+    "declaration",
+    "advancedSearch",
+    "flags",
+    "analytics"
+  ],
+  "additionalProperties": false,
+  "description": "Configuration defining an event type registered in OpenCRVS (for example birth or death)."
+}

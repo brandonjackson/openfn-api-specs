@@ -2,59 +2,157 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Ghana NIA AWOPA Baby Registration API",
-    "version": "1.0.0",
-    "description": "Focused API surface used by the OpenFn ghana-nia adaptor. The adaptor registers newborns with the Ghana National Identification Authority (NIA) AWOPA baby-registration service to obtain a Ghana Card PIN (national ID), and also supports generic GET/POST passthrough requests. Synthesized from the adaptor surface (ast.json, types) and the mock client bundled with @openfn/language-ghana-nia.",
+    "version": "1",
+    "description": "The Ghana National Identification Authority's AWOPA service, which mints a Ghana Card PIN (national ID) for a newborn from the baby's details plus a vouching relative's card and photograph. It is a private government API: NIA publishes no developer portal, no machine spec and no reference docs, so this document is reverse-engineered from the OpenFn ghana-nia adaptor's source (its request path, headers, bundled JSON request schema and the sample request/response bodies in its mock server) and from openfn-mocker's ghana-nia plugin.\n\nThe adaptor reaches it with configuration.baseUrl plus configuration.merchantKey, sends the merchant key both as the NIa_merchantKey header and as a merchantKey field appended to the body, and exposes registerChild() plus generic get/post builders that can reach any path here.",
     "x-openfn-adaptor": "ghana-nia"
   },
-  "servers": [{ "url": "https://selfie.imsgh.org:2035" }],
+  "servers": [
+    {
+      "url": "https://selfie.imsgh.org:2035",
+      "description": "The host the adaptor's bundled mock targets, and the only base URL ever named for this service. Callers set it through configuration.baseUrl."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Baby Registration",
+      "description": "Minting a newborn's Ghana Card PIN from a vouching relative."
+    }
+  ],
+  "security": [
+    {
+      "merchantKey": []
+    }
+  ],
   "paths": {
     "/awopa/api/v1/baby/registration": {
       "post": {
         "operationId": "registerChild",
-        "summary": "Register a child and generate a national ID",
-        "description": "Submits baby data plus a vouching relative's details to the NIA and returns the generated Ghana Card PIN for the baby and the voucher.",
+        "summary": "Register a newborn and mint a Ghana Card PIN",
+        "description": "Submits the baby's details together with a vouching relative's Ghana Card PIN and photograph. NIA verifies the voucher and returns the PIN minted for the baby. This is what the adaptor's registerChild() calls; it sends content-type: application/json and an NIa_merchantKey header, and appends merchantKey to the body.",
+        "tags": [
+          "Baby Registration"
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/BabyRegistrationRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/BabyRegistrationRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Registration saved; national ID PINs returned",
+            "description": "Registration saved; the minted PINs are returned",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/NationalIdResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResponse"
+                }
               }
             }
           },
           "404": {
-            "description": "Verification / registration error",
+            "description": "Verification or registration error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listRegistrations",
+        "summary": "List minted registrations",
+        "description": "Returns the registrations minted for this merchant. Not documented by NIA and not wrapped by a named adaptor operation: recovered from OpenFn's ghana-nia mock, which models the reads a workflow can reach through the adaptor's generic get(). The response shape is unverified against the live service. (The adaptor's get() also throws client-side before issuing a request, because its shared request helper dereferences data.merchantKey before checking that a body was supplied.)",
+        "tags": [
+          "Baby Registration"
+        ],
+        "responses": {
+          "200": {
+            "description": "The registrations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
         }
       }
     },
-    "/awopa/api/v1/{resource}": {
+    "/awopa/api/v1/baby/registration/{babyPin}": {
       "get": {
-        "operationId": "get",
-        "summary": "Generic GET request",
-        "description": "Generic passthrough GET request against any resource path on the NIA API.",
+        "operationId": "getRegistration",
+        "summary": "Look up one registration by baby PIN",
+        "description": "Returns a single registration by the Ghana Card PIN minted for the baby. Not documented by NIA and not wrapped by a named adaptor operation: recovered from OpenFn's ghana-nia mock, which models the reads a workflow can reach through the adaptor's generic get(). The response shape is unverified against the live service. (The adaptor's get() also throws client-side before issuing a request, because its shared request helper dereferences data.merchantKey before checking that a body was supplied.)",
+        "tags": [
+          "Baby Registration"
+        ],
         "parameters": [
-          { "name": "resource", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Resource path segment" }
+          {
+            "name": "babyPin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The babyPin returned when the child was registered, e.g. GHA-000000000-1."
+          }
         ],
         "responses": {
           "200": {
-            "description": "Resource payload",
+            "description": "The registration",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": true }
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registration for that PIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -63,69 +161,223 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "merchantKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "NIa_merchantKey",
+        "description": "The NIA merchant key. Also appended to every JSON body as merchantKey."
+      }
+    },
     "schemas": {
-      "BabyRegistrationRequest": {
-        "type": "object",
-        "description": "Payload posted to register a newborn with the NIA.",
-        "properties": {
-          "babyData": { "$ref": "#/components/schemas/BabyData" },
-          "personVouching": { "$ref": "#/components/schemas/PersonVouching" }
-        },
-        "required": ["babyData", "personVouching"]
-      },
       "BabyData": {
         "type": "object",
+        "description": "The newborn's details. Every value is sent as a string, including the numeric ones. Field names follow the adaptor's own request schema, typos included (timeOfbirth).",
         "properties": {
-          "dateOfBirth": { "type": "string", "example": "2024-03-05" },
-          "fatherName": { "type": "string", "example": "Nyarkoa Osei-Akoto" },
-          "forenames": { "type": "string", "example": "Kharis" },
-          "gender": { "type": "string", "example": "Female" },
-          "lightwaveETrackerID": { "type": "string", "example": "00313180/24-03" },
-          "motherName": { "type": "string", "example": "Gifty Osei-Akoto" },
-          "noSiblingsInDelivery": { "type": "string", "example": "0" },
-          "placeOfBirth": { "type": "string", "example": "New Market Health Centre" },
-          "surname": { "type": "string", "example": "Osei" },
-          "timeOfbirth": { "type": "string", "example": "09:34" },
-          "weightAtBirth": { "type": "string", "example": "2.7" },
-          "birthCertificateNumber": { "type": "string", "example": "011803-48-2024" },
-          "babyPicture": { "type": "string", "description": "Base64 encoded image", "example": "...base64 encoded image goes here..." }
-        }
-      },
-      "PersonVouching": {
-        "type": "object",
-        "properties": {
-          "etrackerLightwaveID": { "type": "string", "example": "00313180/24-03" },
-          "ghanaCardPIN": { "type": "string", "example": "GHA-001097272-4" },
-          "relationToBaby": { "type": "string", "example": "Mother" },
-          "relativePhone": { "type": "string", "example": "0248403076" },
-          "relativePicture": { "type": "string", "description": "Base64 encoded image", "example": "...base64 encoded image goes here..." }
-        }
-      },
-      "NationalIdResponse": {
-        "type": "object",
-        "description": "Successful registration response with generated national ID PINs.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "properties": {
-              "babyPin": { "type": "string", "example": "GHA-000000000-1" },
-              "voucherPin": { "type": "string", "example": "GHA-000000000-4" },
-              "etrackerLightwaveId": { "type": "string", "example": "00000000/24-03" },
-              "lightwaveEtrackerId": { "type": "string", "nullable": true, "example": null }
-            }
+          "forenames": {
+            "type": "string",
+            "example": "FIRSTNAME",
+            "description": "Given names."
           },
-          "success": { "type": "boolean", "example": true },
-          "code": { "type": "string", "example": "00" },
-          "msg": { "type": "string", "example": "Saved Successfully" }
+          "surname": {
+            "type": "string",
+            "example": "SURNAME"
+          },
+          "gender": {
+            "type": "string",
+            "example": "Female"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "2024-03-05",
+            "description": "Date of birth, YYYY-MM-DD."
+          },
+          "timeOfbirth": {
+            "type": "string",
+            "example": "09:34",
+            "description": "Time of birth, HH:MM. Spelled 'timeOfbirth' by the service."
+          },
+          "placeOfBirth": {
+            "type": "string",
+            "example": "New Market Health Centre",
+            "description": "Health facility or place where the baby was delivered."
+          },
+          "motherName": {
+            "type": "string",
+            "example": "MOTHER FIRSTNAME SURNAME"
+          },
+          "fatherName": {
+            "type": "string",
+            "example": "FATHER FIRSTNAME SURNAME"
+          },
+          "noSiblingsInDelivery": {
+            "type": "string",
+            "example": "0",
+            "description": "Number of siblings delivered with the baby, as a string."
+          },
+          "weightAtBirth": {
+            "type": "string",
+            "example": "2.7",
+            "description": "Birth weight in kilograms, as a string."
+          },
+          "lightwaveETrackerID": {
+            "type": "string",
+            "example": "00313180/24-03",
+            "description": "The baby's record id in the Lightwave eTracker system."
+          },
+          "birthCertificateNumber": {
+            "type": "string",
+            "example": "011803-48-2024",
+            "description": "Birth certificate number issued by the Births & Deaths Registry."
+          },
+          "babyPicture": {
+            "type": "string",
+            "example": "<base64 image>",
+            "description": "Base64-encoded photograph of the baby."
+          }
+        }
+      },
+      "BabyRegistrationRequest": {
+        "type": "object",
+        "description": "Registration payload. The adaptor's bundled request schema — generated from a single NIA sample, so its own required list is not a vendor statement — lists every field of babyData and personVouching plus merchantKey, which is why nothing is marked required here.",
+        "properties": {
+          "babyData": {
+            "$ref": "#/components/schemas/BabyData"
+          },
+          "personVouching": {
+            "$ref": "#/components/schemas/PersonVouching"
+          },
+          "merchantKey": {
+            "type": "string",
+            "description": "The NIA merchant key. The OpenFn adaptor appends it to every request body from configuration.merchantKey and rejects a body that already carries one."
+          }
         }
       },
       "ErrorResponse": {
         "type": "object",
+        "description": "Error envelope. NIA answers 404 rather than 4xx-by-meaning when verification fails, and the message carries the service's own misspelling of 'Verification'.",
         "properties": {
-          "success": { "type": "boolean", "example": false },
-          "code": { "type": "string", "example": "05" },
-          "data": { "type": "object", "nullable": true, "example": null },
-          "msg": { "type": "string", "example": "Error in Verifiation Process" }
+          "data": {
+            "nullable": true,
+            "description": "Null on errors."
+          },
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "code": {
+            "type": "string",
+            "example": "05"
+          },
+          "msg": {
+            "type": "string",
+            "example": "Error in Verifiation Process"
+          }
+        }
+      },
+      "PersonVouching": {
+        "type": "object",
+        "description": "The relative vouching for the newborn. NIA verifies this person's Ghana Card and photograph before minting the baby's PIN.",
+        "properties": {
+          "ghanaCardPIN": {
+            "type": "string",
+            "example": "GHA-000000000-0",
+            "description": "The voucher's existing Ghana Card PIN."
+          },
+          "relationToBaby": {
+            "type": "string",
+            "example": "Mother"
+          },
+          "relativePhone": {
+            "type": "string",
+            "example": "0200000000"
+          },
+          "etrackerLightwaveID": {
+            "type": "string",
+            "example": "00313180/24-03",
+            "description": "The voucher's record id in the Lightwave eTracker system."
+          },
+          "relativePicture": {
+            "type": "string",
+            "example": "<base64 image>",
+            "description": "Base64-encoded photograph of the voucher."
+          }
+        }
+      },
+      "Registration": {
+        "type": "object",
+        "description": "The identifiers NIA mints for a registered newborn and the relative who vouched for it.",
+        "properties": {
+          "babyPin": {
+            "type": "string",
+            "example": "GHA-000000000-1",
+            "description": "The Ghana Card PIN issued to the baby."
+          },
+          "voucherPin": {
+            "type": "string",
+            "example": "GHA-000000000-4",
+            "description": "The Ghana Card PIN of the vouching relative."
+          },
+          "etrackerLightwaveId": {
+            "type": "string",
+            "example": "00000000/24-03",
+            "description": "The Lightwave eTracker id echoed back from babyData.lightwaveETrackerID.",
+            "nullable": true
+          },
+          "lightwaveEtrackerId": {
+            "type": "string",
+            "description": "Second spelling of the eTracker id; null in every observed response.",
+            "nullable": true
+          }
+        }
+      },
+      "RegistrationList": {
+        "type": "object",
+        "description": "Response envelope carrying a list of registrations.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Registration"
+            }
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "code": {
+            "type": "string",
+            "example": "00",
+            "description": "NIA status code; '00' on success."
+          },
+          "msg": {
+            "type": "string",
+            "example": "Saved Successfully",
+            "description": "Human-readable outcome."
+          }
+        }
+      },
+      "RegistrationResponse": {
+        "type": "object",
+        "description": "Response envelope carrying one registration. The OpenFn adaptor puts this whole envelope on state.data.",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Registration"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "code": {
+            "type": "string",
+            "example": "00",
+            "description": "NIA status code; '00' on success."
+          },
+          "msg": {
+            "type": "string",
+            "example": "Saved Successfully",
+            "description": "Human-readable outcome."
+          }
         }
       }
     }

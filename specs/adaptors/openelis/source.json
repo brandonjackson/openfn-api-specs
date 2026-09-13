@@ -1,13 +1,45 @@
 {
   "adaptor": "openelis",
   "npm": "@openfn/language-openelis",
+
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://github.com/OpenFn/adaptors/tree/main/packages/openelis/src",
-    "https://github.com/DIGI-UW/OpenELIS-Global-2/tree/develop/src/main/java/org/openelisglobal",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openelis/ast.json"
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+
+  "attempts": [
+    { "kind": "openapi", "url": "https://demo.openelis-global.org/api/OpenELIS-Global/v3/api-docs", "result": "not-found", "note": "springdoc well-known path; returns the webapp's HTML login shell, not a spec. pom.xml declares neither springdoc-openapi nor springfox, so the app publishes no /v3/api-docs or /swagger.json." },
+    { "kind": "openapi", "url": "https://demo.openelis-global.org/api/OpenELIS-Global/swagger.json", "result": "not-found", "note": "HTML shell (200 but text/html)." },
+    { "kind": "openapi", "url": "https://demo.openelis-global.org/api/OpenELIS-Global/openapi.json", "result": "not-found", "note": "HTML shell (200 but text/html)." },
+    { "kind": "openapi", "url": "https://raw.githubusercontent.com/DIGI-UW/OpenELIS-Global-2/develop/openapi.json", "result": "not-found", "note": "also tried openapi.yaml, swagger.json, docs/openapi.json, api-docs.json and src/main/resources/openapi.json at the repository root — all 404." },
+    { "kind": "openapi", "url": "https://github.com/DIGI-UW/OpenELIS-Global-2/tree/develop/specs", "result": "rejected", "note": "the repo does carry OpenAPI 3.0.3 files under specs/<feature>/contracts/ (e.g. 008-patient-merge, 010-sample-management, OGC-949-unified-test-catalog), but each describes one in-design feature slice, not the API. Not a whole-API machine spec." },
+    { "kind": "github", "url": "https://github.com/DIGI-UW/OpenELIS-Global-2", "result": "used", "note": "vendor source of truth. Every path, method, path/query parameter and request-body type below was extracted mechanically from the @RestController / @Controller+@ResponseBody surface at commit e57a53399c2134fe3ff58009119cc05906c61e5e (pom version 3.2.2.0, develop, 2026-09-12)." },
+    { "kind": "apis-guru", "url": "https://api.apis.guru/v2/list.json", "result": "not-found", "note": "no openelis / openelis-global entry." },
+    { "kind": "docs", "url": "https://docs.openelis-global.org/en/latest/", "result": "rejected", "note": "deployment and user documentation; no REST endpoint reference." },
+    { "kind": "fhir-ig", "url": "https://digi-uw.github.io/openelis-global2-fhir-ig/", "result": "used", "note": "OpenELIS Global 2 FHIR Implementation Guide — confirms the FHIR R4 interop surface (Patient, ServiceRequest, Specimen, Observation, DiagnosticReport, Task) modelled under /fhir." }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The openelis adaptor has no named operations; it re-exports a generic http namespace and prefixes every request with {baseUrl}/api/OpenELIS-Global/rest/ using HTTP Basic auth. Endpoints were documented from the OpenELIS-Global-2 Spring @RestController surface (v3.2.1.x): dashboards, patient search/management, sample orders, results, result validation, and reference dictionaries. Server base URL modeled as {host}/api/OpenELIS-Global with paths under /rest/. Large POST forms (SamplePatientEntry, LogbookResults, AccessionValidation) are modeled at a focused level. The adaptor JSDoc's 'referral-reasons' path has no matching server controller and was not included."
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source"],
+
+  "modifications": [],
+
+  "sources": [
+    "https://github.com/DIGI-UW/OpenELIS-Global-2",
+    "https://github.com/DIGI-UW/OpenELIS-Global-2/blob/develop/src/main/java/org/openelisglobal/dataexchange/fhir/controller/FhirQueryRestController.java",
+    "https://github.com/DIGI-UW/OpenELIS-Global-2/blob/develop/docker-compose.yml",
+    "https://github.com/DIGI-UW/OpenELIS-Global-2/blob/develop/tomcat/oe_server.xml",
+    "https://github.com/DIGI-UW/OpenELIS-Global-2/blob/develop/volume/nginx/nginx.conf",
+    "https://github.com/DIGI-UW/OpenELIS-Global-2/blob/develop/volume/properties/common.properties",
+    "https://digi-uw.github.io/openelis-global2-fhir-ig/",
+    "https://docs.openelis-global.org/en/latest/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openelis/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openelis/types/http.d.ts",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openelis/dist/index.cjs"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "OpenELIS Global 2 is an open-source laboratory information system. It publishes no machine-readable API spec (no springdoc/springfox in pom.xml, no committed whole-API OpenAPI file), so this document was generated from the vendor's own source of truth: the Spring controller surface of DIGI-UW/OpenELIS-Global-2 at commit e57a5339 (3.2.2.0). Every @RestController and every @Controller method carrying @ResponseBody or returning ResponseEntity was extracted with its HTTP verb, class-level and method-level mapping, @PathVariable/@RequestParam parameters and @RequestBody type — 1048 operations under the webapp's servlet context /api/OpenELIS-Global (servers[0]), which is why coverage is 'full': it is the whole declared REST surface, not a hand-picked slice. Completeness is 'best-effort' because response bodies are only modelled where the vendor type is known: 18 named schemas (the core lab-interop objects plus FHIR Bundle/FhirResource/CapabilityStatement/OperationOutcome); every other operation declares an honest untyped or loosely-typed JSON response naming the Java type it serializes, and 'required' flags on those bodies are not claimed at all. servers[1] is the companion HAPI FHIR R4 store (the external-fhir-api service, org.openelisglobal.fhirstore.uri) that OpenELIS deploys alongside the webapp and that holds the same lab work as FHIR resources: it serves /fhir/** with full CRUD, while the webapp proxies read-only queries of those resources under /rest/fhir/** (FhirQueryRestController). Known gaps: the adaptor's own JSDoc example http.get('referral-reasons') has no matching controller in the vendor source — the real endpoint is GET /rest/displayList/REFERRAL_REASONS — and the spec follows the source, not the JSDoc; deployments running an older release than 3.2.2.0 will expose a subset of these paths; and file-upload endpoints taking @ModelAttribute/MultipartFile are declared as untyped multipart bodies."
 }

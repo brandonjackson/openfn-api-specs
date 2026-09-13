@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/SummaryConfig",
+  "title": "SummaryConfig",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/SummaryConfig",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "fields": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "emptyValueMessage": {
+                "description": "Default message displayed when the field value is empty.",
+                "$ref": "TranslationConfigOutput.json"
+              },
+              "conditionals": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "SHOW"
+                    },
+                    "conditional": {
+                      "$ref": "Conditional.json"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "conditional"
+                  ],
+                  "additionalProperties": false,
+                  "description": "If 'SHOW' conditional is defined, the component is shown to the user only if the condition is met"
+                }
+              },
+              "id": {
+                "type": "string",
+                "description": "Identifier of the summary field."
+              },
+              "value": {
+                "description": "Field value template supporting variables from configuration and EventMetadata (e.g. \"{informant.phoneNo} {informant.email}\").",
+                "$ref": "TranslationConfigOutput.json"
+              },
+              "label": {
+                "$ref": "TranslationConfigOutput.json"
+              }
+            },
+            "required": [
+              "id",
+              "value",
+              "label"
+            ],
+            "additionalProperties": false,
+            "description": "Custom field defined for the summary view."
+          },
+          {
+            "type": "object",
+            "properties": {
+              "emptyValueMessage": {
+                "description": "Default message displayed when the field value is empty.",
+                "$ref": "TranslationConfigOutput.json"
+              },
+              "conditionals": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "SHOW"
+                    },
+                    "conditional": {
+                      "$ref": "Conditional.json"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "conditional"
+                  ],
+                  "additionalProperties": false,
+                  "description": "If 'SHOW' conditional is defined, the component is shown to the user only if the condition is met"
+                }
+              },
+              "fieldId": {
+                "type": "string"
+              },
+              "label": {
+                "description": "Overrides the default label from the referenced field when provided.",
+                "$ref": "TranslationConfigOutput.json"
+              }
+            },
+            "required": [
+              "fieldId"
+            ],
+            "additionalProperties": false,
+            "description": "Field referencing existing event data by field ID."
+          }
+        ]
+      },
+      "description": "Fields displayed in the event summary view."
+    }
+  },
+  "required": [
+    "fields"
+  ],
+  "additionalProperties": false,
+  "description": "Configuration of the event overview page. Defines which declaration fields appear in the record summary, optionally with custom labels, empty-value messages, and templated values."
+}

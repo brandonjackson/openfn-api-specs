@@ -3,13 +3,71 @@
   "npm": "@openfn/language-msupply",
   "origin": "converted",
   "upstreamFormat": "graphql-sdl",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://demo-open.msupply.org/graphql",
+    "format": "graphql-introspection",
+    "contentHash": "sha256:65962a632101e56398fac5d49420e1aed9f047980ad0022ddf8b68975dad0f19",
+    "fetchedAt": "2026-09-13"
+  },
+  "attempts": [
+    {
+      "kind": "graphql",
+      "url": "https://demo-open.msupply.org/graphql",
+      "result": "used",
+      "note": "Standard GraphQL introspection query against the vendor's own demo server (apiVersion 3.1.0 / serverVersion 3.01.00). Answers unauthenticated. The verbatim response body is committed as upstream.json and is the source of truth for openapi.json."
+    },
+    {
+      "kind": "graphql",
+      "url": "https://raw.githubusercontent.com/msupply-foundation/open-msupply/develop/server/schema.graphql",
+      "result": "not-found",
+      "note": "client/codegen.yml points graphql-codegen at ../server/schema.graphql, but that SDL file is generated at build time and is not committed on develop or main (404). The introspection document from the running server carries the same schema and is a JSON artifact the registry can commit verbatim."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://demo-open.msupply.org/openapi.json",
+      "result": "not-found",
+      "note": "404. /swagger.json also 404; /v3/api-docs returns the client SPA shell (HTML), not a spec."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.msupply.foundation/openapi.json",
+      "result": "not-found",
+      "note": "404. The docs site (docs.msupply.foundation) is prose/Docusaurus with no machine spec behind it; Open mSupply documents its API as GraphQL, not REST."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/msupply-foundation",
+      "result": "not-found",
+      "note": "Searched the vendor GitHub org (open-msupply, openmsupply-client, open-msupply-plugins, open-msupply-database-schema, open-msupply-mcp-server) for openapi/swagger/api-spec files: none. The API surface in the org is *.graphql operation documents against the server schema."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Not listed among the 2529 apis.guru entries."
+    },
+    {
+      "kind": "postman",
+      "result": "not-found",
+      "note": "No mSupply Foundation public Postman workspace or SwaggerHub organisation found."
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source", "live-introspection"],
+  "modifications": [],
   "sources": [
+    "https://demo-open.msupply.org/graphql",
+    "https://github.com/msupply-foundation/open-msupply",
+    "https://github.com/msupply-foundation/open-msupply/blob/develop/client/codegen.yml",
+    "https://docs.msupply.foundation",
     "https://cdn.jsdelivr.net/npm/@openfn/language-msupply/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-msupply/dist/index.cjs",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/msupply",
-    "https://github.com/msupply-foundation/open-msupply",
-    "https://docs.msupply.foundation"
+    "https://github.com/OpenFn/adaptors/tree/main/packages/msupply"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Open mSupply exposes a single GraphQL endpoint (POST {baseUrl}/graphql, body {query, variables}, response {data, errors}). No published OpenAPI exists; this spec is derived (converted) from the GraphQL query/mutation strings embedded in the adaptor dist bundle (queries.js) plus the ast.json operation surface. Coverage: the 4 public adaptor operations (getItemsWithStats -> itemsWithStats query; insertOutboundShipment -> insertOutboundShipment mutation; upsertOutboundShipment -> batchOutboundShipment mutation; query -> generic GraphQL), plus the internal authToken login mutation the adaptor runs before requests. CAVEAT: OpenAPI 3.0 allows only one operation per method per path, so each GraphQL operation is modelled as a distinct path variant under /graphql (e.g. /graphql#itemsWithStats) solely to carry a unique operationId and response schema; at runtime all of them are a POST to the same /graphql endpoint. Response component schemas (ItemNode, ItemStats, ItemConnector, InvoiceNode, BatchOutboundShipmentResult, etc.) were reconstructed from the selection sets in the adaptor's GraphQL documents, not from the full Open mSupply SDL, so they are a faithful subset of the fields the adaptor actually requests. Server base URL is a placeholder (demo-open.msupply.org); real deployments are self-hosted and set via the adaptor baseUrl credential."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "Open mSupply is the mSupply Foundation's open-source LMIS for public health supply chains. It has no REST API and publishes no OpenAPI: the whole server surface is one GraphQL endpoint, POST {baseUrl}/graphql, body {query, variables}, response {data, errors}. upstream.json is the verbatim GraphQL introspection document fetched from the vendor's own demo server (apiVersion 3.1.0), and openapi.json is a mechanical conversion of it: every root field of Queries (152) and Mutations (156) becomes one operation, and every named GraphQL type (593 objects, 342 inputs, 268 unions, 126 enums, 120 interfaces) becomes a component schema, so this is the whole schema and not the slice the adaptor selects. Coverage is therefore full and the conversion is complete for query/mutation operations. Two deliberate modelling choices: (1) OpenAPI 3.0 allows one operation per method per path, so each root field is a distinct '/graphql#<field>' path variant carrying its own operationId and response envelope — at runtime every one of them is the same POST /graphql, and the generic '/graphql' operation (graphqlRequest) is the adaptor's query() helper; (2) output object schemas declare no required properties, because a GraphQL response only carries the fields the caller's selection set asked for, so even a non-null field is absent unless selected. Not converted as operations: the three Subscriptions root fields (ping, syncInfoUpdated, initialisationStatusUpdated), which are served over the GraphQL subscription transport rather than an HTTP POST; their types are still present under components.schemas. The adaptor surface was cross-checked against the schema — getItemsWithStats runs root field 'items', insertOutboundShipment runs 'insertOutboundShipment', upsertOutboundShipment runs 'batchOutboundShipment', and the implicit login runs the 'authToken' query — all four exist in upstream.json with the argument names the adaptor passes. The specUrl is a live server, so upstream.contentHash will move whenever the demo is upgraded; that is a genuine upstream-changed signal, not a capture error. servers[0].url is the vendor demo; real deployments are self-hosted and set by the adaptor's baseUrl credential."
 }

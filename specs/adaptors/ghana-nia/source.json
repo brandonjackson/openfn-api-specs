@@ -3,12 +3,71 @@
   "npm": "@openfn/language-ghana-nia",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-nia/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-nia/types/index.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-nia/dist/index.cjs",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/ghana-nia"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://selfie.imsgh.org:2035/awopa/api/v1/openapi.json",
+      "result": "not-found",
+      "note": "No response from the API host (connection refused/timed out from this environment). /v3/api-docs, /swagger.json and /awopa/swagger-ui.html behave the same — the service is not reachable without NIA-issued network access, let alone self-describing."
+    },
+    {
+      "kind": "docs",
+      "url": "https://nia.gov.gh/",
+      "result": "not-found",
+      "note": "NIA's institutional site. Citizen services and verification products only; no developer portal, no API reference, no mention of AWOPA."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No Ghana / NIA / AWOPA / imsgh entry among the 2529 listed APIs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.swaggerhub.com/specs?query=awopa",
+      "result": "not-found",
+      "note": "Nothing related on SwaggerHub for 'awopa', 'nia' or 'ghana card'."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/_api/ws/proxy (search-all: \"AWOPA baby registration\", \"NIA Ghana baby registration\")",
+      "result": "not-found",
+      "note": "Postman's public-network search returns zero collections, APIs or workspaces for AWOPA or for NIA Ghana baby registration. (Contrast ghana-bdr, whose vendor does publish a public collection — the same hunt found it immediately.)"
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-nia/src/mock.js",
+      "result": "used",
+      "note": "The adaptor's bundled mock server carries NIA's own sample request and response bodies verbatim, including the service's 'Verifiation' typo and its habit of answering 404 on a failed verification. Together with src/util.js (path, headers, merchantKey handling) and src/schema/request.json this is the only description of the API that exists."
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/brandonjackson/openfn-mocker/tree/main/src/systems/ghana-nia",
+      "result": "used",
+      "note": "openfn-mocker's ghana-nia plugin, the source for the two GET reads on the registration resource. They are not vendor-documented and no named adaptor operation calls them; they are recorded as recovered surface and labelled as such in the spec."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The Ghana NIA AWOPA baby-registration service (base https://selfie.imsgh.org:2035) is a private government API with no published OpenAPI or vendor docs. Spec synthesized from the adaptor's public operations and the mock client bundled in the adaptor's dist/index.cjs, which contains the real endpoint path (POST /awopa/api/v1/baby/registration) and verbatim sample request/response bodies. The generic get/post operations accept arbitrary resource paths; only the registration endpoint is modeled in detail. Field names and the source's spelling (e.g. 'timeOfbirth', 'Verifiation') are preserved as they appear in the adaptor."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "mock-plugin"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/tree/main/packages/ghana-nia",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-nia/src/util.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-nia/src/mock.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ghana-nia/src/schema/request.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-nia/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ghana-nia/configuration-schema.json",
+    "https://docs.openfn.org/adaptors/packages/ghana-nia-docs",
+    "https://nia.gov.gh/"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "The National Identification Authority's AWOPA service, which mints a Ghana Card PIN for a newborn from the baby's details plus a vouching relative's card and photograph. It is a private government API: the hunt above found no machine spec, no developer portal and no reference docs anywhere, and the API host does not answer from the open internet — hence completeness best-effort / private-api rather than a docs-only claim. Everything here is reverse-engineered from the adaptor package (the request path and headers in src/util.js, the merchantKey the adaptor appends to every body, the JSON request schema in src/schema/request.json, and the verbatim NIA sample request/response bodies in src/mock.js) and from openfn-mocker's ghana-nia plugin. 'Full' therefore means everything recoverable: the one operation NIA is known to expose (POST /awopa/api/v1/baby/registration) plus the two reads on the same resource that the mock models for the adaptor's generic get(); those two are labelled in their descriptions as recovered, unverified surface so a reader never mistakes them for documented endpoints. Nothing is marked required: the adaptor's bundled schema was generated from a single sample (its own comments say so), so its required list is not a statement by NIA. Field spellings are preserved as the service uses them (timeOfbirth, 'Error in Verifiation Process'). Known adaptor bug worth keeping in view: get() throws client-side before issuing a request, because the shared request helper dereferences data.merchantKey before checking that a body was supplied."
 }

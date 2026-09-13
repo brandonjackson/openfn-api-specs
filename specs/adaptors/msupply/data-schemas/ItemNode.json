@@ -5,18 +5,21 @@
   "x-openfn-adaptor": "msupply",
   "x-source": {
     "openapi": "#/components/schemas/ItemNode",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A catalogue item.",
   "properties": {
+    "__typename": {
+      "type": "string",
+      "description": "GraphQL type name of this object."
+    },
     "id": {
       "type": "string"
     },
-    "code": {
+    "name": {
       "type": "string"
     },
-    "name": {
+    "code": {
       "type": "string"
     },
     "unitName": {
@@ -25,14 +28,167 @@
         "null"
       ]
     },
-    "defaultPackSize": {
-      "type": "number"
+    "type": {
+      "$ref": "ItemNodeType.json"
     },
-    "availableStockOnHand": {
-      "type": "number"
+    "strength": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venCategory": {
+      "$ref": "VenCategoryType.json"
+    },
+    "isVaccine": {
+      "type": "boolean"
+    },
+    "defaultPackSize": {
+      "type": "number",
+      "format": "double"
+    },
+    "doses": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "restrictedLocationTypeId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customFields": {
+      "description": "Properties v2 values for this item. The raw `item.custom_fields` JSONB blob is filtered server-side to keys that are (a) defined in `custom_field` and not soft-deleted, (b) marked visible for the `item` table via `custom_field_scope`. Stray keys never reach the client. Imported from legacy mSupply `[item]user_field_1..7`; read-only."
+    },
+    "restrictedLocationType": {
+      "anyOf": [
+        {
+          "$ref": "LocationTypeNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "stats": {
-      "$ref": "ItemStats.json"
+      "$ref": "ItemStatsNode.json"
+    },
+    "availableBatches": {
+      "$ref": "StockLineConnector.json"
+    },
+    "availableStockOnHand": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "stockOnHand": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Total stock on hand (all packs, not just available) for this item + store. Backed by the same batched `ItemsStockOnHandLoader` as `availableStockOnHand`, so unlike `stats { stockOnHand }` it does not trigger the item-stats / AMC backend-plugin path."
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "$ref": "ItemVariantNode.json"
+      }
+    },
+    "ancillaryItems": {
+      "type": "array",
+      "items": {
+        "$ref": "AncillaryItemNode.json"
+      },
+      "description": "Ancillary items configured against this item — i.e. items that should be ordered alongside it (e.g. syringes that go with a vaccine)."
+    },
+    "ancillaryFor": {
+      "type": "array",
+      "items": {
+        "$ref": "AncillaryItemNode.json"
+      },
+      "description": "Ancillary item links where this item is the ancillary supply for some other (principal) item."
+    },
+    "itemDirections": {
+      "type": "array",
+      "items": {
+        "$ref": "ItemDirectionNode.json"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "WarningNode.json"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "ItemCategoryNode.json"
+      }
+    },
+    "msupplyUniversalCode": {
+      "type": "string",
+      "deprecated": true
+    },
+    "universalCode": {
+      "type": "string"
+    },
+    "msupplyUniversalName": {
+      "type": "string"
+    },
+    "outerPackSize": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "volumePerOuterPack": {
+      "type": "number",
+      "format": "double"
+    },
+    "volumePerPack": {
+      "type": "number",
+      "format": "double"
+    },
+    "margin": {
+      "type": "number",
+      "format": "double"
+    },
+    "weight": {
+      "type": "number",
+      "format": "double"
+    },
+    "atcCategory": {
+      "type": "string"
+    },
+    "ddd": {
+      "type": "string"
+    },
+    "masterLists": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "MasterListNode.json"
+      }
+    },
+    "itemStoreProperties": {
+      "anyOf": [
+        {
+          "$ref": "ItemStorePropertiesNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "programs": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "ProgramNode.json"
+      }
+    },
+    "userField4": {
+      "type": "boolean"
     }
   }
 }

@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/PageConfig",
+  "title": "PageConfig",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/PageConfig",
+    "capturedAt": "2026-09-13"
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the page"
+        },
+        "title": {
+          "description": "Header title of the page",
+          "$ref": "TranslationConfigOutput.json"
+        },
+        "requireCompletionToContinue": {
+          "default": false,
+          "description": "If true, all required fields must be filled before continuing to the next page",
+          "type": "boolean"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "FieldConfig.json"
+          },
+          "description": "Fields to be rendered on the page"
+        },
+        "conditional": {
+          "description": "Page will be shown if condition is met. If conditional is not defined, the page will be always shown.",
+          "$ref": "Conditional.json"
+        },
+        "type": {
+          "default": "FORM",
+          "type": "string",
+          "const": "FORM"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "requireCompletionToContinue",
+        "fields",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the page"
+        },
+        "title": {
+          "description": "Header title of the page",
+          "$ref": "TranslationConfigOutput.json"
+        },
+        "requireCompletionToContinue": {
+          "default": false,
+          "description": "If true, all required fields must be filled before continuing to the next page",
+          "type": "boolean"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "FieldConfig.json"
+          },
+          "description": "Fields to be rendered on the page"
+        },
+        "conditional": {
+          "description": "Page will be shown if condition is met. If conditional is not defined, the page will be always shown.",
+          "$ref": "Conditional.json"
+        },
+        "type": {
+          "type": "string",
+          "const": "VERIFICATION"
+        },
+        "actions": {
+          "$ref": "VerificationActionConfig.json"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "requireCompletionToContinue",
+        "fields",
+        "type",
+        "actions"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "description": "Configuration for a single page in a form. Either a form page with fields and a continue button, or a verification page with verify/cancel options.",
+  "type": "object"
+}

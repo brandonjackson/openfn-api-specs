@@ -5,51 +5,43 @@
   "x-openfn-adaptor": "commcare",
   "x-source": {
     "openapi": "#/components/schemas/ReportData",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "Configurable (UCR) report data response.",
+  "description": "Rows of a configurable report.",
   "properties": {
-    "data": {
-      "type": "array",
-      "description": "The report rows.",
-      "items": {
-        "type": "object",
-        "additionalProperties": true
-      },
-      "example": [
-        {
-          "district": "North",
-          "total_cases": 42
-        }
-      ]
-    },
     "columns": {
       "type": "array",
       "items": {
+        "$ref": "ReportDataColumn.json"
+      },
+      "description": "Columns present in each row."
+    },
+    "data": {
+      "type": "array",
+      "items": {
         "type": "object",
-        "properties": {
-          "slug": {
-            "type": "string",
-            "example": "district"
-          },
-          "header": {
-            "type": "string",
-            "example": "District"
-          }
-        }
-      }
+        "description": "One report row, keyed by column slug.",
+        "properties": {},
+        "additionalProperties": true
+      },
+      "description": "The rows in this page."
     },
     "total_records": {
       "type": "integer",
-      "example": 1
+      "description": "Total number of rows matching the query."
     },
     "next_page": {
       "type": [
         "string",
         "null"
       ],
-      "example": null
+      "description": "URL of the next page, or an empty string on the last page."
+    },
+    "report_name": {
+      "type": "string",
+      "description": "Name of the report."
     }
-  }
+  },
+  "additionalProperties": true
 }

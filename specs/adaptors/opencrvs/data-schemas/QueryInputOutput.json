@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/QueryInputOutput",
+  "title": "QueryInputOutput",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/QueryInputOutput",
+    "capturedAt": "2026-09-13"
+  },
+  "anyOf": [
+    {
+      "oneOf": [
+        {
+          "$ref": "FuzzyOutput.json"
+        },
+        {
+          "$ref": "ExactOutput.json"
+        },
+        {
+          "$ref": "RangeOutput.json"
+        },
+        {
+          "$ref": "WithinOutput.json"
+        },
+        {
+          "$ref": "AnyOfOutput.json"
+        }
+      ],
+      "type": "object",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "fuzzy": "#/components/schemas/FuzzyOutput",
+          "exact": "#/components/schemas/ExactOutput",
+          "range": "#/components/schemas/RangeOutput",
+          "within": "#/components/schemas/WithinOutput",
+          "anyOf": "#/components/schemas/AnyOfOutput"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "$ref": "QueryInputOutput.json"
+      }
+    }
+  ]
+}

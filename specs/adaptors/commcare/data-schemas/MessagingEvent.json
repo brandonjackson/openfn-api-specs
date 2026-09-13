@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "commcare/MessagingEvent",
+  "title": "MessagingEvent",
+  "x-openfn-adaptor": "commcare",
+  "x-source": {
+    "openapi": "#/components/schemas/MessagingEvent",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "A messaging event: one attempt to reach a recipient, with its messages.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Event identifier."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Project space the event belongs to."
+    },
+    "content_type": {
+      "type": "string",
+      "description": "Kind of content sent, e.g. `sms`, `email`."
+    },
+    "date": {
+      "type": "string",
+      "description": "When the event was created.",
+      "format": "date-time"
+    },
+    "date_last_activity": {
+      "type": "string",
+      "description": "When the event last changed.",
+      "format": "date-time"
+    },
+    "case_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Case the event is about."
+    },
+    "form": {
+      "type": "object",
+      "description": "Form associated with the event.",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "error": {
+      "type": "object",
+      "description": "Error detail when the event failed.",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "string",
+      "description": "Event status."
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "$ref": "MessagingSubEvent.json"
+      },
+      "description": "Messages sent for this event."
+    },
+    "recipient": {
+      "type": "object",
+      "description": "Who the event was addressed to.",
+      "properties": {
+        "recipient_id": {
+          "type": "string",
+          "description": "Identifier of the recipient."
+        },
+        "type": {
+          "type": "string",
+          "description": "Recipient type, e.g. `case`, `mobile_worker`."
+        },
+        "name": {
+          "type": "string",
+          "description": "Recipient name."
+        }
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "description": "What triggered the event.",
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "description": "Identifier of the trigger."
+        },
+        "type": {
+          "type": "string",
+          "description": "Trigger type, e.g. `conditional_alert`, `broadcast`."
+        },
+        "name": {
+          "type": "string",
+          "description": "Trigger name."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -5,20 +5,347 @@
   "x-openfn-adaptor": "msupply",
   "x-source": {
     "openapi": "#/components/schemas/InvoiceNode",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "An outbound shipment invoice.",
   "properties": {
     "__typename": {
       "type": "string",
-      "example": "InvoiceNode"
+      "description": "GraphQL type name of this object."
     },
     "id": {
       "type": "string"
     },
+    "otherPartyName": {
+      "type": "string"
+    },
+    "otherPartyId": {
+      "type": "string"
+    },
+    "user": {
+      "anyOf": [
+        {
+          "$ref": "UserNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "User that last edited invoice, if user is not found in system default unknown user is returned Null is returned for transfers, where inbound has not been edited yet Null is also returned for system created invoices like inventory adjustments"
+    },
+    "type": {
+      "$ref": "InvoiceNodeType.json"
+    },
+    "status": {
+      "$ref": "InvoiceNodeStatus.json"
+    },
     "invoiceNumber": {
-      "type": "integer"
+      "type": "integer",
+      "format": "int32"
+    },
+    "theirReference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transportReference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "onHold": {
+      "type": "boolean"
+    },
+    "isCancellation": {
+      "type": "boolean"
+    },
+    "createdDatetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "allocatedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "pickedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "shippedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "deliveredDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "receivedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "verifiedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "backdatedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "cancelledDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "colour": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customFields": {
+      "description": "Properties v2 values for this invoice. The raw `invoice.custom_fields` JSONB blob is filtered server-side to keys that are (a) defined in `custom_field` and not soft-deleted, (b) marked visible for this invoice type's scope (e.g. `\"inbound_shipment\"`) via `custom_field_scope`. Stray keys never reach the client. `None` for types with no custom fields scope (repack, inventory adjustments)."
+    },
+    "requisition": {
+      "anyOf": [
+        {
+          "$ref": "RequisitionNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Response Requisition that is the origin of this Outbound Shipment Or Request Requisition for Inbound Shipment that Originated from Outbound Shipment (linked through Response Requisition)"
+    },
+    "linkedShipment": {
+      "anyOf": [
+        {
+          "$ref": "InvoiceNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Inbound Shipment <-> Outbound Shipment, where Inbound Shipment originated from Outbound Shipment"
+    },
+    "lines": {
+      "$ref": "InvoiceLineConnector.json"
+    },
+    "pricing": {
+      "$ref": "PricingNode.json"
+    },
+    "taxPercentage": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "otherParty": {
+      "$ref": "NameNode.json"
+    },
+    "clinician": {
+      "anyOf": [
+        {
+          "$ref": "ClinicianNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "clinicianId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "patient": {
+      "anyOf": [
+        {
+          "$ref": "PatientNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "currency": {
+      "anyOf": [
+        {
+          "$ref": "CurrencyNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "currencyRate": {
+      "type": "number",
+      "format": "double"
+    },
+    "chargesLocalCurrency": {
+      "type": "number",
+      "format": "double"
+    },
+    "chargesForeignCurrency": {
+      "type": "number",
+      "format": "double"
+    },
+    "originalShipment": {
+      "anyOf": [
+        {
+          "$ref": "InvoiceNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Inbound Shipment that is the origin of this Supplier Return OR Outbound Shipment that is the origin of this Customer Return"
+    },
+    "diagnosisId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "diagnosis": {
+      "anyOf": [
+        {
+          "$ref": "DiagnosisNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "programId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "program": {
+      "anyOf": [
+        {
+          "$ref": "ProgramNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "store": {
+      "$ref": "StoreNode.json"
+    },
+    "nameInsuranceJoinId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "insurancePolicy": {
+      "anyOf": [
+        {
+          "$ref": "InsurancePolicyNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "insuranceDiscountAmount": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "insuranceDiscountPercentage": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "expectedDeliveryDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "defaultDonor": {
+      "anyOf": [
+        {
+          "$ref": "NameNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "documents": {
+      "$ref": "SyncFileReferenceConnector.json"
+    },
+    "shippingMethod": {
+      "anyOf": [
+        {
+          "$ref": "ShippingMethodNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "purchaseOrderId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "purchaseOrder": {
+      "anyOf": [
+        {
+          "$ref": "PurchaseOrderNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "inboundType": {
+      "$ref": "InboundNodeType.json"
     }
   }
 }

@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/CountryConfigDataField",
+  "title": "CountryConfigDataField",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/CountryConfigDataField",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of the field."
+    },
+    "label": {
+      "description": "Human-readable label of the field.",
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "parent": {
+      "description": "Reference to the parent field or fields. When a parent field changes, this field is reset.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "$$field": {
+              "type": "string",
+              "description": "Id of the field to reference"
+            },
+            "$$subfield": {
+              "default": [],
+              "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "$$code": {
+              "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "$$field",
+            "$$subfield"
+          ],
+          "additionalProperties": false,
+          "description": "Reference to a field value, with an optional client-side computation applied."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$$field": {
+                "type": "string",
+                "description": "Id of the field to reference"
+              },
+              "$$subfield": {
+                "default": [],
+                "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "$$code": {
+                "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "$$field",
+              "$$subfield"
+            ],
+            "additionalProperties": false,
+            "description": "Reference to a field value, with an optional client-side computation applied."
+          }
+        }
+      ]
+    },
+    "required": {
+      "description": "Indicates whether the field is mandatory.",
+      "default": false,
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "message": {
+              "description": "Custom required validation message",
+              "$ref": "CountryConfigTranslationConfig.json"
+            }
+          },
+          "required": [
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "conditionals": {
+      "description": "Conditions determining when the field is shown or enabled. By default, the field is always shown and enabled.",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigFieldConditional.json"
+      }
+    },
+    "secured": {
+      "description": "Indicates whether the field is secured. Secured fields are not indexed for search and are only visible when explicitly assigned.",
+      "default": false,
+      "type": "boolean"
+    },
+    "placeholder": {
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "validation": {
+      "description": "Additional validation rules applied to the field.",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "CountryConfigValidationConfig.json"
+      }
+    },
+    "helperText": {
+      "$ref": "CountryConfigTranslationConfig.json"
+    },
+    "hideLabel": {
+      "default": false,
+      "type": "boolean"
+    },
+    "uncorrectable": {
+      "description": "Indicates whether the field can be modified during record correction.",
+      "default": false,
+      "type": "boolean"
+    },
+    "value": {
+      "description": "Reference to the source field or fields. When a value is defined, it is copied from the parent field when changed. If multiple references are provided, the first truthy value is used. A FieldReference with $$code computes the value via a custom client-side function.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "$$field": {
+              "type": "string",
+              "description": "Id of the field to reference"
+            },
+            "$$subfield": {
+              "default": [],
+              "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "$$code": {
+              "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "$$field",
+            "$$subfield"
+          ],
+          "additionalProperties": false,
+          "description": "Reference to a field value, with an optional client-side computation applied."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$$field": {
+                "type": "string",
+                "description": "Id of the field to reference"
+              },
+              "$$subfield": {
+                "default": [],
+                "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "$$code": {
+                "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "$$field",
+              "$$subfield"
+            ],
+            "additionalProperties": false,
+            "description": "Reference to a field value, with an optional client-side computation applied."
+          }
+        }
+      ]
+    },
+    "analytics": {
+      "description": "Indicates whether the field is included in analytics. When enabled, its value becomes available in the analytics dashboard.",
+      "default": false,
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string",
+      "const": "DATA"
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "subtitle": {
+          "$ref": "CountryConfigTranslationConfig.json"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID for the data entry."
+                  },
+                  "label": {
+                    "$ref": "CountryConfigTranslationConfig.json"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "$ref": "CountryConfigTranslationConfig.json"
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "$$field": {
+                            "type": "string",
+                            "description": "Id of the field to reference"
+                          },
+                          "$$subfield": {
+                            "default": [],
+                            "description": "If the FieldValue is an object, subfield can be used to refer to e.g. `[\"foo\", \"bar\"]` in `{ foo: { bar: 3 } }`",
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "$$code": {
+                            "description": "Serialised client-side function body. When present the expression is evaluated rather than dereferenced.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "$$field",
+                          "$$subfield"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reference to a field value, with an optional client-side computation applied."
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "description": "Static data entry"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "fieldId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "fieldId"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Data entry can be either a static data entry, or a reference to another field in the current form or the declaration."
+          }
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "label",
+    "type",
+    "configuration"
+  ],
+  "additionalProperties": false,
+  "description": "A field for displaying a table of read-only data"
+}
