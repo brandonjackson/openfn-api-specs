@@ -5,22 +5,29 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Group",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A group registrant (household/family) — res.partner with is_group=true, is_registrant=true.",
+  "description": "A group/household registrant, addressed by external identifier.",
   "properties": {
-    "id": {
-      "type": "integer",
-      "description": "Odoo database id"
-    },
-    "spp_id": {
+    "identifier": {
       "type": "string",
-      "example": "GRP_Q4VGGZPF"
+      "example": "urn:openspp:id:spp-id|GRP_Q4VGGZPF"
     },
     "name": {
       "type": "string",
       "example": "Doe Household"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Group kind vocabulary code."
+    },
+    "members": {
+      "type": "array",
+      "description": "Member individual identifiers.",
+      "items": {
+        "type": "string"
+      }
     },
     "address": {
       "type": "string"
@@ -28,19 +35,14 @@
     "phone": {
       "type": "string"
     },
-    "kind": {
-      "description": "Group kind (many2one, [id, name])",
-      "example": [
-        1,
-        "Household"
-      ]
+    "area": {
+      "type": "string"
     },
-    "registration_date": {
-      "type": "string",
-      "format": "date"
+    "active": {
+      "type": "boolean"
+    },
+    "extension": {
+      "$ref": "ApiExtension.json"
     }
-  },
-  "required": [
-    "name"
-  ]
+  }
 }

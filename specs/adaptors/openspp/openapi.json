@@ -1,488 +1,2833 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OpenSPP API (synthesized from adaptor surface)",
-    "version": "1.0.0",
-    "description": "REST-style projection of the OpenSPP operations exposed by the OpenFn openspp adaptor. OpenSPP is a social-protection platform built on Odoo; the adaptor talks to Odoo's external API through the odoo-await client (JSON-RPC: common.authenticate for login, then object.execute_kw for search_read/create/write on models). The paths below are a synthetic REST surface where each operation maps to an Odoo model call: Groups & Individuals -> res.partner (is_group true/false, is_registrant=true), group members -> g2p.group.membership, programs -> g2p.program, enrollment -> g2p.program_membership, service points -> spp.service.point, areas -> spp.area. Domains are Odoo search domains (arrays of [field, op, value] triples) and options carry limit/offset/order.",
+    "title": "OpenSPP API",
+    "version": "2.0",
+    "description": "The externally reachable API surface of an OpenSPP deployment. OpenSPP is a social-protection registry and programme-management platform built on Odoo, and it exposes two very different things.\n\n1. **Odoo's external API** — RPC, not REST. `POST /xmlrpc/2/common` and `POST /xmlrpc/2/object` speak XML-RPC (Content-Type text/xml); `POST /web/session/authenticate` and `POST /jsonrpc` are the JSON equivalents. The OpenFn openspp adaptor talks to the XML-RPC pair through the `odoo-await` client: it authenticates for a uid and then routes every one of its twenty operations through a single `execute_kw` call against the OpenSPP Odoo models (res.partner, g2p.group.membership, g2p.program, g2p.program_membership, spp.service.point, spp.area). Because Odoo dispatches model methods by name at runtime, that surface is two endpoints wide and open-ended in depth — it cannot be enumerated as REST operations.\n\n2. **OpenSPP's own REST API v2** (`spp_api_v2`, FastAPI, base path `/api/v2/spp`) — an optional but documented module family providing OAuth 2.0 protected, consent-respecting resource endpoints for Individual, Group, Program, ProgramMembership, Cycle, Entitlement, Product, ServicePoint, Vocabulary and variable Data. It addresses records by external identifier and never exposes Odoo database ids. Each deployment also serves its own generated schema at `/api/v2/spp/openapi.json`.\n\nBoth are described here so a workflow can reach either. Base URL is per deployment.",
     "x-openfn-adaptor": "openspp"
   },
-  "servers": [{ "url": "http://localhost:4010" }],
+  "servers": [
+    {
+      "url": "https://{host}",
+      "description": "An OpenSPP deployment (the adaptor's `baseUrl` configuration value).",
+      "variables": {
+        "host": {
+          "default": "openspp.example.org",
+          "description": "Host of the OpenSPP/Odoo instance."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "xmlrpc",
+      "description": "Odoo external API over XML-RPC — the transport the openspp adaptor uses."
+    },
+    {
+      "name": "jsonrpc",
+      "description": "Odoo external API over JSON-RPC — the same dispatch with JSON bodies."
+    },
+    {
+      "name": "auth",
+      "description": "OAuth 2.0 token endpoint of the REST API v2."
+    },
+    {
+      "name": "discovery",
+      "description": "REST API v2 capability statement and generated schema."
+    },
+    {
+      "name": "Individual",
+      "description": "Individual registrants (REST API v2)."
+    },
+    {
+      "name": "Group",
+      "description": "Group/household registrants (REST API v2)."
+    },
+    {
+      "name": "Program",
+      "description": "Social-protection programmes (REST API v2)."
+    },
+    {
+      "name": "ProgramMembership",
+      "description": "Programme enrolments (REST API v2)."
+    },
+    {
+      "name": "Cycle",
+      "description": "Programme cycles (REST API v2)."
+    },
+    {
+      "name": "Entitlement",
+      "description": "Cash and in-kind entitlements (REST API v2)."
+    },
+    {
+      "name": "Product",
+      "description": "In-kind product catalogue, categories and units (REST API v2)."
+    },
+    {
+      "name": "ServicePoint",
+      "description": "Service points (REST API v2)."
+    },
+    {
+      "name": "Vocabulary",
+      "description": "Controlled vocabularies (REST API v2)."
+    },
+    {
+      "name": "Data",
+      "description": "Variable data push/pull (REST API v2)."
+    }
+  ],
   "paths": {
-    "/groups/{spp_id}": {
-      "get": {
-        "operationId": "getGroup",
-        "summary": "Get a group registrant by spp_id (res.partner where is_group=true)",
-        "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The spp_id of the group, e.g. GRP_Q4VGGZPF" }
+    "/xmlrpc/2/common": {
+      "post": {
+        "tags": [
+          "xmlrpc"
         ],
+        "operationId": "callCommon",
+        "summary": "XML-RPC common service (version / authenticate / login)",
+        "description": "Odoo's unauthenticated `common` service. The openspp adaptor's `login` step calls `authenticate(db, login, password, {})` here through the odoo-await client and keeps the returned integer uid for every later call. Body and response are XML-RPC documents.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/xml": {
+              "schema": {
+                "type": "string",
+                "description": "XML-RPC `methodCall` document (Content-Type: text/xml). OpenAPI cannot describe XML-RPC method dispatch, so the body is carried as the raw XML document."
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Group record",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Group" } } }
+            "description": "XML-RPC `methodResponse` document — either a `params` value or a `fault`.",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/individuals/{spp_id}": {
-      "get": {
-        "operationId": "getIndividual",
-        "summary": "Get an individual registrant by spp_id (res.partner where is_group=false)",
-        "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The spp_id of the individual, e.g. IND_Q4VGGZPF" }
+    "/xmlrpc/2/object": {
+      "post": {
+        "tags": [
+          "xmlrpc"
         ],
+        "operationId": "callObject",
+        "summary": "XML-RPC object service (execute_kw)",
+        "description": "Odoo's `object` service. Every openspp adaptor operation funnels through `execute_kw(db, uid, password, model, method, args, kwargs)` here: `search_read`, `search`, `create` and `write` against the models res.partner, g2p.group.membership, g2p.group.membership.kind, g2p.program, g2p.program_membership, spp.service.point and spp.area. The callable method set is open-ended — Odoo dispatches by name at runtime — so this single operation is the whole XML-RPC surface.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/xml": {
+              "schema": {
+                "type": "string",
+                "description": "XML-RPC `methodCall` document (Content-Type: text/xml). OpenAPI cannot describe XML-RPC method dispatch, so the body is carried as the raw XML document."
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Individual record",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Individual" } } }
+            "description": "XML-RPC `methodResponse` document — either a `params` value or a `fault`.",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/groups/{spp_id}/members": {
+    "/web/session/authenticate": {
+      "post": {
+        "tags": [
+          "jsonrpc"
+        ],
+        "operationId": "authenticateSession",
+        "summary": "Authenticate a session (JSON-RPC)",
+        "description": "JSON equivalent of the XML-RPC `authenticate` call. Same semantics, JSON bodies. Documented because the same OpenSPP/Odoo instance serves it; the adaptor itself uses the XML-RPC endpoint above.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated session info.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jsonrpc": {
+      "post": {
+        "tags": [
+          "jsonrpc"
+        ],
+        "operationId": "callJsonRpc",
+        "summary": "Call a model method (execute_kw, JSON-RPC)",
+        "description": "JSON equivalent of the XML-RPC `object` service. `params.args` carries [db, uid, password, model, method, args, kwargs]. Returns the model method's result in a JSON-RPC envelope.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonRpcRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonRpcResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "getToken",
+        "summary": "OAuth 2.0 client-credentials token",
+        "description": "Exchange an API client's client_id/client_secret for a JWT bearer token used by every other API v2 call.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "grant_type",
+                  "client_id",
+                  "client_secret"
+                ],
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "client_credentials"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/metadata": {
       "get": {
-        "operationId": "getGroupMembers",
-        "summary": "List members of a group (g2p.group.membership)",
+        "tags": [
+          "discovery"
+        ],
+        "operationId": "getMetadata",
+        "summary": "Capability statement",
+        "description": "Describes the resources, extensions and vocabularies this deployment exposes. The document shape is not fixed in the OpenSPP documentation.",
+        "responses": {
+          "200": {
+            "description": "Capability statement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Capability statement; shape not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/openapi.json": {
+      "get": {
+        "tags": [
+          "discovery"
+        ],
+        "operationId": "getOpenapiSchema",
+        "summary": "This deployment's generated OpenAPI schema",
+        "description": "`spp_api_v2` is built on FastAPI and generates an OpenAPI document reflecting the modules installed on this instance.",
+        "responses": {
+          "200": {
+            "description": "OpenAPI document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "An OpenAPI 3.x document."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Individual": {
+      "get": {
+        "tags": [
+          "Individual"
+        ],
+        "operationId": "searchIndividuals",
+        "summary": "Search individual registrants",
+        "description": "Search individuals. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
         "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } },
-          { "name": "order", "in": "query", "schema": { "type": "string", "default": "id desc" } }
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": false,
+            "description": "External identifier to match (`<namespace-uri>|<value>`).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Full or partial name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "birth_date",
+            "in": "query",
+            "required": false,
+            "description": "Date of birth (YYYY-MM-DD).",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "gender",
+            "in": "query",
+            "required": false,
+            "description": "Gender vocabulary code.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "description": "Administrative area identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_extensions",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated API extension names whose fields to include in the response.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Group members",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/GroupMember" } } } }
+            "description": "Matching individuals.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Individual"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "post": {
-        "operationId": "addToGroup",
-        "summary": "Add an individual to a group with a role/kind (g2p.group.membership)",
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AddToGroupRequest" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Created or updated membership",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GroupMember" } } }
-          }
-        }
-      }
-    },
-    "/groups/{group_id}/members/{individual_id}": {
-      "delete": {
-        "operationId": "removeFromGroup",
-        "summary": "Remove an individual from a group (ends the g2p.group.membership)",
-        "parameters": [
-          { "name": "group_id", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "individual_id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Individual"
         ],
-        "responses": {
-          "200": {
-            "description": "Write result",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WriteResult" } } }
-          }
-        }
-      }
-    },
-    "/groups/search": {
-      "post": {
-        "operationId": "searchGroup",
-        "summary": "Search group registrants by Odoo domain (res.partner where is_group=true)",
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SearchRequest" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Matching groups",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Group" } } } }
-          }
-        }
-      }
-    },
-    "/individuals/search": {
-      "post": {
-        "operationId": "searchIndividual",
-        "summary": "Search individual registrants by Odoo domain (res.partner where is_group=false)",
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SearchRequest" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Matching individuals",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Individual" } } } }
-          }
-        }
-      }
-    },
-    "/individuals": {
-      "post": {
         "operationId": "createIndividual",
-        "summary": "Create a new individual registrant (res.partner create)",
+        "summary": "Create an individual registrant",
+        "description": "Create an individual. Source tracking records the API client and timestamp of the write.",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Individual" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Individual"
+              }
+            }
+          }
         },
         "responses": {
-          "200": {
-            "description": "spp_id of the created individual",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateResult" } } }
+          "201": {
+            "description": "The created individual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Individual"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/groups": {
+    "/api/v2/spp/Individual/{identifier}": {
       "get": {
-        "operationId": "listGroups",
-        "summary": "List group registrants (res.partner where is_group=true)",
+        "tags": [
+          "Individual"
+        ],
+        "operationId": "getIndividual",
+        "summary": "Read one individual registrant",
+        "description": "Read an individual by external identifier. Access requires valid consent for the registrant.",
         "parameters": [
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "External identifier of the resource (never a database id).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_extensions",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated API extension names whose fields to include in the response.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Groups",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Group" } } } }
+            "description": "The individual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Individual"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Group": {
+      "get": {
+        "tags": [
+          "Group"
+        ],
+        "operationId": "searchGroups",
+        "summary": "Search group registrants",
+        "description": "Search groups/households. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": false,
+            "description": "External identifier to match.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Full or partial name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "description": "Group kind vocabulary code.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "description": "Administrative area identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_extensions",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated API extension names whose fields to include in the response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching groups.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Group"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "post": {
+        "tags": [
+          "Group"
+        ],
         "operationId": "createGroup",
-        "summary": "Create a new group registrant (res.partner create)",
+        "summary": "Create a group registrant",
+        "description": "Create a group/household registrant.",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Group" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Group"
+              }
+            }
+          }
         },
         "responses": {
-          "200": {
-            "description": "spp_id of the created group",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateResult" } } }
+          "201": {
+            "description": "The created group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Group"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/groups/{group_id}": {
-      "patch": {
-        "operationId": "updateGroup",
-        "summary": "Update a group registrant (res.partner write)",
-        "parameters": [
-          { "name": "group_id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Group" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Write result",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WriteResult" } } }
-          }
-        }
-      }
-    },
-    "/individuals/{individual_id}": {
-      "patch": {
-        "operationId": "updateIndividual",
-        "summary": "Update an individual registrant (res.partner write)",
-        "parameters": [
-          { "name": "individual_id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Individual" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Write result",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WriteResult" } } }
-          }
-        }
-      }
-    },
-    "/programs": {
+    "/api/v2/spp/Group/{identifier}": {
       "get": {
-        "operationId": "getPrograms",
-        "summary": "List programs (g2p.program)",
+        "tags": [
+          "Group"
+        ],
+        "operationId": "getGroup",
+        "summary": "Read one group registrant",
+        "description": "Read a group by external identifier.",
         "parameters": [
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } },
-          { "name": "order", "in": "query", "schema": { "type": "string", "default": "id desc" } }
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "External identifier of the resource (never a database id).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_extensions",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated API extension names whose fields to include in the response.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Programs",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Program" } } } }
+            "description": "The group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Group"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/programs/{program_id}": {
+    "/api/v2/spp/Program": {
       "get": {
+        "tags": [
+          "Program"
+        ],
+        "operationId": "searchPrograms",
+        "summary": "Search programmes",
+        "description": "Search social-protection programmes. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Full or partial programme name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "Programme state.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching programmes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Program"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Program/{identifier}": {
+      "get": {
+        "tags": [
+          "Program"
+        ],
         "operationId": "getProgram",
-        "summary": "Get a program by program_id (g2p.program)",
+        "summary": "Read one programme",
+        "description": "Read a programme by its identifier.",
         "parameters": [
-          { "name": "program_id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "e.g. PROG_2023_00000001" }
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "Programme identifier.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Program record",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Program" } } }
+            "description": "The programme.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Program"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/registrants/{spp_id}/programs": {
+    "/api/v2/spp/ProgramMembership": {
       "get": {
-        "operationId": "getEnrolledPrograms",
-        "summary": "List programs a registrant is enrolled in (g2p.program_membership -> g2p.program)",
+        "tags": [
+          "ProgramMembership"
+        ],
+        "operationId": "searchProgramMemberships",
+        "summary": "Search programme enrolments",
+        "description": "Search programme memberships. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
         "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "program",
+            "in": "query",
+            "required": false,
+            "description": "Programme identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beneficiary",
+            "in": "query",
+            "required": false,
+            "description": "Registrant identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "Membership state.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Enrolled programs",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Program" } } } }
+            "description": "Matching memberships.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProgramMembership"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
-      }
-    },
-    "/registrants/{spp_id}/programs/{program_id}/enroll": {
+      },
       "post": {
-        "operationId": "enroll",
-        "summary": "Enroll a registrant into a program (g2p.program_membership state=enrolled)",
-        "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "program_id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "ProgramMembership"
         ],
+        "operationId": "createProgramMembership",
+        "summary": "Enrol a registrant in a programme",
+        "description": "Create a programme membership, enrolling a registrant in a programme.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramMembership"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
-            "description": "Program membership",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProgramMembership" } } }
+          "201": {
+            "description": "The created membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramMembership"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/registrants/{spp_id}/programs/{program_id}/unenroll": {
-      "post": {
-        "operationId": "unenroll",
-        "summary": "Unenroll a registrant from a program (g2p.program_membership state=not_eligible)",
-        "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "program_id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": {
-            "description": "Program membership",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProgramMembership" } } }
-          }
-        }
-      }
-    },
-    "/service-points/{spp_id}": {
+    "/api/v2/spp/Cycle": {
       "get": {
+        "tags": [
+          "Cycle"
+        ],
+        "operationId": "searchCycles",
+        "summary": "Search programme cycles",
+        "description": "Search cycles. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "program",
+            "in": "query",
+            "required": false,
+            "description": "Filter by programme identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "Filter by cycle state.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "description": "Filter by start date.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "description": "Filter by end date.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching cycles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Cycle"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Cycle/{identifier}": {
+      "get": {
+        "tags": [
+          "Cycle"
+        ],
+        "operationId": "getCycle",
+        "summary": "Read one cycle",
+        "description": "Read a cycle by name.",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "Cycle name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The cycle.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cycle"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Entitlement": {
+      "get": {
+        "tags": [
+          "Entitlement"
+        ],
+        "operationId": "searchEntitlements",
+        "summary": "Search entitlements",
+        "description": "Search cash and in-kind entitlements. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "program",
+            "in": "query",
+            "required": false,
+            "description": "Filter by programme identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cycle",
+            "in": "query",
+            "required": false,
+            "description": "Filter by cycle name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beneficiary",
+            "in": "query",
+            "required": false,
+            "description": "Filter by beneficiary identifier.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "Filter by entitlement state.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entitlement_type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by type: cash or inkind.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching entitlements.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Entitlement"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Entitlement/{identifier}": {
+      "get": {
+        "tags": [
+          "Entitlement"
+        ],
+        "operationId": "getEntitlement",
+        "summary": "Read one entitlement",
+        "description": "Read an entitlement by its UUID code.",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "Entitlement code (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entitlement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entitlement"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Product": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "operationId": "searchProducts",
+        "summary": "Search products",
+        "description": "Search the in-kind product catalogue. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filter by product category.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by product type.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Filter by active status.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching products.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Product/{identifier}": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "operationId": "getProduct",
+        "summary": "Read one product",
+        "description": "Read a product by code or name.",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "Product code or name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/ProductCategory": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "operationId": "listProductCategories",
+        "summary": "List product categories",
+        "description": "List the product categories. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "responses": {
+          "200": {
+            "description": "Product categories.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductCategory"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/UnitOfMeasure": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "operationId": "listUnitsOfMeasure",
+        "summary": "List units of measure",
+        "description": "List the units of measure. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "responses": {
+          "200": {
+            "description": "Units of measure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UnitOfMeasure"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/ServicePoint": {
+      "get": {
+        "tags": [
+          "ServicePoint"
+        ],
+        "operationId": "searchServicePoints",
+        "summary": "Search service points",
+        "description": "Search service points. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "description": "Filter by administrative area.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by service point type.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Filter by active status.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "program",
+            "in": "query",
+            "required": false,
+            "description": "Filter by associated programme.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching service points.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServicePoint"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/ServicePoint/{identifier}": {
+      "get": {
+        "tags": [
+          "ServicePoint"
+        ],
         "operationId": "getServicePoint",
-        "summary": "Get service point(s) by spp_id (spp.service.point)",
+        "summary": "Read one service point",
+        "description": "Read a service point by name or id.",
         "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "e.g. SVP_8P4KP4RT" }
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "description": "Service point name or id.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Service points",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ServicePoint" } } } }
+            "description": "The service point.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServicePoint"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/service-points/search": {
-      "post": {
-        "operationId": "searchServicePoint",
-        "summary": "Search service points by Odoo domain (spp.service.point)",
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SearchRequest" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Matching service points",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ServicePoint" } } } }
-          }
-        }
-      }
-    },
-    "/areas/{spp_id}": {
+    "/api/v2/spp/Vocabulary": {
       "get": {
-        "operationId": "getArea",
-        "summary": "Get area by spp_id (spp.area)",
-        "parameters": [
-          { "name": "spp_id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Vocabulary"
         ],
+        "operationId": "listVocabularies",
+        "summary": "List vocabularies",
+        "description": "List every controlled vocabulary this deployment exposes. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
         "responses": {
           "200": {
-            "description": "Area record(s)",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Area" } } } }
+            "description": "Vocabularies.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Vocabulary"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/areas/search": {
+    "/api/v2/spp/Vocabulary/{namespace_uri}/codes": {
+      "get": {
+        "tags": [
+          "Vocabulary"
+        ],
+        "operationId": "listVocabularyCodes",
+        "summary": "List the codes of one vocabulary",
+        "description": "List the codes of the vocabulary identified by its namespace URI. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "namespace_uri",
+            "in": "path",
+            "required": true,
+            "description": "Vocabulary namespace URI, e.g. `urn:openspp:vocabulary:gender`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vocabulary codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VocabularyCode"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Data/push": {
       "post": {
-        "operationId": "searchArea",
-        "summary": "Search areas by Odoo domain (spp.area)",
+        "tags": [
+          "Data"
+        ],
+        "operationId": "pushData",
+        "summary": "Push variable values",
+        "description": "Push variable values collected by an external system.",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SearchRequest" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DataPushRequest"
+                }
+              }
+            }
+          }
         },
         "responses": {
           "200": {
-            "description": "Matching areas",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Area" } } } }
+            "description": "Push acknowledgement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Data/pull": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "pullData",
+        "summary": "Pull variable values",
+        "description": "Pull stored variable values for a registrant. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "query",
+            "required": false,
+            "description": "External identifier for the registrant.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variable_codes",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated variable codes to retrieve; empty for all.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "as_of_date",
+            "in": "query",
+            "required": false,
+            "description": "Point-in-time value retrieval.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Variable values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataValue"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Data/invalidate": {
+      "post": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "invalidateData",
+        "summary": "Invalidate cached variable values",
+        "description": "Invalidate cached variable values for a registrant.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataInvalidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invalidation acknowledgement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/spp/Data/variables": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "listVariables",
+        "summary": "List available variables",
+        "description": "List the variables this deployment exposes. The API v2 list envelope is not described in the OpenSPP documentation; it is modelled here as a bare array of the documented response fields.",
+        "responses": {
+          "200": {
+            "description": "Variable definitions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Variable"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT issued by POST /api/v2/spp/token. The XML-RPC and JSON-RPC endpoints authenticate inside the RPC body instead."
+      }
+    },
     "schemas": {
-      "Group": {
+      "AuthenticateRequest": {
         "type": "object",
-        "description": "A group registrant (household/family) — res.partner with is_group=true, is_registrant=true.",
+        "required": [
+          "jsonrpc",
+          "method",
+          "params"
+        ],
+        "description": "Odoo JSON-RPC session login envelope (POST /web/session/authenticate).",
         "properties": {
-          "id": { "type": "integer", "description": "Odoo database id" },
-          "spp_id": { "type": "string", "example": "GRP_Q4VGGZPF" },
-          "name": { "type": "string", "example": "Doe Household" },
-          "address": { "type": "string" },
-          "phone": { "type": "string" },
-          "kind": { "description": "Group kind (many2one, [id, name])", "example": [1, "Household"], "nullable": true },
-          "registration_date": { "type": "string", "format": "date" }
-        },
-        "required": ["name"]
+          "jsonrpc": {
+            "type": "string",
+            "example": "2.0"
+          },
+          "method": {
+            "type": "string",
+            "example": "call"
+          },
+          "params": {
+            "type": "object",
+            "properties": {
+              "db": {
+                "type": "string",
+                "description": "Odoo/OpenSPP database name",
+                "example": "openspp"
+              },
+              "login": {
+                "type": "string",
+                "example": "admin"
+              },
+              "password": {
+                "type": "string",
+                "description": "User password or API key"
+              }
+            }
+          },
+          "id": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      },
+      "AuthenticateResponse": {
+        "type": "object",
+        "description": "Session info returned by /web/session/authenticate.",
+        "properties": {
+          "jsonrpc": {
+            "type": "string",
+            "example": "2.0"
+          },
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "uid": {
+                "type": "integer",
+                "description": "Authenticated user id — the `uid` passed to execute_kw.",
+                "example": 2
+              },
+              "db": {
+                "type": "string",
+                "example": "openspp"
+              },
+              "username": {
+                "type": "string",
+                "example": "admin"
+              },
+              "name": {
+                "type": "string",
+                "example": "OpenSPP Administrator"
+              },
+              "server_version": {
+                "type": "string",
+                "example": "17.0"
+              },
+              "user_context": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "JsonRpcRequest": {
+        "type": "object",
+        "required": [
+          "jsonrpc",
+          "method",
+          "params"
+        ],
+        "description": "Odoo JSON-RPC envelope for the `object` service. `params.args` is [db, uid, password, model, method, args, kwargs] — the JSON equivalent of the execute_kw call the openspp adaptor makes over XML-RPC.",
+        "properties": {
+          "jsonrpc": {
+            "type": "string",
+            "example": "2.0"
+          },
+          "method": {
+            "type": "string",
+            "example": "call"
+          },
+          "params": {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "example": "object"
+              },
+              "method": {
+                "type": "string",
+                "example": "execute_kw"
+              },
+              "args": {
+                "type": "array",
+                "description": "[db, uid, password, model, method, args, kwargs]",
+                "items": {},
+                "example": [
+                  "openspp",
+                  2,
+                  "password",
+                  "res.partner",
+                  "search_read",
+                  [
+                    [
+                      [
+                        "is_registrant",
+                        "=",
+                        true
+                      ],
+                      [
+                        "is_group",
+                        "=",
+                        true
+                      ]
+                    ]
+                  ],
+                  {
+                    "fields": [
+                      "name",
+                      "spp_id",
+                      "kind"
+                    ],
+                    "limit": 100,
+                    "offset": 0,
+                    "order": "id desc"
+                  }
+                ]
+              }
+            }
+          },
+          "id": {
+            "type": "integer",
+            "example": 2
+          }
+        }
+      },
+      "JsonRpcResponse": {
+        "type": "object",
+        "description": "JSON-RPC response envelope. `result` is whatever the dispatched model method returned: an integer id (create), a boolean (write/unlink), a list of ids (search) or a list of records (read/search_read).",
+        "properties": {
+          "jsonrpc": {
+            "type": "string",
+            "example": "2.0"
+          },
+          "id": {
+            "type": "integer",
+            "example": 2
+          },
+          "result": {
+            "description": "Model method result; the type depends on the method dispatched.",
+            "oneOf": [
+              {
+                "type": "integer",
+                "description": "New record id (create)"
+              },
+              {
+                "type": "boolean",
+                "description": "write / unlink success"
+              },
+              {
+                "type": "array",
+                "description": "search: matching record ids",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              {
+                "type": "array",
+                "description": "read / search_read: OpenSPP/Odoo records",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/OdooGroup"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooIndividual"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooGroupMembership"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooProgram"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooProgramMembership"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooServicePoint"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooArea"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OdooRecord"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "Odoo JSON-RPC error object.",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "Odoo Server Error"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "odoo.exceptions.AccessError"
+              },
+              "message": {
+                "type": "string"
+              },
+              "debug": {
+                "type": "string"
+              },
+              "arguments": {
+                "type": "array",
+                "items": {}
+              }
+            }
+          }
+        }
+      },
+      "OdooRecord": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "A generic Odoo model record as returned by read/search_read. Always carries an integer `id`; the remaining keys are whichever fields were requested.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 54
+          },
+          "display_name": {
+            "type": "string"
+          }
+        }
+      },
+      "OdooGroup": {
+        "type": "object",
+        "description": "`res.partner` with is_registrant=true and is_group=true — a group/household registrant.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Odoo database id"
+          },
+          "spp_id": {
+            "type": "string",
+            "description": "OpenSPP external registrant id",
+            "example": "GRP_Q4VGGZPF"
+          },
+          "name": {
+            "type": "string",
+            "example": "Doe Household"
+          },
+          "address": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "is_registrant": {
+            "type": "boolean"
+          },
+          "is_group": {
+            "type": "boolean"
+          },
+          "kind": {
+            "description": "Group kind (Household, Family, ...). Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              1,
+              "Household"
+            ]
+          },
+          "area_id": {
+            "description": "Administrative area the group lives in. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              12,
+              "Central District"
+            ]
+          },
+          "registration_date": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "OdooIndividual": {
+        "type": "object",
+        "description": "`res.partner` with is_registrant=true and is_group=false — an individual registrant.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "spp_id": {
+            "type": "string",
+            "example": "IND_Q4VGGZPF"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "address": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "gender": {
+            "type": "string",
+            "example": "Female"
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_registrant": {
+            "type": "boolean"
+          },
+          "is_group": {
+            "type": "boolean"
+          },
+          "category_id": {
+            "type": "array",
+            "description": "Registrant category tags (many2many ids).",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "area_id": {
+            "description": "Administrative area. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              12,
+              "Central District"
+            ]
+          }
+        }
+      },
+      "OdooGroupMembership": {
+        "type": "object",
+        "description": "`g2p.group.membership` — links an individual registrant to a group registrant.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "individual": {
+            "description": "The individual registrant. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              42,
+              "Jane Doe"
+            ]
+          },
+          "group": {
+            "description": "The group registrant. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              7,
+              "Doe Household"
+            ]
+          },
+          "kind": {
+            "type": "array",
+            "description": "Membership roles (many2many).",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Head"
+            ]
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "ended_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "is_ended": {
+            "type": "boolean"
+          },
+          "individual_birthdate": {
+            "type": "string",
+            "format": "date"
+          },
+          "individual_gender": {
+            "type": "string"
+          }
+        }
+      },
+      "OdooProgram": {
+        "type": "object",
+        "description": "`g2p.program` — a social-protection programme.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "program_id": {
+            "type": "string",
+            "example": "PROG_2023_00000001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Cash Transfer 2023"
+          },
+          "eligible_beneficiaries_count": {
+            "type": "integer"
+          },
+          "cycles_count": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string",
+            "example": "active"
+          },
+          "target_type": {
+            "type": "string",
+            "example": "group"
+          }
+        }
+      },
+      "OdooProgramMembership": {
+        "type": "object",
+        "description": "`g2p.program_membership` — a registrant's enrolment in a programme.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "partner_id": {
+            "description": "The enrolled registrant. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              42,
+              "Jane Doe"
+            ]
+          },
+          "program_id": {
+            "description": "The programme. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              3,
+              "Cash Transfer 2023"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "enrolled",
+              "not_eligible",
+              "paused",
+              "exited"
+            ],
+            "example": "enrolled"
+          },
+          "enrollment_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exit_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "OdooServicePoint": {
+        "type": "object",
+        "description": "`spp.service.point` — an agent/shop that delivers entitlements.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "spp_id": {
+            "type": "string",
+            "example": "SVP_8P4KP4RT"
+          },
+          "name": {
+            "type": "string"
+          },
+          "area_id": {
+            "description": "Administrative area. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              12,
+              "Central District"
+            ]
+          },
+          "service_type_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "phone_sanitized": {
+            "type": "string"
+          },
+          "shop_address": {
+            "type": "string"
+          },
+          "is_contract_active": {
+            "type": "boolean"
+          },
+          "is_disabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OdooArea": {
+        "type": "object",
+        "description": "`spp.area` — a node of the administrative area hierarchy.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "example": "Central District"
+          },
+          "code": {
+            "type": "string"
+          },
+          "altnames": {
+            "type": "string"
+          },
+          "area_level": {
+            "type": "integer"
+          },
+          "parent_id": {
+            "description": "Parent area. Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              1,
+              "Country"
+            ]
+          },
+          "kind": {
+            "description": "Area kind (Region, District, ...). Odoo many2one, serialised as [id, display_name].",
+            "nullable": true,
+            "example": [
+              2,
+              "District"
+            ]
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "OAuth 2.0 client-credentials token response from POST /api/v2/spp/token.",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "JWT bearer token."
+          },
+          "token_type": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Token lifetime in seconds.",
+            "example": 3600
+          },
+          "scope": {
+            "type": "string"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error payload returned by the API v2 endpoints.",
+        "properties": {
+          "detail": {
+            "description": "Error detail; a string or a list of validation errors."
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiExtension": {
+        "type": "object",
+        "description": "Module-specific fields attached to an Individual or Group when the request asks for them with `?_extensions=<name>`. Keys and value types are defined per deployment by `spp.api.extension` records, so they are not fixed here.",
+        "additionalProperties": true
       },
       "Individual": {
         "type": "object",
-        "description": "An individual registrant — res.partner with is_group=false, is_registrant=true.",
+        "description": "An individual registrant, addressed by external identifier (never a database id).",
         "properties": {
-          "id": { "type": "integer" },
-          "spp_id": { "type": "string", "example": "IND_Q4VGGZPF" },
-          "name": { "type": "string", "example": "Jane Doe" },
-          "address": { "type": "string" },
-          "phone": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "gender": { "type": "string", "example": "Female" },
-          "birthdate": { "type": "string", "format": "date" },
-          "category_id": { "description": "Category tags (many2many list of ids)", "type": "array", "items": { "type": "integer" } }
-        },
-        "required": ["name"]
+          "identifier": {
+            "type": "string",
+            "description": "External identifier, `<namespace-uri>|<value>`.",
+            "example": "urn:openspp:id:spp-id|IND_Q4VGGZPF"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "given_name": {
+            "type": "string"
+          },
+          "family_name": {
+            "type": "string"
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "gender": {
+            "type": "string",
+            "description": "Vocabulary code (urn:openspp:vocabulary:gender)."
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "address": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string",
+            "description": "Administrative area identifier."
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "extension": {
+            "$ref": "#/components/schemas/ApiExtension"
+          }
+        }
       },
-      "GroupMember": {
+      "Group": {
         "type": "object",
-        "description": "A g2p.group.membership record linking an individual to a group.",
+        "description": "A group/household registrant, addressed by external identifier.",
         "properties": {
-          "id": { "type": "integer" },
-          "individual": { "description": "Linked individual (many2one, [id, name])", "example": [42, "Jane Doe"] },
-          "group": { "description": "Linked group (many2one, [id, name])", "example": [7, "Doe Household"] },
-          "kind": { "description": "Membership roles (many2many)", "type": "array", "items": { "type": "string" }, "example": ["Head"] },
-          "start_date": { "type": "string", "format": "date" },
-          "ended_date": { "type": "string", "format": "date", "nullable": true },
-          "is_ended": { "type": "boolean" },
-          "individual_birthdate": { "type": "string", "format": "date" },
-          "individual_gender": { "type": "string" }
+          "identifier": {
+            "type": "string",
+            "example": "urn:openspp:id:spp-id|GRP_Q4VGGZPF"
+          },
+          "name": {
+            "type": "string",
+            "example": "Doe Household"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Group kind vocabulary code."
+          },
+          "members": {
+            "type": "array",
+            "description": "Member individual identifiers.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "address": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "extension": {
+            "$ref": "#/components/schemas/ApiExtension"
+          }
         }
       },
       "Program": {
         "type": "object",
-        "description": "A g2p.program social-protection program.",
+        "description": "A social-protection programme.",
         "properties": {
-          "id": { "type": "integer" },
-          "program_id": { "type": "string", "example": "PROG_2023_00000001" },
-          "name": { "type": "string", "example": "Cash Transfer 2023" },
-          "eligible_beneficiaries_count": { "type": "integer" },
-          "cycles_count": { "type": "integer" },
-          "state": { "type": "string", "example": "active" },
-          "target_type": { "type": "string", "example": "group" }
+          "identifier": {
+            "type": "string",
+            "example": "PROG_2023_00000001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Cash Transfer 2023"
+          },
+          "state": {
+            "type": "string"
+          },
+          "target_type": {
+            "type": "string",
+            "description": "`individual` or `group`."
+          },
+          "description": {
+            "type": "string"
+          }
         }
       },
       "ProgramMembership": {
         "type": "object",
-        "description": "A g2p.program_membership enrollment record.",
+        "description": "A registrant's enrolment in a programme.",
         "properties": {
-          "id": { "type": "integer" },
-          "partner_id": { "description": "Registrant (many2one, [id, name])", "example": [42, "Jane Doe"] },
-          "program_id": { "description": "Program (many2one, [id, name])", "example": [3, "Cash Transfer 2023"] },
-          "state": { "type": "string", "enum": ["draft", "enrolled", "not_eligible", "paused", "exited"], "example": "enrolled" }
+          "program": {
+            "type": "string",
+            "description": "Programme identifier."
+          },
+          "beneficiary": {
+            "type": "string",
+            "description": "Registrant identifier."
+          },
+          "state": {
+            "type": "string"
+          },
+          "enrollment_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "exit_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        }
+      },
+      "Cycle": {
+        "type": "object",
+        "description": "A programme cycle.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Cycle identifier, used in lookups."
+          },
+          "program": {
+            "type": "string",
+            "description": "Programme identifier."
+          },
+          "state": {
+            "type": "string",
+            "description": "Current cycle state."
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "Cycle sequence number."
+          }
+        }
+      },
+      "Entitlement": {
+        "type": "object",
+        "description": "A cash or in-kind entitlement. Cash entitlements carry `amount`/`currency`; in-kind entitlements carry `product`/`qty`/`unit`.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Entitlement identifier (UUID)."
+          },
+          "program": {
+            "type": "string"
+          },
+          "cycle": {
+            "type": "string"
+          },
+          "beneficiary": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transfer amount (cash entitlements)."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (cash entitlements)."
+          },
+          "product": {
+            "type": "string",
+            "description": "Product identifier (in-kind entitlements)."
+          },
+          "qty": {
+            "type": "number",
+            "description": "Quantity (in-kind entitlements)."
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measure (in-kind entitlements)."
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "description": "A product in the in-kind catalogue.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Product code (Odoo default_code)."
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uom": {
+            "type": "string",
+            "description": "Default unit of measure."
+          },
+          "description": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProductCategory": {
+        "type": "object",
+        "description": "A product category.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "string",
+            "nullable": true
+          },
+          "full_path": {
+            "type": "string",
+            "description": "Complete category path."
+          }
+        }
+      },
+      "UnitOfMeasure": {
+        "type": "object",
+        "description": "A unit of measure.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "description": "Unit category (Weight, Volume, ...)."
+          },
+          "uom_type": {
+            "type": "string",
+            "description": "reference, bigger or smaller than reference."
+          },
+          "factor": {
+            "type": "number",
+            "description": "Conversion factor."
+          }
         }
       },
       "ServicePoint": {
         "type": "object",
-        "description": "A spp.service.point (agent/shop delivering services).",
+        "description": "A service point (agent/shop) that delivers entitlements.",
         "properties": {
-          "id": { "type": "integer" },
-          "spp_id": { "type": "string", "example": "SVP_8P4KP4RT" },
-          "name": { "type": "string" },
-          "area_id": { "description": "Area (many2one, [id, name])", "example": [12, "Central District"] },
-          "service_type_ids": { "type": "array", "items": { "type": "integer" } },
-          "phone_sanitized": { "type": "string" },
-          "shop_address": { "type": "string" },
-          "is_contract_active": { "type": "boolean" },
-          "is_disabled": { "type": "boolean" }
-        }
-      },
-      "Area": {
-        "type": "object",
-        "description": "A spp.area administrative area.",
-        "properties": {
-          "id": { "type": "integer" },
-          "parent_id": { "description": "Parent area (many2one, [id, name])", "example": [1, "Country"], "nullable": true },
-          "name": { "type": "string", "example": "Central District" },
-          "code": { "type": "string" },
-          "altnames": { "type": "string" },
-          "area_level": { "type": "integer" },
-          "kind": { "description": "Area kind (many2one, [id, name])", "example": [2, "District"] }
-        }
-      },
-      "SearchRequest": {
-        "type": "object",
-        "description": "Odoo search-read request: a search domain plus optional paging/order options.",
-        "properties": {
-          "domain": {
-            "type": "array",
-            "description": "Odoo search domain — list of [field, operator, value] triples (and optional '|','&','!' logical operators).",
-            "items": {},
-            "example": [["spp_id", "ilike", "GRP"]]
+          "name": {
+            "type": "string",
+            "description": "Service point name — the identifier used in lookups."
           },
-          "options": {
-            "type": "object",
-            "properties": {
-              "limit": { "type": "integer", "default": 100 },
-              "offset": { "type": "integer", "default": 0 },
-              "order": { "type": "string", "default": "id desc" }
+          "type": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "programs": {
+            "type": "array",
+            "description": "Associated programme identifiers.",
+            "items": {
+              "type": "string"
             }
           }
-        },
-        "required": ["domain"]
+        }
       },
-      "AddToGroupRequest": {
+      "Vocabulary": {
         "type": "object",
+        "description": "A controlled vocabulary.",
         "properties": {
-          "individual_id": { "type": "string", "example": "IND_Q4VGGZPF" },
-          "role": { "type": "string", "description": "Membership kind/role name", "example": "Head" }
-        },
-        "required": ["individual_id"]
+          "namespace_uri": {
+            "type": "string",
+            "description": "Globally unique vocabulary identifier.",
+            "example": "urn:openspp:vocabulary:gender"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "code_count": {
+            "type": "integer",
+            "description": "Number of codes in the vocabulary."
+          }
+        }
       },
-      "CreateResult": {
+      "VocabularyCode": {
         "type": "object",
-        "description": "Result of a create — the new registrant's spp_id.",
+        "description": "One code of a controlled vocabulary.",
         "properties": {
-          "spp_id": { "type": "string", "example": "IND_Q4VGGZPF" }
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "Display order."
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Variable": {
+        "type": "object",
+        "description": "A variable definition available to the Data push/pull endpoints.",
+        "properties": {
+          "variable_code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "DataValue": {
+        "type": "object",
+        "description": "One variable value held for a registrant.",
+        "properties": {
+          "subject_id": {
+            "type": "string",
+            "description": "External identifier of the registrant."
+          },
+          "variable_code": {
+            "type": "string"
+          },
+          "value": {
+            "description": "Stored value; type depends on the variable."
+          },
+          "effective_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      },
+      "DataPushRequest": {
+        "type": "object",
+        "required": [
+          "subject_id",
+          "variable_code",
+          "value"
+        ],
+        "description": "One variable value pushed from an external system.",
+        "properties": {
+          "subject_id": {
+            "type": "string",
+            "description": "External identifier for the registrant."
+          },
+          "variable_code": {
+            "type": "string",
+            "description": "Variable code to update."
+          },
+          "value": {
+            "description": "Value to store."
+          },
+          "effective_date": {
+            "type": "string",
+            "format": "date",
+            "description": "When the value became effective."
+          },
+          "source": {
+            "type": "string",
+            "description": "Source system identifier."
+          }
+        }
+      },
+      "DataInvalidateRequest": {
+        "type": "object",
+        "description": "Cached values to invalidate.",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "variable_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       },
       "WriteResult": {
         "type": "object",
-        "description": "Result of an Odoo write/unlink call.",
+        "description": "Acknowledgement returned by the API v2 write endpoints.",
         "properties": {
-          "success": { "type": "boolean", "example": true }
+          "identifier": {
+            "type": "string",
+            "description": "Identifier of the affected resource."
+          },
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
         }
       }
     }

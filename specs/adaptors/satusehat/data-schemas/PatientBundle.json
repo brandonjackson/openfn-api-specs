@@ -1,16 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "satusehat/Bundle",
-  "title": "Bundle",
+  "$id": "satusehat/PatientBundle",
+  "title": "PatientBundle",
   "x-openfn-adaptor": "satusehat",
   "x-source": {
-    "openapi": "#/components/schemas/Bundle",
-    "capturedAt": "2026-07-06"
+    "openapi": "#/components/schemas/PatientBundle",
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "required": [
-    "resourceType"
-  ],
+  "description": "FHIR searchset Bundle carrying Patient resources.",
   "properties": {
     "resourceType": {
       "type": "string",
@@ -18,23 +16,30 @@
         "Bundle"
       ]
     },
+    "id": {
+      "type": "string"
+    },
     "type": {
       "type": "string",
       "example": "searchset"
     },
     "total": {
-      "type": "integer"
+      "type": "integer",
+      "description": "Total number of matches."
     },
     "link": {
       "type": "array",
+      "description": "Search navigation links.",
       "items": {
         "type": "object",
         "properties": {
           "relation": {
-            "type": "string"
+            "type": "string",
+            "example": "self"
           },
           "url": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           }
         }
       }
@@ -45,18 +50,15 @@
         "type": "object",
         "properties": {
           "fullUrl": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "resource": {
-            "type": "object"
+            "$ref": "Patient.json"
           },
           "search": {
             "type": "object",
-            "properties": {
-              "mode": {
-                "type": "string"
-              }
-            }
+            "additionalProperties": true
           }
         }
       }

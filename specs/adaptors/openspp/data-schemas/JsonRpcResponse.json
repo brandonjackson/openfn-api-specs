@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openspp/JsonRpcResponse",
+  "title": "JsonRpcResponse",
+  "x-openfn-adaptor": "openspp",
+  "x-source": {
+    "openapi": "#/components/schemas/JsonRpcResponse",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "JSON-RPC response envelope. `result` is whatever the dispatched model method returned: an integer id (create), a boolean (write/unlink), a list of ids (search) or a list of records (read/search_read).",
+  "properties": {
+    "jsonrpc": {
+      "type": "string",
+      "example": "2.0"
+    },
+    "id": {
+      "type": "integer",
+      "example": 2
+    },
+    "result": {
+      "description": "Model method result; the type depends on the method dispatched.",
+      "oneOf": [
+        {
+          "type": "integer",
+          "description": "New record id (create)"
+        },
+        {
+          "type": "boolean",
+          "description": "write / unlink success"
+        },
+        {
+          "type": "array",
+          "description": "search: matching record ids",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "array",
+          "description": "read / search_read: OpenSPP/Odoo records",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "OdooGroup.json"
+              },
+              {
+                "$ref": "OdooIndividual.json"
+              },
+              {
+                "$ref": "OdooGroupMembership.json"
+              },
+              {
+                "$ref": "OdooProgram.json"
+              },
+              {
+                "$ref": "OdooProgramMembership.json"
+              },
+              {
+                "$ref": "OdooServicePoint.json"
+              },
+              {
+                "$ref": "OdooArea.json"
+              },
+              {
+                "$ref": "OdooRecord.json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "error": {
+      "$ref": "JsonRpcError.json"
+    }
+  }
+}

@@ -1,40 +1,68 @@
-# OpenSPP API (synthesized from adaptor surface) (openspp) v1.0.0
+# OpenSPP API (openspp) v2.0
 
 <!-- derived from openapi.json by `pnpm specs index openspp` — do not edit by hand -->
 
-base: http://localhost:4010 | auth: not declared | 21 operations in 6 resources
+base: https://{host} | auth: http/bearer (JWT) | 33 operations in 14 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## areas
-- GET /areas/{spp_id} — getArea: Get area by spp_id (spp.area)
-- POST /areas/search — searchArea: Search areas by Odoo domain (spp.area)
+## Cycle
+- GET /api/v2/spp/Cycle — searchCycles: Search programme cycles
+- GET /api/v2/spp/Cycle/{identifier} — getCycle: Read one cycle
 
-## groups
-- GET /groups/{spp_id} — getGroup: Get a group registrant by spp_id (res.partner where is_group=true)
-- GET /groups/{spp_id}/members — getGroupMembers: List members of a group (g2p.group.membership)
-- POST /groups/{spp_id}/members — addToGroup: Add an individual to a group with a role/kind (g2p.group.membership)
-- DELETE /groups/{group_id}/members/{individual_id} — removeFromGroup: Remove an individual from a group (ends the g2p.group.membership)
-- POST /groups/search — searchGroup: Search group registrants by Odoo domain (res.partner where is_group=true)
-- GET /groups — listGroups: List group registrants (res.partner where is_group=true)
-- POST /groups — createGroup: Create a new group registrant (res.partner create)
-- PATCH /groups/{group_id} — updateGroup: Update a group registrant (res.partner write)
+## Data
+- POST /api/v2/spp/Data/push — pushData: Push variable values
+- GET /api/v2/spp/Data/pull — pullData: Pull variable values
+- POST /api/v2/spp/Data/invalidate — invalidateData: Invalidate cached variable values
+- GET /api/v2/spp/Data/variables — listVariables: List available variables
 
-## individuals
-- GET /individuals/{spp_id} — getIndividual: Get an individual registrant by spp_id (res.partner where is_group=false)
-- POST /individuals/search — searchIndividual: Search individual registrants by Odoo domain (res.partner where is_group=false)
-- POST /individuals — createIndividual: Create a new individual registrant (res.partner create)
-- PATCH /individuals/{individual_id} — updateIndividual: Update an individual registrant (res.partner write)
+## Entitlement
+- GET /api/v2/spp/Entitlement — searchEntitlements: Search entitlements
+- GET /api/v2/spp/Entitlement/{identifier} — getEntitlement: Read one entitlement
 
-## programs
-- GET /programs — getPrograms: List programs (g2p.program)
-- GET /programs/{program_id} — getProgram: Get a program by program_id (g2p.program)
+## Group
+- GET /api/v2/spp/Group — searchGroups: Search group registrants
+- POST /api/v2/spp/Group — createGroup: Create a group registrant
+- GET /api/v2/spp/Group/{identifier} — getGroup: Read one group registrant
 
-## registrants
-- GET /registrants/{spp_id}/programs — getEnrolledPrograms: List programs a registrant is enrolled in (g2p.program_membership -> g2p.program)
-- POST /registrants/{spp_id}/programs/{program_id}/enroll — enroll: Enroll a registrant into a program (g2p.program_membership state=enrolled)
-- POST /registrants/{spp_id}/programs/{program_id}/unenroll — unenroll: Unenroll a registrant from a program (g2p.program_membership state=not_eligible)
+## Individual
+- GET /api/v2/spp/Individual — searchIndividuals: Search individual registrants
+- POST /api/v2/spp/Individual — createIndividual: Create an individual registrant
+- GET /api/v2/spp/Individual/{identifier} — getIndividual: Read one individual registrant
 
-## service-points
-- GET /service-points/{spp_id} — getServicePoint: Get service point(s) by spp_id (spp.service.point)
-- POST /service-points/search — searchServicePoint: Search service points by Odoo domain (spp.service.point)
+## Product
+- GET /api/v2/spp/Product — searchProducts: Search products
+- GET /api/v2/spp/Product/{identifier} — getProduct: Read one product
+- GET /api/v2/spp/ProductCategory — listProductCategories: List product categories
+- GET /api/v2/spp/UnitOfMeasure — listUnitsOfMeasure: List units of measure
+
+## Program
+- GET /api/v2/spp/Program — searchPrograms: Search programmes
+- GET /api/v2/spp/Program/{identifier} — getProgram: Read one programme
+
+## ProgramMembership
+- GET /api/v2/spp/ProgramMembership — searchProgramMemberships: Search programme enrolments
+- POST /api/v2/spp/ProgramMembership — createProgramMembership: Enrol a registrant in a programme
+
+## ServicePoint
+- GET /api/v2/spp/ServicePoint — searchServicePoints: Search service points
+- GET /api/v2/spp/ServicePoint/{identifier} — getServicePoint: Read one service point
+
+## Vocabulary
+- GET /api/v2/spp/Vocabulary — listVocabularies: List vocabularies
+- GET /api/v2/spp/Vocabulary/{namespace_uri}/codes — listVocabularyCodes: List the codes of one vocabulary
+
+## auth
+- POST /api/v2/spp/token — getToken: OAuth 2.0 client-credentials token
+
+## discovery
+- GET /api/v2/spp/metadata — getMetadata: Capability statement
+- GET /api/v2/spp/openapi.json — getOpenapiSchema: This deployment's generated OpenAPI schema
+
+## jsonrpc
+- POST /web/session/authenticate — authenticateSession: Authenticate a session (JSON-RPC)
+- POST /jsonrpc — callJsonRpc: Call a model method (execute_kw, JSON-RPC)
+
+## xmlrpc
+- POST /xmlrpc/2/common — callCommon: XML-RPC common service (version / authenticate / login)
+- POST /xmlrpc/2/object — callObject: XML-RPC object service (execute_kw)
