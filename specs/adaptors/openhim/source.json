@@ -1,16 +1,58 @@
 {
   "adaptor": "openhim",
   "npm": "@openfn/language-openhim",
+
   "origin": "generated",
   "upstreamFormat": "docs",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+
+  "attempts": [
+    { "kind": "openapi", "url": "https://openhim.org/openapi.json", "result": "not-found", "note": "404; openhim.org is a Docusaurus site with no spec asset" },
+    { "kind": "swagger", "url": "https://openhim.org/swagger.json", "result": "not-found", "note": "404" },
+    { "kind": "openapi", "url": "https://raw.githubusercontent.com/jembi/openhim-core-js/master/openapi.json", "result": "not-found", "note": "no spec file in the repo; the API is wired up by hand in src/koaApi.js" },
+    { "kind": "swagger", "url": "https://raw.githubusercontent.com/jembi/openhim-core-js/master/swagger.json", "result": "not-found", "note": "404" },
+    { "kind": "apis.guru", "url": "https://api.apis.guru/v2/list.json", "result": "not-found", "note": "openhim is not listed" },
+    { "kind": "docs", "url": "https://openhim.org/docs/api/", "result": "used", "note": "67 API reference pages enumerated from https://openhim.org/sitemap.xml; the pages give endpoints, auth and example payloads but render their schema models as images" },
+    { "kind": "vendor-source", "url": "https://github.com/jembi/openhim-core-js/blob/master/src/koaApi.js", "result": "used", "note": "the authoritative route table (every app.use(route.<method>(...)) registration), used to enumerate the whole API" },
+    { "kind": "vendor-source", "url": "https://github.com/jembi/openhim-core-js/tree/master/src/model", "result": "used", "note": "Mongoose models, used for field names, types, enums, defaults and required flags that the docs render as images" }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source", "mock-conformance"],
+
+  "modifications": [],
+
   "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openhim/ast.json",
+    "https://openhim.org/docs/api/introduction/welcome",
+    "https://openhim.org/docs/api/introduction/authentication",
     "https://openhim.org/docs/api/transactions/read/",
     "https://openhim.org/docs/api/channels/create",
+    "https://openhim.org/docs/api/channels/polling-trigger",
     "https://openhim.org/docs/api/clients/create",
     "https://openhim.org/docs/api/tasks/create",
-    "https://github.com/jembi/openhim-core-js"
+    "https://openhim.org/docs/api/mediators/create",
+    "https://openhim.org/docs/api/users/create",
+    "https://openhim.org/docs/api/roles/create",
+    "https://openhim.org/docs/api/audits/create",
+    "https://openhim.org/docs/api/certificates/create",
+    "https://openhim.org/docs/api/contacts-group/create",
+    "https://openhim.org/docs/api/visualizer/create",
+    "https://openhim.org/docs/api/metrics/read",
+    "https://openhim.org/docs/api/logs/read",
+    "https://openhim.org/docs/api/import-export/create",
+    "https://openhim.org/docs/api/server-uptime/read",
+    "https://github.com/jembi/openhim-core-js/blob/master/src/koaApi.js",
+    "https://github.com/jembi/openhim-core-js/tree/master/src/model",
+    "https://github.com/jembi/openhim-core-js/tree/master/src/api",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openhim/ast.json",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/openhim/src/Adaptor.js"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No published OpenAPI/Swagger spec exists for the OpenHIM Core API. Authored by hand from the OpenHIM API docs, covering exactly the endpoints the adaptor calls: getTransactions (GET /transactions), getClients/createClient (GET,POST /clients), getChannels/createChannel (GET,POST /channels), getTasks/createTask (GET,POST /tasks). Added by-id GET variants for transactions/clients/channels since the adaptor passes an optional id. The real Core API is served over HTTPS on port 8080 and requires token/mutual-TLS auth; server URL is a local mock placeholder. Resource schemas (Transaction, Client, Channel, Route, Task) are focused subsets of the full OpenHIM Mongoose models."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "OpenHIM (Open Health Information Mediator) is the OpenHIE interoperability layer; this is its administrative Core API, served over HTTPS on port 8080. No machine spec is published (see attempts), so the document is hand-authored. It replaces an earlier version that deliberately covered only the four resources the adaptor names - a subset, which this registry forbids. 'Full' now means every route registered in src/koaApi.js on the openhim-core-js master branch (v8.5.1), which is the server's own authoritative route table: heartbeat, about, authentication and session, apps and import maps, users, clients, roles, transactions and bulk rerun, contact groups, channels (including audits and the polling trigger), tasks, metrics, mediators, keystore and certificates, metadata import/export and validation, audits, logs, events, visualisers and restart - 97 operations over 64 paths. The docs pages give the endpoints, the auth schemes and the example payloads, but render their schema models as images, so field names, types, enums, defaults and required flags were taken from the Mongoose models in src/model/ instead; that is why this is generated/best-effort rather than a docs-only transcription. Two deliberate modelling choices: most create, update and delete endpoints really answer with a plain-text confirmation string, not JSON, and are described that way (text/plain) rather than being given a fabricated JSON body; and POST /chw/encounter is included even though it is not a Core API route at all - it is a channel urlPattern served by the OpenHIM router on ports 5000/5001 and forwarded to a mediator, documented here because the adaptor ships a createEncounter operation that posts to that exact path (its request and response are left as free-form objects). Known gap: GET /events/{receivedTime} wraps its payload in an { events: [...] } key with no pagination sibling, so the data-object extractor does not unwrap it and no Event.json is produced even though the Event schema is defined and referenced. Still unknown: the exact response bodies of a few rarely used endpoints (mediator heartbeat with config, client property projections) and the per-deployment set of enabled authentication types."
 }

@@ -5,58 +5,69 @@
   "x-openfn-adaptor": "openhim",
   "x-source": {
     "openapi": "#/components/schemas/Task",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A batch job to rerun a set of transactions.",
+  "description": "A batch rerun task over a set of transactions.",
+  "required": [
+    "status",
+    "user",
+    "remainingTransactions",
+    "totalTransactions"
+  ],
   "properties": {
     "_id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$",
+      "description": "24-character hex MongoDB ObjectId."
     },
     "status": {
       "type": "string",
       "enum": [
-        "NotStarted",
         "Queued",
         "Processing",
         "Paused",
         "Cancelled",
-        "Completed"
-      ]
+        "Completed",
+        "Pending Async"
+      ],
+      "default": "Queued"
     },
     "transactions": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "tid": {
-            "type": "string"
-          },
-          "tstatus": {
-            "type": "string"
-          }
-        }
+        "$ref": "TaskTransaction.json"
       }
-    },
-    "totalTransactions": {
-      "type": "integer"
-    },
-    "remainingTransactions": {
-      "type": "integer"
-    },
-    "batchSize": {
-      "type": "integer"
-    },
-    "user": {
-      "type": "string"
     },
     "created": {
       "type": "string",
       "format": "date-time"
     },
-    "completed": {
+    "completedDate": {
       "type": "string",
       "format": "date-time"
+    },
+    "user": {
+      "type": "string",
+      "description": "Email of the user who created the task."
+    },
+    "remainingTransactions": {
+      "type": "integer"
+    },
+    "totalTransactions": {
+      "type": "integer"
+    },
+    "batchSize": {
+      "type": "integer",
+      "default": 1
     }
+  },
+  "example": {
+    "_id": "7461736b2d31000000000000",
+    "status": "Completed",
+    "remainingTransactions": 0,
+    "totalTransactions": 5,
+    "user": "root@openhim.org",
+    "created": "2024-03-01T10:00:00.000Z"
   }
 }

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openhim/ChannelAlert",
+  "title": "ChannelAlert",
+  "x-openfn-adaptor": "openhim",
+  "x-source": {
+    "openapi": "#/components/schemas/ChannelAlert",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "An alerting rule on a channel.",
+  "properties": {
+    "condition": {
+      "type": "string",
+      "enum": [
+        "status",
+        "auto-retry-max-attempted"
+      ],
+      "default": "status"
+    },
+    "status": {
+      "type": "string",
+      "description": "Transaction status to match, e.g. `404` or `5xx`."
+    },
+    "failureRate": {
+      "type": "number"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$",
+        "description": "24-character hex MongoDB ObjectId."
+      },
+      "description": "Contact group ids to notify."
+    },
+    "users": {
+      "type": "array",
+      "items": {
+        "$ref": "ContactUser.json"
+      }
+    }
+  }
+}

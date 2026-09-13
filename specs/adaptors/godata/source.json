@@ -2,13 +2,85 @@
   "adaptor": "godata",
   "npm": "@openfn/language-godata",
   "origin": "generated",
-  "upstreamFormat": "docs",
+  "upstreamFormat": "loopback-model-json",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "derived-from-vendor-source",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://worldhealthorganization.github.io/godata/api-docs/openapi.json",
+      "result": "not-found",
+      "note": "404 \u2014 the Go.Data docs site is a Jekyll (Just the Docs) site, not a spec-rendered reference; /swagger.json is 404 too."
+    },
+    {
+      "kind": "swagger",
+      "url": "https://worldhealthorganization.github.io/godata/api-docs/swagger.json",
+      "result": "not-found",
+      "note": "404. The docs instead tell integrators to open LoopBack Explorer at <instance>/explorer on their own Go.Data server."
+    },
+    {
+      "kind": "swagger",
+      "url": "http://<godata-instance>/explorer/swagger.json",
+      "result": "not-found",
+      "note": "Go.Data runs loopback-component-explorer (server/component-config.json mounts it at /explorer), so every INSTANCE serves a generated Swagger 2.0 document \u2014 but Go.Data is self-hosted and WHO publishes no public instance, so there is no fetchable URL to capture verbatim."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/WorldHealthOrganization/GoDataSource-API/master/swagger.json",
+      "result": "not-found",
+      "note": "Also probed server/swagger.json, docs/swagger.json, api/swagger.json, openapi.json \u2014 all 404. The spec is generated at runtime, never committed."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/WorldHealthOrganization/godata/master/api/swagger.json",
+      "result": "not-found",
+      "note": "The umbrella repo's api/ folder holds R/Python/JS sample scripts (api/README.md), not a spec."
+    },
+    {
+      "kind": "apis.guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "2529 APIs listed; no WHO / Go.Data entry."
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=godata",
+      "result": "not-found",
+      "note": "Only unrelated fuzzy matches; no WHO-owned API."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=go.data%20who",
+      "result": "not-found",
+      "note": "No vendor-published public workspace."
+    },
+    {
+      "kind": "source",
+      "url": "https://github.com/WorldHealthOrganization/GoDataSource-API",
+      "result": "used",
+      "note": "WHO publishes the whole LoopBack 3 application. Its model JSON files are a machine-readable declaration of the REST surface; openapi.json is derived from them (commit cf8a5259700792742f401ace0e68b363784c71cd, package version 2.50.3)."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-source"
+  ],
+  "modifications": [],
   "sources": [
+    "https://github.com/WorldHealthOrganization/GoDataSource-API",
+    "https://github.com/WorldHealthOrganization/GoDataSource-API/tree/master/common/models",
+    "https://github.com/WorldHealthOrganization/GoDataSource-API/blob/master/server/model-config.json",
+    "https://github.com/WorldHealthOrganization/GoDataSource-API/blob/master/server/config.json",
+    "https://github.com/WorldHealthOrganization/GoDataSource-API/tree/master/common/controllers",
     "https://worldhealthorganization.github.io/godata/api-docs/",
-    "https://www.who.int/tools/godata",
-    "https://github.com/WorldHealthOrganization/godata",
+    "https://raw.githubusercontent.com/WorldHealthOrganization/godata/master/api/README.md",
+    "https://loopback.io/doc/en/lb3/Querying-data.html",
     "https://cdn.jsdelivr.net/npm/@openfn/language-godata/ast.json"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored a focused OpenAPI from the Go.Data API docs and the adaptor surface. Endpoint paths were confirmed from the adaptor's compiled source: list/get use GET with a stringified LoopBack `filter`, and upsert performs a GET lookup then POST (create) or PUT /{id} (update). Covers outbreaks, per-outbreak contacts and cases, locations, and reference-data. Resource schemas reflect Go.Data's LoopBack model (reference-data-coded enums, address/document sub-objects); many optional fields are omitted for focus. No single machine-readable OpenAPI file is published upstream (the docs site is HTML)."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "Go.Data is WHO's outbreak investigation and contact-tracing platform; its API is a LoopBack 3 application served under /api. WHO publishes no OpenAPI or Swagger file: the docs point integrators at LoopBack Explorer on their own instance, and because Go.Data is self-hosted there is no public instance whose /explorer/swagger.json could be captured verbatim. WHO does, however, publish the entire server as GoDataSource-API, where the REST surface is declared machine-readably \u2014 models and relations in common/models/*.json + server/models/*.json, custom operations in each model's declarative `methods` block, the built-in shared methods narrowed by server/config.json (`remoting.sharedMethods`, `normalizeHttpPath: true`, `replaceOnPUT: false`) and by the `disableRemoteMethods(...)` calls in common/controllers/*.js, plus the five `nestRemoting()` calls in server/boot/nestRemoting.js. This openapi.json was derived mechanically from those files at commit cf8a5259 (v2.50.3) by reproducing LoopBack's own route derivation: 507 operations over 375 paths covering every publicly exposed model (30 resource groups; the 31st, oauthTokenRequest, is a request-body model with no routes of its own), including the full per-outbreak sub-API (cases, contacts, contacts-of-contacts, events, clusters, lab results, follow-ups, relationships, transmission chains, imports and exports). Modelled deliberately: list endpoints return bare JSON arrays (Go.Data uses no envelope); `filter`/`where` are JSON-encoded strings in the query; `PUT /{collection}/{id}` patches attributes rather than replacing, because the app sets `replaceOnPUT: false`; export endpoints that stream a file are described as binary responses. LoopBack `required: true` is a write-time validation constraint and Go.Data's Mongo documents routinely omit or null optional fields, so model properties are emitted as optional and nullable (the model's own required list is retained per schema as `x-loopback-required`). Claimed best-effort rather than complete because this is our re-implementation of LoopBack's router rather than the vendor's own generated document: a mixin- or middleware-added route would not be visible to it, and the server-root `GET /status` route (mounted outside /api by server/boot/root.js) is intentionally not modelled. Cross-referenced against the adaptor: all fifteen ast.json operations (list/get/upsert for outbreaks, cases, contacts, locations, reference-data) resolve to operations in this spec, including the GET-then-POST/PUT upsert the adaptor performs itself."
 }

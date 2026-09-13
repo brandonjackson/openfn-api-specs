@@ -5,69 +5,132 @@
   "x-openfn-adaptor": "openboxes",
   "x-source": {
     "openapi": "#/components/schemas/StockMovement",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A stock movement: an outbound (or inbound) transfer of stock between two locations. Responses always carry `id`; request bodies carry a subset.",
   "properties": {
     "id": {
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "description": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "identifier": {
-      "type": "string",
-      "example": "0000A"
-    },
-    "origin": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "destination": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "stockMovementType": {
-      "type": "string",
-      "example": "OUTBOUND"
-    },
-    "dateRequested": {
-      "type": "string",
-      "description": "MM/DD/YYYY",
-      "example": "06/10/2024"
-    },
-    "requestedBy": {
-      "$ref": "UserRef.json"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "statusCode": {
-      "type": "string",
-      "example": "PENDING"
+      "type": [
+        "string",
+        "null"
+      ]
     },
-    "status": {
-      "type": "string"
+    "origin": {
+      "allOf": [
+        {
+          "$ref": "LocationRef.json"
+        }
+      ]
+    },
+    "destination": {
+      "allOf": [
+        {
+          "$ref": "LocationRef.json"
+        }
+      ]
+    },
+    "stocklist": {
+      "allOf": [
+        {
+          "$ref": "LocationRef.json"
+        }
+      ]
+    },
+    "requestedBy": {
+      "allOf": [
+        {
+          "$ref": "UserRef.json"
+        }
+      ]
+    },
+    "dateRequested": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "MM/DD/YYYY."
+    },
+    "dateShipped": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shipmentType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trackingNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "driverName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comments": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "lineItems": {
       "type": "array",
       "items": {
-        "$ref": "StockMovementLineItem.json"
+        "$ref": "StockMovementItem.json"
       }
     }
+  },
+  "example": {
+    "id": "ff808181644d5e5b01644e5007500001",
+    "name": "new stock movement",
+    "description": "new stock movement",
+    "identifier": "483ZSA",
+    "origin": {
+      "id": "1",
+      "name": "Boston Headquarters"
+    },
+    "destination": {
+      "id": "2",
+      "name": "Miami Warehouse"
+    },
+    "dateRequested": "06/23/2018",
+    "requestedBy": {
+      "id": "1",
+      "name": "Mr Administrator",
+      "firstName": "Mr",
+      "lastName": "Administrator",
+      "email": "admin@example.org",
+      "username": "admin"
+    },
+    "lineItems": []
   }
 }

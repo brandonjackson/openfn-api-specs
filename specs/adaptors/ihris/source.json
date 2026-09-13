@@ -1,15 +1,93 @@
 {
   "adaptor": "ihris",
   "npm": "@openfn/language-ihris",
+
   "origin": "generated",
-  "upstreamFormat": "docs",
+  "upstreamFormat": "express-routes+fhir-json-schema",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "derived-from-vendor-source",
+
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://ihris.github.io/ihris-documentation/dev/fhir_http/",
+      "result": "rejected",
+      "note": "The only iHRIS API reference is a prose page listing ten /fhir routes. Used as a cross-check, not as the source: it omits /auth, /config, /es, /apps, /mhero, /translator and /taskAndRole."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/iHRIS/iHRIS/master/ihris-backend/openapi.json",
+      "result": "not-found",
+      "note": "No OpenAPI/Swagger file anywhere in the iHRIS repo; the Express app registers no swagger middleware."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/intrahealth/ihris-backend/master/package.json",
+      "result": "not-found",
+      "note": "No separate backend repo; ihris-backend lives inside iHRIS/iHRIS."
+    },
+    {
+      "kind": "apis.guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No iHRIS entry."
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=ihris",
+      "result": "not-found",
+      "note": "Only unrelated fuzzy matches (a third-party 'API HRIS'); nothing published by IntraHealth/iHRIS."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=ihris",
+      "result": "not-found",
+      "note": "No vendor-published public workspace."
+    },
+    {
+      "kind": "openapi",
+      "url": "http://<ihris-host>/fhir/api-docs",
+      "result": "not-found",
+      "note": "iHRIS runs hapiproject/hapi v6.8.0 behind its own Express app (docker-compose.yml), but the HAPI OpenAPI interceptor is not enabled and the HAPI container is not exposed through /fhir — iHRIS proxies it itself."
+    },
+    {
+      "kind": "source",
+      "url": "https://github.com/iHRIS/iHRIS/tree/master/ihris-backend",
+      "result": "used",
+      "note": "The vendor's own Express application. app.js mounts every router; routes/*.js declares every path. Commit fa66e9b375e38525236d28459ec5e5eb3875e2b2, ihris-backend 5.1.5."
+    },
+    {
+      "kind": "json-schema",
+      "url": "https://hl7.org/fhir/R4/fhir.schema.json",
+      "result": "used",
+      "note": "HL7's machine-readable FHIR R4 (4.0.1) JSON Schema, sha256 2230406893b4cf002a4ee1e5e2bbeca22ac5d2d4931b3e9ef7b9594bbc376a01 as fetched 2026-09-13; used verbatim for the resource shapes (definition closure of the resource types iHRIS uses)."
+    }
+  ],
+
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source", "vendor-docs"],
+
+  "modifications": [],
+
   "sources": [
-    "https://hl7.org/fhir/R4/practitioner.html",
-    "https://hl7.org/fhir/R4/practitionerrole.html",
-    "https://hl7.org/fhir/R4/organization.html",
+    "https://github.com/iHRIS/iHRIS",
+    "https://github.com/iHRIS/iHRIS/blob/master/ihris-backend/app.js",
+    "https://github.com/iHRIS/iHRIS/tree/master/ihris-backend/routes",
+    "https://github.com/iHRIS/iHRIS/blob/master/docker-compose.yml",
+    "https://github.com/iHRIS/iHRIS/tree/master/ig/input/fsh",
+    "https://ihris.github.io/ihris-documentation/dev/fhir_http/",
+    "https://ihris.github.io/ihris-documentation/",
+    "https://hl7.org/fhir/R4/fhir.schema.json",
     "https://hl7.org/fhir/R4/http.html",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ihris/dist/index.js",
     "https://cdn.jsdelivr.net/npm/@openfn/language-ihris/configuration-schema.json"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The ihris adaptor exposes only common + re-exported @openfn/language-fhir-4 builders over a generic HTTP client (no bespoke operations), targeting an iHRIS FHIR R4 server. Authored a focused FHIR R4 OpenAPI 3.0.3 covering the health-workforce resources iHRIS uses (Practitioner, PractitionerRole, Organization, Location) plus /metadata, using standard FHIR REST interactions and the application/fhir+json media type. Resource shapes are trimmed subsets of the HL7 FHIR R4 definitions."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "iHRIS is IntraHealth's open-source health workforce information system (a Digital Public Good). An iHRIS v5 server is the `ihris-backend` Express application in front of a HAPI FHIR R4 store (docker-compose pins hapiproject/hapi v6.8.0, reached via IHRIS_FHIR__BASE), so the API is not FHIR alone: alongside `/fhir` it serves session auth (`/auth`), site and page configuration (`/config`), Elasticsearch and SQL reporting (`/es`, `/fhir2sql`), mHero messaging (`/mhero`), translation (`/translator`), tasks and roles (`/taskAndRole`) and app management (`/apps`). No OpenAPI is published and the vendor's API page documents only ten `/fhir` routes, so this document was generated from the vendor's own two sources of truth: the route table of ihris-backend at commit fa66e9b3 (v5.1.5) — app.js's mounts plus every `router.<verb>` in routes/** — and HL7's machine-readable FHIR R4 JSON Schema (fhir.schema.json, 4.0.1) for the resource shapes, taken verbatim and narrowed to the definition closure of the resource types iHRIS profiles or names (Practitioner, PractitionerRole, Organization, Location, Basic, Person, Group, Questionnaire, QuestionnaireResponse, DocumentReference, CodeSystem, ValueSet, StructureDefinition, Library, GraphDefinition, AuditEvent, Parameters) plus Bundle, OperationOutcome and CapabilityStatement. Because iHRIS mounts one generic `/:resource/:id?` handler, generic `/fhir/{resource}` paths are modelled beside the typed ones: any R4 resource the HAPI store holds is reachable, and `contained`/`Bundle.entry.resource` are modelled as an open `Resource` schema rather than expanding to all 140+ R4 resource types. Every response declares both `application/json` and `application/fhir+json`. Claimed best-effort rather than complete for two honest reasons: the non-FHIR routes' response bodies are assembled by handler code and site configuration, so they are described as open objects rather than invented field lists; and the /auth subtree is the passport (default) variant — with `app:idp = keycloak` those routes are Keycloak's instead, which is noted on the security scheme. The Kibana reverse proxy (`/dashboards/**`) and the static file trees (`/tmp/**`, `/ihrisapp/**`) are deliberately not enumerated. Cross-referenced against the adaptor: ast.json exposes no bespoke operations (only common builders), and dist/index.js shows the surface it actually calls — `POST /auth/login` with `{ username, password }`, keeping the `Set-Cookie` session; its `fhir` namespace GETs `{baseUrl}/fhir/<path>` with the `_`-prefixed FHIR search parameters and follows Bundle `next` links; its `http` namespace can get/post/put/request any path under `baseUrl`. All of those resolve to operations in this spec."
 }

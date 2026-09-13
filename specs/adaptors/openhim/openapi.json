@@ -1,30 +1,1667 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OpenHIM Core API (mock subset)",
-    "version": "8.4.0",
-    "description": "Focused subset of the OpenHIM (Open Health Information Mediator) Core API used by the OpenFn openhim adaptor: transactions (read), clients (read/create), channels (read/create), and tasks (read/create rerun). The OpenHIM Core API is served over HTTPS on port 8080 and is authenticated. Schemas cover the resources the adaptor reads and writes.",
+    "title": "OpenHIM Core API",
+    "version": "8.5.x",
+    "description": "The administrative API of OpenHIM (Open Health Information Mediator), the OpenHIE interoperability layer that routes, persists and audits health messages between systems. The API is served over HTTPS on port 8080 and covers channels, clients, roles, users, transactions, rerun tasks, mediators, metrics, audits, logs, events, visualisers, the keystore and metadata import/export. The OpenFn openhim adaptor wraps a handful of these (transactions, clients, channels, tasks) and otherwise exposes generic http.get/post/put/_delete helpers, so any endpoint here is reachable from a job. Records are MongoDB documents keyed by a 24-hex `_id`; list endpoints return bare JSON arrays and most create/update/delete endpoints answer with a plain-text confirmation message rather than JSON.",
     "x-openfn-adaptor": "openhim"
   },
-  "servers": [{ "url": "http://localhost:8080" }],
+  "servers": [
+    {
+      "url": "https://{host}:{port}",
+      "description": "An OpenHIM Core API instance.",
+      "variables": {
+        "host": {
+          "default": "localhost",
+          "description": "OpenHIM Core host."
+        },
+        "port": {
+          "default": "8080",
+          "description": "OpenHIM Core API port."
+        }
+      }
+    },
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development instance."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Heartbeat"
+    },
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "Apps"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "Clients"
+    },
+    {
+      "name": "Roles"
+    },
+    {
+      "name": "Transactions"
+    },
+    {
+      "name": "ContactGroups"
+    },
+    {
+      "name": "Channels"
+    },
+    {
+      "name": "Tasks"
+    },
+    {
+      "name": "Metrics"
+    },
+    {
+      "name": "Mediators"
+    },
+    {
+      "name": "Keystore"
+    },
+    {
+      "name": "Metadata"
+    },
+    {
+      "name": "Audits"
+    },
+    {
+      "name": "Logs"
+    },
+    {
+      "name": "Events"
+    },
+    {
+      "name": "Visualizers"
+    },
+    {
+      "name": "Server"
+    },
+    {
+      "name": "Router"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    },
+    {
+      "sessionCookie": []
+    },
+    {
+      "tokenAuth": []
+    }
+  ],
   "paths": {
-    "/transactions": {
+    "/heartbeat": {
       "get": {
-        "operationId": "getTransactions",
-        "summary": "Read all transactions",
-        "parameters": [
-          { "name": "filterLimit", "in": "query", "schema": { "type": "integer" }, "description": "Maximum number of transactions to return" },
-          { "name": "filterPage", "in": "query", "schema": { "type": "integer" }, "description": "Zero-indexed page number, used with filterLimit" },
-          { "name": "filterRepresentation", "in": "query", "schema": { "type": "string", "enum": ["simple", "simpledetails", "bulkrerun", "full", "fulltruncate"] }, "description": "Level of detail returned" },
-          { "name": "channelID", "in": "query", "schema": { "type": "string" }, "description": "Restrict to a single channel" },
-          { "name": "filters", "in": "query", "schema": { "type": "string" }, "description": "JSON object of advanced field filters, e.g. {\"response.status\":\"200\"}" }
+        "tags": [
+          "Heartbeat"
         ],
+        "operationId": "getHeartbeat",
+        "summary": "Server and mediator uptime",
         "responses": {
           "200": {
-            "description": "List of transactions",
+            "description": "Uptime of core and of every registered mediator.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Transaction" } }
+                "schema": {
+                  "$ref": "#/components/schemas/Heartbeat"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "Publicly accessible: this route is registered before the authentication middleware."
+      }
+    },
+    "/about": {
+      "get": {
+        "tags": [
+          "Heartbeat"
+        ],
+        "operationId": "getAbout",
+        "summary": "Core version and server timezone",
+        "responses": {
+          "200": {
+            "description": "Version information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/About"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/authenticate/local": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "authenticateLocal",
+        "summary": "Authenticate with a username and password",
+        "responses": {
+          "200": {
+            "description": "The authenticated user. A session cookie is set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/authenticate/openid": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "authenticateOpenid",
+        "summary": "Authenticate through an OpenID Connect provider",
+        "responses": {
+          "200": {
+            "description": "The authenticated user. A session cookie is set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "OpenID Connect parameters, passed through to the provider.",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/authenticate/{username}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "getAuthenticationSalt",
+        "summary": "Fetch the password salt and timestamp for token authentication",
+        "responses": {
+          "200": {
+            "description": "Salt and server timestamp, used to build the `auth-token` header.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "salt": {
+                      "type": "string"
+                    },
+                    "ts": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "Deprecated with the token authentication strategy it belongs to; prefer local, basic or OpenID.",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The user's email address, URL-escaped."
+          }
+        ],
+        "deprecated": true
+      }
+    },
+    "/authentication/types": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "listAuthenticationTypes",
+        "summary": "List the authentication types this server enables",
+        "responses": {
+          "200": {
+            "description": "Enabled authentication types.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "local",
+                      "basic",
+                      "openid",
+                      "token"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "logout",
+        "summary": "End the current session",
+        "responses": {
+          "200": {
+            "description": "Logged out. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "getMe",
+        "summary": "The currently authenticated user",
+        "responses": {
+          "200": {
+            "description": "The current user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/password-reset-request/{email}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "requestPasswordReset",
+        "summary": "Send a password-reset email to a user",
+        "responses": {
+          "200": {
+            "description": "A reset token was set and the email sent. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "Publicly accessible. Rejected for `root@openhim.org` and for OpenID-provisioned users.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The user's email address."
+          }
+        ]
+      }
+    },
+    "/token/{token}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "getUserByToken",
+        "summary": "Look up the user a password-reset token belongs to",
+        "responses": {
+          "200": {
+            "description": "The user the token was issued for.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Password-reset token from the emailed link."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "setPasswordByToken",
+        "summary": "Set a password using a reset token",
+        "responses": {
+          "200": {
+            "description": "The new password was set. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Password-reset token from the emailed link."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstname": {
+                    "type": "string"
+                  },
+                  "surname": {
+                    "type": "string"
+                  },
+                  "msisdn": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apps": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "operationId": "listApps",
+        "summary": "List console portal applications",
+        "responses": {
+          "200": {
+            "description": "Applications.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/App"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Apps"
+        ],
+        "operationId": "createApp",
+        "summary": "Register a console portal application",
+        "responses": {
+          "201": {
+            "description": "The created application.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/App"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/App"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apps/{appId}": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "operationId": "getApp",
+        "summary": "Read an application",
+        "responses": {
+          "200": {
+            "description": "The application.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/App"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application ObjectId."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Apps"
+        ],
+        "operationId": "updateApp",
+        "summary": "Update an application",
+        "responses": {
+          "200": {
+            "description": "The updated application.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/App"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/App"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Apps"
+        ],
+        "operationId": "deleteApp",
+        "summary": "Delete an application",
+        "responses": {
+          "200": {
+            "description": "Deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application ObjectId."
+          }
+        ]
+      }
+    },
+    "/importmaps": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "operationId": "getImportMap",
+        "summary": "ES module import map for the registered apps",
+        "responses": {
+          "200": {
+            "description": "The import map.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMap"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "listUsers",
+        "summary": "List users",
+        "responses": {
+          "200": {
+            "description": "Users.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "createUser",
+        "summary": "Create a user",
+        "responses": {
+          "201": {
+            "description": "User created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{email}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "getUser",
+        "summary": "Read a user",
+        "responses": {
+          "200": {
+            "description": "The user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The user's email address."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "updateUser",
+        "summary": "Update a user",
+        "responses": {
+          "200": {
+            "description": "User updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The user's email address."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "deleteUser",
+        "summary": "Delete a user",
+        "responses": {
+          "200": {
+            "description": "User removed. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The user's email address."
+          }
+        ]
+      }
+    },
+    "/clients": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "listClients",
+        "summary": "List clients",
+        "responses": {
+          "200": {
+            "description": "Clients.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "createClient",
+        "summary": "Register a client",
+        "responses": {
+          "201": {
+            "description": "Client created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Client"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clients/{clientId}": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "getClient",
+        "summary": "Read a client",
+        "responses": {
+          "200": {
+            "description": "The client.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Client"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Client ObjectId."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "updateClient",
+        "summary": "Update a client",
+        "responses": {
+          "200": {
+            "description": "Client updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Client ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Client"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "deleteClient",
+        "summary": "Delete a client",
+        "responses": {
+          "200": {
+            "description": "Client removed. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Client ObjectId."
+          }
+        ]
+      }
+    },
+    "/clients/{clientId}/{property}": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "getClientProperty",
+        "summary": "Read one property of a client",
+        "responses": {
+          "200": {
+            "description": "The requested property, as an object keyed by the property name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Client ObjectId."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Name of the client property to project."
+          }
+        ]
+      }
+    },
+    "/clients/domain/{clientDomain}": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "getClientByDomain",
+        "summary": "Find a client by its domain",
+        "responses": {
+          "200": {
+            "description": "The client.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Client"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientDomain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The client's `clientDomain` value."
+          }
+        ]
+      }
+    },
+    "/roles": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "operationId": "listRoles",
+        "summary": "List roles",
+        "responses": {
+          "200": {
+            "description": "Roles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Role"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "operationId": "createRole",
+        "summary": "Create a role",
+        "responses": {
+          "201": {
+            "description": "Role created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Role"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/roles/{name}": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "operationId": "getRole",
+        "summary": "Read a role",
+        "responses": {
+          "200": {
+            "description": "The role.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Role name."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Roles"
+        ],
+        "operationId": "updateRole",
+        "summary": "Update a role",
+        "responses": {
+          "200": {
+            "description": "Role updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Role name."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Role"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Roles"
+        ],
+        "operationId": "deleteRole",
+        "summary": "Delete a role",
+        "responses": {
+          "200": {
+            "description": "Role deleted. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Role name."
+          }
+        ]
+      }
+    },
+    "/transactions": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "operationId": "listTransactions",
+        "summary": "List transactions",
+        "responses": {
+          "200": {
+            "description": "Transactions, or `{ count }` when `filterRepresentation` is `bulkrerun`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Transaction"
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "Results are trimmed to what the caller's roles allow: a user without `transaction-view-body-*` gets bodies stripped, and channels the user cannot view are excluded.",
+        "parameters": [
+          {
+            "name": "filterLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of transactions to return."
+          },
+          {
+            "name": "filterPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Zero-based page index, used with `filterLimit`."
+          },
+          {
+            "name": "filterRepresentation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "How much of each transaction to return.",
+            "enum": [
+              "simple",
+              "simpledetails",
+              "bulkrerun",
+              "full",
+              "fulltruncate"
+            ]
+          },
+          {
+            "name": "filters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A JSON object of Mongo-style filters, e.g. `{\"response.status\":\"404\"}`."
+          },
+          {
+            "name": "channelID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restrict to one channel."
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "operationId": "createTransaction",
+        "summary": "Record a transaction",
+        "responses": {
+          "201": {
+            "description": "Transaction created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
               }
             }
           }
@@ -33,103 +1670,545 @@
     },
     "/transactions/{transactionId}": {
       "get": {
-        "operationId": "getTransaction",
-        "summary": "Read a single transaction by id",
-        "parameters": [
-          { "name": "transactionId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Transactions"
         ],
+        "operationId": "getTransaction",
+        "summary": "Read a transaction",
         "responses": {
           "200": {
-            "description": "A transaction",
+            "description": "The transaction.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Transaction" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Transaction ObjectId."
+          },
+          {
+            "name": "filterRepresentation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "How much of the transaction to return.",
+            "enum": [
+              "simple",
+              "simpledetails",
+              "full",
+              "fulltruncate"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Transactions"
+        ],
+        "operationId": "updateTransaction",
+        "summary": "Update a transaction",
+        "responses": {
+          "200": {
+            "description": "Transaction updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Transaction ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Transactions"
+        ],
+        "operationId": "deleteTransaction",
+        "summary": "Delete a transaction",
+        "responses": {
+          "200": {
+            "description": "Transaction deleted. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Transaction ObjectId."
+          }
+        ]
+      }
+    },
+    "/transactions/clients/{clientId}": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "operationId": "listTransactionsByClient",
+        "summary": "List the transactions of one client",
+        "responses": {
+          "200": {
+            "description": "Transactions for the client.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Client ObjectId."
+          }
+        ]
+      }
+    },
+    "/bulkrerun": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "operationId": "bulkRerunTransactions",
+        "summary": "Create rerun tasks for every transaction matching a filter",
+        "responses": {
+          "200": {
+            "description": "Rerun tasks were queued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filters": {
+                    "type": "object"
+                  },
+                  "batchSize": {
+                    "type": "integer"
+                  },
+                  "pauseQueue": {
+                    "type": "boolean"
+                  },
+                  "taskTransactionsLength": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
-    "/clients": {
+    "/groups": {
       "get": {
-        "operationId": "getClients",
-        "summary": "Read all registered client records",
+        "tags": [
+          "ContactGroups"
+        ],
+        "operationId": "listContactGroups",
+        "summary": "List contact groups",
         "responses": {
           "200": {
-            "description": "List of clients",
+            "description": "Contact groups.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Client" } }
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContactGroup"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           }
         }
       },
       "post": {
-        "operationId": "createClient",
-        "summary": "Create a new client record",
+        "tags": [
+          "ContactGroups"
+        ],
+        "operationId": "createContactGroup",
+        "summary": "Create a contact group",
+        "responses": {
+          "201": {
+            "description": "Contact group created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Client created",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactGroup"
+              }
             }
           }
         }
       }
     },
-    "/clients/{clientId}": {
+    "/groups/{contactGroupId}": {
       "get": {
-        "operationId": "getClient",
-        "summary": "Read a specific client record",
-        "parameters": [
-          { "name": "clientId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "ContactGroups"
         ],
+        "operationId": "getContactGroup",
+        "summary": "Read a contact group",
         "responses": {
           "200": {
-            "description": "A client",
+            "description": "The contact group.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactGroup"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "contactGroupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact group ObjectId."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "ContactGroups"
+        ],
+        "operationId": "updateContactGroup",
+        "summary": "Update a contact group",
+        "responses": {
+          "200": {
+            "description": "Contact group updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "contactGroupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact group ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactGroup"
+              }
+            }
+          }
         }
+      },
+      "delete": {
+        "tags": [
+          "ContactGroups"
+        ],
+        "operationId": "deleteContactGroup",
+        "summary": "Delete a contact group",
+        "responses": {
+          "200": {
+            "description": "Contact group removed. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The group is still linked to channel alerts; the body lists them.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "contactGroupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact group ObjectId."
+          }
+        ]
       }
     },
     "/channels": {
       "get": {
-        "operationId": "getChannels",
-        "summary": "Read all channel records",
+        "tags": [
+          "Channels"
+        ],
+        "operationId": "listChannels",
+        "summary": "List channels",
         "responses": {
           "200": {
-            "description": "List of channels",
+            "description": "Channels the caller may view.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Channel" } }
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Channel"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           }
         }
       },
       "post": {
+        "tags": [
+          "Channels"
+        ],
         "operationId": "createChannel",
-        "summary": "Create a new channel",
+        "summary": "Create a channel",
+        "responses": {
+          "201": {
+            "description": "Channel created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Channel" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Channel created",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Channel" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Channel"
+              }
             }
           }
         }
@@ -137,56 +2216,2361 @@
     },
     "/channels/{channelId}": {
       "get": {
-        "operationId": "getChannel",
-        "summary": "Read a specific channel record",
-        "parameters": [
-          { "name": "channelId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Channels"
         ],
+        "operationId": "getChannel",
+        "summary": "Read a channel",
         "responses": {
           "200": {
-            "description": "A channel",
+            "description": "The channel.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Channel" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Channel"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Channels"
+        ],
+        "operationId": "updateChannel",
+        "summary": "Update a channel",
+        "responses": {
+          "200": {
+            "description": "Channel updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Channel"
+              }
+            }
+          }
         }
+      },
+      "delete": {
+        "tags": [
+          "Channels"
+        ],
+        "operationId": "deleteChannel",
+        "summary": "Delete a channel",
+        "responses": {
+          "200": {
+            "description": "Channel removed, or soft-deleted when it still has transactions. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          }
+        ]
+      }
+    },
+    "/channels/{channelId}/audits": {
+      "get": {
+        "tags": [
+          "Channels"
+        ],
+        "operationId": "listChannelAudits",
+        "summary": "List the change history of a channel",
+        "responses": {
+          "200": {
+            "description": "Patches recorded for the channel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChannelAudit"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          }
+        ]
+      }
+    },
+    "/channels/{channelId}/trigger": {
+      "post": {
+        "tags": [
+          "Channels"
+        ],
+        "operationId": "triggerChannel",
+        "summary": "Trigger a polling channel immediately",
+        "responses": {
+          "200": {
+            "description": "The polling channel was triggered. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          }
+        ]
       }
     },
     "/tasks": {
       "get": {
-        "operationId": "getTasks",
-        "summary": "Read all tasks",
-        "parameters": [
-          { "name": "filterLimit", "in": "query", "schema": { "type": "integer" } },
-          { "name": "filterPage", "in": "query", "schema": { "type": "integer" } },
-          { "name": "filters", "in": "query", "schema": { "type": "string" }, "description": "JSON object of advanced field filters" }
+        "tags": [
+          "Tasks"
         ],
+        "operationId": "listTasks",
+        "summary": "List rerun tasks",
         "responses": {
           "200": {
-            "description": "List of tasks",
+            "description": "Tasks.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } }
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "filterLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of tasks to return."
+          },
+          {
+            "name": "filterPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "filters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A JSON object of Mongo-style filters."
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Tasks"
+        ],
+        "operationId": "createTask",
+        "summary": "Create a rerun task",
+        "responses": {
+          "201": {
+            "description": "Task created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreateRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "operationId": "getTask",
+        "summary": "Read a rerun task",
+        "responses": {
+          "200": {
+            "description": "The task, with its queued transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Task ObjectId."
+          },
+          {
+            "name": "filterLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of task transactions to return."
+          },
+          {
+            "name": "filterPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Zero-based page index."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Tasks"
+        ],
+        "operationId": "updateTask",
+        "summary": "Update a rerun task (pause, resume or cancel)",
+        "responses": {
+          "200": {
+            "description": "Task updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Task ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Task"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tasks"
+        ],
+        "operationId": "deleteTask",
+        "summary": "Delete a rerun task",
+        "responses": {
+          "200": {
+            "description": "Task deleted. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Task ObjectId."
+          }
+        ]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "Metrics"
+        ],
+        "operationId": "getMetrics",
+        "summary": "Overall transaction metrics",
+        "responses": {
+          "200": {
+            "description": "Metrics for the window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metric"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "With an `Accept: application/openmetrics-text` header this same path returns Prometheus exposition text instead, and is served before the authentication middleware.",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start of the reporting window (required)."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End of the reporting window (required)."
+          }
+        ]
+      }
+    },
+    "/metrics/channels": {
+      "get": {
+        "tags": [
+          "Metrics"
+        ],
+        "operationId": "getMetricsByChannel",
+        "summary": "Transaction metrics grouped by channel",
+        "responses": {
+          "200": {
+            "description": "Metrics per channel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metric"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start of the reporting window (required)."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End of the reporting window (required)."
+          }
+        ]
+      }
+    },
+    "/metrics/channels/{channelID}": {
+      "get": {
+        "tags": [
+          "Metrics"
+        ],
+        "operationId": "getMetricsForChannel",
+        "summary": "Transaction metrics for one channel",
+        "responses": {
+          "200": {
+            "description": "Metrics for the channel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metric"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channelID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start of the reporting window (required)."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End of the reporting window (required)."
+          }
+        ]
+      }
+    },
+    "/metrics/timeseries/{timeSeries}": {
+      "get": {
+        "tags": [
+          "Metrics"
+        ],
+        "operationId": "getMetricsTimeSeries",
+        "summary": "Overall metrics as a time series",
+        "responses": {
+          "200": {
+            "description": "One metric bucket per interval.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metric"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timeSeries",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket size: minute, hour, day, week, month or year."
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start of the reporting window (required)."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End of the reporting window (required)."
+          }
+        ]
+      }
+    },
+    "/metrics/timeseries/{timeSeries}/channels": {
+      "get": {
+        "tags": [
+          "Metrics"
+        ],
+        "operationId": "getMetricsTimeSeriesByChannel",
+        "summary": "Metrics as a time series, grouped by channel",
+        "responses": {
+          "200": {
+            "description": "One metric bucket per interval and channel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metric"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timeSeries",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket size: minute, hour, day, week, month or year."
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start of the reporting window (required)."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End of the reporting window (required)."
+          }
+        ]
+      }
+    },
+    "/metrics/timeseries/{timeSeries}/channels/{channelID}": {
+      "get": {
+        "tags": [
+          "Metrics"
+        ],
+        "operationId": "getMetricsTimeSeriesForChannel",
+        "summary": "Metrics as a time series for one channel",
+        "responses": {
+          "200": {
+            "description": "One metric bucket per interval.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metric"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timeSeries",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket size: minute, hour, day, week, month or year."
+          },
+          {
+            "name": "channelID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Channel ObjectId."
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start of the reporting window (required)."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End of the reporting window (required)."
+          }
+        ]
+      }
+    },
+    "/mediators": {
+      "get": {
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "listMediators",
+        "summary": "List registered mediators",
+        "responses": {
+          "200": {
+            "description": "Mediators.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Mediator"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           }
         }
       },
       "post": {
-        "operationId": "createTask",
-        "summary": "Create a new task to rerun transactions",
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "registerMediator",
+        "summary": "Register or update a mediator",
+        "responses": {
+          "201": {
+            "description": "Mediator registered. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/TaskCreateRequest" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mediator"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mediators/{uuid}": {
+      "get": {
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "getMediator",
+        "summary": "Read a mediator",
+        "responses": {
+          "200": {
+            "description": "The mediator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mediator"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mediator URN."
+          }
+        ]
+      }
+    },
+    "/mediators/{urn}": {
+      "delete": {
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "deleteMediator",
+        "summary": "Remove a mediator",
+        "responses": {
+          "200": {
+            "description": "Mediator removed. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "urn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mediator URN."
+          }
+        ]
+      }
+    },
+    "/mediators/{urn}/heartbeat": {
+      "post": {
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "sendMediatorHeartbeat",
+        "summary": "Send a mediator heartbeat",
+        "responses": {
+          "200": {
+            "description": "The mediator's current config when `config: true` was sent, otherwise an empty body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "urn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mediator URN."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "uptime"
+                ],
+                "properties": {
+                  "uptime": {
+                    "type": "number",
+                    "description": "Mediator uptime in seconds."
+                  },
+                  "config": {
+                    "type": "boolean",
+                    "description": "Return the mediator's config in the response."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mediators/{urn}/config": {
+      "put": {
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "setMediatorConfig",
+        "summary": "Set a mediator's configuration",
+        "responses": {
+          "200": {
+            "description": "Configuration saved. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "urn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mediator URN."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mediators/{urn}/channels": {
+      "post": {
+        "tags": [
+          "Mediators"
+        ],
+        "operationId": "loadMediatorDefaultChannels",
+        "summary": "Install a mediator's default channels",
         "responses": {
           "201": {
-            "description": "Task created",
+            "description": "Default channels installed. The body is a plain-text confirmation message.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Task" } }
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "urn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mediator URN."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Names of the default channels to install; an empty array installs all of them."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/keystore/cert": {
+      "get": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "getServerCertificate",
+        "summary": "Read the server certificate",
+        "responses": {
+          "200": {
+            "description": "The server certificate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "setServerCertificate",
+        "summary": "Set the server certificate",
+        "responses": {
+          "201": {
+            "description": "Certificate stored. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cert"
+                ],
+                "properties": {
+                  "cert": {
+                    "type": "string",
+                    "description": "PEM-encoded certificate."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/keystore/key": {
+      "post": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "setServerKey",
+        "summary": "Set the server private key",
+        "responses": {
+          "201": {
+            "description": "Key stored. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "PEM-encoded private key."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/keystore/passphrase": {
+      "post": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "setServerPassphrase",
+        "summary": "Set the private key passphrase",
+        "responses": {
+          "201": {
+            "description": "Passphrase stored. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "passphrase": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/keystore/ca": {
+      "get": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "listTrustedCertificates",
+        "summary": "List trusted CA certificates",
+        "responses": {
+          "200": {
+            "description": "Trusted certificates.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Certificate"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/keystore/ca/cert": {
+      "post": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "addTrustedCertificate",
+        "summary": "Add a trusted CA certificate",
+        "responses": {
+          "201": {
+            "description": "Certificate added. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cert": {
+                    "type": "string",
+                    "description": "PEM-encoded certificate."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/keystore/ca/{certId}": {
+      "get": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "getTrustedCertificate",
+        "summary": "Read a trusted CA certificate",
+        "responses": {
+          "200": {
+            "description": "The certificate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "certId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Certificate ObjectId."
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "deleteTrustedCertificate",
+        "summary": "Remove a trusted CA certificate",
+        "responses": {
+          "200": {
+            "description": "Certificate removed. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "certId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Certificate ObjectId."
+          }
+        ]
+      }
+    },
+    "/keystore/validity": {
+      "get": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "getKeystoreValidity",
+        "summary": "Check that the server certificate and key match",
+        "responses": {
+          "200": {
+            "description": "Whether the stored certificate and key are a valid pair.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeystoreValidity"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/certificates": {
+      "post": {
+        "tags": [
+          "Keystore"
+        ],
+        "operationId": "generateCertificate",
+        "summary": "Generate a certificate or signing request",
+        "responses": {
+          "201": {
+            "description": "The generated certificate (and key, for a self-signed certificate).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "server",
+                      "client"
+                    ]
+                  },
+                  "commonName": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "locality": {
+                    "type": "string"
+                  },
+                  "organization": {
+                    "type": "string"
+                  },
+                  "organizationUnit": {
+                    "type": "string"
+                  },
+                  "emailAddress": {
+                    "type": "string"
+                  },
+                  "days": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metadata": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "exportMetadata",
+        "summary": "Export all configuration metadata",
+        "responses": {
+          "200": {
+            "description": "A single-element array holding the full export document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MetadataExport"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "importMetadata",
+        "summary": "Import configuration metadata",
+        "responses": {
+          "201": {
+            "description": "One result per imported document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MetadataImportResult"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MetadataExport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metadata/validate": {
+      "post": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "validateMetadata",
+        "summary": "Check metadata for conflicts without importing it",
+        "responses": {
+          "201": {
+            "description": "One validation result per document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MetadataImportResult"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MetadataExport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audits": {
+      "get": {
+        "tags": [
+          "Audits"
+        ],
+        "operationId": "listAudits",
+        "summary": "List ATNA audit records",
+        "responses": {
+          "200": {
+            "description": "Audit records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Audit"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "filterLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of records to return."
+          },
+          {
+            "name": "filterPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "filterRepresentation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "How much of each record to return.",
+            "enum": [
+              "simple",
+              "simpledetails",
+              "full"
+            ]
+          },
+          {
+            "name": "filters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A JSON object of Mongo-style filters."
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Audits"
+        ],
+        "operationId": "createAudit",
+        "summary": "Store an ATNA audit record",
+        "responses": {
+          "201": {
+            "description": "Audit created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Audit"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audits/{auditId}": {
+      "get": {
+        "tags": [
+          "Audits"
+        ],
+        "operationId": "getAudit",
+        "summary": "Read an audit record",
+        "responses": {
+          "200": {
+            "description": "The audit record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Audit"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "auditId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Audit ObjectId."
+          }
+        ]
+      }
+    },
+    "/audits-filter-options": {
+      "get": {
+        "tags": [
+          "Audits"
+        ],
+        "operationId": "getAuditFilterOptions",
+        "summary": "Distinct codes present in the audit repository",
+        "responses": {
+          "200": {
+            "description": "Filter options.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditFilterOptions"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logs": {
+      "get": {
+        "tags": [
+          "Logs"
+        ],
+        "operationId": "listLogs",
+        "summary": "Read server logs",
+        "responses": {
+          "200": {
+            "description": "Log lines at or above the requested level.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogEntry"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start timestamp; defaults to five minutes ago."
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End timestamp; defaults to now."
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Minimum level.",
+            "enum": [
+              "debug",
+              "info",
+              "warn",
+              "error"
+            ]
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Index of the first record to return."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of records to return."
+          }
+        ]
+      }
+    },
+    "/events/{receivedTime}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "listEvents",
+        "summary": "Transaction events since a timestamp",
+        "responses": {
+          "200": {
+            "description": "Events newer than `receivedTime`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Event"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "Events expire an hour after they are created; they drive the console visualiser.",
+        "parameters": [
+          {
+            "name": "receivedTime",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Milliseconds since the epoch."
+          }
+        ]
+      }
+    },
+    "/visualizers": {
+      "get": {
+        "tags": [
+          "Visualizers"
+        ],
+        "operationId": "listVisualizers",
+        "summary": "List visualisers",
+        "responses": {
+          "200": {
+            "description": "Visualisers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Visualizer"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Visualizers"
+        ],
+        "operationId": "createVisualizer",
+        "summary": "Create a visualiser",
+        "responses": {
+          "201": {
+            "description": "Visualiser created. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Visualizer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/visualizers/{visualizerId}": {
+      "get": {
+        "tags": [
+          "Visualizers"
+        ],
+        "operationId": "getVisualizer",
+        "summary": "Read a visualiser",
+        "responses": {
+          "200": {
+            "description": "The visualiser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Visualizer"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "visualizerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Visualiser ObjectId."
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Visualizers"
+        ],
+        "operationId": "updateVisualizer",
+        "summary": "Update a visualiser",
+        "responses": {
+          "200": {
+            "description": "Visualiser updated. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "visualizerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Visualiser ObjectId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Visualizer"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Visualizers"
+        ],
+        "operationId": "deleteVisualizer",
+        "summary": "Delete a visualiser",
+        "responses": {
+          "200": {
+            "description": "Visualiser removed. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "visualizerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Visualiser ObjectId."
+          }
+        ]
+      }
+    },
+    "/restart": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "operationId": "restartServer",
+        "summary": "Restart the OpenHIM Core server",
+        "responses": {
+          "200": {
+            "description": "The server is restarting. The body is a plain-text confirmation message.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "Used after changing the server certificate or key. Fails with 400 when the stored certificate and key do not match."
+      }
+    },
+    "/chw/encounter": {
+      "post": {
+        "tags": [
+          "Router"
+        ],
+        "operationId": "createEncounter",
+        "summary": "Post a community-health-worker encounter (sample channel route)",
+        "responses": {
+          "201": {
+            "description": "The encounter as accepted by the upstream mediator. The adaptor reads this body as text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The encounter as accepted by the upstream mediator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. The body is a plain-text message for most endpoints.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "description": "This is NOT a Core API endpoint. It is a channel `urlPattern` served by the OpenHIM router (ports 5000/5001 on a real deployment) and forwarded to a mediator; it is documented here because the openhim adaptor ships a `createEncounter` operation that posts to this exact path. The payload and response shape are whatever the mediator behind the channel accepts, so no fields are asserted.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Encounter payload, as accepted by the mediator behind the channel."
+              }
             }
           }
         }
@@ -194,120 +4578,2051 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "HTTP Basic authentication, when the `basic` type is enabled."
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "koa.sess",
+        "description": "Session cookie set by `POST /authenticate/local` or `/authenticate/openid`."
+      },
+      "tokenAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "auth-token",
+        "description": "Deprecated token scheme: send `auth-username`, `auth-ts`, `auth-salt` and `auth-token` (sha512 of the salt plus the password hash and timestamp)."
+      }
+    },
     "schemas": {
-      "Transaction": {
+      "Route": {
         "type": "object",
-        "description": "A logged request/response transaction routed through OpenHIM.",
+        "description": "An upstream endpoint a channel forwards to. HTTP and Kafka routes are supported.",
+        "required": [
+          "name"
+        ],
         "properties": {
-          "_id": { "type": "string" },
-          "clientID": { "type": "string" },
-          "channelID": { "type": "string" },
-          "status": { "type": "string", "enum": ["Processing", "Successful", "Completed", "Completed with error(s)", "Failed"] },
-          "request": {
-            "type": "object",
-            "properties": {
-              "host": { "type": "string" },
-              "port": { "type": "string" },
-              "path": { "type": "string" },
-              "querystring": { "type": "string" },
-              "method": { "type": "string" },
-              "headers": { "type": "object", "additionalProperties": { "type": "string" } },
-              "body": { "type": "string" },
-              "timestamp": { "type": "string", "format": "date-time" }
-            }
+          "name": {
+            "type": "string"
           },
-          "response": {
-            "type": "object",
-            "properties": {
-              "status": { "type": "integer" },
-              "headers": { "type": "object", "additionalProperties": { "type": "string" } },
-              "body": { "type": "string" },
-              "timestamp": { "type": "string", "format": "date-time" }
-            }
+          "type": {
+            "type": "string",
+            "enum": [
+              "http",
+              "kafka"
+            ],
+            "default": "http"
           },
-          "routes": { "type": "array", "items": { "type": "object" } },
-          "orchestrations": { "type": "array", "items": { "type": "object" } }
+          "cert": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "24-character hex MongoDB ObjectId."
+              }
+            ],
+            "nullable": true,
+            "description": "Client certificate from the keystore, for mutual TLS."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "enabled",
+              "disabled"
+            ],
+            "default": "enabled"
+          },
+          "secured": {
+            "type": "boolean",
+            "description": "Use TLS to reach the route."
+          },
+          "host": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65536
+          },
+          "path": {
+            "type": "string",
+            "description": "Fixed path to send to, instead of the incoming path."
+          },
+          "pathTransform": {
+            "type": "string",
+            "description": "sed-style transform applied to the incoming path."
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "The route whose response is returned to the client."
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "forwardAuthHeader": {
+            "type": "boolean",
+            "default": false
+          },
+          "waitPrimaryResponse": {
+            "type": "boolean"
+          },
+          "statusCodesCheck": {
+            "type": "string"
+          },
+          "kafkaClientId": {
+            "type": "string"
+          },
+          "kafkaTopic": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "name": "FHIR Server",
+          "type": "http",
+          "status": "enabled",
+          "secured": false,
+          "host": "localhost",
+          "port": 3447,
+          "path": "",
+          "primary": true,
+          "forwardAuthHeader": false
         }
       },
-      "Client": {
+      "ChannelAlert": {
         "type": "object",
-        "description": "A registered client that authenticates to OpenHIM to submit requests.",
-        "required": ["clientID", "name"],
+        "description": "An alerting rule on a channel.",
         "properties": {
-          "_id": { "type": "string" },
-          "clientID": { "type": "string" },
-          "name": { "type": "string" },
-          "roles": { "type": "array", "items": { "type": "string" } },
-          "passwordAlgorithm": { "type": "string" },
-          "passwordSalt": { "type": "string" },
-          "passwordHash": { "type": "string" },
-          "certFingerprint": { "type": "string" },
-          "organization": { "type": "string" },
-          "contactPerson": { "type": "string" }
+          "condition": {
+            "type": "string",
+            "enum": [
+              "status",
+              "auto-retry-max-attempted"
+            ],
+            "default": "status"
+          },
+          "status": {
+            "type": "string",
+            "description": "Transaction status to match, e.g. `404` or `5xx`."
+          },
+          "failureRate": {
+            "type": "number"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "description": "24-character hex MongoDB ObjectId."
+            },
+            "description": "Contact group ids to notify."
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactUser"
+            }
+          }
+        }
+      },
+      "RewriteRule": {
+        "type": "object",
+        "description": "A URL rewrite rule applied to response bodies.",
+        "required": [
+          "fromHost",
+          "toHost",
+          "fromPort",
+          "toPort"
+        ],
+        "properties": {
+          "fromHost": {
+            "type": "string"
+          },
+          "toHost": {
+            "type": "string"
+          },
+          "fromPort": {
+            "type": "integer",
+            "default": 80
+          },
+          "toPort": {
+            "type": "integer",
+            "default": 80
+          },
+          "pathTransform": {
+            "type": "string"
+          }
         }
       },
       "Channel": {
         "type": "object",
-        "description": "A routing configuration that maps incoming requests to upstream routes.",
-        "required": ["name", "urlPattern", "routes"],
+        "description": "A channel: a urlPattern plus the routes that requests matching it are forwarded to. Only `name` and `urlPattern` are required by the OpenHIM data model.",
+        "required": [
+          "name",
+          "urlPattern"
+        ],
         "properties": {
-          "_id": { "type": "string" },
-          "name": { "type": "string" },
-          "urlPattern": { "type": "string" },
-          "type": { "type": "string", "enum": ["http", "tcp", "tls", "polling"] },
-          "status": { "type": "string", "enum": ["enabled", "disabled", "deleted"] },
-          "authType": { "type": "string", "enum": ["public", "private"] },
-          "methods": { "type": "array", "items": { "type": "string", "enum": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT", "PATCH"] } },
-          "allow": { "type": "array", "items": { "type": "string" } },
-          "whitelist": { "type": "array", "items": { "type": "string" } },
-          "routes": { "type": "array", "items": { "$ref": "#/components/schemas/Route" } },
-          "requestBody": { "type": "boolean" },
-          "responseBody": { "type": "boolean" },
-          "rewriteUrls": { "type": "boolean" },
-          "matchContentTypes": { "type": "array", "items": { "type": "string" } },
-          "pollingSchedule": { "type": "string" },
-          "tcpHost": { "type": "string" },
-          "tcpPort": { "type": "integer" }
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "urlPattern": {
+            "type": "string",
+            "description": "Regular expression matched against the incoming request path."
+          },
+          "isAsynchronousProcess": {
+            "type": "boolean",
+            "default": false
+          },
+          "maxBodyAgeDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 36500
+          },
+          "lastBodyCleared": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeout": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600000
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "HEAD",
+                "POST",
+                "PUT",
+                "DELETE",
+                "CONNECT",
+                "OPTIONS",
+                "TRACE",
+                "PATCH"
+              ]
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "http",
+              "tcp",
+              "tls",
+              "polling"
+            ],
+            "default": "http"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1 is the highest priority."
+          },
+          "tcpPort": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65536
+          },
+          "tcpHost": {
+            "type": "string"
+          },
+          "pollingSchedule": {
+            "type": "string"
+          },
+          "requestBody": {
+            "type": "boolean"
+          },
+          "responseBody": {
+            "type": "boolean"
+          },
+          "allow": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Client roles allowed to use the channel."
+          },
+          "whitelist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IP addresses allowed without client auth."
+          },
+          "authType": {
+            "type": "string",
+            "enum": [
+              "private",
+              "public"
+            ],
+            "default": "private"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Route"
+            }
+          },
+          "matchContentTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "matchContentRegex": {
+            "type": "string"
+          },
+          "matchContentXpath": {
+            "type": "string"
+          },
+          "matchContentJson": {
+            "type": "string"
+          },
+          "matchContentValue": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "txViewAcl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "txViewFullAcl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "txRerunAcl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChannelAlert"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "enabled",
+              "disabled",
+              "deleted"
+            ],
+            "default": "enabled"
+          },
+          "rewriteUrls": {
+            "type": "boolean",
+            "default": false
+          },
+          "addAutoRewriteRules": {
+            "type": "boolean",
+            "default": true
+          },
+          "rewriteUrlsConfig": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RewriteRule"
+            }
+          },
+          "autoRetryEnabled": {
+            "type": "boolean",
+            "default": false
+          },
+          "autoRetryPeriodMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 60
+          },
+          "autoRetryMaxAttempts": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0 means unlimited."
+          },
+          "updatedBy": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "24-character hex MongoDB ObjectId."
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "_id": "6368616e2d63687700000000",
+          "name": "CHW Encounters",
+          "urlPattern": "^/chw/.*$",
+          "type": "http",
+          "status": "enabled",
+          "authType": "private",
+          "methods": [
+            "POST"
+          ],
+          "allow": [
+            "chw"
+          ]
         }
       },
-      "Route": {
+      "ChannelAudit": {
         "type": "object",
-        "required": ["name", "host", "port"],
+        "description": "One patch in a channel's change history, recorded by the patch-history plugin.",
         "properties": {
-          "name": { "type": "string" },
-          "host": { "type": "string" },
-          "port": { "type": "integer" },
-          "path": { "type": "string" },
-          "pathTransform": { "type": "string" },
-          "primary": { "type": "boolean" },
-          "type": { "type": "string", "enum": ["http", "tcp", "mllp"] },
-          "secured": { "type": "boolean" },
-          "status": { "type": "string", "enum": ["enabled", "disabled"] }
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "ops": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Client": {
+        "type": "object",
+        "description": "A system authorised to send messages through OpenHIM's router.",
+        "required": [
+          "clientID",
+          "name"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "clientID": {
+            "type": "string",
+            "description": "Unique client identifier."
+          },
+          "clientDomain": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Roles matched against a channel's `allow` list."
+          },
+          "customTokenID": {
+            "type": "string"
+          },
+          "passwordAlgorithm": {
+            "type": "string"
+          },
+          "passwordHash": {
+            "type": "string"
+          },
+          "passwordSalt": {
+            "type": "string"
+          },
+          "certFingerprint": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "softwareName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "contactPerson": {
+            "type": "string"
+          },
+          "contactPersonEmail": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "example": {
+          "_id": "636c69656e742d6368770000",
+          "clientID": "chw",
+          "name": "CHW Mobile App",
+          "roles": [
+            "chw"
+          ],
+          "organization": "MoHS"
+        }
+      },
+      "RolePermissions": {
+        "type": "object",
+        "description": "Fine-grained permission flags on a role. `*-all` flags are booleans; `*-specified` flags are lists of ids.",
+        "additionalProperties": true,
+        "properties": {
+          "channel-view-all": {
+            "type": "boolean"
+          },
+          "channel-view-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "channel-manage-all": {
+            "type": "boolean"
+          },
+          "channel-manage-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "client-view-all": {
+            "type": "boolean"
+          },
+          "client-view-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "client-manage-all": {
+            "type": "boolean"
+          },
+          "client-manage-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "client-role-view-all": {
+            "type": "boolean"
+          },
+          "client-role-view-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "client-role-manage-all": {
+            "type": "boolean"
+          },
+          "client-role-manage-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "transaction-view-all": {
+            "type": "boolean"
+          },
+          "transaction-view-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "transaction-view-body-all": {
+            "type": "boolean"
+          },
+          "transaction-view-body-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "transaction-rerun-all": {
+            "type": "boolean"
+          },
+          "transaction-rerun-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user-view": {
+            "type": "boolean"
+          },
+          "user-manage": {
+            "type": "boolean"
+          },
+          "user-role-view": {
+            "type": "boolean"
+          },
+          "user-role-manage": {
+            "type": "boolean"
+          },
+          "audit-trail-view": {
+            "type": "boolean"
+          },
+          "audit-trail-manage": {
+            "type": "boolean"
+          },
+          "contact-list-view": {
+            "type": "boolean"
+          },
+          "contact-list-manage": {
+            "type": "boolean"
+          },
+          "mediator-view-all": {
+            "type": "boolean"
+          },
+          "mediator-view-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mediator-manage-all": {
+            "type": "boolean"
+          },
+          "mediator-manage-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "certificates-view": {
+            "type": "boolean"
+          },
+          "certificates-manage": {
+            "type": "boolean"
+          },
+          "logs-view": {
+            "type": "boolean"
+          },
+          "import-export": {
+            "type": "boolean"
+          },
+          "app-view-all": {
+            "type": "boolean"
+          },
+          "app-view-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "app-manage-all": {
+            "type": "boolean"
+          },
+          "app-manage-specified": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visualizer-manage": {
+            "type": "boolean"
+          },
+          "visualizer-view": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "description": "A named set of permissions. `admin`, `manager` and `operator` are created by default.",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "name": {
+            "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/RolePermissions"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "description": "A console/API user.",
+        "required": [
+          "firstname",
+          "surname",
+          "email"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "passports": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "24-character hex MongoDB ObjectId."
+              }
+            ],
+            "nullable": true
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openid",
+              "local",
+              "token"
+            ],
+            "default": "local"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Role names the user belongs to."
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "dailyReport": {
+            "type": "boolean"
+          },
+          "weeklyReport": {
+            "type": "boolean"
+          },
+          "settings": {
+            "type": "object"
+          },
+          "token": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string",
+            "enum": [
+              "newUser",
+              "existingUser"
+            ],
+            "nullable": true
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "passwordAlgorithm": {
+            "type": "string",
+            "deprecated": true
+          },
+          "passwordHash": {
+            "type": "string",
+            "deprecated": true
+          },
+          "passwordSalt": {
+            "type": "string",
+            "deprecated": true
+          }
+        }
+      },
+      "ContactUser": {
+        "type": "object",
+        "description": "A contact inside a contact group.",
+        "required": [
+          "user",
+          "method"
+        ],
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "Email address or MSISDN, depending on `method`."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms"
+            ]
+          },
+          "maxAlerts": {
+            "type": "string",
+            "enum": [
+              "no max",
+              "1 per hour",
+              "1 per day"
+            ],
+            "default": "no max"
+          }
+        }
+      },
+      "ContactGroup": {
+        "type": "object",
+        "description": "A named group of contacts that channel alerts notify.",
+        "required": [
+          "group"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "group": {
+            "type": "string"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactUser"
+            }
+          }
+        }
+      },
+      "TransactionRequest": {
+        "type": "object",
+        "description": "The HTTP request of a transaction, route or orchestration.",
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "port": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "querystring": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "description": "The HTTP response of a transaction, route or orchestration.",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ErrorDetails": {
+        "type": "object",
+        "description": "An error captured while processing a transaction.",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          }
+        }
+      },
+      "Orchestration": {
+        "type": "object",
+        "description": "One upstream call a mediator made while handling a transaction.",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "request": {
+            "$ref": "#/components/schemas/TransactionRequest"
+          },
+          "response": {
+            "$ref": "#/components/schemas/TransactionResponse"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetails"
+          }
+        }
+      },
+      "RouteMetadata": {
+        "type": "object",
+        "description": "The result of forwarding a transaction to one route.",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "request": {
+            "$ref": "#/components/schemas/TransactionRequest"
+          },
+          "response": {
+            "$ref": "#/components/schemas/TransactionResponse"
+          },
+          "orchestrations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orchestration"
+            }
+          },
+          "properties": {
+            "type": "object"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetails"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "description": "One message that passed through the OpenHIM router, with its request, response, routes and orchestrations.",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "clientID": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "24-character hex MongoDB ObjectId."
+              }
+            ],
+            "nullable": true
+          },
+          "clientIP": {
+            "type": "string"
+          },
+          "parentID": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "24-character hex MongoDB ObjectId."
+              }
+            ],
+            "nullable": true
+          },
+          "childIDs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "description": "24-character hex MongoDB ObjectId."
+            }
+          },
+          "channelID": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "24-character hex MongoDB ObjectId."
+              }
+            ],
+            "nullable": true
+          },
+          "request": {
+            "$ref": "#/components/schemas/TransactionRequest"
+          },
+          "response": {
+            "$ref": "#/components/schemas/TransactionResponse"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RouteMetadata"
+            }
+          },
+          "orchestrations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orchestration"
+            }
+          },
+          "properties": {
+            "type": "object"
+          },
+          "canRerun": {
+            "type": "boolean",
+            "default": true
+          },
+          "autoRetry": {
+            "type": "boolean",
+            "default": false
+          },
+          "autoRetryAttempt": {
+            "type": "integer"
+          },
+          "wasRerun": {
+            "type": "boolean",
+            "default": false
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetails"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Processing",
+              "Pending Async",
+              "Successful",
+              "Completed",
+              "Completed with error(s)",
+              "Failed"
+            ]
+          }
+        },
+        "example": {
+          "_id": "74786e2d3100000000000000",
+          "clientID": "636c69656e742d6368770000",
+          "channelID": "6368616e2d63687700000000",
+          "status": "Successful",
+          "request": {
+            "path": "/chw/encounter",
+            "method": "POST",
+            "timestamp": "2024-03-01T10:05:00.000Z"
+          },
+          "response": {
+            "status": 201,
+            "timestamp": "2024-03-01T10:05:01.000Z"
+          }
+        }
+      },
+      "TaskTransaction": {
+        "type": "object",
+        "description": "One transaction queued inside a rerun task.",
+        "required": [
+          "tid",
+          "tstatus"
+        ],
+        "properties": {
+          "tid": {
+            "type": "string",
+            "description": "Id of the transaction to rerun."
+          },
+          "tstatus": {
+            "type": "string",
+            "enum": [
+              "Queued",
+              "Processing",
+              "Completed",
+              "Failed"
+            ],
+            "default": "Queued"
+          },
+          "error": {
+            "type": "string"
+          },
+          "rerunID": {
+            "type": "string"
+          },
+          "rerunStatus": {
+            "type": "string"
+          }
         }
       },
       "Task": {
         "type": "object",
-        "description": "A batch job to rerun a set of transactions.",
+        "description": "A batch rerun task over a set of transactions.",
+        "required": [
+          "status",
+          "user",
+          "remainingTransactions",
+          "totalTransactions"
+        ],
         "properties": {
-          "_id": { "type": "string" },
-          "status": { "type": "string", "enum": ["NotStarted", "Queued", "Processing", "Paused", "Cancelled", "Completed"] },
-          "transactions": { "type": "array", "items": { "type": "object", "properties": { "tid": { "type": "string" }, "tstatus": { "type": "string" } } } },
-          "totalTransactions": { "type": "integer" },
-          "remainingTransactions": { "type": "integer" },
-          "batchSize": { "type": "integer" },
-          "user": { "type": "string" },
-          "created": { "type": "string", "format": "date-time" },
-          "completed": { "type": "string", "format": "date-time" }
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Queued",
+              "Processing",
+              "Paused",
+              "Cancelled",
+              "Completed",
+              "Pending Async"
+            ],
+            "default": "Queued"
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskTransaction"
+            }
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user": {
+            "type": "string",
+            "description": "Email of the user who created the task."
+          },
+          "remainingTransactions": {
+            "type": "integer"
+          },
+          "totalTransactions": {
+            "type": "integer"
+          },
+          "batchSize": {
+            "type": "integer",
+            "default": 1
+          }
+        },
+        "example": {
+          "_id": "7461736b2d31000000000000",
+          "status": "Completed",
+          "remainingTransactions": 0,
+          "totalTransactions": 5,
+          "user": "root@openhim.org",
+          "created": "2024-03-01T10:00:00.000Z"
         }
       },
       "TaskCreateRequest": {
         "type": "object",
-        "description": "Payload to create a rerun task.",
-        "required": ["tids"],
+        "description": "Request body for creating a rerun task: either an explicit list of transaction ids or a filter.",
         "properties": {
-          "tids": { "type": "array", "items": { "type": "string" }, "description": "Transaction IDs to rerun" },
-          "batchSize": { "type": "integer", "description": "Number of transactions processed concurrently" },
-          "paused": { "type": "boolean", "description": "If true the task is created paused and not run immediately" }
+          "tids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "batchSize": {
+            "type": "integer"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "filters": {
+            "type": "object",
+            "description": "Transaction filter, when reruning by query rather than by id."
+          },
+          "filterLimit": {
+            "type": "integer"
+          },
+          "filterPage": {
+            "type": "integer"
+          }
+        }
+      },
+      "MediatorConfigDef": {
+        "type": "object",
+        "description": "Definition of one configurable mediator parameter.",
+        "properties": {
+          "param": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "bool",
+              "number",
+              "option",
+              "bigstring",
+              "map",
+              "struct",
+              "password"
+            ]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "template": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "array": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Mediator": {
+        "type": "object",
+        "description": "A registered mediator: an external service that transforms or orchestrates messages for OpenHIM.",
+        "required": [
+          "urn",
+          "version",
+          "name"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "urn": {
+            "type": "string",
+            "description": "Unique mediator URN."
+          },
+          "version": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Route"
+            }
+          },
+          "defaultChannelConfig": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          "configDefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediatorConfigDef"
+            }
+          },
+          "config": {
+            "type": "object"
+          },
+          "_configModifiedTS": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_uptime": {
+            "type": "number"
+          },
+          "_lastHeartbeat": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "App": {
+        "type": "object",
+        "description": "A console portal application (internal page, external link or ES module).",
+        "required": [
+          "name",
+          "url"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "internal",
+              "external",
+              "esmodule"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "access_roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "showInPortal": {
+            "type": "boolean",
+            "default": true
+          },
+          "showInSideBar": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EventLink": {
+        "type": "object",
+        "description": "A visualizer component bound to a channel, route or orchestration event.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "channel",
+              "primary",
+              "route",
+              "orchestration"
+            ]
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "display": {
+            "type": "string"
+          }
+        }
+      },
+      "Visualizer": {
+        "type": "object",
+        "description": "A saved console visualiser layout.",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "name": {
+            "type": "string"
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventLink"
+            }
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventLink"
+            }
+          },
+          "mediators": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "mediator": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "display": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "color": {
+            "type": "object",
+            "properties": {
+              "inactive": {
+                "type": "string"
+              },
+              "active": {
+                "type": "string"
+              },
+              "error": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          },
+          "size": {
+            "type": "object",
+            "properties": {
+              "responsive": {
+                "type": "boolean"
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              },
+              "padding": {
+                "type": "integer"
+              }
+            }
+          },
+          "time": {
+            "type": "object",
+            "properties": {
+              "updatePeriod": {
+                "type": "integer"
+              },
+              "minDisplayPeriod": {
+                "type": "integer"
+              },
+              "maxSpeed": {
+                "type": "integer"
+              },
+              "maxTimeout": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "description": "A fine-grained, short-lived transaction event used by the visualiser and alerting (expires after an hour).",
+        "required": [
+          "channelID",
+          "transactionID"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "channelID": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "transactionID": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "channel",
+              "primary",
+              "route",
+              "orchestration"
+            ]
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "start",
+              "end"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "statusType": {
+            "type": "string",
+            "enum": [
+              "success",
+              "error"
+            ]
+          },
+          "normalizedTimestamp": {
+            "type": "string"
+          },
+          "mediator": {
+            "type": "string"
+          },
+          "autoRetryAttempt": {
+            "type": "integer"
+          }
+        }
+      },
+      "CodedValue": {
+        "type": "object",
+        "description": "An ATNA coded value.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "codeSystemName": {
+            "type": "string"
+          }
+        }
+      },
+      "Audit": {
+        "type": "object",
+        "description": "An IHE ATNA audit record held in OpenHIM's audit repository.",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "rawMessage": {
+            "type": "string",
+            "description": "The raw ATNA message as received."
+          },
+          "syslog": {
+            "type": "object",
+            "properties": {
+              "prival": {
+                "type": "integer"
+              },
+              "facilityID": {
+                "type": "integer"
+              },
+              "severityID": {
+                "type": "integer"
+              },
+              "facility": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "time": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "host": {
+                "type": "string"
+              },
+              "appName": {
+                "type": "string"
+              },
+              "pid": {
+                "type": "string"
+              },
+              "msgID": {
+                "type": "string"
+              }
+            }
+          },
+          "eventIdentification": {
+            "type": "object",
+            "properties": {
+              "eventDateTime": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "eventOutcomeIndicator": {
+                "type": "string"
+              },
+              "eventActionCode": {
+                "type": "string"
+              },
+              "eventID": {
+                "$ref": "#/components/schemas/CodedValue"
+              },
+              "eventTypeCode": {
+                "$ref": "#/components/schemas/CodedValue"
+              }
+            }
+          },
+          "activeParticipant": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userID": {
+                  "type": "string"
+                },
+                "alternativeUserID": {
+                  "type": "string"
+                },
+                "userIsRequestor": {
+                  "type": "string"
+                },
+                "networkAccessPointID": {
+                  "type": "string"
+                },
+                "networkAccessPointTypeCode": {
+                  "type": "string"
+                },
+                "roleIDCode": {
+                  "$ref": "#/components/schemas/CodedValue"
+                }
+              }
+            }
+          },
+          "auditSourceIdentification": {
+            "type": "object",
+            "properties": {
+              "auditSourceID": {
+                "type": "string"
+              },
+              "auditEnterpriseSiteID": {
+                "type": "string"
+              },
+              "auditSourceTypeCode": {
+                "$ref": "#/components/schemas/CodedValue"
+              }
+            }
+          },
+          "participantObjectIdentification": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "participantObjectID": {
+                  "type": "string"
+                },
+                "participantObjectTypeCode": {
+                  "type": "string"
+                },
+                "participantObjectTypeCodeRole": {
+                  "type": "string"
+                },
+                "participantObjectIDTypeCode": {
+                  "$ref": "#/components/schemas/CodedValue"
+                },
+                "participantObjectQuery": {
+                  "type": "string"
+                },
+                "participantObjectDetail": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AuditFilterOptions": {
+        "type": "object",
+        "description": "The distinct codes present in the audit repository, for building filter drop-downs.",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "eventType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodedValue"
+            }
+          },
+          "eventID": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodedValue"
+            }
+          },
+          "activeParticipantRoleID": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodedValue"
+            }
+          },
+          "participantObjectIDTypeCode": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodedValue"
+            }
+          },
+          "auditSourceID": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Certificate": {
+        "type": "object",
+        "description": "An X.509 certificate held in the keystore.",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "24-character hex MongoDB ObjectId."
+          },
+          "country": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "locality": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "organizationUnit": {
+            "type": "string"
+          },
+          "commonName": {
+            "type": "string"
+          },
+          "emailAddress": {
+            "type": "string"
+          },
+          "validity": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "data": {
+            "type": "string",
+            "description": "PEM-encoded certificate."
+          },
+          "fingerprint": {
+            "type": "string"
+          }
+        }
+      },
+      "Metric": {
+        "type": "object",
+        "description": "Aggregated transaction metrics for one bucket (overall, per channel, or per time-series interval).",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "avgResp": {
+            "type": "number"
+          },
+          "minResp": {
+            "type": "number",
+            "nullable": true
+          },
+          "maxResp": {
+            "type": "number",
+            "nullable": true
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "successful": {
+            "type": "integer"
+          },
+          "processing": {
+            "type": "integer"
+          },
+          "completed": {
+            "type": "integer"
+          },
+          "completedWErrors": {
+            "type": "integer"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_id": {
+            "type": "object",
+            "description": "Bucket key: the channel and the calendar parts of the interval.",
+            "properties": {
+              "channelID": {
+                "type": "string",
+                "nullable": true
+              },
+              "minute": {
+                "type": "integer"
+              },
+              "hour": {
+                "type": "integer"
+              },
+              "day": {
+                "type": "integer"
+              },
+              "week": {
+                "type": "integer"
+              },
+              "month": {
+                "type": "integer"
+              },
+              "year": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "LogEntry": {
+        "type": "object",
+        "description": "One server log line from the Winston MongoDB transport.",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "level": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "Heartbeat": {
+        "type": "object",
+        "description": "Server uptime plus the last-known uptime of every registered mediator.",
+        "properties": {
+          "master": {
+            "type": "number",
+            "description": "Core uptime in seconds."
+          },
+          "mediators": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "nullable": true
+            },
+            "description": "Mediator URN to uptime in seconds, or null when no heartbeat arrived in the last minute."
+          },
+          "now": {
+            "type": "number",
+            "description": "Server time in milliseconds since the epoch."
+          }
+        }
+      },
+      "About": {
+        "type": "object",
+        "description": "Core version and server timezone.",
+        "properties": {
+          "currentCoreVersion": {
+            "type": "string"
+          },
+          "serverTimezone": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthenticationResult": {
+        "type": "object",
+        "description": "The authenticated user and a session cookie.",
+        "properties": {
+          "result": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "MetadataExport": {
+        "type": "object",
+        "description": "A full metadata export: every configuration collection in one document.",
+        "properties": {
+          "Channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          "Clients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Client"
+            }
+          },
+          "Mediators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mediator"
+            }
+          },
+          "Users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "ContactGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactGroup"
+            }
+          },
+          "Keystore": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "MetadataImportResult": {
+        "type": "object",
+        "description": "The outcome of importing or validating one metadata document.",
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "record": {
+            "type": "object"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Inserted",
+              "Updated",
+              "Valid",
+              "Conflict",
+              "Error"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "uid": {
+            "type": "string"
+          }
+        }
+      },
+      "KeystoreValidity": {
+        "type": "object",
+        "description": "Whether the server certificate and private key match.",
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ImportMap": {
+        "type": "object",
+        "description": "An ES module import map assembled from the registered `esmodule` apps.",
+        "properties": {
+          "imports": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
         }
       }
     }

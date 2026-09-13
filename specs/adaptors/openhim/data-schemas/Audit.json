@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openhim/Audit",
+  "title": "Audit",
+  "x-openfn-adaptor": "openhim",
+  "x-source": {
+    "openapi": "#/components/schemas/Audit",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "An IHE ATNA audit record held in OpenHIM's audit repository.",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$",
+      "description": "24-character hex MongoDB ObjectId."
+    },
+    "rawMessage": {
+      "type": "string",
+      "description": "The raw ATNA message as received."
+    },
+    "syslog": {
+      "type": "object",
+      "properties": {
+        "prival": {
+          "type": "integer"
+        },
+        "facilityID": {
+          "type": "integer"
+        },
+        "severityID": {
+          "type": "integer"
+        },
+        "facility": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "host": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "pid": {
+          "type": "string"
+        },
+        "msgID": {
+          "type": "string"
+        }
+      }
+    },
+    "eventIdentification": {
+      "type": "object",
+      "properties": {
+        "eventDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "eventOutcomeIndicator": {
+          "type": "string"
+        },
+        "eventActionCode": {
+          "type": "string"
+        },
+        "eventID": {
+          "$ref": "CodedValue.json"
+        },
+        "eventTypeCode": {
+          "$ref": "CodedValue.json"
+        }
+      }
+    },
+    "activeParticipant": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "userID": {
+            "type": "string"
+          },
+          "alternativeUserID": {
+            "type": "string"
+          },
+          "userIsRequestor": {
+            "type": "string"
+          },
+          "networkAccessPointID": {
+            "type": "string"
+          },
+          "networkAccessPointTypeCode": {
+            "type": "string"
+          },
+          "roleIDCode": {
+            "$ref": "CodedValue.json"
+          }
+        }
+      }
+    },
+    "auditSourceIdentification": {
+      "type": "object",
+      "properties": {
+        "auditSourceID": {
+          "type": "string"
+        },
+        "auditEnterpriseSiteID": {
+          "type": "string"
+        },
+        "auditSourceTypeCode": {
+          "$ref": "CodedValue.json"
+        }
+      }
+    },
+    "participantObjectIdentification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "participantObjectID": {
+            "type": "string"
+          },
+          "participantObjectTypeCode": {
+            "type": "string"
+          },
+          "participantObjectTypeCodeRole": {
+            "type": "string"
+          },
+          "participantObjectIDTypeCode": {
+            "$ref": "CodedValue.json"
+          },
+          "participantObjectQuery": {
+            "type": "string"
+          },
+          "participantObjectDetail": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

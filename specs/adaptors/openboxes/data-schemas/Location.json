@@ -5,40 +5,65 @@
   "x-openfn-adaptor": "openboxes",
   "x-source": {
     "openapi": "#/components/schemas/Location",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A facility, ward or bin location. Internal locations (bins, receiving areas) are Locations whose parentLocation is a depot. Responses always carry `id` and `name`; request bodies and embedded references carry a subset.",
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "description": "32-character hex identifier (or a short numeric id for seed data)."
     },
     "name": {
-      "type": "string",
-      "example": "Boston Depot"
+      "type": "string"
     },
     "description": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "locationNumber": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "locationGroup": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Location group, when the location belongs to one. Shape not documented."
+    },
+    "parentLocation": {
+      "allOf": [
+        {
+          "$ref": "Location.json"
+        }
+      ],
+      "description": "Parent facility for internal/bin locations."
     },
     "locationType": {
       "$ref": "LocationType.json"
     },
     "locationTypeCode": {
-      "type": "string",
-      "example": "DEPOT"
-    },
-    "parentLocation": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
+      "type": "string"
     }
+  },
+  "example": {
+    "id": "1",
+    "name": "Boston Headquarters",
+    "description": null,
+    "locationNumber": null,
+    "locationGroup": null,
+    "parentLocation": null,
+    "locationType": {
+      "id": "2",
+      "name": "Depot",
+      "description": "Depot",
+      "locationTypeCode": "DEPOT"
+    },
+    "locationTypeCode": "DEPOT"
   }
 }
