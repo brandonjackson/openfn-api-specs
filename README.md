@@ -45,6 +45,9 @@ specs/adaptors/
     upstream.json         verbatim upstream machine spec (source of truth), when one exists
     openapi.json          full-coverage OpenAPI 3.x (found, converted, or generated)
     source.json           provenance: origin, coverage, completeness, upstream, dates
+    endpoints.md          one line per operation, grouped by resource (derived; the compact
+                          view for an AI assistant — pick an operation here, then look its
+                          operationId up in openapi.json)
     data-schemas/
       <Object>.json       one standalone JSON Schema per data object
       index.json          lists the objects + which are top-level resources

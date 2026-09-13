@@ -2,14 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { registryRoot, openapiPath, sourcePath, dataSchemasDir, dataSchemasIndexPath } from '../src/paths.js';
+import { registryRoot, openapiPath, sourcePath, dataSchemasDir, dataSchemasIndexPath, endpointsPath } from '../src/paths.js';
 import { extractDataObjects } from '../src/data-objects.js';
+import { endpointIndexMarkdown } from '../src/endpoints.js';
 
 /**
  * Registry-wide invariants over the shipped specs. This is the standing gate
  * that CI runs on every change: it re-derives the data-schemas from each
- * openapi.json and asserts they match what is committed (no silent drift), that
- * every sibling `$ref` resolves, that provenance is well-formed, and that the
+ * openapi.json and asserts they match what is committed (no silent drift), does
+ * the same for each endpoints.md, that every sibling `$ref` resolves, that provenance is well-formed, and that the
  * OpenAPI docs have the required shape.
  */
 
@@ -93,6 +94,20 @@ test('committed data-schemas match a fresh extraction (no drift)', () => {
     }
   }
   assert.deepEqual(drifted, [], `data-schemas drift (run \`pnpm specs data-objects --all\`):\n  ${drifted.join('\n  ')}`);
+});
+
+test('committed endpoints.md matches a fresh derivation (no drift)', () => {
+  const drifted: string[] = [];
+  for (const a of adaptors) {
+    const p = endpointsPath(a);
+    if (!existsSync(p)) {
+      drifted.push(`${a}: no endpoints.md`);
+      continue;
+    }
+    const fresh = endpointIndexMarkdown(readJson(openapiPath(a)), a);
+    if (readFileSync(p, 'utf8') !== fresh) drifted.push(`${a}: endpoints.md differs`);
+  }
+  assert.deepEqual(drifted, [], `endpoint index drift (run \`pnpm specs index --all\`):\n  ${drifted.join('\n  ')}`);
 });
 
 test('every sibling $ref in a data-schema resolves to a file that exists', () => {

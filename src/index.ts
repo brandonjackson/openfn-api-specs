@@ -11,12 +11,13 @@
  * The maintenance CLI (list / status / instructions / data-objects / manifest)
  * lives in ./cli and is exposed as the `openfn-api-specs` bin.
  */
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
 import {
   dataSchemasDir,
   dataSchemasIndexPath,
+  endpointsPath,
   manifestPath,
   openapiPath,
   sourcePath,
@@ -51,6 +52,16 @@ export function getManifest(): Manifest | undefined {
 /** One adaptor's OpenAPI 3.x document, or undefined if absent. */
 export function getOpenapi(adaptor: string): any | undefined {
   return readJson<any>(openapiPath(adaptor));
+}
+
+/**
+ * One adaptor's endpoint index (`endpoints.md`): one line per operation,
+ * grouped by resource. The compact view to hand an AI assistant instead of
+ * the full openapi.json; look an operationId up in the spec once chosen.
+ */
+export function getEndpointIndex(adaptor: string): string | undefined {
+  const p = endpointsPath(adaptor);
+  return existsSync(p) ? readFileSync(p, 'utf8') : undefined;
 }
 
 /** One adaptor's spec provenance, or undefined if absent. */
@@ -100,6 +111,7 @@ export {
   sourcePath,
   dataSchemasDir,
   dataSchemasIndexPath,
+  endpointsPath,
   manifestPath,
   maintenanceLogPath,
 } from './paths.js';
@@ -141,6 +153,30 @@ async function cdnJson(relPath: string): Promise<any | undefined> {
   } catch {
     return undefined;
   }
+}
+
+/** Fetch a text file under specs/adaptors/ from the CDN; undefined on any failure. */
+async function cdnText(relPath: string): Promise<string | undefined> {
+  if (cdnDisabled()) return undefined;
+  const key = `text:${relPath}`;
+  if (cdnCache.has(key)) return cdnCache.get(key) as string;
+  const url = `https://cdn.jsdelivr.net/gh/${CDN_REPO}@${CDN_REF}/specs/adaptors/${relPath}`;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), CDN_TIMEOUT_MS);
+    const res = await fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    if (!res.ok) return undefined;
+    const text = await res.text();
+    cdnCache.set(key, text);
+    return text;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Latest endpoint index (endpoints.md) for an adaptor (CDN-first, bundled fallback). */
+export async function fetchEndpointIndex(adaptor: string): Promise<string | undefined> {
+  return (await cdnText(`${adaptor}/endpoints.md`)) ?? getEndpointIndex(adaptor);
 }
 
 /** Latest OpenAPI doc for an adaptor (CDN-first, bundled fallback). */
