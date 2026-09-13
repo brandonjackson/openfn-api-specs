@@ -3,8 +3,8 @@
   "npm": "@openfn/language-sunbird-rc",
   "origin": "found-openapi",
   "upstreamFormat": "openapi-3.0",
-  "coverage": "full",
-  "derivedFrom": null,
+  "coverage": "subset",
+  "derivedFrom": "upstream.yaml",
   "completeness": "complete",
   "completenessReason": null,
   "modifications": [],
@@ -19,6 +19,12 @@
       "kind": "openapi",
       "url": "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/issue-api.yaml",
       "result": "used"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/registry-api.yaml",
+      "result": "not-found",
+      "note": "no published spec for the registry component; its entity endpoints are generated per deployment from the schemas registered there, and served as a per-instance Swagger"
     }
   ],
   "verifiedAgainst": [],
@@ -28,5 +34,5 @@
   ],
   "capturedAt": "2026-07-06",
   "lastCheckedAt": "2026-07-06",
-  "notes": "Complete, verbatim copy of the Sunbird-RC credential issuance OpenAPI 3.0 document (api-documentation/issue-api.yaml). A previous registry entry had typo fixes and JSON-LD field tweaks applied to this file; those content edits are removed so it now matches upstream exactly. Sunbird-RC publishes other component specs (e.g. registry) not included here."
+  "notes": "Verbatim copy of the Sunbird-RC credential issuance OpenAPI 3.0 document (api-documentation/issue-api.yaml) \u2014 complete for that component, which is why it stays the source of truth here. It is a SUBSET of the API the adaptor reaches: Sunbird-RC is multi-component, and the registry entity endpoints the adaptor's generic verbs drive (/api/v1/<entity>) are generated per deployment from the schemas registered there and published only as a per-instance Swagger, so no static document covers them. Known imprecision in the upstream document: credentialResponse types the VC's `type` as a string, while Sunbird-RC (like the W3C VC data model) returns an array."
 }

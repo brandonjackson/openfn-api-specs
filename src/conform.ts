@@ -324,6 +324,13 @@ function prepareSpec(openapi: any, opts: ConformOptions): { doc: any; formats: S
           delete node.pattern;
         }
       }
+      // `format: uri` is checked as a URI *reference*. OpenAPI treats `format`
+      // as an annotation, not a wire contract, and hyperlink fields routinely
+      // carry relative references: Twilio's own pagination links (`uri`,
+      // `first_page_uri`) are site-relative paths under properties its spec
+      // marks `uri`. Asserting absolute-URI there flags the real API's
+      // behaviour, not a bug in the payload.
+      if (node.format === 'uri') node.format = 'uri-reference';
       if (typeof node.format === 'string') formats.add(node.format);
       if (
         opts.strictAdditional &&
@@ -406,6 +413,12 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
     unicodeRegExp: false,
   });
   addFormats(ajv);
+  // `byte` means "base64-encoded", and plenty of APIs encode with the URL-safe
+  // alphabet and no padding under it: Gmail's message `payload.body.data` and
+  // attachment `data` are base64url, though the Discovery document Google
+  // generates the spec from calls them `byte`. Accept either alphabet, padded
+  // or not, so real payloads are not flagged for the spec's imprecision.
+  ajv.addFormat('byte', /^(?:[A-Za-z0-9+/_-]{4})*(?:[A-Za-z0-9+/_-]{2}={0,2}|[A-Za-z0-9+/_-]{3}=?)?$/);
   for (const f of formats) {
     // Vendor-specific or ignored formats validate as pass-through rather than throwing.
     if (ignoreFormats.has(f) || !KNOWN_FORMATS.has(f)) ajv.addFormat(f, true);
