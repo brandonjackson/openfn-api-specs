@@ -55,6 +55,10 @@ specs/adaptors/<adaptor>/
   openapi.json       full-coverage OpenAPI 3.x we serve. Equals upstream normalised
                      to 3.x, the conversion of upstream, or authored from docs/surface.
   source.json        provenance (schema below)
+  endpoints.md       one line per operation, grouped by resource — derived from
+                     openapi.json. The compact view an AI assistant reads to pick an
+                     operation (Stripe: ~60 KiB instead of ~8 MB); it then looks the
+                     operationId up in openapi.json for the body/response shape.
   data-schemas/      JSON Schema per data object, derived from openapi.json + index.json
 ```
 
@@ -154,7 +158,8 @@ every push to `main` and weekly, so the staleness clock re-evaluates over time.
    vendor's whole API. Where it doesn't, say so — a third-party rendering that
    lags the vendor, or an RPC surface that can't be enumerated, is
    `best-effort` with a reason, and stays visible in the report.
-5. **Derive.** `pnpm specs data-objects <adaptor>` regenerates the data-schemas.
+5. **Derive.** `pnpm specs data-objects <adaptor>` regenerates the data-schemas and
+   `pnpm specs index <adaptor>` regenerates `endpoints.md`.
 6. **Validate.** `pnpm test` (drift, dangling refs, provenance, OpenAPI shape).
    Fix and repeat until green.
 7. **Log + commit.** Append maintenance-log entries (below) and commit. Git is
@@ -179,10 +184,14 @@ Keep `detail` short; use `from`/`to` for before→after values. `by` is `agent` 
 
 - Every `openapi.json` is valid OpenAPI 3.x with `info.title` and `paths`.
 - Every committed data-schema equals a fresh extraction (no drift).
+- Every committed `endpoints.md` equals a fresh derivation from `openapi.json` (no drift).
 - Every sibling `$ref` resolves; every data-object declares the 2020-12 dialect.
 - `source.json` provenance is well-formed (origin in the enum, non-empty
   `sources`, `capturedAt`/`lastCheckedAt` are ISO dates).
 - A `full`/`complete` claim must not silently regress — see the coverage checks.
+- Every `openapi.json` compiles under the conformance engine (`src/conform.ts`):
+  a response schema Ajv cannot take is a `schema-error` and fails
+  `test/conform.test.ts`.
 - The committed `manifest.json` equals a fresh rebuild (so step 8 can't be
   skipped). It carries no build timestamp — `dataUpdatedAt` is derived from the
   registry's own dates, so a no-op rebuild is byte-identical.
