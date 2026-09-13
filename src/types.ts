@@ -141,11 +141,19 @@ export interface ManifestEntry {
   /** Number of those that are top-level response resources. */
   resources?: number;
   capturedAt?: string;
+  /** When this spec was last verified against upstream (the staleness clock). */
+  lastCheckedAt?: string;
   note?: string;
 }
 
 export interface Manifest {
-  generatedAt: string;
+  /**
+   * Freshest real data timestamp across the registry — the most recent
+   * `lastCheckedAt ?? capturedAt`. This is when the registry was genuinely
+   * updated, not when the file was built, so rebuilding an unchanged registry
+   * yields a byte-identical manifest. Undefined only when no adaptor has a date.
+   */
+  dataUpdatedAt?: string;
   source: string;
   totals: {
     adaptors: number;

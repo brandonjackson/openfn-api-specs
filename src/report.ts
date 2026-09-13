@@ -1,8 +1,9 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AdaptorInfo } from './adaptors.js';
 import { adaptorDir, dataSchemasIndexPath, openapiPath, registryRoot, sourcePath } from './paths.js';
 import type { FeedbackStatus, SpecSource } from './types.js';
+import { daysBetween, readJsonSafe as readJson } from './util.js';
 
 /**
  * The feedback pillar of the maintenance loop (see AGENTS.md): classify every
@@ -18,21 +19,6 @@ export interface FeedbackRow {
   adaptor: string;
   status: FeedbackStatus;
   reason: string;
-}
-
-function readJson<T>(path: string): T | undefined {
-  if (!existsSync(path)) return undefined;
-  try {
-    return JSON.parse(readFileSync(path, 'utf8')) as T;
-  } catch {
-    return undefined;
-  }
-}
-
-function daysBetween(isoDate: string, now: Date): number | undefined {
-  const t = Date.parse(isoDate);
-  if (Number.isNaN(t)) return undefined;
-  return Math.floor((now.getTime() - t) / 86_400_000);
 }
 
 /** Classify one adaptor. `now` and `staleAfterDays` are injected for testability. */
