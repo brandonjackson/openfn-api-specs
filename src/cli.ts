@@ -193,6 +193,13 @@ function flag(argv: string[], name: string): string | undefined {
  * bytes (and so `upstream.contentHash`) have not moved, only the derivation has,
  * and nothing should be refetched to rebuild it.
  *
+ * `--from=<file>` captures bytes the agent already fetched by other means, while
+ * still recording `--url` as the canonical `specUrl`. Some vendors only serve
+ * their spec to a logged-in client (DHIS2 and OpenMRS both publish theirs from
+ * an authenticated endpoint on their own demo servers), and credentials must
+ * never end up in a committed `specUrl`. The verbatim contract is unchanged: the
+ * bytes on disk are written and hashed exactly as read.
+ *
  * The `coverage`/`completeness` claims are NOT written here: whether a spec
  * really covers the whole vendor API is the agent's judgement to make and
  * record, not something a fetch can assert. Pass `--complete` once verified.
@@ -238,12 +245,17 @@ async function cmdConvert(argv: string[]): Promise<void> {
     return;
   }
 
+  // --from: bytes fetched out of band (an authenticated endpoint, say). The URL
+  // still goes on record as where the spec canonically lives.
+  const from = flag(argv, 'from');
+  if (from && !existsSync(from)) throw new Error(`--from file not found: ${from}`);
   const result = await capture({
     adaptor: adaptor.name,
     specUrl: url,
     upstreamBase: join(dir, 'upstream'),
     openapiTarget: openapiPath(adaptor.name),
     today: today(),
+    ...(from ? { bytes: readFileSync(from, 'utf8') } : {}),
   });
 
   // A re-capture in a different format must not leave the old file behind:
@@ -368,11 +380,13 @@ const USAGE = `Usage: pnpm specs <command>
   missing                       Print adaptors with no OpenAPI spec (newline-separated).
   instructions <a…|--missing|--all>
                                 Emit agentic work order(s) for finding/generating specs.
-  convert <a> [--url=<specUrl>] [--complete] [--note=<text>]
+  convert <a> [--url=<specUrl>] [--from=<file>] [--complete] [--note=<text>]
                                 Capture an upstream machine spec (OpenAPI 3.x / Swagger 2.0 /
                                 Google Discovery): commit it verbatim as upstream.<ext>, derive
                                 openapi.json, record provenance + contentHash. With no --url,
-                                re-derive openapi.json from the committed upstream.
+                                re-derive openapi.json from the committed upstream. --from reads
+                                the bytes from a local file (for specs behind a login) while
+                                still recording --url as the canonical spec URL.
   data-objects <a…|--all>       Extract standalone data-object schemas into data-schemas/.
   index <a…|--all>              Write endpoints.md: one line per operation, grouped by resource.
   manifest                      Rebuild specs/adaptors/manifest.json.
