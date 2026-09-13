@@ -71,6 +71,7 @@ pnpm specs convert <a> [--url=<spec>] # capture an upstream machine spec (the ca
 pnpm specs data-objects <a|--all>     # extract standalone data-object schemas
 pnpm specs manifest                   # rebuild manifest.json
 pnpm specs site                       # build the static status dashboard (site/index.html)
+pnpm specs conform <a> --exchanges=<f> # check recorded HTTP traffic against an adaptor's spec
 ```
 
 The **finding step is agentic**: `pnpm specs instructions` emits a precise work
@@ -91,6 +92,48 @@ API is a judgement to make and record, not something a fetch can assert; pass
 Run it with no `--url` to re-derive `openapi.json` from the upstream already
 committed — what you want after changing a converter, since the upstream bytes
 (and so the `contentHash`) have not moved.
+
+
+## Conformance engine
+
+`createConformer(openapi)` (exported from the package, and behind
+`pnpm specs conform`) answers one question: does an observed HTTP exchange
+conform to the spec? It is transport-agnostic on purpose. You hand it a
+recorded request/response pair and it returns violations, so the same engine
+checks a mock server, a real adaptor run against a live instance, or a captured
+HAR, without this repo knowing anything about who produced the traffic.
+
+```ts
+import { createConformer, getOpenapi } from 'openfn-api-specs';
+
+const c = createConformer(getOpenapi('dhis2'), { serverPrefixes: ['/dhis2'] });
+c.check({ method: 'GET', path: '/dhis2/api/organisationUnits?fields=id', status: 200, responseBody });
+// -> [{ kind: 'response-schema', operation: 'GET /api/organisationUnits', pointer: '/pager', message: '...' }]
+c.coverage(); // { hit, missed, unmatched, exchanges } — which spec operations the traffic reached
+```
+
+- **Matching**: concrete path (query string ignored) against every operation's
+  template, bare and behind each `servers[].url` path prefix (CommCare's
+  `/a/{domain}`), most-literal template wins. Extra mount prefixes go in
+  `serverPrefixes`.
+- **Status**: the schema for the status that actually came back
+  (`responses[status]`, then `2XX`-style ranges, then `default`), never the
+  spec's preferred success code. An undocumented status is an `unknown-status`
+  violation.
+- **Tolerance**: extra fields pass unless the spec forbids them
+  (`strictAdditional: true` flips that), unknown vendor `format`s pass,
+  `ignoreFormats` silences a known one, `checkRequests: false` skips request
+  bodies for traffic you don't control. Non-JSON responses are not
+  schema-checked.
+- **Hand-off format**: JSON Lines of `{ method, path, status, requestBody?,
+  responseBody?, contentType? }` (`parseExchangesJsonl` / `toExchangesJsonl`).
+  A traffic producer writes that file; `pnpm specs conform <adaptor>
+  --exchanges=<file>` prints violations grouped by operation plus coverage and
+  exits 1 on any violation (`--json` for a machine-readable report).
+
+OpenAPI 3.0 idioms that JSON Schema 2020-12 lacks (`nullable`, boolean
+`exclusiveMinimum`, a non-array `required`) are rewritten on a private copy of
+the spec before validation; the committed `openapi.json` is never touched.
 
 ## Status dashboard
 

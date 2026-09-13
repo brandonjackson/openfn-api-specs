@@ -93,6 +93,19 @@ export function getDataObjects(adaptor: string): Record<string, any> {
 }
 
 export {
+  createConformer,
+  parseExchangesJsonl,
+  toExchangesJsonl,
+  groupViolations,
+  formatConformanceReport,
+  normalizePath,
+  serverPathPrefixes,
+} from './conform.js';
+export type { Exchange, Violation, ViolationKind, ConformOptions, Conformer, Coverage } from './conform.js';
+export { parseSpec } from './spec-parser.js';
+export type { ParsedOperation, ParsedSpec } from './spec-parser.js';
+
+export {
   registryRoot,
   adaptorDir,
   openapiPath,

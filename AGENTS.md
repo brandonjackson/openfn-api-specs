@@ -183,6 +183,9 @@ Keep `detail` short; use `from`/`to` for before→after values. `by` is `agent` 
 - `source.json` provenance is well-formed (origin in the enum, non-empty
   `sources`, `capturedAt`/`lastCheckedAt` are ISO dates).
 - A `full`/`complete` claim must not silently regress — see the coverage checks.
+- Every `openapi.json` compiles under the conformance engine (`src/conform.ts`):
+  a response schema Ajv cannot take is a `schema-error` and fails
+  `test/conform.test.ts`.
 - The committed `manifest.json` equals a fresh rebuild (so step 8 can't be
   skipped). It carries no build timestamp — `dataUpdatedAt` is derived from the
   registry's own dates, so a no-op rebuild is byte-identical.
