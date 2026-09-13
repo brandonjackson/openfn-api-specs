@@ -13,7 +13,11 @@
  *   4. data-objects <a|--all>
  *                — extract one standalone JSON Schema per data object (the
  *                  closure of the API's response resources) into data-schemas/.
- *   5. manifest  — rebuild the aggregate index/coverage report.
+ *   5. index <a|--all>
+ *                — write endpoints.md: one line per operation, grouped by
+ *                  resource. The compact view an AI assistant reads instead of
+ *                  the multi-megabyte openapi.json.
+ *   6. manifest  — rebuild the aggregate index/coverage report.
  *
  * See specs/adaptors/README.md for the on-disk layout.
  */
@@ -22,6 +26,7 @@ import { dirname, join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
 import { capture, staleUpstreams } from './convert.js';
 import { extractDataObjects } from './data-objects.js';
+import { buildEndpointIndex, renderEndpointIndex } from './endpoints.js';
 import { instructionsFor } from './instructions.js';
 import { buildManifest } from './manifest.js';
 import { report as buildReport, orphanDirs, type FeedbackRow } from './report.js';
@@ -30,6 +35,7 @@ import {
   adaptorDir,
   dataSchemasDir,
   dataSchemasIndexPath,
+  endpointsPath,
   manifestPath,
   openapiPath,
   sourcePath,
@@ -138,6 +144,38 @@ async function cmdDataObjects(argv: string[]): Promise<void> {
   }
 }
 
+/**
+ * `index <a…|--all>` — write `endpoints.md`: the compact endpoint list an AI
+ * assistant (or a human) reads to pick an operation without opening the full
+ * spec. Pure function of openapi.json; `pnpm test` re-derives it and fails on
+ * drift, exactly as for data-schemas.
+ */
+async function cmdIndex(argv: string[]): Promise<void> {
+  const adaptors = await loadAdaptors();
+  const targets = argv.includes('--all')
+    ? adaptors.filter((a) => has(openapiPath(a.name)))
+    : selectTargets(adaptors, argv);
+  if (targets.length === 0) throw new Error('Specify adaptor name(s) or --all.');
+
+  for (const a of targets) {
+    const p = openapiPath(a.name);
+    if (!has(p)) {
+      console.log(`  ✗ ${a.name}: no openapi.json`);
+      continue;
+    }
+    const index = buildEndpointIndex(JSON.parse(readFileSync(p, 'utf8')), a.name);
+    const md = renderEndpointIndex(index);
+    const target = endpointsPath(a.name);
+    const before = has(target) ? readFileSync(target, 'utf8') : undefined;
+    writeFileSync(target, md);
+    const mark = before === undefined ? '+' : before === md ? '=' : '~';
+    console.log(
+      `  ${mark} ${a.name}: ${index.operations} operation(s) in ${index.groups.length} resource(s) → endpoints.md ` +
+        `(${(md.length / 1024).toFixed(0)} KiB)`
+    );
+  }
+}
+
 /** Read the `--flag=value` form out of argv. */
 function flag(argv: string[], name: string): string | undefined {
   const hit = argv.find((a) => a.startsWith(`--${name}=`));
@@ -203,7 +241,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
         `(${rebuilt.operations} operations)`
     );
     for (const w of rebuilt.warnings.slice(0, 10)) console.log(`    ! ${w}`);
-    if (before !== after) console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm test`);
+    if (before !== after) console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm specs index ${adaptor.name} && pnpm test`);
     return;
   }
 
@@ -261,7 +299,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
   console.log(`    upstream: ${result.upstreamPath.split('/').pop()} (${(result.bytes / 1024).toFixed(0)} KiB, ${result.contentHash.slice(0, 19)}…)`);
   for (const w of result.warnings.slice(0, 10)) console.log(`    ! ${w}`);
   if (result.warnings.length > 10) console.log(`    ! …and ${result.warnings.length - 10} more warning(s)`);
-  console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm test`);
+  console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm specs index ${adaptor.name} && pnpm test`);
 }
 
 async function cmdReport(argv: string[]): Promise<void> {
@@ -350,6 +388,7 @@ const USAGE = `Usage: pnpm specs <command>
                                 the bytes from a local file (for specs behind a login) while
                                 still recording --url as the canonical spec URL.
   data-objects <a…|--all>       Extract standalone data-object schemas into data-schemas/.
+  index <a…|--all>              Write endpoints.md: one line per operation, grouped by resource.
   manifest                      Rebuild specs/adaptors/manifest.json.
   site [--out=<dir>] [--stale=<days>] [--refresh]
                                 Build the static status dashboard (index.html) for GitHub Pages.
@@ -372,6 +411,8 @@ async function main(): Promise<void> {
       return cmdConvert(argv);
     case 'data-objects':
       return cmdDataObjects(argv);
+    case 'index':
+      return cmdIndex(argv);
     case 'manifest':
       return cmdManifest();
     case 'site':

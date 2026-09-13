@@ -297,9 +297,9 @@ echo "sha256:$(sha256sum "$SCRATCH/upstream.new" | cut -d" " -f1)"      # compar
 - Hash unchanged: set `lastCheckedAt`, log `checked`.
 - Hash changed: diff the two files (paths added/removed, schemas changed),
   replace `upstream.*` with the new verbatim copy, update `contentHash` and
-  `fetchedAt`, re-derive `openapi.json`, re-run `pnpm specs data-objects`, set
-  `capturedAt` and `lastCheckedAt`, log `upstream-changed` with `from`/`to`
-  hashes and a `detail` naming what moved.
+  `fetchedAt`, re-derive `openapi.json`, re-run `pnpm specs data-objects` and
+  `pnpm specs index`, set `capturedAt` and `lastCheckedAt`, log
+  `upstream-changed` with `from`/`to` hashes and a `detail` naming what moved.
 - URL no longer resolves: hunt for the new location (§2). Log `error` if none
   is found and leave the committed copy in place with a `notes` warning.
 
@@ -335,6 +335,7 @@ Then, in order:
 
 ```bash
 pnpm specs data-objects <adaptor>
+pnpm specs index <adaptor>
 pnpm test
 # append one maintenance-log.jsonl line (event: scraped | fixed | checked | ...)
 pnpm specs manifest
@@ -365,5 +366,6 @@ git commit -m "<adaptor>: <origin> spec from <source>, N ops / M schemas"
 - [ ] every op: `operationId`, lowest-2xx JSON schema, `$ref` to a named resource
 - [ ] list envelopes use a recognised key or a pagination sibling
 - [ ] `data-schemas/index.json` resources look like the domain objects
+- [ ] `endpoints.md` groups read as the API's resources (fix tags/paths in the spec if not)
 - [ ] `source.json`: coverage, completeness(+reason), attempts, sources, dates, notes
 - [ ] `pnpm test` green, log line appended, manifest rebuilt, committed
