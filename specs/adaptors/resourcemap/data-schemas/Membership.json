@@ -5,36 +5,43 @@
   "x-openfn-adaptor": "resourcemap",
   "x-source": {
     "openapi": "#/components/schemas/Membership",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A user's membership of a collection and the layer/site permissions it carries.",
   "properties": {
     "user_id": {
-      "type": "integer",
-      "example": 7
+      "type": "integer"
     },
     "user_display_name": {
       "type": "string",
-      "example": "Jane Doe"
+      "description": "Display name (the user's email in most deployments)."
     },
     "admin": {
-      "type": "boolean",
-      "example": false
+      "type": "boolean"
     },
     "layers": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "layer_id": {
-            "type": "integer"
-          },
-          "read": {
-            "type": "boolean"
-          },
-          "write": {
-            "type": "boolean"
-          }
+        "$ref": "LayerPermission.json"
+      }
+    },
+    "sites": {
+      "type": "object",
+      "properties": {
+        "read": {
+          "allOf": [
+            {
+              "$ref": "SitePermission.json"
+            }
+          ]
+        },
+        "write": {
+          "allOf": [
+            {
+              "$ref": "SitePermission.json"
+            }
+          ]
         }
       }
     }

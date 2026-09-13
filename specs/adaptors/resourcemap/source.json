@@ -1,13 +1,73 @@
 {
   "adaptor": "resourcemap",
   "npm": "@openfn/language-resourcemap",
+
   "origin": "generated",
   "upstreamFormat": "docs",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://github.com/instedd/resourcemap",
+      "result": "not-found",
+      "note": "Cloned instedd/resourcemap (master) and searched the whole tree for swagger/openapi artefacts: none. The API is documented on the repo wiki only."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://resourcemap.instedd.org/api/openapi.json",
+      "result": "not-found",
+      "note": "Well-known spec URLs on the hosted instance (/api/openapi.json, /swagger.json) return 404; the Rails app declares no spec route."
+    },
+    {
+      "kind": "apis.guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No instedd/resourcemap entry among the 2529 listed APIs."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=resourcemap",
+      "result": "not-found",
+      "note": "No vendor-owned public workspace or SwaggerHub definition found; web search returned nothing vendor-published."
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/instedd/resourcemap/wiki/REST_API",
+      "result": "used",
+      "note": "The vendor's REST API wiki page: routes, format suffixes, auth, and example JSON payloads for collections, sites, histories, layers and memberships."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/instedd/resourcemap/blob/master/config/routes.rb",
+      "result": "used",
+      "note": "Rails routes file used as the authoritative inventory of the api namespace, including endpoints the wiki omits (collection create/delete, sample_csv, fields, histogram, invitable users, tokens)."
+    }
+  ],
+
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source"],
+
+  "modifications": [],
+
   "sources": [
     "https://github.com/instedd/resourcemap/wiki/REST_API",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/resourcemap",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-resourcemap/ast.json"
+    "https://github.com/instedd/resourcemap/wiki/API-for-Filtering",
+    "https://github.com/instedd/resourcemap/blob/master/config/routes.rb",
+    "https://github.com/instedd/resourcemap/tree/master/app/controllers/api",
+    "https://github.com/instedd/resourcemap/blob/master/app/helpers/api/json_helper.rb",
+    "https://github.com/instedd/resourcemap/blob/master/app/helpers/api/geo_json_helper.rb",
+    "https://github.com/instedd/resourcemap/blob/master/app/serializers/api/collection_serializer.rb",
+    "https://github.com/instedd/resourcemap/blob/master/db/schema.rb",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-resourcemap/dist/index.cjs"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No machine-readable spec (OpenAPI/Swagger/Postman) exists for the InSTEDD Resource Map REST API. Authored a focused OpenAPI 3.0.3 by hand from the vendor REST API wiki. The adaptor itself only calls POST /api/collections/{collection_id}/sites.json (the submitSite operation); the other endpoints (collections list/detail/count/geo, single site get/delete/update_property/partial_update, layers/fields, site histories, memberships) are documented from the wiki to provide realistic seed shapes for the mocker. Auth is HTTP Basic (email/password) and baseUrl is per-deployment (default https://resourcemap.instedd.org). Response schemas are approximate: the wiki gives field names but few complete example payloads, so property shapes are inferred."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "InSTEDD Resource Map maps facilities and resources as sites grouped into collections; each collection defines its own layers of fields, and layer membership is also the unit of read/write permission. No machine spec exists, so this OpenAPI 3.0.3 document was authored from the vendor's REST_API wiki plus the Rails source of the open-source app - config/routes.rb for the exact routes and format suffixes, the api controllers and Api::JsonHelper/Api::GeoJsonHelper for the response envelopes, db/schema.rb and Api::CollectionSerializer for field names and types. 'Full' means the whole /api namespace: 37 operations over 30 paths (collections, sites and their histories, layers, fields, memberships, the activity feed and API tokens), up from 13. Routes carry a format suffix, so .json paths are modelled as such, with the .csv and .rss representations the server actually renders documented alongside. Two shapes of site are returned and both are modelled: Site is the query-API projection (id, name, createdAt/updatedAt, lat/long, properties) and SiteRecord is the raw record returned by the write endpoints (collection_id, lat/lng, uuid, version, location_mode). Known gaps: property values are keyed by field code in query responses and by internal es_code in write responses, so property shapes stay open; POST /api/collections/:collection_id/memberships/:id/set_layer_access.json is documented on the wiki and implemented in the controller but is not declared in the current routes.rb, so its availability is deployment-specific; and the GeoRSS/CSV representations are described rather than schematised. Conformance notes against the OpenFn mocker: the mock serves GET /api/collections/:id/sites.json, which is not a Resource Map route - the api namespace declares only POST on that member path, and the equivalent read is GET /api/collections/:id.json, which returns { name, count, totalPages, sites }. The mock also answers submitSite with 201 where Api::SitesController#create renders status 200. Both are mock defects, not spec gaps, and were left uncovered rather than invented into the spec."
 }

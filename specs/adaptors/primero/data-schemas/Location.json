@@ -5,30 +5,68 @@
   "x-openfn-adaptor": "primero",
   "x-source": {
     "openapi": "#/components/schemas/Location",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A location in the administrative hierarchy.",
   "properties": {
     "id": {
       "type": "integer"
     },
     "code": {
-      "type": "string"
-    },
-    "admin_level": {
-      "type": "integer"
+      "type": "string",
+      "description": "Location code, unique within the hierarchy."
     },
     "type": {
-      "type": "string"
+      "type": "string",
+      "description": "Admin type name, e.g. `country`, `province`, `district`."
     },
     "name": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "Localised text keyed by locale code (`en`, `fr`, `ar`, `es`, ...)."
     },
-    "hierarchy_path": {
-      "type": "string"
+    "admin_level": {
+      "type": "integer",
+      "description": "0 for the top level of the hierarchy."
+    },
+    "placename": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Localised text keyed by locale code (`en`, `fr`, `ar`, `es`, ...)."
+    },
+    "hierarchy": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Codes of this location's ancestors, top down. Returned when `hierarchy=true`."
+    },
+    "disabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
     }
+  },
+  "additionalProperties": true,
+  "example": {
+    "id": 2,
+    "code": "D01",
+    "type": "district",
+    "name": {
+      "en": "country_en::district_en"
+    },
+    "admin_level": 2,
+    "placename": {
+      "en": "district_en"
+    },
+    "hierarchy": [
+      "CT01"
+    ]
   }
 }

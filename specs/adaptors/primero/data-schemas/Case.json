@@ -5,42 +5,197 @@
   "x-openfn-adaptor": "primero",
   "x-source": {
     "openapi": "#/components/schemas/Case",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A case (child record). Beyond the attributes below, a case carries every field of every form section the caller is permitted to see, so the object is open-ended; use `GET /api/v2/forms` to discover the field set for a deployment.",
   "properties": {
     "id": {
       "type": "string",
-      "description": "UUID"
+      "format": "uuid",
+      "description": "Primero's primary key for the record."
     },
-    "case_id_display": {
-      "type": "string"
+    "enabled": {
+      "type": "boolean",
+      "description": "False once the record has been disabled."
     },
-    "name": {
-      "type": "string"
+    "record_state": {
+      "type": "boolean",
+      "description": "False once the record has been deleted (soft delete)."
     },
-    "age": {
-      "type": "integer"
+    "status": {
+      "type": "string",
+      "description": "Workflow status, e.g. `open`, `closed`, `transferred`."
     },
-    "sex": {
+    "short_id": {
       "type": "string"
     },
     "owned_by": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "`user_name` of the record owner."
     },
-    "registration_date": {
-      "type": "string",
-      "format": "date"
+    "owned_by_agency_id": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "module_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "e.g. `primeromodule-cp`, `primeromodule-gbv`."
     },
     "created_at": {
       "type": "string",
       "format": "date-time"
     },
-    "photos": {
-      "type": "array",
+    "last_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "flag_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "alert_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "case_id": {
+      "type": "string",
+      "description": "Globally unique case identifier."
+    },
+    "case_id_display": {
+      "type": "string",
+      "description": "The short identifier shown in the UI."
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name_first": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name_middle": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name_last": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name_nickname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hidden_name": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "age": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_of_birth": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "sex": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "registration_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "workflow": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "risk_level": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "protection_concerns": {
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Relative ActiveStorage URL."
+      }
+    },
+    "services_section": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "description": "Subform rows describing services and referrals."
     }
+  },
+  "additionalProperties": true,
+  "example": {
+    "id": "b3222e84-a5d7-4692-a643-1ab3d41f17d6",
+    "age": 16,
+    "sex": "female",
+    "name": "Example Child",
+    "owned_by": "primero",
+    "created_at": "2019-05-10T05:34:59.514Z",
+    "case_id_display": "f15a1a9",
+    "registration_date": "2019-05-10",
+    "photos": [
+      "/rails/active_storage/blobs/eyJfcmFpbHMiOnt9/photo.jpg"
+    ]
   }
 }

@@ -1,13 +1,79 @@
 {
   "adaptor": "divoc",
   "npm": "@openfn/language-divoc",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://github.com/egovernments/DIVOC/blob/main/interfaces/vaccination-api.yaml",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-divoc/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/divoc"
+  "origin": "converted",
+  "upstreamFormat": "swagger-2.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://web.archive.org/web/20220520100551id_/https://raw.githubusercontent.com/egovernments/DIVOC/india/interfaces/vaccination-api.yaml",
+    "format": "swagger-2.0",
+    "contentHash": "sha256:ca293d9cb0d8d29b47d18a2e1412fa95f5374e3fbecf0325552f150da856aceb",
+    "fetchedAt": "2026-09-13"
+  },
+  "attempts": [
+    {
+      "kind": "swagger",
+      "url": "https://web.archive.org/web/20220520100551id_/https://raw.githubusercontent.com/egovernments/DIVOC/india/interfaces/vaccination-api.yaml",
+      "result": "used",
+      "note": "vendor's own interfaces/vaccination-api.yaml (Swagger 2.0), recovered byte-for-byte from the Internet Archive snapshot of the raw GitHub URL after the repository itself became unreachable"
+    },
+    {
+      "kind": "swagger",
+      "url": "https://raw.githubusercontent.com/egovernments/DIVOC/main/interfaces/vaccination-api.yaml",
+      "result": "not-found",
+      "note": "the canonical vendor URL (the one the vendor's own Swagger UI loads); 404 on every branch tried (main, master, develop, release, v1, v2, india) — the egovernments/DIVOC repository was archived in Nov 2025 and no longer serves raw content"
+    },
+    {
+      "kind": "docs",
+      "url": "https://egovernments.github.io/DIVOC/developer-docs/api/admin-api.html",
+      "result": "rejected",
+      "note": "the vendor's published Swagger UI; it is a client-side shell that loads https://raw.githubusercontent.com/egovernments/DIVOC/main/interfaces/<file> at runtime, so it carries no spec of its own — used as the lead that named the spec file"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://divoc.xiv.in/divoc/api/v1/ping",
+      "result": "not-found",
+      "note": "the reference deployment named as the spec's host/basePath no longer resolves, so no /swagger.json, /openapi.json or /v3/api-docs could be probed on a live DIVOC instance"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://cdn.jsdelivr.net/gh/egovernments/DIVOC@main/interfaces/vaccination-api.yaml",
+      "result": "not-found",
+      "note": "jsdelivr's GitHub mirror reports no such file and no tagged versions for the repository"
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "2529 APIs listed, none for DIVOC / egovernments"
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=divoc",
+      "result": "not-found",
+      "note": "no DIVOC-owned API on SwaggerHub; matches were unrelated vaccination APIs"
+    },
+    {
+      "kind": "wayback",
+      "url": "https://web.archive.org/cdx/search/cdx?url=raw.githubusercontent.com/egovernments/DIVOC*",
+      "result": "used",
+      "note": "CDX index searched for every archived interfaces/*.yaml; vaccination-api.yaml on the india branch is the only API spec the archive holds (admin/registry/portal interface files were checked and are not archived)"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "DIVOC publishes a Swagger 2.0 vaccination-api.yaml on GitHub but it was not directly fetchable at capture time. The single certify endpoint (POST /v1/certify) was confirmed from the compiled adaptor bundle, and the request schema (preEnrollmentCode/recipient/vaccination/vaccinator/facility) from the adaptor's JSDoc example and DIVOC docs. Response shape (Certificate) approximated from DIVOC certificate-generation documentation. Base URL is a mock placeholder since DIVOC is self-hosted."
+  "verifiedAgainst": ["ast.json", "adaptor-source", "mock-conformance"],
+  "modifications": [],
+  "sources": [
+    "https://web.archive.org/web/20220520100551id_/https://raw.githubusercontent.com/egovernments/DIVOC/india/interfaces/vaccination-api.yaml",
+    "https://github.com/egovernments/DIVOC/blob/main/interfaces/vaccination-api.yaml",
+    "https://egovernments.github.io/DIVOC/developer-docs/api/admin-api.html",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-divoc/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-divoc/dist/index.cjs",
+    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/divoc/src/Adaptor.js"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "DIVOC (Digital Infrastructure for Vaccination & Open Credentialing) is a self-hosted digital public good for issuing verifiable vaccination certificates; each deployment runs its own host, so the adaptor takes baseUrl from the credential and servers[0] is the vendor's own reference host from the spec's host/basePath. openapi.json is the lossless 3.0.3 conversion of the vendor's Swagger 2.0 interfaces/vaccination-api.yaml — 23 operations and 11 definitions upstream, 23 operations and 11 schemas derived, nothing dropped — replacing a hand-authored single-endpoint subset. The vendor's repository (egovernments/DIVOC) was archived and no longer serves raw files, so the upstream bytes came from the Internet Archive's snapshot of the vendor's own raw URL (india branch, captured 2022-05-20) and are committed verbatim; the spec's own version is 1.0.0 and a later DIVOC release could differ, which is why the specUrl recorded is the archived one that still resolves. The vaccination API is the surface the adaptor talks to; DIVOC's separate admin/registry portal interfaces are outside this spec's (and the vendor file's) scope and are not archived anywhere we could find. Cross-reference: the adaptor's only network call, certifyVaccination -> POST /v1/certify, is present; note that the vendor spec types that request body as an ARRAY of CertificationRequest while the adaptor passes whatever the job supplies (its JSDoc example passes a single object), and the mock sandbox accepts both. Two mock endpoints have no counterpart here and are recorded as findings for the mocker rather than additions to a converted spec: GET /v1/certificate/{certificateId} (the vendor spec has GET /v1/certificates for the caller's own certificate, PUT /v1/certificate and DELETE /v1/certificates/{preEnrollmentCode}) and the Keycloak token endpoint POST /auth/realms/divoc/protocol/openid-connect/token, which belongs to the bundled Keycloak rather than to the DIVOC API."
 }

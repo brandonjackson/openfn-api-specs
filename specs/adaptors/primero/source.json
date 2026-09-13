@@ -1,14 +1,71 @@
 {
   "adaptor": "primero",
   "npm": "@openfn/language-primero",
+
   "origin": "generated",
   "upstreamFormat": "docs",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://github.com/primeroIMS/primero",
+      "result": "not-found",
+      "note": "Cloned primeroIMS/primero (main) and searched the whole tree for swagger/openapi/rswag/apipie artefacts: no machine spec at any path. The v2 API is documented as markdown under doc/api (150 files, indexed by doc/api.md)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://demo.primero.org/api/v2/openapi.json",
+      "result": "not-found",
+      "note": "Well-known spec URLs on a Primero instance (/openapi.json, /swagger.json, /api-docs) do not resolve; the Rails app serves no spec route (config/routes.rb has no swagger mount)."
+    },
+    {
+      "kind": "apis.guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No primero/primeroIMS/UNICEF entry among the 2529 listed APIs."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=primero",
+      "result": "not-found",
+      "note": "No vendor-owned public workspace found; web search for a primeroIMS OpenAPI/Swagger returned only the doc/api markdown."
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/primeroIMS/primero/blob/main/doc/api.md",
+      "result": "used",
+      "note": "The API v2 reference index; each entry links a per-endpoint markdown file with parameters and example success/error responses."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/primeroIMS/primero/blob/main/config/routes.rb",
+      "result": "used",
+      "note": "Rails routes file used as the authoritative path/method inventory, including endpoints doc/api does not describe (webhooks, codes_of_conduct, kpis, usage_reports, unused_fields_report, families/registry_records sub-resources)."
+    }
+  ],
+
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source"],
+
+  "modifications": [],
+
   "sources": [
-    "https://github.com/primeroIMS/primero/blob/master/doc/api/cases/get.md",
-    "https://raw.githubusercontent.com/primeroIMS/primero/master/doc/api/cases/get.md",
+    "https://github.com/primeroIMS/primero/blob/main/doc/api.md",
+    "https://github.com/primeroIMS/primero/tree/main/doc/api",
+    "https://github.com/primeroIMS/primero/blob/main/config/routes.rb",
+    "https://github.com/primeroIMS/primero/tree/main/app/controllers/api/v2",
+    "https://github.com/primeroIMS/primero/tree/main/app/views/api/v2",
     "https://cdn.jsdelivr.net/npm/@openfn/language-primero/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-primero/dist/index.cjs"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Primero (primeroIMS) documents its REST API v2 as markdown in the GitHub repo (doc/api) rather than a machine spec. Authored OpenAPI 3.0 by hand. Exact endpoint paths for cases, case referrals (list under /cases/{id}/referrals, bulk create under /cases/referrals, update under /cases/{id}/referrals/{id}), tokens, forms, lookups and locations were extracted from the adaptor dist source; case list response shape confirmed from the cases/get.md doc. Host is instance-specific."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "Primero (primeroIMS) is UNICEF's open-source case management system for child protection, GBV and family tracing; its v2 REST API is what the web and mobile clients use. There is no vendor machine spec, so this OpenAPI 3.0.3 document was authored from the two vendor sources that together define the API: the per-endpoint markdown under doc/api (parameters, example success and error bodies) and config/routes.rb (the authoritative method/path inventory). 'Full' here means every route the api/v2 namespace declares - 217 operations over 145 paths, covering records (cases, incidents, tracing requests, registry records, families) with their flags, alerts, attachments, approvals, transitions, history and access logs, plus the configuration, reporting, export, audit, intake and webpush surfaces. It replaces a previous 11-operation 'mock subset' that covered only what the adaptor names. Records are deliberately open-ended (additionalProperties): beyond the modelled attributes a record carries every field of every form section the caller may see, so GET /api/v2/forms is the real field-set discovery mechanism; the modelled attributes are the ones the docs show. Two known gaps: response bodies for webhooks, codes_of_conduct, kpis, usage_reports and unused_fields_report are modelled from the jbuilder views rather than from documentation, and the attachment 'preview_type' variant of GET /api/v2/:recordType/:id/attachments/:id is not modelled separately. Conformance note: the OpenFn mocker's primero plugin answers POST /api/v2/cases with 201, but Primero's Api::V2::Concerns::Record#create renders 200 (or 204 when the client supplies data.id), which is what doc/api/cases/post.md documents and what this spec declares - the mock is wrong, not the spec."
 }

@@ -5,28 +5,55 @@
   "x-openfn-adaptor": "primero",
   "x-source": {
     "openapi": "#/components/schemas/Lookup",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A lookup: a named, localised option list referenced by form fields.",
   "properties": {
     "id": {
-      "type": "string"
+      "type": "integer",
+      "description": "Numeric primary key of the lookup."
     },
     "unique_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Stable identifier, e.g. `lookup-case-status`."
     },
     "name": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "Localised text keyed by locale code (`en`, `fr`, `ar`, `es`, ...)."
     },
     "values": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": true
+        "$ref": "LookupValue.json"
       }
     }
+  },
+  "additionalProperties": true,
+  "example": {
+    "id": 2,
+    "unique_id": "lookup-case-status",
+    "name": {
+      "en": "Case Status",
+      "fr": "",
+      "es": ""
+    },
+    "values": [
+      {
+        "id": "open",
+        "display_text": {
+          "en": "Open"
+        }
+      },
+      {
+        "id": "closed",
+        "display_text": {
+          "en": "Closed"
+        }
+      }
+    ]
   }
 }
