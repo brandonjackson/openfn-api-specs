@@ -160,6 +160,43 @@ test('nullable and boolean exclusiveMinimum are honoured after rewriting', () =>
   assert.equal(v[0].pointer, '/size');
 });
 
+test('nullable on a $ref or a combinator (Stripe style) admits null and still checks the shape', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/c': {
+        get: {
+          responses: {
+            '200': {
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      address: { anyOf: [{ $ref: '#/components/schemas/Address' }], nullable: true, description: 'd' },
+                      source: { anyOf: [{ type: 'string' }, { $ref: '#/components/schemas/Address' }], nullable: true },
+                      plain: { $ref: '#/components/schemas/Address', nullable: true },
+                      one: { oneOf: [{ type: 'integer' }], nullable: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: { schemas: { Address: { type: 'object', required: ['city'], properties: { city: { type: 'string' } } } } },
+  };
+  const c = createConformer(spec);
+  assert.deepEqual(c.check({ method: 'GET', path: '/c', status: 200, responseBody: { address: null, source: null, plain: null, one: null } }), []);
+  assert.deepEqual(c.check({ method: 'GET', path: '/c', status: 200, responseBody: { address: { city: 'x' }, source: 'src_1', plain: { city: 'y' }, one: 3 } }), []);
+  const v = c.check({ method: 'GET', path: '/c', status: 200, responseBody: { address: {}, source: 5, one: 'no' } });
+  assert.ok(v.some((x) => x.pointer === '/address'));
+  assert.ok(v.some((x) => x.pointer === '/source'));
+  assert.ok(v.some((x) => x.pointer === '/one'));
+});
+
 test('unknown vendor formats pass; ignoreFormats disables a known one', () => {
   const strict = createConformer(doc);
   const bad = { id: 'a', name: 'n', deletedAt: 'not-a-date' };

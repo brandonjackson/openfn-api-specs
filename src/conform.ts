@@ -241,16 +241,23 @@ function prepareSpec(openapi: any, opts: ConformOptions): { doc: any; formats: S
     }
     if (inSchema) {
       if (node.nullable === true) {
-        if (typeof node.type === 'string') node.type = [node.type, 'null'];
-        else if (Array.isArray(node.type) && !node.type.includes('null')) node.type.push('null');
-        else if (node.type === undefined && !node.$ref) node.type = ['null', 'object', 'array', 'string', 'number', 'boolean', 'integer'];
-        else if (node.$ref) {
-          // `{ $ref, nullable: true }` — allow null alongside the referenced shape.
-          const ref = node.$ref;
-          delete node.$ref;
-          node.anyOf = [{ $ref: ref }, { type: 'null' }];
-        }
         delete node.nullable;
+        if (typeof node.type === 'string') node.type = [node.type, 'null'];
+        else if (Array.isArray(node.type)) {
+          if (!node.type.includes('null')) node.type.push('null');
+        } else {
+          // No `type` to widen: the shape lives in `$ref` / `anyOf` / `oneOf` /
+          // `allOf` (Stripe: `{ anyOf: [{ $ref }], nullable: true }`). Wrap the
+          // whole constraint so null is accepted alongside it.
+          const inner: Record<string, any> = {};
+          for (const [k, v] of Object.entries(node)) {
+            if (['description', 'title', 'example', 'examples', 'deprecated', 'readOnly', 'writeOnly', 'xml', 'externalDocs'].includes(k)) continue;
+            inner[k] = v;
+            delete node[k];
+          }
+          if (Object.keys(inner).length) node.anyOf = [inner, { type: 'null' }];
+          else node.type = ['null', 'object', 'array', 'string', 'number', 'boolean', 'integer'];
+        }
       }
       for (const k of ['exclusiveMinimum', 'exclusiveMaximum'] as const) {
         if (typeof node[k] === 'boolean') {
