@@ -14,8 +14,9 @@
  *
  * Matching: the exchange's concrete path (query string ignored) is matched
  * against every operation's path template, first bare and then behind each
- * `servers[].url` path prefix (CommCare's `/a/{domain}`, for instance), with
- * the most literal template winning. The response schema is chosen by the
+ * `servers[].url` path prefix (CommCare's `/a/{domain}`, for instance) or any
+ * trailing part of it (a base URL that already absorbs `/openmrs` out of
+ * `/openmrs/ws/rest/v1`), with the most literal template winning. The response schema is chosen by the
  * *actual* status (`responses[status]`, then `2XX`-style ranges, then
  * `default`), not by the spec's preferred success code.
  *
@@ -187,6 +188,13 @@ export function serverPathPrefixes(openapi: any): string[] {
   return [...out];
 }
 
+/** '/a/b/c' → ['/a/b/c', '/b/c', '/c'] ('' stays ['']). */
+export function trailingSubPaths(prefix: string): string[] {
+  if (!prefix) return [''];
+  const segs = prefix.split('/').filter(Boolean);
+  return segs.map((_, i) => '/' + segs.slice(i).join('/'));
+}
+
 /* ------------------------------------------------------------------ *
  * Schema preparation for Ajv
  * ------------------------------------------------------------------ */
@@ -330,10 +338,21 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   ajv.addSchema(doc, SPEC_ID);
 
   // --- matchers -----------------------------------------------------------
-  const prefixes = Array.from(new Set(['', ...serverPathPrefixes(openapi), ...(opts.serverPrefixes ?? []).map((p) => {
-    const n = normalizePath(p);
-    return n === '/' ? '' : n;
-  })]));
+  // A client's base URL may absorb any leading part of the server path: an
+  // OpenMRS credential points at `https://host/openmrs`, so the adaptor sends
+  // `/ws/rest/v1/patient` against a spec whose server is
+  // `https://demo.openmrs.org/openmrs/ws/rest/v1` and whose path is `/patient`.
+  // So every trailing sub-path of a derived server prefix is tried too.
+  const prefixes = Array.from(
+    new Set([
+      '',
+      ...serverPathPrefixes(openapi).flatMap(trailingSubPaths),
+      ...(opts.serverPrefixes ?? []).map((p) => {
+        const n = normalizePath(p);
+        return n === '/' ? '' : n;
+      }),
+    ])
+  );
 
   const matchers: Matcher[] = [];
   for (const op of parsed.operations) {

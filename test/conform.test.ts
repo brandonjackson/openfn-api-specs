@@ -8,6 +8,7 @@ import {
   parseExchangesJsonl,
   serverPathPrefixes,
   toExchangesJsonl,
+  trailingSubPaths,
   type Exchange,
 } from '../src/conform.js';
 import { adaptorDir, openapiPath } from '../src/paths.js';
@@ -100,6 +101,24 @@ test('match resolves concrete paths to templates, bare or behind a server prefix
   assert.equal(c.match('GET', '/files/report.csv')?.path, '/files/{id}.csv', 'embedded param');
   assert.equal(c.match('DELETE', '/things/abc'), undefined);
   assert.equal(c.match('GET', '/nothing'), undefined);
+});
+
+test('trailingSubPaths enumerates the base-URL absorptions of a server path', () => {
+  assert.deepEqual(trailingSubPaths('/openmrs/ws/rest/v1'), ['/openmrs/ws/rest/v1', '/ws/rest/v1', '/rest/v1', '/v1']);
+  assert.deepEqual(trailingSubPaths(''), ['']);
+});
+
+test('a base URL that absorbs part of the server path still matches', () => {
+  const spec = {
+    openapi: '3.0.3',
+    servers: [{ url: 'https://demo.openmrs.org/openmrs/ws/rest/v1' }],
+    paths: { '/patient': { get: { responses: { '200': { description: 'ok' } } } } },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/openmrs/ws/rest/v1/patient')?.path, '/patient');
+  assert.equal(c.match('GET', '/ws/rest/v1/patient')?.path, '/patient');
+  assert.equal(c.match('GET', '/patient')?.path, '/patient');
+  assert.equal(c.match('GET', '/v2/patient'), undefined);
 });
 
 test('an extra serverPrefixes option matches a mounted API', () => {

@@ -100,6 +100,7 @@ export {
   formatConformanceReport,
   normalizePath,
   serverPathPrefixes,
+  trailingSubPaths,
 } from './conform.js';
 export type { Exchange, Violation, ViolationKind, ConformOptions, Conformer, Coverage } from './conform.js';
 export { parseSpec } from './spec-parser.js';
