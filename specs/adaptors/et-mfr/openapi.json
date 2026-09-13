@@ -1,25 +1,59 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Ethiopia Master Facility Registry (MFR) API (subset)",
+    "title": "Ethiopia Master Facility Registry (MFR) API",
     "version": "2.0.0",
-    "description": "Focused OpenAPI subset of the Ethiopia Master Facility Registry (MFR) API used by the OpenFn et-mfr adaptor, a thin HTTP client (get/post/request). Covers the endpoints exercised in the adaptor examples: administrative location lookups (regions), facility retrieval and search, paged facility listing, and CSV export.",
+    "description": "The public REST API of Ethiopia's national Master Facility Registry (MFR), the Ministry of Health's authoritative list of health facilities and the administrative hierarchy they sit in. Every operation lives under /api and answers with the same envelope, `{ result, message, model }`, where `model` carries the payload.\n\nThe OpenFn et-mfr adaptor is a thin HTTP client: get(), post() and request() join the path they are given onto `/api/`, send HTTP Basic credentials, and hand `body.model` (when present) to the job as state.data. post() additionally walks pages by resending the body with an incremented `pageNumber`.\n\nThe read endpoints answer anonymously; the write endpoints (POST/PUT /api/Facility, DELETE /api/Facility/{dhis2Id}, POST /api/Lookup) are protected by the Ministry of Health SSO and answer 401 without a bearer token.",
     "x-openfn-adaptor": "et-mfr"
   },
-  "servers": [{ "url": "https://mfrapi.moh.gov.et" }],
+  "servers": [
+    {
+      "url": "https://mfr.moh.gov.et",
+      "description": "Production (the adaptor's default baseUrl)"
+    }
+  ],
+  "security": [
+    {},
+    {
+      "basicAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "facilities",
+      "description": "Health facilities: lookup, search, export and (authenticated) maintenance."
+    },
+    {
+      "name": "locations",
+      "description": "The administrative hierarchy: regions, zones and woredas."
+    },
+    {
+      "name": "lookups",
+      "description": "Reference data shared by facility records."
+    },
+    {
+      "name": "health",
+      "description": "Service health."
+    }
+  ],
   "paths": {
-    "/Location/Regions": {
+    "/api/Health": {
       "get": {
-        "operationId": "getRegions",
-        "summary": "List administrative regions",
+        "tags": [
+          "health"
+        ],
+        "operationId": "getHealth",
+        "summary": "Readiness probe for the API and its dependencies",
+        "security": [
+          {}
+        ],
         "responses": {
           "200": {
-            "description": "Regions",
+            "description": "Health report.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Region" }
+                  "$ref": "#/components/schemas/HealthReport"
                 }
               }
             }
@@ -27,142 +61,2500 @@
         }
       }
     },
-    "/Facility": {
+    "/api/Lookup": {
       "get": {
-        "operationId": "getFacility",
-        "summary": "Get a facility by id",
-        "parameters": [
-          { "name": "id", "in": "query", "schema": { "type": "string" } }
+        "tags": [
+          "lookups"
         ],
-        "responses": {
-          "200": {
-            "description": "Facility",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Facility" }
+        "operationId": "listLookupItems",
+        "summary": "List one reference-data collection by name",
+        "description": "Returns the rows of a single lookup table. An unrecognised name is not an HTTP error: the call answers 200 with `result` 1, `message` \"Unknown lookup type: <name>\" and a null model.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Lookup collection to read. The values below were confirmed against the live API; the list is not published by the vendor and may grow.",
+            "schema": {
+              "type": "string",
+              "example": "FacilityType"
+            },
+            "examples": {
+              "FacilityType": {
+                "value": "FacilityType"
+              },
+              "Ownership": {
+                "value": "Ownership"
+              },
+              "OperationalStatus": {
+                "value": "OperationalStatus"
+              },
+              "ConstructionStatus": {
+                "value": "ConstructionStatus"
+              },
+              "Settlement": {
+                "value": "Settlement"
+              },
+              "Status": {
+                "value": "Status"
+              },
+              "ClinicalService": {
+                "value": "ClinicalService"
+              },
+              "DiagnosticAndImagingService": {
+                "value": "DiagnosticAndImagingService"
+              },
+              "SupportService": {
+                "value": "SupportService"
+              },
+              "TwentyFourHourServiceOffer": {
+                "value": "TwentyFourHourServiceOffer"
+              },
+              "WasteManagement": {
+                "value": "WasteManagement"
+              },
+              "IctInfrastructure": {
+                "value": "IctInfrastructure"
+              },
+              "SourceOfPower": {
+                "value": "SourceOfPower"
+              },
+              "SourceOfWater": {
+                "value": "SourceOfWater"
+              },
+              "HumanResource": {
+                "value": "HumanResource"
+              },
+              "Qualification": {
+                "value": "Qualification"
               }
             }
           }
-        }
-      }
-    },
-    "/Facility/All": {
-      "get": {
-        "operationId": "getAllFacilities",
-        "summary": "Search facilities by name",
-        "parameters": [
-          { "name": "name", "in": "query", "schema": { "type": "string" } }
         ],
         "responses": {
           "200": {
-            "description": "Facilities",
+            "description": "The requested reference data (or result 1 when the name is not a known lookup type).",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Facility" }
+                  "$ref": "#/components/schemas/LookupItemList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `name` parameter was missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             }
           }
         }
-      }
-    },
-    "/Facility/GetFacilities": {
+      },
       "post": {
-        "operationId": "getFacilities",
-        "summary": "Paged facility listing",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/FacilityPageQuery" }
-            }
+        "tags": [
+          "lookups"
+        ],
+        "operationId": "createLookupItem",
+        "summary": "Create a reference-data row",
+        "description": "Authenticated write endpoint (MoH SSO bearer token). The request body is not publicly documented and could not be exercised, so it is described as a free-form object rather than guessed at; the route itself is confirmed (an anonymous call answers 401, and PATCH on the same path reports `Allow: GET, POST`).",
+        "security": [
+          {
+            "bearerAuth": []
           }
-        },
-        "responses": {
-          "200": {
-            "description": "Paged facilities",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/FacilityPage" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/Facility/ExportCSV": {
-      "post": {
-        "operationId": "exportFacilitiesCsv",
-        "summary": "Export facilities as CSV",
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "name": { "type": "string" } }
+                "description": "Lookup row to create; shape not publicly documented."
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "CSV export",
+            "description": "The created reference-data row in the standard envelope.",
             "content": {
-              "text/csv": {
-                "schema": { "type": "string" }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
               }
             }
+          },
+          "401": {
+            "description": "No or invalid bearer token. The write endpoints are protected by the Ministry of Health SSO (OpenID Connect); an anonymous call answers 401 with an empty body."
+          }
+        }
+      }
+    },
+    "/api/Location/Regions": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "operationId": "listRegions",
+        "summary": "List regions",
+        "description": "Every first-level administrative unit (region or city administration).",
+        "responses": {
+          "200": {
+            "description": "List regions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Location/Zones": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "operationId": "listZones",
+        "summary": "List zones",
+        "description": "Every zone, each with its parent region embedded.",
+        "responses": {
+          "200": {
+            "description": "List zones.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Location/Woredas": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "operationId": "listWoredas",
+        "summary": "List woredas",
+        "description": "Every woreda, each with its parent zone embedded.",
+        "responses": {
+          "200": {
+            "description": "List woredas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WoredaList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Facility": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "getFacility",
+        "summary": "Get one facility by its MFR id",
+        "description": "Looks the facility up by its numeric MFR id. With no `id` the API answers 404 with `result` 1 and the message \"Facility with ID 0 not found\".",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "MFR internal facility id.",
+            "schema": {
+              "type": "integer",
+              "example": 1071644
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The facility in the standard envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No facility with that id (result 1, model null).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "createFacility",
+        "summary": "Create a facility",
+        "description": "Authenticated write endpoint (MoH SSO bearer token). The accepted payload is not publicly documented and could not be exercised, so it is described as a free-form object rather than guessed at; the route is confirmed by a 401 on an anonymous call and by `Allow: GET, POST, PUT` on PATCH. The success status is likewise unverified \u2014 every observed MFR operation answers 200 with the standard envelope, which is what is documented here.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Facility to create; payload shape not publicly documented."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created facility in the standard envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid bearer token. The write endpoints are protected by the Ministry of Health SSO (OpenID Connect); an anonymous call answers 401 with an empty body."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "updateFacility",
+        "summary": "Update a facility",
+        "description": "Authenticated write endpoint (MoH SSO bearer token); same caveats as createFacility.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Facility to update; payload shape not publicly documented."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated facility in the standard envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid bearer token. The write endpoints are protected by the Ministry of Health SSO (OpenID Connect); an anonymous call answers 401 with an empty body."
+          }
+        }
+      }
+    },
+    "/api/Facility/All": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "listFacilities",
+        "summary": "List facilities in full detail",
+        "description": "Every facility matching the filter, each with its full detail record. Unfiltered this returns the whole registry in one response (tens of thousands of facilities, hundreds of megabytes) \u2014 filter it, or use the paged search instead.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive substring match on the facility name.",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "regionId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these region ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "zoneId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these zone ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "woredaId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these woreda ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "facilityTypeId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these facility type ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "ownershipId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these ownership ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "operationalStatusId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these operational status ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "statusId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict to these registration status ids.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching facilities in the standard envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Facility/GetFacilities": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "searchFacilities",
+        "summary": "Search facilities, one page at a time",
+        "description": "The paged search behind the MFR facility list. Returns flattened summary rows (not full facility records) and repeats the result totals on every row. This is the endpoint the adaptor's post() paginates over.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityFilter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "One page of facility summaries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilitySummaryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter field had the wrong type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Facility/ExportCSV": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "exportFacilitiesCsv",
+        "summary": "Export matching facilities as CSV",
+        "description": "Returns a CSV document (served as `application/csv`) rather than the JSON envelope: a header row of facility columns followed by one row per matching facility. `columns` selects the columns. The adaptor reads it with `parseAs: \"text\"`, so state.data is the raw CSV string.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityFilter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "CSV export. The body is the CSV document itself, not JSON.",
+            "content": {
+              "application/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter field had the wrong type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Facility/{dhis2Id}": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "getFacilityByDhis2Id",
+        "summary": "Get one facility by its DHIS2 id",
+        "description": "Looks the facility up by the DHIS2 organisation-unit id it is mapped to. An unknown id answers 404 with `result` 1 and the message \"Facility with DHIS2 ID <id> not found\".",
+        "parameters": [
+          {
+            "name": "dhis2Id",
+            "in": "path",
+            "required": true,
+            "description": "DHIS2 organisation-unit id.",
+            "schema": {
+              "type": "string",
+              "example": "wprKoIJqBaI"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The facility in the standard envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No facility mapped to that DHIS2 id (result 1, model null).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "facilities"
+        ],
+        "operationId": "deleteFacility",
+        "summary": "Delete a facility by its DHIS2 id",
+        "description": "Authenticated write endpoint (MoH SSO bearer token). Confirmed by a 401 on an anonymous call and by `Allow: DELETE, GET` on PATCH; the response body could not be observed, so the standard envelope is documented.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dhis2Id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion result in the standard envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid bearer token. The write endpoints are protected by the Ministry of Health SSO (OpenID Connect); an anonymous call answers 401 with an empty body."
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "HTTP Basic credentials. The adaptor sends these on every request when its credential carries a username and password; the public read endpoints also answer without them."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Ministry of Health SSO (OpenID Connect) access token, required by the write endpoints."
+      }
+    },
     "schemas": {
+      "LookupItem": {
+        "type": "object",
+        "description": "A reference-data row (facility type, ownership, operational status, settlement, clinical service, ...). Every lookup collection in MFR shares this shape.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "example": {
+          "name": "Public/Government",
+          "code": "PUGV",
+          "id": 1,
+          "isActive": true,
+          "createdBy": 1,
+          "createdDate": "2020-10-20T11:54:54.534483",
+          "modifiedBy": 1,
+          "modifiedDate": "2020-10-20T11:54:54.534483",
+          "rowGuid": "7c9c5ec9-e5e5-484c-bf97-28b8b90a76f1"
+        }
+      },
+      "FacilityType": {
+        "type": "object",
+        "description": "A facility type, which may be a sub-type of another (for example \"Basic Health Post\" under \"Health Post\").",
+        "properties": {
+          "parentFacilityTypeId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "parentFacility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FacilityType"
+              }
+            ],
+            "nullable": true,
+            "description": "The parent facility type, when this is a sub-type."
+          },
+          "childFacilityTypes": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/FacilityType"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "Region": {
         "type": "object",
+        "description": "A first-level administrative unit (region or city administration).",
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "code": { "type": "string" },
-          "level": { "type": "string" }
+          "logoPath": {
+            "type": "string",
+            "nullable": true,
+            "description": "Path to the region logo under the MFR content root."
+          },
+          "useFacilityLicensing": {
+            "type": "boolean",
+            "description": "Whether facility licensing is enabled for this administrative unit."
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Zone": {
+        "type": "object",
+        "description": "A second-level administrative unit (zone or town administration) inside a region.",
+        "properties": {
+          "regionId": {
+            "type": "integer"
+          },
+          "region": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Region"
+              }
+            ],
+            "nullable": true
+          },
+          "logoPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "useFacilityLicensing": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Woreda": {
+        "type": "object",
+        "description": "A third-level administrative unit (woreda) inside a zone.",
+        "properties": {
+          "zoneId": {
+            "type": "integer"
+          },
+          "zone": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Zone"
+              }
+            ],
+            "nullable": true
+          },
+          "logoPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "useFacilityLicensing": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
         }
       },
       "Facility": {
         "type": "object",
+        "description": "A health facility in the registry, with its administrative hierarchy, licensing status, infrastructure counts and service inventories. Returned in full by GET /api/Facility, GET /api/Facility/{dhis2Id} and GET /api/Facility/All.",
         "properties": {
-          "id": { "type": "string" },
-          "facilityId": { "type": "string" },
-          "name": { "type": "string" },
-          "facilityType": { "type": "string" },
-          "operationalStatus": { "type": "string" },
-          "ownership": { "type": "string" },
-          "region": { "type": "string" },
-          "zone": { "type": "string" },
-          "woreda": { "type": "string" },
-          "latitude": { "type": "number" },
-          "longitude": { "type": "number" },
-          "settlement": { "type": "string" }
-        }
-      },
-      "FacilityPageQuery": {
-        "type": "object",
-        "properties": {
-          "pageNumber": { "type": "integer" },
-          "showPerPage": { "type": "integer" },
-          "name": { "type": "string" }
-        }
-      },
-      "FacilityPage": {
-        "type": "object",
-        "properties": {
-          "totalRecords": { "type": "integer" },
-          "pageNumber": { "type": "integer" },
-          "showPerPage": { "type": "integer" },
-          "data": {
+          "id": {
+            "type": "integer",
+            "description": "MFR internal facility id (the `id` query parameter of GET /api/Facility)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Official facility name."
+          },
+          "statusId": {
+            "type": "integer"
+          },
+          "isImported": {
+            "type": "boolean"
+          },
+          "otherName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Local or alternative name."
+          },
+          "oldName": {
+            "type": "string",
+            "nullable": true
+          },
+          "oldId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Stable row GUID."
+          },
+          "hmisCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "HMIS code, where one has been assigned."
+          },
+          "ethiopianNationalFacilityId": {
+            "type": "string",
+            "nullable": true,
+            "description": "National facility identifier, where one has been assigned."
+          },
+          "facilityId": {
+            "type": "string",
+            "nullable": true
+          },
+          "dhis2Id": {
+            "type": "string",
+            "nullable": true,
+            "description": "DHIS2 organisation-unit id; the path segment of GET /api/Facility/{dhis2Id}."
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "kebele": {
+            "type": "string",
+            "nullable": true
+          },
+          "houseNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "specificAreaName": {
+            "type": "string",
+            "nullable": true
+          },
+          "streetNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "altitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "website": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "fax": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "pocName": {
+            "type": "string",
+            "nullable": true
+          },
+          "pocEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "pocPhoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "pocQualification": {
+            "type": "string",
+            "nullable": true
+          },
+          "pocRegistrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "numberOfMedicalDoctor": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfSpecialistPhysician": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfSubSpecialists": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfHealthOfficer": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfNurse": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfMidwife": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfEmergencyMedicalTechnician": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfAnesthesiaProfessional": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfBiomedicalEngineers": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfPharmacist": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfMedicalLaboratoryTechnician": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfEmergencySurgicalOfficer": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfDentalProfessional": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfRadiographer": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfPhysiotherapist": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfEnvironmentalHealthProfessional": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfHealthInformationTechnician": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfHealthExtensionWorker": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfInPatientBeds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfReceptionRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfRecordRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfEmergencyRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfEmergencyBeds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfOpdRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfIpdRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfLaboratoryRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfImagingRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfMchRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfOrRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfAdministrationRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfIcuRooms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfMaternityBeds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "isReceptionRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isRecordRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isEmergencyRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isImpatientRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isLaboratoryRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isImagingRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isMchRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isDeliveryRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isAdminRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isIcuRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isMaternityRoomAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "transportAmbulances": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "transportCars": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "transportMotorcycles": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "numberOfAmbulances": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfCars": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfMotorcycles": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfOtherModernAvailableTransport": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfServers": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfDesktops": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfLaptops": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfTablets": {
+            "type": "integer",
+            "nullable": true
+          },
+          "numberOfRoomsWithLan": {
+            "type": "integer",
+            "nullable": true
+          },
+          "twoGInternetAccess": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "threeGInternetAccess": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "fourGInternetAccess": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletFlushToPipedSewerSystem": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletFlushToSepticTank": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletFlushToPitLaterine": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletSoakPit": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletVentilatedImprovedPit": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletPitLatrineCleanableSlable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "toiletCompositingToilet": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "yearOpened": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "yearLicenseLastRenewed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "catchmentPopulation": {
+            "type": "integer",
+            "nullable": true
+          },
+          "isPrimaryHealthCareUnit": {
+            "type": "boolean",
+            "description": "Whether the facility is a primary health care unit (PHCU)."
+          },
+          "remark": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachmentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "facilityOwnersName": {
+            "type": "string",
+            "nullable": true
+          },
+          "otherDiagnosticAndImagingServices": {
+            "type": "string",
+            "nullable": true
+          },
+          "closedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "suspensionStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "suspensionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "regionId": {
+            "type": "integer"
+          },
+          "zoneId": {
+            "type": "integer"
+          },
+          "woredaId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "settlementId": {
+            "type": "integer"
+          },
+          "ownershipId": {
+            "type": "integer"
+          },
+          "facilityTypeId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "operationalStatusId": {
+            "type": "integer"
+          },
+          "constructionStatusId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "reportsToId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "referralLinkageId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "region": {
+            "$ref": "#/components/schemas/Region"
+          },
+          "zone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "woreda": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Woreda"
+              }
+            ],
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/LookupItem"
+          },
+          "ownership": {
+            "$ref": "#/components/schemas/LookupItem"
+          },
+          "facilityType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FacilityType"
+              }
+            ],
+            "nullable": true
+          },
+          "operationalStatus": {
+            "$ref": "#/components/schemas/LookupItem"
+          },
+          "constructionStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "settlement": {
+            "$ref": "#/components/schemas/LookupItem"
+          },
+          "reportsTo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Facility"
+              }
+            ],
+            "nullable": true
+          },
+          "referralLinkage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Facility"
+              }
+            ],
+            "nullable": true
+          },
+          "facilitysFacilityTypes": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Facility" }
+            "items": {
+              "$ref": "#/components/schemas/FacilityFacilityType"
+            }
+          },
+          "facilityClinicalServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityClinicalService"
+            }
+          },
+          "facilityHumanResources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityHumanResource"
+            }
+          },
+          "facilityCommunications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityCommunication"
+            }
+          },
+          "facilityDiagnosticAndImagingServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityDiagnosticAndImagingService"
+            }
+          },
+          "facilitySupportServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilitySupportService"
+            }
+          },
+          "facilityTwentyFourHourServiceOffers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTwentyFourHourServiceOffer"
+            }
+          },
+          "facilityWasteManagements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityWasteManagement"
+            }
+          },
+          "facilityIctInfrastructures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityIctInfrastructure"
+            }
+          },
+          "facilitySourceOfPowers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilitySourceOfPower"
+            }
+          },
+          "facilitySourceOfWater": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilitySourceOfWater"
+            }
+          }
+        }
+      },
+      "FacilitySummary": {
+        "type": "object",
+        "description": "The flattened facility row returned by the paged search (POST /api/Facility/GetFacilities): lookup values are resolved to their names and the paging totals are repeated on every row.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "operationalStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "facilityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentFacilityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownership": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "zone": {
+            "type": "string",
+            "nullable": true
+          },
+          "woreda": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of facilities matching the filter (repeated on every row)."
+          },
+          "pageCount": {
+            "type": "integer",
+            "description": "Number of pages for the requested page size (repeated on every row)."
+          }
+        },
+        "example": {
+          "id": 1071644,
+          "name": "010 Kombolcha Health Post",
+          "status": "Approved",
+          "operationalStatus": "Operational",
+          "facilityType": "Basic Health Post",
+          "parentFacilityType": "Health Post",
+          "ownership": "Public/Government",
+          "region": "Amhara Region",
+          "zone": "Kombolcha Town Administration",
+          "woreda": "Kombolcha Town",
+          "totalCount": 65151,
+          "pageCount": 32576
+        }
+      },
+      "FacilityFacilityType": {
+        "type": "object",
+        "description": "Join row linking a facility to one of its facility types.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "facilityTypeId": {
+            "type": "integer"
+          },
+          "facilityType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FacilityType"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityClinicalService": {
+        "type": "object",
+        "description": "Clinical service offered by a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "clinicalServiceId": {
+            "type": "integer"
+          },
+          "clinicalService": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityHumanResource": {
+        "type": "object",
+        "description": "Staff of one profession at a facility, with a headcount.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "humanResourceId": {
+            "type": "integer"
+          },
+          "value": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Number of staff of this type at the facility."
+          },
+          "humanResource": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityCommunication": {
+        "type": "object",
+        "description": "Communication method available at a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "communicationsId": {
+            "type": "integer"
+          },
+          "communications": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityDiagnosticAndImagingService": {
+        "type": "object",
+        "description": "Diagnostic or imaging service offered by a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "diagnosticAndImagingServiceId": {
+            "type": "integer"
+          },
+          "diagnosticAndImagingService": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilitySupportService": {
+        "type": "object",
+        "description": "Support service offered by a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "supportServiceId": {
+            "type": "integer"
+          },
+          "supportService": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityTwentyFourHourServiceOffer": {
+        "type": "object",
+        "description": "Service the facility offers around the clock.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "twentyFourHourServiceOfferId": {
+            "type": "integer"
+          },
+          "twentyFourHourServiceOffer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityWasteManagement": {
+        "type": "object",
+        "description": "Waste-management method in use at a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "wasteManagementId": {
+            "type": "integer"
+          },
+          "wasteManagement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityIctInfrastructure": {
+        "type": "object",
+        "description": "ICT infrastructure available at a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "ictInfrastructureId": {
+            "type": "integer"
+          },
+          "ictInfrastructure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilitySourceOfPower": {
+        "type": "object",
+        "description": "Source of power available at a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "sourceOfPowerId": {
+            "type": "integer"
+          },
+          "sourceOfPower": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilitySourceOfWater": {
+        "type": "object",
+        "description": "Source of water available at a facility.",
+        "properties": {
+          "facilityId": {
+            "type": "integer"
+          },
+          "sourceOfWaterId": {
+            "type": "integer"
+          },
+          "sourceOfWater": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LookupItem"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "integer",
+            "description": "Id of the user who created the row."
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "integer"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowGuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FacilityFilter": {
+        "type": "object",
+        "description": "Facility search filter. Sent as a JSON body to the POST searches and as query parameters to GET /api/Facility/All. Every field is optional; omitting all of them returns the whole registry a page at a time. Unknown properties are ignored, but a wrongly typed one is rejected with a 400 validation problem.",
+        "properties": {
+          "pageNumber": {
+            "type": "integer",
+            "description": "1-based page number. The adaptor's post() walks pages with this until a short page comes back."
+          },
+          "showPerPage": {
+            "type": "integer",
+            "description": "Page size. The adaptor defaults to 200 per request and 10000 in total."
+          },
+          "name": {
+            "type": "string",
+            "description": "Case-insensitive substring match on the facility name."
+          },
+          "regionId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Restrict to these region ids."
+          },
+          "zoneId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Restrict to these zone ids."
+          },
+          "woredaId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Restrict to these woreda ids."
+          },
+          "facilityTypeId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "ownershipId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "operationalStatusId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "statusId": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Column names to include in the CSV export."
+          }
+        },
+        "example": {
+          "pageNumber": 1,
+          "showPerPage": 25,
+          "name": "Kombolcha"
+        }
+      },
+      "HealthDependency": {
+        "type": "object",
+        "description": "One dependency checked by the health probe.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "Connection target reported by the probe."
+          },
+          "status": {
+            "type": "string",
+            "description": "Healthy, Unhealthy, Degraded or NotChecked."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "HealthReport": {
+        "type": "object",
+        "description": "Readiness report for the MFR API and the services it depends on.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Overall status, e.g. Healthy."
+          },
+          "environment": {
+            "type": "string"
+          },
+          "application": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalDurationMs": {
+            "type": "number"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HealthDependency"
+            }
+          }
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "description": "The envelope every MFR API operation answers with. The adaptor unwraps `model` onto state.data.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "nullable": true,
+            "description": "The payload, when the operation returns one."
+          }
+        }
+      },
+      "FacilityResponse": {
+        "type": "object",
+        "description": "A single facility in the standard envelope.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Facility"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "FacilityList": {
+        "type": "object",
+        "description": "Facilities in full detail, in the standard envelope.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Facility"
+            }
+          }
+        }
+      },
+      "FacilitySummaryList": {
+        "type": "object",
+        "description": "One page of facility summaries, in the standard envelope.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/FacilitySummary"
+            }
+          }
+        }
+      },
+      "RegionList": {
+        "type": "object",
+        "description": "Regions in the standard envelope.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            }
+          }
+        }
+      },
+      "ZoneList": {
+        "type": "object",
+        "description": "Zones in the standard envelope.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Zone"
+            }
+          }
+        }
+      },
+      "WoredaList": {
+        "type": "object",
+        "description": "Woredas in the standard envelope.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Woreda"
+            }
+          }
+        }
+      },
+      "LookupItemList": {
+        "type": "object",
+        "description": "One reference-data collection in the standard envelope. When the lookup type is unknown the call still answers 200, with result 1 and model null.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code of the call itself: 0 on success, 1 when the API rejects the request (for example an unknown lookup type). Independent of the HTTP status."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable outcome message."
+          },
+          "model": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/LookupItem"
+            }
+          }
+        }
+      },
+      "ValidationProblem": {
+        "type": "object",
+        "description": "RFC 9110 problem document returned by ASP.NET model validation (HTTP 400).",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Field name (JSON pointer) to the list of validation messages."
+          },
+          "traceId": {
+            "type": "string"
           }
         }
       }

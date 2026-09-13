@@ -1,25 +1,37 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "et-mfr/Region",
-  "title": "Region",
+  "$id": "et-mfr/FacilityType",
+  "title": "FacilityType",
   "x-openfn-adaptor": "et-mfr",
   "x-source": {
-    "openapi": "#/components/schemas/Region",
+    "openapi": "#/components/schemas/FacilityType",
     "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A first-level administrative unit (region or city administration).",
+  "description": "A facility type, which may be a sub-type of another (for example \"Basic Health Post\" under \"Health Post\").",
   "properties": {
-    "logoPath": {
+    "parentFacilityTypeId": {
       "type": [
-        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "parentFacility": {
+      "allOf": [
+        {
+          "$ref": "FacilityType.json"
+        }
+      ],
+      "description": "The parent facility type, when this is a sub-type."
+    },
+    "childFacilityTypes": {
+      "type": [
+        "array",
         "null"
       ],
-      "description": "Path to the region logo under the MFR content root."
-    },
-    "useFacilityLicensing": {
-      "type": "boolean",
-      "description": "Whether facility licensing is enabled for this administrative unit."
+      "items": {
+        "$ref": "FacilityType.json"
+      }
     },
     "name": {
       "type": "string"

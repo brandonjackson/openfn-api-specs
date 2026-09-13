@@ -3,11 +3,68 @@
   "npm": "@openfn/language-et-mfr",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://mfrv2.moh.gov.et/",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-et-mfr/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/et-mfr"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "undocumented-api",
+  "attempts": [
+    {
+      "kind": "swagger",
+      "url": "https://mfr.moh.gov.et/swagger/index.html",
+      "result": "not-found",
+      "note": "the Swagger UI the adaptor README links to as the API reference; 404 today, as are /swagger/v1/swagger.json and /swagger/docs/v1 on the same host"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://mfr.moh.gov.et/openapi/v1.json",
+      "result": "not-found",
+      "note": "well-known spec paths probed on the live API host (ASP.NET Core/Kestrel): /openapi/v1.json, /openapi.json, /api/openapi.json, /swagger/v1/swagger.json, /api/swagger/v1/swagger.json, /api/v1/swagger.json, /api-docs, /api/docs, /scalar/v1, /.well-known/openapi.json — all 404"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://mfrv2.moh.gov.et/swagger/v1/swagger.json",
+      "result": "not-found",
+      "note": "the MFR v2 portal host redirects every path to /auth (login-gated) and its /api/* answers 401 unauthorized, so no spec is reachable there"
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "2529 APIs listed, none for moh.gov.et / Ethiopia MFR"
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=master%20facility%20registry",
+      "result": "not-found",
+      "note": "no Ministry-of-Health-owned API; matches were unrelated"
+    },
+    {
+      "kind": "docs",
+      "url": "https://mfr.moh.gov.et/api/Health",
+      "result": "used",
+      "note": "the live production API itself is the reference: it answers anonymously on the read endpoints, so every path, method, filter field and payload shape in this spec was observed directly against it (routes confirmed with 405 Allow headers, request models with ASP.NET 400 validation errors, field types aggregated over 600 facility records)"
+    },
+    {
+      "kind": "docs",
+      "url": "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/et-mfr/src/Adaptor.js",
+      "result": "used",
+      "note": "adaptor source, Utils.js and test/Adaptor.test.js: they pin the /api/ path prefix, the default baseUrl, Basic auth, the { pageNumber, showPerPage } pagination body and the `model` envelope key"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Ethiopia Master Facility Registry (MFR v2) has no public machine-readable spec. The et-mfr adaptor is a thin HTTP wrapper (get/post/request). Endpoints (/Location/Regions, /Facility, /Facility/All, /Facility/GetFacilities, /Facility/ExportCSV) were taken from the adaptor JSDoc examples; request/response schemas (Region, Facility, paging, CSV export) are best-effort approximations. Server base URL approximated from the MFR portal host and should be verified."
+  "verifiedAgainst": ["ast.json", "adaptor-source", "live-api", "mock-conformance"],
+  "modifications": [],
+  "sources": [
+    "https://mfr.moh.gov.et/api/Health",
+    "https://mfr.moh.gov.et/api/Location/Regions",
+    "https://mfr.moh.gov.et/api/Facility/All",
+    "https://mfr.moh.gov.et/api/Lookup?name=FacilityType",
+    "https://mfrv2.moh.gov.et/",
+    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/et-mfr/src/Adaptor.js",
+    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/et-mfr/test/Adaptor.test.js",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-et-mfr/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-et-mfr/dist/index.cjs"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "Ethiopia's Master Facility Registry (MFR) publishes no API documentation and no machine spec — the Swagger UI its adaptor README points at (https://mfr.moh.gov.et/swagger/index.html) is gone, and every well-known spec path on the API host 404s — so this spec was built by observing the live production API directly, which answers anonymously on its read endpoints. That is why it is best-effort: routes not reachable anonymously cannot be proven absent. Method sets were enumerated from the Allow header ASP.NET returns on a 405, request models from the type names in its 400 validation problems, and field types were aggregated over 600 real facility records; a handful of always-null columns (numberOfNurse and its siblings, otherDiagnosticAndImagingServices) are typed from their named siblings rather than from an observed value. This replaces a five-endpoint hand-authored subset that used the wrong host and omitted the /api prefix: 14 operations across facilities, the region/zone/woreda hierarchy, the shared reference-data lookups and the health probe, with 30 schemas. Four endpoints exist but are protected by the Ministry of Health SSO (POST/PUT /api/Facility, DELETE /api/Facility/{dhis2Id}, POST /api/Lookup) — they are documented with their route and auth confirmed, and their request bodies left as free-form objects rather than invented, since they could not be exercised. Every call answers the envelope { result, message, model }, and note that `result` is the API's own status (0 ok, 1 rejected) which is independent of the HTTP status: an unknown lookup name still answers 200. Because `model` is not one of the envelope keys data-objects recognises, data-schemas/index.json lists the envelope schemas as the resources and the domain objects (Facility, Region, Zone, Woreda, LookupItem, FacilitySummary) come along in the closure instead — the adaptor itself unwraps `model` onto state.data. Cross-reference against the adaptor: get/post/request are generic, and every path its JSDoc and tests exercise (Location/Regions, Facility?id=, Facility/All, Facility/GetFacilities, Facility/ExportCSV) is present with the method the live API actually accepts — note that GetFacilities and ExportCSV are POST-only upstream (a GET on either falls through to the GET /api/Facility/{dhis2Id} route and 404s), and that the CSV export is served as application/csv, which the adaptor reads with parseAs: 'text'. The mock sandbox diverges from the live API in three ways that belong to the mocker, not to this spec: it serves GetFacilities/ExportCSV over GET, it returns bare arrays and objects instead of the { result, message, model } envelope, and it answers 201 with a bare body on POST /api/Facility."
 }
