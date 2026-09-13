@@ -19,4 +19,7 @@ Quick reference:
   resource) from openapi.json. The compact view an AI assistant reads instead of the full spec.
 - `pnpm specs manifest` — rebuild the aggregate index.
 - `pnpm specs site` — build the static status dashboard (`site/index.html`, published to GitHub Pages).
+- `pnpm specs conform <adaptor> --exchanges=<file.jsonl>` — check recorded HTTP traffic
+  (a mock's, or a real instance's) against the adaptor's `openapi.json`; the engine is
+  `createConformer` in `src/conform.ts`, exported for consumers.
 - `pnpm test` — enforce the invariants (drift, dangling refs, provenance, OpenAPI shape).

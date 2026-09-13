@@ -25,6 +25,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync 
 import { dirname, join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
 import { capture, staleUpstreams } from './convert.js';
+import { createConformer, formatConformanceReport, parseExchangesJsonl } from './conform.js';
 import { extractDataObjects } from './data-objects.js';
 import { buildEndpointIndex, renderEndpointIndex } from './endpoints.js';
 import { instructionsFor } from './instructions.js';
@@ -42,6 +43,7 @@ import {
   upstreamPath,
 } from './paths.js';
 import type { FeedbackStatus, SpecSource } from './types.js';
+import { readJson } from './util.js';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
 
@@ -392,7 +394,42 @@ const USAGE = `Usage: pnpm specs <command>
   manifest                      Rebuild specs/adaptors/manifest.json.
   site [--out=<dir>] [--stale=<days>] [--refresh]
                                 Build the static status dashboard (index.html) for GitHub Pages.
+  conform <a> --exchanges=<file.jsonl> [--prefix=<path>]… [--strict-additional]
+              [--no-requests] [--ignore-format=<name>]… [--json]
+                                Check recorded HTTP exchanges (one JSON object per line:
+                                method, path, status, requestBody?, responseBody?,
+                                contentType?) against the adaptor's openapi.json. Prints
+                                violations grouped by operation plus spec-operation coverage;
+                                exits 1 on any violation unless --json.
 `;
+
+/** `conform <a> --exchanges=<file>`: validate recorded traffic against an adaptor's spec. */
+function cmdConform(argv: string[]): void {
+  const names = argv.filter((a) => !a.startsWith('--'));
+  if (names.length !== 1) throw new Error('conform: expected exactly one adaptor name');
+  const [name] = names;
+  const flag = (k: string): string[] =>
+    argv.filter((a) => a.startsWith(`--${k}=`)).map((a) => a.slice(k.length + 3));
+  const [file] = flag('exchanges');
+  if (!file) throw new Error('conform: --exchanges=<file.jsonl> is required');
+  const spec = readJson<any>(openapiPath(name));
+  if (!spec) throw new Error(`conform: no openapi.json for '${name}'`);
+  const exchanges = parseExchangesJsonl(readFileSync(file, 'utf8'));
+  const conformer = createConformer(spec, {
+    serverPrefixes: flag('prefix'),
+    strictAdditional: argv.includes('--strict-additional'),
+    checkRequests: !argv.includes('--no-requests'),
+    ignoreFormats: flag('ignore-format'),
+  });
+  const violations = conformer.checkAll(exchanges);
+  const coverage = conformer.coverage();
+  if (argv.includes('--json')) {
+    console.log(JSON.stringify({ adaptor: name, violations, coverage }, null, 2));
+    return;
+  }
+  console.log(formatConformanceReport(violations, coverage));
+  if (violations.length) process.exitCode = 1;
+}
 
 async function main(): Promise<void> {
   const [cmd, ...argv] = process.argv.slice(2);
@@ -417,6 +454,8 @@ async function main(): Promise<void> {
       return cmdManifest();
     case 'site':
       return cmdSite(argv);
+    case 'conform':
+      return cmdConform(argv);
     case undefined:
     case '--help':
     case '-h':
