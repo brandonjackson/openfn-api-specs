@@ -131,6 +131,16 @@ interface Matcher {
   /** Literal (non-parameter) segments — more is more specific. */
   literals: number;
   params: number;
+  /**
+   * Discriminator carried by the template key itself after `?` or `#`, e.g.
+   * Azure Storage's `/{container}/{blob}?comp=lease` / `#BlockBlob` (Swagger
+   * `x-ms-paths`) or DHIS2's `/api/organisationUnits/#getGeoJson`. Matched
+   * softly: a request whose query satisfies it wins over the bare template;
+   * otherwise the bare template wins; a discriminated key the request does not
+   * satisfy is the last resort (flag-only ones, signalled out of band such as
+   * by a header, before ones that name query parameters the request lacks).
+   */
+  query?: Array<{ key: string; value?: string }>;
 }
 
 const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -165,8 +175,33 @@ function segmentSource(seg: string): { src: string; isParam: boolean } {
  */
 function normalizeTemplate(template: string): string {
   let p = template.startsWith('/') ? template : '/' + template;
+  const q = p.search(/[?#]/);
+  if (q >= 0) p = p.slice(0, q);
   if (p.length > 1) p = p.replace(/\/+$/, '');
   return p;
+}
+
+/** The `?a=b&c` / `#a=b&c` part of a template key, as soft match requirements (undefined when absent). */
+function templateQuery(template: string): Matcher['query'] {
+  const q = template.search(/[?#]/);
+  if (q < 0) return undefined;
+  const reqs = template
+    .slice(q + 1)
+    .split('&')
+    .filter(Boolean)
+    .map((pair) => {
+      const eq = pair.indexOf('=');
+      return eq < 0 ? { key: pair } : { key: pair.slice(0, eq), value: pair.slice(eq + 1) };
+    });
+  return reqs.length ? reqs : undefined;
+}
+
+/** Does the request's query string satisfy a template's soft query requirement? */
+function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string): boolean {
+  const q = path.indexOf('?');
+  if (q < 0) return false;
+  const params = new URLSearchParams(path.slice(q + 1).split('#')[0]);
+  return reqs.every((r) => (r.value === undefined ? params.has(r.key) : params.getAll(r.key).includes(r.value)));
 }
 
 function compileTemplate(template: string): { src: string; literals: number; params: number } {
@@ -406,6 +441,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
         regex: new RegExp(`^${p.src}${t.src === '/' ? '/?' : t.src}$`),
         literals: t.literals + p.literals,
         params: t.params + p.params,
+        query: templateQuery(op.path),
       });
     }
   }
@@ -415,11 +451,22 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const match = (method: string, path: string): ParsedOperation | undefined => {
     const m = method.toUpperCase();
     const p = normalizePath(path);
+    // Tiers, each already ordered most-specific first: a template whose
+    // discriminator the request's query satisfies; a bare template; a
+    // flag-only discriminator the request lacks (signalled out of band, e.g.
+    // Azure's `#BlockBlob` via a header); a discriminator naming query
+    // parameters the request lacks (`#comp=lease`), as a last resort.
+    const best: Array<ParsedOperation | undefined> = [undefined, undefined, undefined, undefined];
     for (const cand of matchers) {
-      if (cand.op.method !== m) continue;
-      if (cand.regex.test(p)) return cand.op;
+      if (cand.op.method !== m || !cand.regex.test(p)) continue;
+      let tier: number;
+      if (!cand.query) tier = 1;
+      else if (querySatisfied(cand.query, path)) tier = 0;
+      else tier = cand.query.every((r) => r.value === undefined) ? 2 : 3;
+      if (tier === 0) return cand.op;
+      best[tier] ??= cand.op;
     }
-    return undefined;
+    return best[1] ?? best[2] ?? best[3];
   };
 
   // --- schema lookup --------------------------------------------------------

@@ -290,6 +290,26 @@ test('generator-only template keys with a fragment never shadow the real path', 
   assert.equal(v[0].kind, 'response-schema');
 });
 
+test('query-discriminated template keys (Swagger x-ms-paths) match softly', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/{container}/{blob}': { get: { responses: { '200': { description: 'get blob' } } } },
+      '/{container}/{blob}#comp=lease': { put: { operationId: 'lease', responses: { '200': { description: 'lease' } } } },
+      '/{container}/{blob}?BlockBlob': { put: { operationId: 'putBlockBlob', responses: { '201': { description: 'created' } } } },
+      '/{container}#restype=container': { put: { operationId: 'createContainer', responses: { '201': { description: 'created' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/c/hello.txt')?.path, '/{container}/{blob}');
+  assert.equal(c.match('PUT', '/c/hello.txt?comp=lease')?.operationId, 'lease', 'satisfied discriminator wins');
+  assert.equal(c.match('PUT', '/c/hello.txt')?.operationId, 'putBlockBlob', 'flag-only discriminator beats a query-param one the request lacks');
+  assert.equal(c.match('PUT', '/c?restype=container')?.operationId, 'createContainer');
+  assert.equal(c.match('PUT', '/c')?.operationId, 'createContainer', 'last-resort fallback when nothing else matches');
+  assert.equal(c.check({ method: 'PUT', path: '/c/hello.txt', status: 201 }).length, 0);
+  assert.ok(c.coverage().hit.includes('PUT /{container}/{blob}?BlockBlob'));
+});
+
 test('non-JSON type names and JS-incompatible patterns are dropped, not fatal', () => {
   const spec = {
     openapi: '3.0.3',
