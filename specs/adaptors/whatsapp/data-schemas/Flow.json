@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "whatsapp/Flow",
+  "title": "Flow",
+  "x-openfn-adaptor": "whatsapp",
+  "x-source": {
+    "openapi": "#/components/schemas/Flow",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "A WhatsApp Flow: an interactive form or menu sent inside a message. `id`, `name`, `status`, `categories` and `validation_errors` are returned by default; the rest only when asked for with the `fields` query parameter.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the Flow."
+    },
+    "name": {
+      "type": "string",
+      "description": "User-defined Flow name. Not visible to WhatsApp users."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "PUBLISHED",
+        "DEPRECATED",
+        "BLOCKED",
+        "THROTTLED"
+      ],
+      "description": "DRAFT: under development, sendable only with `\"mode\": \"draft\"`. PUBLISHED: sendable, and can no longer be deleted or updated. DEPRECATED: retired; cannot be sent or opened. BLOCKED and THROTTLED: set by endpoint health monitoring."
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "SIGN_UP",
+          "SIGN_IN",
+          "APPOINTMENT_BOOKING",
+          "LEAD_GENERATION",
+          "CONTACT_US",
+          "CUSTOMER_SUPPORT",
+          "SURVEY",
+          "OTHER"
+        ]
+      },
+      "description": "Business use cases this Flow covers."
+    },
+    "validation_errors": {
+      "type": "array",
+      "items": {
+        "$ref": "FlowValidationError.json"
+      }
+    },
+    "json_version": {
+      "type": "string",
+      "description": "Flow JSON version of the uploaded asset."
+    },
+    "data_api_version": {
+      "type": "string",
+      "description": "Data API version of the uploaded asset. Flows with an endpoint only."
+    },
+    "data_channel_uri": {
+      "type": "string",
+      "description": "Deprecated in v19.0 — use `endpoint_uri`.",
+      "deprecated": true
+    },
+    "endpoint_uri": {
+      "type": "string",
+      "description": "URL of the WhatsApp Flow Endpoint.",
+      "format": "uri"
+    },
+    "preview": {
+      "$ref": "FlowPreview.json"
+    },
+    "whatsapp_business_account": {
+      "type": "object",
+      "description": "The WABA that owns the Flow."
+    },
+    "application": {
+      "type": "object",
+      "description": "The Meta app the Flow was created with."
+    },
+    "metric": {
+      "$ref": "FlowMetric.json"
+    }
+  }
+}
