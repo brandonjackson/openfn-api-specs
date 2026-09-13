@@ -59,6 +59,8 @@ const doc = {
           deletedAt: { type: 'string', format: 'date-time', nullable: true },
           size: { type: 'integer', minimum: 0, exclusiveMinimum: true },
           kind: { type: 'string', format: 'vendor-kind' },
+          link: { type: 'string', format: 'uri' },
+          blob: { type: 'string', format: 'byte' },
         },
       },
       NewThing: { type: 'object', required: ['name'], properties: { name: { type: 'string' } } },
@@ -134,6 +136,30 @@ test('a conforming exchange yields no violations and counts toward coverage', ()
   assert.equal(cov.exchanges, 1);
   assert.deepEqual(cov.unmatched, []);
   assert.ok(cov.missed.includes('POST /things'));
+});
+
+test('format: uri accepts a relative reference, as real hyperlink fields carry', () => {
+  const c = createConformer(doc);
+  // Twilio's pagination links are site-relative paths under `format: uri`
+  // properties; that is the API's real behaviour, not a violation.
+  assert.deepEqual(c.check({ ...ok, responseBody: { ...ok.responseBody as object, link: '/things/abc?Page=0' } }), []);
+  // A string that is no kind of URI reference still fails.
+  const bad = c.check({ ...ok, responseBody: { ...ok.responseBody as object, link: 'not a uri' } });
+  assert.equal(bad.length, 1);
+  assert.equal(bad[0].pointer, '/link');
+});
+
+test('format: byte accepts the URL-safe base64 alphabet and missing padding', () => {
+  const c = createConformer(doc);
+  const body = ok.responseBody as object;
+  // Gmail returns base64url under Discovery's `byte`; padded standard base64
+  // is the same field's other real form.
+  assert.deepEqual(c.check({ ...ok, responseBody: { ...body, blob: 'a-b_cdEF' } }), []);
+  assert.deepEqual(c.check({ ...ok, responseBody: { ...body, blob: 'SGVsbG8=' } }), []);
+  // Something that is not base64 at all still fails.
+  const bad = c.check({ ...ok, responseBody: { ...body, blob: 'not base64!' } });
+  assert.equal(bad.length, 1);
+  assert.equal(bad[0].pointer, '/blob');
 });
 
 test('response-schema violations carry the operation, pointer and a readable message', () => {

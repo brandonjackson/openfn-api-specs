@@ -21,12 +21,14 @@
       "result": "used"
     }
   ],
-  "verifiedAgainst": [],
+  "verifiedAgainst": [
+    "openfn-mocker guide traffic"
+  ],
   "sources": [
     "https://kf.kobotoolbox.org/api/v2/schema/?format=json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/kobotoolbox"
   ],
   "capturedAt": "2026-07-06",
   "lastCheckedAt": "2026-07-06",
-  "notes": "Complete, verbatim copy of the KoboToolbox KPI (/api/v2) OpenAPI schema served at the source URL. Whole published API; no subsetting or renaming."
+  "notes": "Complete, verbatim copy of the KoboToolbox KPI (/api/v2) OpenAPI schema served at the source URL. Whole published API; no subsetting or renaming. The asset serializer's annotations are hand-written in KPI and lag the code, which conformance runs against real asset payloads surface as false positives: `settings.country` is typed as an array of strings but is an array of {label, value} objects (kpi/models/asset.py derives `country_codes` as [c['value'] for c in settings['country']]); `permissions` is typed as an array of strings but is an array of permission assignments (AssetPermissionAssignmentReadSerializer); `access_types` is a non-nullable array though get_access_types() returns None; and `summary.languages`, `summary.default_translation` and `deployed_versions.next`/`previous` are typed non-nullable though an untranslated form and an unpaginated list really do return null."
 }
