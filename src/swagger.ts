@@ -498,7 +498,52 @@ export function swaggerToOpenApi(doc: SwaggerDoc, adaptorName: string): SwaggerC
   if (doc.externalDocs) openapi.externalDocs = doc.externalDocs;
   for (const [k, v] of Object.entries(doc)) if (k.startsWith('x-') && k !== 'x-ms-paths') openapi[k] = v;
 
+  groundDanglingRefs(openapi, warnings);
+
   return { openapi, warnings };
+}
+
+/**
+ * Replace `$ref`s that point at a `components.schemas` entry the upstream never
+ * declared with an empty (any) schema.
+ *
+ * Swagger generators do emit these: OpenMRS's webservices.rest module references
+ * seventeen definitions it does not define (`OrdersetGetRef` and friends). A
+ * reference with no target is not something a conversion can carry over — it
+ * makes the OpenAPI document invalid, and the data-object extractor turns it
+ * into a sibling `$ref` to a file that was never written. Grounding it in `{}`
+ * is the same convention the house rules use for an undocumented type: the
+ * property stays, its shape is honestly unknown, and the `description` says why.
+ *
+ * Only schema refs are grounded. A dangling parameter or response ref is a
+ * structural break rather than a missing type, so it is left alone to surface as
+ * a validation failure.
+ */
+function groundDanglingRefs(openapi: Node, warnings: string[]): void {
+  const schemas = (openapi.components?.schemas ?? {}) as Record<string, unknown>;
+  const missing = new Set<string>();
+
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== 'object') return;
+    const obj = node as Node;
+    const ref = obj.$ref;
+    if (typeof ref === 'string' && ref.startsWith('#/components/schemas/')) {
+      const name = ref.slice('#/components/schemas/'.length);
+      if (!(name in schemas)) {
+        missing.add(name);
+        delete obj.$ref;
+        obj.description = `Type not documented: the upstream spec references ${name} but does not define it.`;
+      }
+      return;
+    }
+    for (const v of Object.values(obj)) walk(v);
+  };
+  walk(openapi);
+
+  for (const name of [...missing].sort()) {
+    warnings.push(`dangling $ref to #/definitions/${name} — grounded to an empty schema`);
+  }
 }
 
 /** An operation awaiting its operationId (assigned once the whole doc is walked). */
