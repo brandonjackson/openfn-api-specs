@@ -3,15 +3,58 @@
   "npm": "@openfn/language-salesforce",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/openapi_beta.htm",
+      "result": "rejected",
+      "note": "Salesforce can emit an OpenAPI 3.0 document for the sObjects REST API, but it is generated per-org from a logged-in connection behind a Beta setting and describes that org's objects and fields. There is no spec file to fetch, and an org-specific one would not describe the API generally."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "rejected",
+      "note": "the only Salesforce entry is salesforce.local:einstein, a third-party mirror of the Einstein Vision API - a different product, not the Platform REST API"
+    },
+    {
+      "kind": "postman",
+      "url": "https://github.com/forcedotcom/postman-salesforce-apis",
+      "result": "not-found",
+      "note": "Salesforce publishes a Postman collection for its platform APIs, but the repository is not reachable from this session (GitHub API and codeload both refused) and the collection is a request catalogue rather than a typed spec"
+    },
+    {
+      "kind": "docs",
+      "url": "https://developer.salesforce.com/docs/get_document/atlas.en-us.api_rest.meta",
+      "result": "used",
+      "note": "the docs site exposes its own table of contents as JSON; the Reference section's 212 pages were fetched and parsed for URI, HTTP methods, parameter tables and prose"
+    },
+    {
+      "kind": "docs",
+      "url": "https://developer.salesforce.com/docs/get_document/atlas.en-us.api_asynch.meta",
+      "result": "used",
+      "note": "same treatment for the Bulk API 2.0 and Bulk API Developer Guide"
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "redocly-lint"
+  ],
+  "modifications": [],
   "sources": [
+    "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_list.htm",
+    "https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm",
+    "https://developer.salesforce.com/docs/get_document/atlas.en-us.api_rest.meta",
+    "https://developer.salesforce.com/docs/get_document/atlas.en-us.api_asynch.meta",
     "https://cdn.jsdelivr.net/npm/@openfn/language-salesforce/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-salesforce/types/index.d.ts",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/salesforce",
-    "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_basic_info.htm",
-    "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm",
-    "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm",
-    "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_composite_sobjects_collections.htm"
+    "https://github.com/OpenFn/adaptors/tree/main/packages/salesforce"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Hand-authored focused OpenAPI 3.0.3 modeling the Salesforce REST API resources the salesforce adaptor uses via jsforce: sObject describe / describe-global, single-record CRUD (create/insert, retrieve, update, destroy), external-ID upsert, SOQL query / queryAll / queryMore, and composite sObject collections (bulk create/update/delete). API version appears as the {version} path parameter (e.g. 59.0). update and destroy return 204 No Content. The full Salesforce REST surface (bulk API v1/v2 jobs, Analytics, Chatter, Tooling, Metadata, Apex REST) is intentionally out of scope; the bulk1/bulk2 adaptor modules submit Bulk API jobs not modeled here. Response shapes (CreateResult, UpsertResult, QueryResult, DescribeSObjectResult, SaveResult) reflect the documented Salesforce REST responses and jsforce return values."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "The Salesforce Platform REST API plus Bulk API 2.0 and Bulk API (1.0), authored from the vendor's own developer guides at Summer '26 / API version 67.0. 110 paths, 166 operations, 99 schemas, replacing a spec whose title read 'OpenFn focused subset' and which covered nine paths. The rewrite matters because the adaptor is not limited to its eight named operations: it also ships http.request/get/post, which reach any resource here, and bulk1/bulk2 modules for the two bulk APIs, which the old spec said outright were out of scope. Every path, method, query parameter and description comes from the Reference sections of the two guides, fetched page by page through the docs site's own JSON table of contents (212 REST pages, 32 bulk pages). Response schemas are named where a guide documents a field set - query, describe, save and upsert results, bulk JobInfo and BatchInfo, limits, list views, composite - and left as open objects with an explicit 'not enumerated' description where the reference documents a resource but never its response body; the example bodies on the docs pages are client-rendered and could not be fetched, which is the main reason this stays best-effort rather than complete. Two structural notes. Salesforce overloads /sobjects/{sObject}/{a}/{b} for three resources (external-id rows, blob download, relationship traversal) and tells them apart at runtime; OpenAPI treats path templates differing only in parameter names as the same path, so the external-id resource keeps the shape and its GET, PATCH and DELETE carry the other two readings in their descriptions, with the GET also declaring the binary blob response. And the API version is a {version} path parameter (67.0, or the alias 'latest') because the adaptor sets it per connection. Out of scope, and reachable through the same generic builders but documented in separate guides, are the Tooling, Metadata (SOAP), UI, Analytics/Reports, Chatter/Connect and Apex REST APIs. Validated with redocly lint."
 }

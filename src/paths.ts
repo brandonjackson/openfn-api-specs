@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
  *     <adaptor>/
  *       openapi.json            the OpenAPI 3.x spec (found, converted, or generated)
  *       source.json             provenance: origin, source URLs, method, date, notes
+ *       endpoints.md            one line per operation, grouped by resource (derived)
  *       data-schemas/           one standalone JSON Schema per data object + index.json
  *
  * Paths resolve relative to this package's own `specs/adaptors` directory —
@@ -80,6 +81,11 @@ export function maintenanceLogPath(): string {
 
 export function sourcePath(name: string): string {
   return join(adaptorDir(name), 'source.json');
+}
+
+/** Compact endpoint list (one line per operation) derived from openapi.json. */
+export function endpointsPath(name: string): string {
+  return join(adaptorDir(name), 'endpoints.md');
 }
 
 /** Directory holding one adaptor's standalone data-object schema files. */

@@ -15,6 +15,8 @@ Quick reference:
   (OpenAPI 3.x / Swagger 2.0 / Google Discovery) verbatim and derive `openapi.json`.
   With no `--url`, re-derives `openapi.json` from the committed upstream.
 - `pnpm specs data-objects <adaptor>` — derive data-schemas from openapi.json.
+- `pnpm specs index <adaptor>` — derive `endpoints.md` (one line per operation, grouped by
+  resource) from openapi.json. The compact view an AI assistant reads instead of the full spec.
 - `pnpm specs manifest` — rebuild the aggregate index.
 - `pnpm specs site` — build the static status dashboard (`site/index.html`, published to GitHub Pages).
 - `pnpm specs conform <adaptor> --exchanges=<file.jsonl>` — check recorded HTTP traffic
