@@ -311,7 +311,7 @@ async function cmdSite(argv: string[]): Promise<void> {
 
 async function cmdManifest(): Promise<void> {
   const adaptors = await loadAdaptors();
-  const manifest = buildManifest(adaptors, new Date().toISOString());
+  const manifest = buildManifest(adaptors);
   writeJson(manifestPath(), manifest);
   const { withOpenapi, withDataSchemas, dataObjects, adaptors: n } = manifest.totals;
   console.log(

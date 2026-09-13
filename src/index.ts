@@ -11,7 +11,7 @@
  * The maintenance CLI (list / status / instructions / data-objects / manifest)
  * lives in ./cli and is exposed as the `openfn-api-specs` bin.
  */
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
 import {
@@ -22,6 +22,7 @@ import {
   sourcePath,
 } from './paths.js';
 import type { Manifest, SpecSource } from './types.js';
+import { readJson } from './util.js';
 
 export type { AdaptorInfo } from './adaptors.js';
 export type {
@@ -36,11 +37,6 @@ export type {
   FeedbackStatus,
   MaintenanceLogEntry,
 } from './types.js';
-
-function readJson<T>(path: string): T | undefined {
-  if (!existsSync(path)) return undefined;
-  return JSON.parse(readFileSync(path, 'utf8')) as T;
-}
 
 /** The full adaptor list from openfn/adaptors (reads the shipped cache). */
 export async function listAdaptors(refresh = false): Promise<AdaptorInfo[]> {

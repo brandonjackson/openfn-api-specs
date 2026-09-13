@@ -7,11 +7,11 @@ import {
   buildOpenapi,
   capture,
   contentHash,
-  countOperations,
   detect,
   parseSpec,
   staleUpstreams,
 } from '../src/convert.js';
+import { countOperations } from '../src/util.js';
 
 /**
  * The capture step's contract (AGENTS.md rule 2): the upstream bytes are

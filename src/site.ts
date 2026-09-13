@@ -18,13 +18,13 @@
  * the same feedback bucket `pnpm specs report` uses. The dashboard therefore
  * never drifts from the CLI's own view of the registry.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import type { AdaptorInfo } from './adaptors.js';
 import { buildEntry } from './manifest.js';
 import { classify } from './report.js';
 import { sourcePath, upstreamPath } from './paths.js';
 import type { FeedbackStatus, SpecOrigin, SpecSource } from './types.js';
-import { OPENFN_LOGO_DATA_URI } from './openfn-logo.js';
+import { daysBetween, readJsonSafe as readJson } from './util.js';
 
 /** owner/repo the dashboard links back to (spec files, GitHub). */
 const DEFAULT_REPO = 'brandonjackson/openfn-api-specs';
@@ -119,22 +119,6 @@ export interface StatusData {
     dataObjects: number;
   };
   rows: StatusRow[];
-}
-
-function readJson<T>(path: string): T | undefined {
-  if (!existsSync(path)) return undefined;
-  try {
-    return JSON.parse(readFileSync(path, 'utf8')) as T;
-  } catch {
-    return undefined;
-  }
-}
-
-function daysBetween(isoDate: string | undefined, now: Date): number | undefined {
-  if (!isoDate) return undefined;
-  const t = Date.parse(isoDate);
-  if (Number.isNaN(t)) return undefined;
-  return Math.floor((now.getTime() - t) / 86_400_000);
 }
 
 const EMPTY_STATUS: Record<FeedbackStatus, number> = {

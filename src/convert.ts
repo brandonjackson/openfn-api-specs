@@ -26,6 +26,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { discoveryToOpenApi } from './discovery.js';
 import { swaggerToOpenApi } from './swagger.js';
 import type { SpecOrigin } from './types.js';
+import { countOperations } from './util.js';
 
 /** What kind of machine spec the fetched bytes are. */
 export type UpstreamKind = 'openapi' | 'swagger' | 'discovery';
@@ -116,16 +117,6 @@ export function buildOpenapi(doc: any, adaptor: string, ext: 'json' | 'yaml'): B
       return { detected, openapi, warnings };
     }
   }
-}
-
-/** Count path+method operations in an OpenAPI document. */
-export function countOperations(openapi: any): number {
-  const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
-  let n = 0;
-  for (const item of Object.values(openapi.paths ?? {})) {
-    for (const m of METHODS) if ((item as any)?.[m]) n++;
-  }
-  return n;
 }
 
 export interface CaptureOptions {
