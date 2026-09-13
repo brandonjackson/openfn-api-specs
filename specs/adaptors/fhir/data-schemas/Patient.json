@@ -5,39 +5,101 @@
   "x-openfn-adaptor": "fhir",
   "x-source": {
     "openapi": "#/components/schemas/Patient",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "required": [
-    "resourceType"
-  ],
+  "description": "Demographics and other administrative information about an individual or animal receiving care or other health-related services.",
   "properties": {
     "resourceType": {
-      "type": "string",
+      "description": "This is a Patient resource",
       "enum": [
         "Patient"
       ]
     },
     "id": {
+      "description": "The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.",
+      "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
       "type": "string"
     },
+    "meta": {
+      "description": "The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.",
+      "$ref": "Meta.json"
+    },
+    "implicitRules": {
+      "description": "A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.",
+      "pattern": "^\\S*$",
+      "type": "string"
+    },
+    "_implicitRules": {
+      "description": "Extensions for implicitRules",
+      "$ref": "Element.json"
+    },
+    "language": {
+      "description": "The base language in which the resource is written.",
+      "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
+      "type": "string"
+    },
+    "_language": {
+      "description": "Extensions for language",
+      "$ref": "Element.json"
+    },
+    "text": {
+      "description": "A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it \"clinically safe\" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.",
+      "$ref": "Narrative.json"
+    },
+    "contained": {
+      "description": "These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.",
+      "items": {
+        "$ref": "ResourceList.json"
+      },
+      "type": "array"
+    },
+    "extension": {
+      "description": "May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+      "items": {
+        "$ref": "Extension.json"
+      },
+      "type": "array"
+    },
+    "modifierExtension": {
+      "description": "May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
+      "items": {
+        "$ref": "Extension.json"
+      },
+      "type": "array"
+    },
     "identifier": {
-      "type": "array",
+      "description": "An identifier for this patient.",
       "items": {
         "$ref": "Identifier.json"
-      }
+      },
+      "type": "array"
     },
     "active": {
+      "description": "Whether this patient record is in active use. \nMany systems use this property to mark as non-current patients, such as those that have not been seen for a period of time based on an organization's business rules.\n\nIt is often used to filter patient lists to exclude inactive patients\n\nDeceased patients may also be marked as inactive for the same reasons, but may be active for some time after death.",
+      "pattern": "^true|false$",
       "type": "boolean"
     },
+    "_active": {
+      "description": "Extensions for active",
+      "$ref": "Element.json"
+    },
     "name": {
-      "type": "array",
+      "description": "A name associated with the individual.",
       "items": {
         "$ref": "HumanName.json"
-      }
+      },
+      "type": "array"
+    },
+    "telecom": {
+      "description": "A contact detail (e.g. a telephone number or an email address) by which the individual may be contacted.",
+      "items": {
+        "$ref": "ContactPoint.json"
+      },
+      "type": "array"
     },
     "gender": {
-      "type": "string",
+      "description": "Administrative Gender - the gender that the patient is considered to have for administration and record keeping purposes.",
       "enum": [
         "male",
         "female",
@@ -45,21 +107,108 @@
         "unknown"
       ]
     },
-    "birthDate": {
-      "type": "string",
-      "format": "date"
+    "_gender": {
+      "description": "Extensions for gender",
+      "$ref": "Element.json"
     },
-    "telecom": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
+    "birthDate": {
+      "description": "The date of birth for the individual.",
+      "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
+      "type": "string"
+    },
+    "_birthDate": {
+      "description": "Extensions for birthDate",
+      "$ref": "Element.json"
+    },
+    "deceasedBoolean": {
+      "description": "Indicates if the individual is deceased or not.",
+      "pattern": "^true|false$",
+      "type": "boolean"
+    },
+    "_deceasedBoolean": {
+      "description": "Extensions for deceasedBoolean",
+      "$ref": "Element.json"
+    },
+    "deceasedDateTime": {
+      "description": "Indicates if the individual is deceased or not.",
+      "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
+      "type": "string"
+    },
+    "_deceasedDateTime": {
+      "description": "Extensions for deceasedDateTime",
+      "$ref": "Element.json"
     },
     "address": {
-      "type": "array",
+      "description": "An address for the individual.",
       "items": {
-        "type": "object"
-      }
+        "$ref": "Address.json"
+      },
+      "type": "array"
+    },
+    "maritalStatus": {
+      "description": "This field contains a patient's most recent marital (civil) status.",
+      "$ref": "CodeableConcept.json"
+    },
+    "multipleBirthBoolean": {
+      "description": "Indicates whether the patient is part of a multiple (boolean) or indicates the actual birth order (integer).",
+      "pattern": "^true|false$",
+      "type": "boolean"
+    },
+    "_multipleBirthBoolean": {
+      "description": "Extensions for multipleBirthBoolean",
+      "$ref": "Element.json"
+    },
+    "multipleBirthInteger": {
+      "description": "Indicates whether the patient is part of a multiple (boolean) or indicates the actual birth order (integer).",
+      "pattern": "^-?([0]|([1-9][0-9]*))$",
+      "type": "number"
+    },
+    "_multipleBirthInteger": {
+      "description": "Extensions for multipleBirthInteger",
+      "$ref": "Element.json"
+    },
+    "photo": {
+      "description": "Image of the patient.",
+      "items": {
+        "$ref": "Attachment.json"
+      },
+      "type": "array"
+    },
+    "contact": {
+      "description": "A contact party (e.g. guardian, partner, friend) for the patient.",
+      "items": {
+        "$ref": "Patient_Contact.json"
+      },
+      "type": "array"
+    },
+    "communication": {
+      "description": "A language which may be used to communicate with the patient about his or her health.",
+      "items": {
+        "$ref": "Patient_Communication.json"
+      },
+      "type": "array"
+    },
+    "generalPractitioner": {
+      "description": "Patient's nominated care provider.",
+      "items": {
+        "$ref": "Reference.json"
+      },
+      "type": "array"
+    },
+    "managingOrganization": {
+      "description": "Organization that is the custodian of the patient record.",
+      "$ref": "Reference.json"
+    },
+    "link": {
+      "description": "Link to another patient resource that concerns the same actual patient.",
+      "items": {
+        "$ref": "Patient_Link.json"
+      },
+      "type": "array"
     }
-  }
+  },
+  "additionalProperties": false,
+  "required": [
+    "resourceType"
+  ]
 }
