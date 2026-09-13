@@ -5,63 +5,62 @@
   "x-openfn-adaptor": "openlmis",
   "x-source": {
     "openapi": "#/components/schemas/User",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A single user",
   "properties": {
     "id": {
       "type": "string",
-      "format": "uuid"
+      "title": "id"
     },
     "username": {
-      "type": "string"
+      "type": "string",
+      "title": "username"
     },
     "firstName": {
-      "type": "string"
+      "type": "string",
+      "title": "firstName"
     },
     "lastName": {
-      "type": "string"
-    },
-    "email": {
       "type": "string",
-      "format": "email"
+      "title": "lastName"
     },
     "jobTitle": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "jobTitle"
     },
     "timezone": {
-      "type": "string"
-    },
-    "homeFacilityId": {
       "type": "string",
-      "format": "uuid"
+      "title": "timezone"
+    },
+    "homeFacility": {
+      "$ref": "Facility.json"
     },
     "active": {
-      "type": "boolean"
+      "type": "boolean",
+      "title": "active"
     },
     "roleAssignments": {
       "type": "array",
+      "title": "roleAssignments",
       "items": {
-        "type": "object",
-        "properties": {
-          "roleId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "programId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "supervisoryNodeId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "warehouseId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      }
+        "$ref": "RoleAssignmentDto.json"
+      },
+      "uniqueItems": false
+    },
+    "extraData": {
+      "type": "object",
+      "title": "extraData"
     }
-  }
+  },
+  "required": [
+    "username",
+    "firstName",
+    "lastName",
+    "active"
+  ]
 }
