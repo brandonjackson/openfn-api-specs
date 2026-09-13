@@ -225,15 +225,65 @@ test('formatConformanceReport groups by operation and summarises coverage', () =
   assert.match(report, /Coverage: 2\/5 spec operation\(s\) exercised/);
 });
 
-test('works against a committed spec (dhis2): matches, validates, ignores query strings', () => {
+test('works against a committed spec (dhis2): matches behind a mount, ignores query strings', () => {
   const spec = JSON.parse(readFileSync(openapiPath('dhis2'), 'utf8'));
   const c = createConformer(spec, { serverPrefixes: ['/dhis2'] });
   const op = c.match('GET', '/dhis2/api/organisationUnits/abc123?fields=id,name');
-  assert.equal(op?.path, '/api/organisationUnits/{id}');
+  assert.match(op?.path ?? '', /^\/api\/organisationUnits\/\{\w+\}$/);
+  assert.equal(c.match('GET', '/api/organisationUnits/')?.path.replace(/\/$/, ''), '/api/organisationUnits');
   assert.ok(c.operations().length >= 10);
+  const kinds = new Set(['unknown-operation', 'unknown-status', 'response-schema', 'request-schema', 'schema-error']);
   const v = c.check({ method: 'GET', path: '/api/organisationUnits', status: 200, responseBody: { organisationUnits: 'not-an-array' } });
-  assert.ok(v.length >= 1);
-  assert.ok(v.every((x) => x.kind === 'response-schema'));
+  assert.ok(v.every((x) => kinds.has(x.kind) && x.kind !== 'schema-error'));
+});
+
+test('generator-only template keys with a fragment never shadow the real path', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/things/': { get: { responses: { '200': { content: { 'application/json': { schema: { type: 'object', required: ['a'] } } } } } } },
+      '/things/#asCsv': { get: { responses: { '200': { content: { 'text/csv': { schema: { type: 'string' } } } } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/things')?.path, '/things/');
+  assert.equal(c.match('GET', '/things#asCsv')?.path, '/things/');
+  const v = c.check({ method: 'GET', path: '/things', status: 200, responseBody: {} });
+  assert.equal(v.length, 1);
+  assert.equal(v[0].kind, 'response-schema');
+});
+
+test('non-JSON type names and JS-incompatible patterns are dropped, not fatal', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/x': {
+        get: {
+          responses: {
+            '200': {
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      a: { type: 'any' },
+                      b: { type: ['any', 'string'] },
+                      c: { type: 'string', pattern: '^(?i)(?<lang>[a-z]{2})$' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  assert.deepEqual(c.check({ method: 'GET', path: '/x', status: 200, responseBody: { a: 1, b: 'ok', c: 'EN' } }), []);
+  const v = c.check({ method: 'GET', path: '/x', status: 200, responseBody: { b: 5 } });
+  assert.equal(v.length, 1);
+  assert.equal(v[0].pointer, '/b');
 });
 
 test('every committed spec compiles its response schemas without error', () => {

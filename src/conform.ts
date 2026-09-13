@@ -21,10 +21,10 @@
  * `default`), not by the spec's preferred success code.
  *
  * Validation uses Ajv against the spec's own `components`, so every `$ref`
- * resolves the way the spec author wrote it. OpenAPI 3.0 idioms that are not
- * JSON Schema 2020-12 (`nullable`, boolean `exclusiveMinimum`, a non-array
- * `required`) are rewritten on a private copy; the committed spec is never
- * touched.
+ * resolves the way the spec author wrote it. OpenAPI 3.0 and generator idioms
+ * that are not JSON Schema 2020-12 (`nullable`, boolean `exclusiveMinimum`, a
+ * non-array `required`, `type: any`, a Java-only regex `pattern`) are
+ * rewritten on a private copy; the committed spec is never touched.
  */
 import Ajv2020Module, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
@@ -156,8 +156,21 @@ function segmentSource(seg: string): { src: string; isParam: boolean } {
   return { src, isParam: true };
 }
 
+/**
+ * Trailing-slash-insensitive form of a path template. Unlike `normalizePath`
+ * this keeps `#`: some generators (DHIS2) mint keys like
+ * `/api/organisationUnits/#getGeoJson` for content-negotiated variants, and a
+ * request path never carries a fragment, so those stay distinct and unmatched
+ * instead of shadowing the real `/api/organisationUnits` operation.
+ */
+function normalizeTemplate(template: string): string {
+  let p = template.startsWith('/') ? template : '/' + template;
+  if (p.length > 1) p = p.replace(/\/+$/, '');
+  return p;
+}
+
 function compileTemplate(template: string): { src: string; literals: number; params: number } {
-  const segs = normalizePath(template).split('/').filter(Boolean);
+  const segs = normalizeTemplate(template).split('/').filter(Boolean);
   let literals = 0;
   let params = 0;
   const src = segs
@@ -198,6 +211,8 @@ export function trailingSubPaths(prefix: string): string[] {
 /* ------------------------------------------------------------------ *
  * Schema preparation for Ajv
  * ------------------------------------------------------------------ */
+
+const JSON_TYPES = new Set(['null', 'boolean', 'object', 'array', 'number', 'string', 'integer']);
 
 const KNOWN_FORMATS = new Set([
   'date', 'time', 'date-time', 'iso-time', 'iso-date-time', 'duration', 'uri', 'uri-reference',
@@ -249,6 +264,24 @@ function prepareSpec(openapi: any, opts: ConformOptions): { doc: any; formats: S
       // Swagger-1.2-style `required: true` on a property (and other non-array
       // values) is not JSON Schema; Ajv refuses to compile it, so drop it.
       if (node.required !== undefined && !Array.isArray(node.required)) delete node.required;
+      // Non-JSON-Schema type names (`any` from DHIS2's generator, Swagger's
+      // `file`) constrain nothing Ajv can check: drop them, keeping real ones.
+      if (typeof node.type === 'string' && !JSON_TYPES.has(node.type)) delete node.type;
+      else if (Array.isArray(node.type)) {
+        node.type = node.type.filter((t: unknown) => typeof t === 'string' && JSON_TYPES.has(t));
+        if (node.type.length === 0) delete node.type;
+        else if (node.type.length === 1) node.type = node.type[0];
+      }
+      // A `pattern` in a dialect JS cannot compile (Java inline flags `(?i)`,
+      // possessive quantifiers) would throw at compile time; it cannot be
+      // checked here, so drop it rather than fail the whole schema.
+      if (typeof node.pattern === 'string') {
+        try {
+          new RegExp(node.pattern);
+        } catch {
+          delete node.pattern;
+        }
+      }
       if (typeof node.format === 'string') formats.add(node.format);
       if (
         opts.strictAdditional &&
