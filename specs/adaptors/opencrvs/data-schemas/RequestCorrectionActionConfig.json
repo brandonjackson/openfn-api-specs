@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/RequestCorrectionActionConfig",
+  "title": "RequestCorrectionActionConfig",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/RequestCorrectionActionConfig",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "label": {
+      "description": "Human readable description of the action",
+      "$ref": "TranslationConfigOutput.json"
+    },
+    "flags": {
+      "default": [],
+      "description": "Flag actions which are executed when the action is performed.",
+      "type": "array",
+      "items": {
+        "$ref": "ActionFlagConfig.json"
+      }
+    },
+    "supportingCopy": {
+      "description": "Text displayed on the confirmation dialog",
+      "$ref": "TranslationConfigOutput.json"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon representing the action"
+    },
+    "conditionals": {
+      "description": "Conditionals which can disable or hide actions.",
+      "type": "array",
+      "items": {
+        "$ref": "ActionConditional.json"
+      }
+    },
+    "type": {
+      "type": "string",
+      "const": "REQUEST_CORRECTION"
+    },
+    "correctionForm": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "Human readable description of the form",
+          "$ref": "TranslationConfigOutput.json"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "PageConfig.json"
+          }
+        }
+      },
+      "required": [
+        "label",
+        "pages"
+      ],
+      "additionalProperties": false,
+      "description": "Configuration of the form used for system actions beyond declaration, supporting a wider range of page types."
+    }
+  },
+  "required": [
+    "label",
+    "flags",
+    "type",
+    "correctionForm"
+  ],
+  "additionalProperties": false,
+  "description": "Configuration for requesting a correction on a registered record."
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msupply/RequisitionNode",
+  "title": "RequisitionNode",
+  "x-openfn-adaptor": "msupply",
+  "x-source": {
+    "openapi": "#/components/schemas/RequisitionNode",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "__typename": {
+      "type": "string",
+      "description": "GraphQL type name of this object."
+    },
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "$ref": "RequisitionNodeType.json"
+    },
+    "status": {
+      "$ref": "RequisitionNodeStatus.json"
+    },
+    "ancillaryState": {
+      "$ref": "AncillaryStateResponse.json",
+      "description": "Whether this request requisition has ancillary items that need adding or updating, so the client can render the \"add\"/\"update\" banner. Always returns `None` for non-request requisitions."
+    },
+    "createdDatetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expectedDeliveryDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "approvalStatus": {
+      "$ref": "RequisitionNodeApprovalStatus.json"
+    },
+    "user": {
+      "anyOf": [
+        {
+          "$ref": "UserNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "User that last edited requisition, if user is not found in system default unknown user is returned Null is returned for transfers, where response requisition has not been edited yet"
+    },
+    "sentDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Applicable to request requisition only"
+    },
+    "finalisedDatetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "requisitionNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "colour": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "theirReference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "otherParty": {
+      "$ref": "NameNode.json",
+      "description": "Request Requisition: Supplying store (store that is supplying stock) Response Requisition: Customer store (store that is ordering stock)"
+    },
+    "otherPartyName": {
+      "type": "string"
+    },
+    "otherPartyId": {
+      "type": "string"
+    },
+    "destinationCustomer": {
+      "anyOf": [
+        {
+          "$ref": "NameNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "maxMonthsOfStock": {
+      "type": "number",
+      "format": "double",
+      "description": "Maximum calculated quantity, used to deduce calculated quantity for each line, see calculated in requisition line"
+    },
+    "minMonthsOfStock": {
+      "type": "number",
+      "format": "double",
+      "description": "Minimum quantity to have for stock to be ordered, used to deduce calculated quantity for each line, see calculated in requisition line"
+    },
+    "documents": {
+      "$ref": "SyncFileReferenceConnector.json"
+    },
+    "lines": {
+      "$ref": "RequisitionLineConnector.json"
+    },
+    "linkedRequisition": {
+      "anyOf": [
+        {
+          "$ref": "RequisitionNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Linked requisition"
+    },
+    "shipments": {
+      "$ref": "InvoiceConnector.json",
+      "description": "Response Requisition: Outbound Shipments linked requisition Request Requisition: Inbound Shipments linked to requisition"
+    },
+    "linesRemainingToSupply": {
+      "$ref": "RequisitionLineConnector.json",
+      "description": "All lines that have not been supplied based on same logic as RequisitionLineNode.remainingQuantityToSupply only applicable to Response requisition, Request requisition will empty connector"
+    },
+    "program": {
+      "anyOf": [
+        {
+          "$ref": "ProgramNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "programName": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "deprecated": true
+    },
+    "orderType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "period": {
+      "anyOf": [
+        {
+          "$ref": "PeriodNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "isEmergency": {
+      "type": "boolean"
+    },
+    "createdFromRequisition": {
+      "anyOf": [
+        {
+          "$ref": "RequisitionNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "createdFromRequisitionId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,43 +1,3549 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "LAMISPlus EMR API (synthesized)",
-    "version": "1.0.0",
-    "description": "Synthesized OpenAPI description of the LAMISPlus EMR API surface used by the OpenFn lamisplus adaptor. LAMISPlus is a Nigerian HIV/health electronic medical record (EMR) system. No official machine-readable spec was found; this document was reconstructed from the adaptor's compiled source (the endpoints it actually calls) plus plausible EHR-plugin endpoints. The two endpoints that the adaptor is known to call verbatim are `POST core/api/v1/auth/login` (used by the implicit login step) and `GET plugin/ehr/api/v1/patient` (used by getPatients). The adaptor also exposes generic `http.get`/`http.post`/`http.request` helpers that can target any path on the configured LAMISPlus instance; the additional patient/visit/encounter endpoints below are plausible reconstructions to seed representative collections and are marked accordingly.",
+    "title": "LAMISPlus EMR API",
+    "version": "3",
+    "description": "LAMISPlus is an open-source electronic medical record used across Nigeria for HIV and wider primary-care programmes. A deployment is a self-hosted Spring Boot application: the core platform serves /api/... and /core/api/v1/..., and each installed plugin is mounted under /plugin/<plugin>/ (for example the EHR plugin's PatientController declares api/v1/patient and is served at /plugin/ehr/api/v1/patient). Clients sign in at POST /core/api/v1/auth/login and send the returned accessToken as `Authorization: Bearer <token>`. Responses come in three envelopes: `{ statusCode, message, data }`, the `{ totalRecords, pageNumber, pageSize, totalPages, records }` paging envelope, and Spring Data's `{ content, page }`. The OpenFn lamisplus adaptor (@openfn/language-lamisplus) logs in implicitly, calls GET /plugin/ehr/api/v1/patient for getPatients, and exposes generic get/post/request helpers that can reach any path on the instance. LAMISPlus publishes no machine-readable spec and no public API documentation; this document is authored from the vendor's own source and from the implementing partner's API test suite (see source.json), and covers roughly a quarter of the ~460 endpoints a v3 deployment exposes.",
     "x-openfn-adaptor": "lamisplus"
   },
   "servers": [
     {
       "url": "https://lamisplus.example.org",
-      "description": "Placeholder base URL. The real base URL is the per-instance LAMISPlus deployment supplied via adaptor configuration (configuration.baseUrl)."
+      "description": "Placeholder. LAMISPlus is self-hosted per facility or per programme; the real base URL comes from the adaptor's configuration.baseUrl."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
     }
   ],
   "tags": [
-    { "name": "auth", "description": "Authentication" },
-    { "name": "patients", "description": "Patient records (EHR plugin)" },
-    { "name": "visits", "description": "Clinical visits and encounters" }
+    {
+      "name": "analytics",
+      "description": "Platform analytics metrics"
+    },
+    {
+      "name": "appointments",
+      "description": "Appointments plugin"
+    },
+    {
+      "name": "audit",
+      "description": "Audit trail"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication and account recovery"
+    },
+    {
+      "name": "codesets",
+      "description": "Reference codesets and codeset groups"
+    },
+    {
+      "name": "consultation",
+      "description": "Outpatient consultation"
+    },
+    {
+      "name": "ehr-dashboard",
+      "description": "EHR plugin dashboards"
+    },
+    {
+      "name": "encounters",
+      "description": "Clinical encounters"
+    },
+    {
+      "name": "facilities",
+      "description": "Facility management"
+    },
+    {
+      "name": "inpatient",
+      "description": "Inpatient plugin: wards, beds, admissions, discharges"
+    },
+    {
+      "name": "laboratory",
+      "description": "Laboratory orders, samples and results"
+    },
+    {
+      "name": "organisation-units",
+      "description": "Organisation-unit hierarchy and facilities"
+    },
+    {
+      "name": "patients",
+      "description": "Patient register (EHR plugin)"
+    },
+    {
+      "name": "pharmacy",
+      "description": "Drug catalogue, orders and dispensing"
+    },
+    {
+      "name": "plugins",
+      "description": "Plugin registry, marketplace and sync"
+    },
+    {
+      "name": "public-health",
+      "description": "Public health plugin: family planning, hepatitis, HTS"
+    },
+    {
+      "name": "reports",
+      "description": "Reports plugin"
+    },
+    {
+      "name": "roles",
+      "description": "Roles and permissions"
+    },
+    {
+      "name": "service-points",
+      "description": "Service points and service locations"
+    },
+    {
+      "name": "super-admin",
+      "description": "Cross-tenant administration"
+    },
+    {
+      "name": "system",
+      "description": "Health, cache and platform diagnostics"
+    },
+    {
+      "name": "triage",
+      "description": "Triage worklists"
+    },
+    {
+      "name": "users",
+      "description": "User accounts and settings"
+    },
+    {
+      "name": "visits",
+      "description": "Patient visits"
+    }
   ],
   "paths": {
+    "/api/admin/cache/health": {
+      "get": {
+        "operationId": "getCacheHealth",
+        "tags": [
+          "system"
+        ],
+        "summary": "Cache health",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/cache/stats": {
+      "get": {
+        "operationId": "getCacheStats",
+        "tags": [
+          "system"
+        ],
+        "summary": "Cache statistics",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/cache/stats/text": {
+      "get": {
+        "operationId": "getCacheStatsText",
+        "tags": [
+          "system"
+        ],
+        "summary": "Cache statistics as plain text",
+        "description": "Returns text/plain, not JSON.",
+        "responses": {
+          "200": {
+            "description": "Plain-text statistics.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/plugins/monitoring/health": {
+      "get": {
+        "operationId": "getPluginMonitoringHealth",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Plugin monitoring health",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/plugins/monitoring/summary": {
+      "get": {
+        "operationId": "getPluginMonitoringSummary",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Plugin monitoring summary",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/available-dates": {
+      "get": {
+        "operationId": "listAuditDates",
+        "tags": [
+          "audit"
+        ],
+        "summary": "List the dates audit events exist for",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events": {
+      "get": {
+        "operationId": "listAuditEvents",
+        "tags": [
+          "audit"
+        ],
+        "summary": "List audit events",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events/range": {
+      "get": {
+        "operationId": "listAuditEventsInRange",
+        "tags": [
+          "audit"
+        ],
+        "summary": "List audit events in a date range",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/queue-stats": {
+      "get": {
+        "operationId": "getAuditQueueStats",
+        "tags": [
+          "audit"
+        ],
+        "summary": "Audit queue statistics",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/debug/plugin-registry": {
+      "get": {
+        "operationId": "getPluginRegistry",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Dump the plugin registry (debug)",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/devices/my-devices": {
+      "get": {
+        "operationId": "listMyDevices",
+        "tags": [
+          "system"
+        ],
+        "summary": "List the devices registered to this user",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/menus/api/v1/core/plugin/get_all": {
+      "get": {
+        "operationId": "listPluginMenus",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "List the menu entries every plugin contributes",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/permissions/api/v1/core/permissions": {
+      "get": {
+        "operationId": "listCorePermissions",
+        "tags": [
+          "roles"
+        ],
+        "summary": "List core permissions (permissions service route)",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/analytics/metrics/compare": {
+      "get": {
+        "operationId": "compareMetrics",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Compare metrics between periods",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/analytics/metrics/daily": {
+      "get": {
+        "operationId": "getDailyMetrics",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Daily metrics",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/analytics/metrics/drill-down/lga": {
+      "get": {
+        "operationId": "getMetricsByLga",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Drill metrics down to LGA (local government area)",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/analytics/metrics/drill-down/tenant": {
+      "get": {
+        "operationId": "getMetricsByTenant",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Drill metrics down to tenant",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/analytics/metrics/range": {
+      "get": {
+        "operationId": "getMetricsInRange",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Metrics for a date range",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": [
+          "system"
+        ],
+        "summary": "Overall platform health",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/health/plugins": {
+      "get": {
+        "operationId": "getPluginHealth",
+        "tags": [
+          "system"
+        ],
+        "summary": "Per-plugin health",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/health/uptime": {
+      "get": {
+        "operationId": "getUptime",
+        "tags": [
+          "system"
+        ],
+        "summary": "Platform uptime",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/plugins/usage/facility": {
+      "get": {
+        "operationId": "getPluginUsageByFacility",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Plugin usage for the current facility",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/plugins/usage/region": {
+      "get": {
+        "operationId": "getPluginUsageByRegion",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Plugin usage by region",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/core/plugins/usage/tenant": {
+      "get": {
+        "operationId": "getPluginUsageByTenant",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Plugin usage by tenant",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities": {
+      "get": {
+        "operationId": "listFacilities",
+        "tags": [
+          "facilities"
+        ],
+        "summary": "List facilities",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities/count": {
+      "get": {
+        "operationId": "countFacilities",
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Count facilities",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities/current": {
+      "get": {
+        "operationId": "getCurrentFacility",
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Describe the session's facility",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities/primary": {
+      "get": {
+        "operationId": "getPrimaryFacility",
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Describe the tenant's primary facility",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/local/plugin-sync/status": {
+      "get": {
+        "operationId": "getLocalPluginSyncStatus",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Report the local plugin-sync status",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plugin-sync/check": {
+      "get": {
+        "operationId": "checkPluginSync",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Check for plugin updates to sync",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/auth/forgot-password/methods": {
+      "get": {
+        "operationId": "getForgotPasswordMethods",
+        "tags": [
+          "auth"
+        ],
+        "summary": "List the password-recovery methods available",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/auth/forgot-password/question": {
+      "get": {
+        "operationId": "getForgotPasswordQuestion",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get the security question for password recovery",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/core/api/v1/auth/login": {
       "post": {
         "operationId": "login",
-        "tags": ["auth"],
-        "summary": "Authenticate and obtain a bearer token",
-        "description": "Called implicitly by the adaptor when configuration includes email and password. Returns an access token used as a Bearer token on subsequent requests.",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Sign in and obtain an access token",
+        "description": "Called implicitly by the OpenFn adaptor when configuration carries email and password. Rate limited to roughly 10 requests per minute per IP.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Authentication succeeded",
+            "description": "Success.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/core/api/v1/auth/mfa/status": {
+      "get": {
+        "operationId": "getMfaStatus",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Report multi-factor authentication status",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/codeset-groups/groups": {
+      "get": {
+        "operationId": "listCodesetGroups",
+        "tags": [
+          "codesets"
+        ],
+        "summary": "List every codeset group",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/codeset-groups/groups/list": {
+      "get": {
+        "operationId": "listCodesetGroupMembers",
+        "tags": [
+          "codesets"
+        ],
+        "summary": "List the members of a named codeset group",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Codeset group name, e.g. YES_NO."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/codesets": {
+      "get": {
+        "operationId": "listCodesets",
+        "tags": [
+          "codesets"
+        ],
+        "summary": "Page the codesets",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/organisation-units": {
+      "get": {
+        "operationId": "listOrganisationUnits",
+        "tags": [
+          "organisation-units"
+        ],
+        "summary": "List organisation units",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/organisation-units/facilities/search": {
+      "get": {
+        "operationId": "searchFacilities",
+        "tags": [
+          "organisation-units"
+        ],
+        "summary": "Search facilities",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/organisation-units/tenant-facilities": {
+      "get": {
+        "operationId": "listTenantFacilities",
+        "tags": [
+          "organisation-units"
+        ],
+        "summary": "List the facilities this tenant owns",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/plugin/admin/all": {
+      "get": {
+        "operationId": "listPluginsForAdmin",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "List plugins for administration",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/plugin/all": {
+      "get": {
+        "operationId": "listAllPlugins",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "List every plugin known to the platform",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginListResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/plugin/manifest": {
+      "get": {
+        "operationId": "getPluginManifest",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Read the plugin manifest",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/plugin/marketplace/available": {
+      "get": {
+        "operationId": "listMarketplacePlugins",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "List the plugins available in the marketplace",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/plugin/my-plugins": {
+      "get": {
+        "operationId": "listMyPlugins",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "List the plugins enabled for this facility",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginListResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/roles": {
+      "get": {
+        "operationId": "listRoles",
+        "tags": [
+          "roles"
+        ],
+        "summary": "List the assignable roles",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Role"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/roles/details": {
+      "get": {
+        "operationId": "listRoleDetails",
+        "tags": [
+          "roles"
+        ],
+        "summary": "List roles with their detail",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/roles/permissions": {
+      "get": {
+        "operationId": "listPermissions",
+        "tags": [
+          "roles"
+        ],
+        "summary": "List the permissions roles are built from",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/roles/tenant/roles": {
+      "get": {
+        "operationId": "listTenantRoles",
+        "tags": [
+          "roles"
+        ],
+        "summary": "List the roles defined for the tenant",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/super-admin/all-users": {
+      "get": {
+        "operationId": "listAllUsers",
+        "tags": [
+          "super-admin"
+        ],
+        "summary": "List every user",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/super-admin/dashboard/stats": {
+      "get": {
+        "operationId": "getSuperAdminDashboardStats",
+        "tags": [
+          "super-admin"
+        ],
+        "summary": "Platform dashboard statistics",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/super-admin/plugins/usage": {
+      "get": {
+        "operationId": "getSuperAdminPluginUsage",
+        "tags": [
+          "super-admin"
+        ],
+        "summary": "Plugin usage across tenants",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/super-admin/tenants": {
+      "get": {
+        "operationId": "listTenants",
+        "tags": [
+          "super-admin"
+        ],
+        "summary": "List tenants",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/super-admin/users": {
+      "get": {
+        "operationId": "listSuperAdminUsers",
+        "tags": [
+          "super-admin"
+        ],
+        "summary": "List users across tenants",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/user-settings": {
+      "get": {
+        "operationId": "getUserSettings",
+        "tags": [
+          "users"
+        ],
+        "summary": "Settings of the signed-in user",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/users": {
+      "get": {
+        "operationId": "listUsers",
+        "tags": [
+          "users"
+        ],
+        "summary": "Page the users of the current tenant",
+        "description": "Returns a paged envelope alongside a `message` property.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/users/get-tenant-users": {
+      "get": {
+        "operationId": "listTenantUsers",
+        "tags": [
+          "users"
+        ],
+        "summary": "List every user of the tenant (tenant-wide privilege required)",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/users/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "tags": [
+          "users"
+        ],
+        "summary": "Describe the signed-in user",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/users/system-dashboard": {
+      "get": {
+        "operationId": "getUserSystemDashboard",
+        "tags": [
+          "users"
+        ],
+        "summary": "User-facing system dashboard counters",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/core/api/v1/users/tenants": {
+      "get": {
+        "operationId": "listUserTenants",
+        "tags": [
+          "users"
+        ],
+        "summary": "List the tenants the signed-in user belongs to (tenant-wide privilege required)",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/levels/without-subset": {
+      "get": {
+        "operationId": "listOrganisationUnitLevels",
+        "tags": [
+          "organisation-units"
+        ],
+        "summary": "List organisation-unit levels excluding subsets",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin-manifest.json": {
+      "get": {
+        "operationId": "getStaticPluginManifest",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Fetch the static plugin manifest document",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/appointments/appointments": {
+      "get": {
+        "operationId": "listAppointments",
+        "tags": [
+          "appointments"
+        ],
+        "summary": "List appointments",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/appointments/ping": {
+      "get": {
+        "operationId": "pingAppointments",
+        "tags": [
+          "appointments"
+        ],
+        "summary": "Liveness check for the appointments plugin",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/dashboard/patient-by-age-group": {
+      "get": {
+        "operationId": "getPatientsByAgeGroup",
+        "tags": [
+          "ehr-dashboard"
+        ],
+        "summary": "Patient counts by age group",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/dashboard/patient-summary": {
+      "get": {
+        "operationId": "getPatientSummary",
+        "tags": [
+          "ehr-dashboard"
+        ],
+        "summary": "Patient summary counters",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/lab-order-result/api/lab-results": {
+      "get": {
+        "operationId": "listLabResults",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List laboratory results",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/lab-order-result/hepatitis-eligibles": {
+      "get": {
+        "operationId": "listHepatitisEligiblePatients",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List the patients eligible for hepatitis screening",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/lab-order-result/lab-eligibles": {
+      "get": {
+        "operationId": "listLabEligiblePatients",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List the patients eligible for laboratory testing",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/lab-order-samples/laboratory-stats": {
+      "get": {
+        "operationId": "getLaboratoryStats",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "Laboratory statistics",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/lab-order-samples/sample": {
+      "get": {
+        "operationId": "listLabOrderSamples",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List laboratory order samples",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/consultation/general-dashboard": {
+      "get": {
+        "operationId": "getConsultationDashboard",
+        "tags": [
+          "consultation"
+        ],
+        "summary": "Outpatient consultation dashboard",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsultationDashboard"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/drug": {
+      "get": {
+        "operationId": "listDrugs",
+        "tags": [
+          "pharmacy"
+        ],
+        "summary": "Page the drug catalogue",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/drug-dispensing/drug-order-and-dispensing-monthly-summary": {
+      "get": {
+        "operationId": "getDispensingMonthlySummary",
+        "tags": [
+          "pharmacy"
+        ],
+        "summary": "Monthly drug order and dispensing summary",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/drug-orders/prescription-order-information": {
+      "get": {
+        "operationId": "getPrescriptionOrderInformation",
+        "tags": [
+          "pharmacy"
+        ],
+        "summary": "Summarise prescription orders",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/encounter": {
+      "get": {
+        "operationId": "listEncounters",
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Page the encounters",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/lab-orders": {
+      "get": {
+        "operationId": "listLabOrders",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "Page the laboratory orders",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/lab-sample-types": {
+      "get": {
+        "operationId": "listLabSampleTypes",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List the specimen types",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/lab-test": {
+      "get": {
+        "operationId": "listLabTests",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List the lab tests that can be ordered",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/lab-test_group": {
+      "get": {
+        "operationId": "listLabTestGroups",
+        "tags": [
+          "laboratory"
+        ],
+        "summary": "List the lab test groups",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
               }
             }
           }
@@ -47,31 +3553,70 @@
     "/plugin/ehr/api/v1/patient": {
       "get": {
         "operationId": "getPatients",
-        "tags": ["patients"],
-        "summary": "List patient resources",
-        "description": "Called by the adaptor's getPatients operation. Supports pagination query params such as size and page. The adaptor reads the patients array from body.data.patients.",
+        "tags": [
+          "patients"
+        ],
+        "summary": "Page the patient register",
+        "description": "The endpoint behind the adaptor's getPatients, which returns `body.data.patients`.",
         "parameters": [
           {
             "name": "page",
             "in": "query",
             "required": false,
-            "schema": { "type": "integer", "default": 0 },
-            "description": "Zero-based page index"
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
           },
           {
             "name": "size",
             "in": "query",
             "required": false,
-            "schema": { "type": "integer", "default": 20 },
-            "description": "Number of records per page"
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          },
+          {
+            "name": "searchValue",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Free-text filter over name and hospital number."
           }
         ],
         "responses": {
           "200": {
-            "description": "A paginated list of patients",
+            "description": "Success.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PatientListResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/PatientListResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
               }
             }
           }
@@ -79,23 +3624,49 @@
       },
       "post": {
         "operationId": "createPatient",
-        "tags": ["patients"],
-        "summary": "Create a patient record",
-        "description": "Plausible reconstruction. Reachable via the generic http.post helper.",
+        "tags": [
+          "patients"
+        ],
+        "summary": "Register a patient",
+        "description": "Reachable through the adaptor's generic post() helper.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PatientInput" }
+              "schema": {
+                "$ref": "#/components/schemas/PatientInput"
+              }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Patient created",
+            "description": "Success.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Patient" }
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
               }
             }
           }
@@ -105,113 +3676,50 @@
     "/plugin/ehr/api/v1/patient/{id}": {
       "get": {
         "operationId": "getPatientById",
-        "tags": ["patients"],
-        "summary": "Get a single patient by id",
-        "description": "Plausible reconstruction. Reachable via the generic http.get helper.",
+        "tags": [
+          "patients"
+        ],
+        "summary": "Fetch one patient",
+        "description": "Reachable through the adaptor's generic get() helper.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Patient id."
           }
         ],
         "responses": {
           "200": {
-            "description": "A single patient",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Patient" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plugin/ehr/api/v1/visit": {
-      "get": {
-        "operationId": "getVisits",
-        "tags": ["visits"],
-        "summary": "List clinical visits",
-        "description": "Plausible reconstruction. Reachable via the generic http.get helper.",
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "integer" }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "integer", "default": 0 }
-          },
-          {
-            "name": "size",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "integer", "default": 20 }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A paginated list of visits",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/VisitListResponse" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "createVisit",
-        "tags": ["visits"],
-        "summary": "Create a clinical visit",
-        "description": "Plausible reconstruction. Reachable via the generic http.post helper.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/VisitInput" }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Visit created",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Visit" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plugin/ehr/api/v1/encounter": {
-      "get": {
-        "operationId": "getEncounters",
-        "tags": ["visits"],
-        "summary": "List encounters",
-        "description": "Plausible reconstruction. Reachable via the generic http.get helper.",
-        "parameters": [
-          {
-            "name": "visitId",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "integer" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of encounters",
+            "description": "Success.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Encounter" }
+                  "$ref": "#/components/schemas/PatientResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
                 }
               }
             }
@@ -219,28 +3727,1054 @@
         }
       }
     },
-    "/plugin/ehr/api/v1/biometric": {
+    "/plugin/ehr/api/v1/scheduled-admissions": {
       "get": {
-        "operationId": "getBiometrics",
-        "tags": ["patients"],
-        "summary": "List patient biometric records",
-        "description": "Plausible reconstruction. Reachable via the generic http.get helper.",
+        "operationId": "listScheduledAdmissions",
+        "tags": [
+          "encounters"
+        ],
+        "summary": "List the scheduled admissions the inpatient worklist is built from",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/service-locations": {
+      "get": {
+        "operationId": "listServiceLocations",
+        "tags": [
+          "service-points"
+        ],
+        "summary": "List the facility's service locations",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/service-points": {
+      "get": {
+        "operationId": "listServicePoints",
+        "tags": [
+          "service-points"
+        ],
+        "summary": "List the service points patients are posted to",
         "parameters": [
           {
-            "name": "patientId",
+            "name": "size",
             "in": "query",
             "required": false,
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Records per page."
           }
         ],
         "responses": {
           "200": {
-            "description": "A list of biometric records",
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServicePointPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/triage/patients-attended-to": {
+      "get": {
+        "operationId": "listPatientsAttendedTo",
+        "tags": [
+          "triage"
+        ],
+        "summary": "List the patients triage has attended to",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/triage/patients-in-waiting": {
+      "get": {
+        "operationId": "listPatientsInWaiting",
+        "tags": [
+          "triage"
+        ],
+        "summary": "List the patients waiting for triage",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/triage/triage-view": {
+      "get": {
+        "operationId": "getTriageView",
+        "tags": [
+          "triage"
+        ],
+        "summary": "The triage worklist view",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/ehr/api/v1/visit/active": {
+      "get": {
+        "operationId": "listActiveVisits",
+        "tags": [
+          "visits"
+        ],
+        "summary": "List the currently active visits",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/inpatient/api/v1/admissions": {
+      "get": {
+        "operationId": "listAdmissions",
+        "tags": [
+          "inpatient"
+        ],
+        "summary": "Page the admissions",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/inpatient/api/v1/beds": {
+      "get": {
+        "operationId": "listBeds",
+        "tags": [
+          "inpatient"
+        ],
+        "summary": "Page the beds",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/inpatient/api/v1/discharges": {
+      "get": {
+        "operationId": "listDischarges",
+        "tags": [
+          "inpatient"
+        ],
+        "summary": "Page the discharges",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createDischarge",
+        "tags": [
+          "inpatient"
+        ],
+        "summary": "Discharge an admitted patient",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DischargeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/inpatient/api/v1/discharges/discharged": {
+      "get": {
+        "operationId": "listDischargedPatients",
+        "tags": [
+          "inpatient"
+        ],
+        "summary": "List the patients already discharged",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/inpatient/api/v1/wards": {
+      "get": {
+        "operationId": "listWards",
+        "tags": [
+          "inpatient"
+        ],
+        "summary": "Page the wards",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Zero-based page index."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Records per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/pbh/api/v1/family-planning": {
+      "get": {
+        "operationId": "listFamilyPlanningEnrolments",
+        "tags": [
+          "public-health"
+        ],
+        "summary": "List the family planning enrolments",
+        "responses": {
+          "200": {
+            "description": "Success.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Biometric" }
+                  "items": {},
+                  "description": "A bare JSON array; the element shape is not documented."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/pbh/api/v1/hepatitis_enrollment": {
+      "get": {
+        "operationId": "listHepatitisEnrolments",
+        "tags": [
+          "public-health"
+        ],
+        "summary": "List the viral hepatitis enrolments",
+        "description": "Answers 503 SERVICE_UNAVAILABLE where the hepatitis feature is switched off.",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/pbh/api/v1/hepatitis_followup": {
+      "get": {
+        "operationId": "listHepatitisFollowUps",
+        "tags": [
+          "public-health"
+        ],
+        "summary": "List the viral hepatitis follow-ups",
+        "description": "Answers 503 SERVICE_UNAVAILABLE where the hepatitis feature is switched off.",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/pbh/api/v1/hts/encounters/register": {
+      "get": {
+        "operationId": "listHtsRegister",
+        "tags": [
+          "public-health"
+        ],
+        "summary": "List the HIV testing services register",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/pbh/api/v1/hts/encounters/waiting": {
+      "get": {
+        "operationId": "listHtsWaiting",
+        "tags": [
+          "public-health"
+        ],
+        "summary": "List the clients waiting for HIV testing services",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/reports/ping": {
+      "get": {
+        "operationId": "pingReports",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Liveness check for the reports plugin",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/reports/reports": {
+      "get": {
+        "operationId": "listReports",
+        "tags": [
+          "reports"
+        ],
+        "summary": "List the reports that can be run",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugins/health": {
+      "get": {
+        "operationId": "getPluginsHealth",
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Report plugin health",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/redoc.html": {
+      "get": {
+        "operationId": "getApiDocs",
+        "tags": [
+          "system"
+        ],
+        "summary": "The deployment's own API reference page",
+        "description": "Redoc UI served by the core ApiDocController. A deployment therefore has an OpenAPI document of its own behind the login; it is not reachable anonymously.",
+        "responses": {
+          "200": {
+            "description": "An HTML page.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tenants/assigned-facilities": {
+      "get": {
+        "operationId": "listAssignedFacilities",
+        "tags": [
+          "organisation-units"
+        ],
+        "summary": "List the facilities assigned to the signed-in user",
+        "responses": {
+          "200": {
+            "description": "Success. Response shape is not documented by the vendor and was not observed; the body is JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response shape is not documented by the vendor and was not observed; the body is JSON."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. The body is an array of error entries, or occasionally a single entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiError"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  ]
                 }
               }
             }
@@ -254,144 +4788,633 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "JWT",
+        "description": "The accessToken returned by POST /core/api/v1/auth/login."
       }
     },
     "schemas": {
+      "ApiError": {
+        "type": "object",
+        "description": "One failure entry. LAMISPlus reports errors as an array of these (for example `[{ \"code\": \"INSUFFICIENT_PRIVILEGES\", ... }]`), occasionally as a single object.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code, e.g. INSUFFICIENT_PRIVILEGES, INVALID_INPUT_FORMAT, INTERNAL_ERROR, SERVICE_UNAVAILABLE."
+          },
+          "field": {
+            "type": "string",
+            "nullable": true,
+            "description": "Request field the error is about, when it is about one."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message."
+          }
+        }
+      },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "description": "Credentials for the LAMISPlus login endpoint.",
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
-          "email": { "type": "string", "format": "email" },
-          "password": { "type": "string", "format": "password" }
+          "email": {
+            "type": "string",
+            "description": "User's sign-in email."
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password."
+          }
         }
       },
       "LoginResponse": {
         "type": "object",
+        "description": "A successful login. `accessToken` is sent on every later request as `Authorization: Bearer <accessToken>`.",
         "properties": {
-          "accessToken": { "type": "string", "description": "JWT bearer token" },
-          "tokenType": { "type": "string", "example": "Bearer" },
-          "expiresIn": { "type": "integer", "description": "Seconds until token expiry" }
+          "accessToken": {
+            "type": "string",
+            "description": "JWT bearer token."
+          },
+          "tokenType": {
+            "type": "string",
+            "description": "Token scheme, e.g. Bearer."
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Token lifetime in seconds."
+          },
+          "email": {
+            "type": "string",
+            "description": "Email of the account that signed in."
+          }
+        },
+        "example": {
+          "accessToken": "eyJhbGciOiJIUzI1NiJ9.<redacted>",
+          "tokenType": "Bearer",
+          "expiresIn": 86400
         }
       },
       "Patient": {
         "type": "object",
+        "description": "A patient (LAMISPlus calls the underlying record a Person). Property names and types follow the vendor's PersonResponseDto / Person entity in github.com/lamisplus/Patient-Module. The jsonb-backed properties (address, contact, contactPoint, identifier, gender, maritalStatus, education, employmentStatus, organization) are free-form JSON in the database and are not constrained here.",
         "properties": {
-          "id": { "type": "integer" },
-          "uuid": { "type": "string", "format": "uuid" },
-          "hospitalNumber": { "type": "string", "description": "Facility patient/hospital number" },
-          "firstName": { "type": "string" },
-          "surname": { "type": "string" },
-          "otherName": { "type": "string", "nullable": true },
-          "sex": { "type": "string", "enum": ["Male", "Female"] },
-          "dateOfBirth": { "type": "string", "format": "date" },
-          "maritalStatus": { "type": "string", "nullable": true },
-          "phoneNumber": { "type": "string", "nullable": true },
-          "address": { "type": "string", "nullable": true },
-          "facilityId": { "type": "integer", "nullable": true },
-          "dateOfRegistration": { "type": "string", "format": "date", "nullable": true },
-          "archived": { "type": "boolean", "default": false }
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Numeric primary key."
+          },
+          "uuid": {
+            "type": "string",
+            "description": "Record UUID. A plain string column \u2014 deployments do not all store a formatted UUID."
+          },
+          "hospitalNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "Facility hospital number."
+          },
+          "emrId": {
+            "type": "string",
+            "nullable": true,
+            "description": "EMR identifier."
+          },
+          "ninNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "National Identification Number."
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          },
+          "otherName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sex": {
+            "type": "string",
+            "nullable": true,
+            "description": "Sex as a free-text codeset value; the column is an unconstrained string, so casing varies between deployments (e.g. Male / MALE)."
+          },
+          "gender": {
+            "description": "Gender codeset entry (free-form JSON)."
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "IsDateOfBirthEstimated": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether dateOfBirth is an estimate. Spelt with a leading capital in PersonResponseDto."
+          },
+          "dateOfRegistration": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "deceased": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "deceasedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "archived": {
+            "description": "Soft-delete flag. Modelled as an integer (0/1) on the Person entity; some responses carry a boolean."
+          },
+          "biometricStatus": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "facilityId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "visitId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "address": {
+            "description": "Address(es) as free-form JSON (jsonb column; an object or an array of AddressDto)."
+          },
+          "contact": {
+            "description": "Contact details as free-form JSON."
+          },
+          "contactPoint": {
+            "description": "Contact points as free-form JSON."
+          },
+          "identifier": {
+            "description": "Identifiers as free-form JSON."
+          },
+          "maritalStatus": {
+            "description": "Marital-status codeset entry (free-form JSON)."
+          },
+          "employmentStatus": {
+            "description": "Employment-status codeset entry (free-form JSON)."
+          },
+          "education": {
+            "description": "Education codeset entry (free-form JSON)."
+          },
+          "organization": {
+            "description": "Organisation the record belongs to (free-form JSON)."
+          },
+          "dynamicHivStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "string",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "description": "Where the record came from (e.g. the registering module)."
+          }
         }
       },
       "PatientInput": {
         "type": "object",
-        "required": ["firstName", "surname", "sex", "dateOfBirth"],
+        "description": "Body for creating or updating a patient, following the vendor's PersonDto. Nothing is marked required here: the vendor DTO carries no validation annotations.",
         "properties": {
-          "hospitalNumber": { "type": "string" },
-          "firstName": { "type": "string" },
-          "surname": { "type": "string" },
-          "otherName": { "type": "string" },
-          "sex": { "type": "string", "enum": ["Male", "Female"] },
-          "dateOfBirth": { "type": "string", "format": "date" },
-          "maritalStatus": { "type": "string" },
-          "phoneNumber": { "type": "string" },
-          "address": { "type": "string" },
-          "facilityId": { "type": "integer" }
+          "firstName": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "otherName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sex": {
+            "type": "string",
+            "description": "Sex codeset value (unconstrained string)."
+          },
+          "sexId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "genderId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateOfRegistration": {
+            "type": "string",
+            "format": "date"
+          },
+          "isDateOfBirthEstimated": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "deceased": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "deceasedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "maritalStatusId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "employmentStatusId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "educationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "facilityId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "hospitalNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "ninNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "emrId": {
+            "type": "string",
+            "nullable": true
+          },
+          "uuid": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "string",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "description": "Address(es); free-form JSON or a list of AddressDto."
+          },
+          "contact": {
+            "description": "Contacts; free-form JSON."
+          },
+          "contactPoint": {
+            "description": "Contact points; free-form JSON."
+          },
+          "identifier": {
+            "description": "Identifiers; free-form JSON."
+          }
+        }
+      },
+      "PatientPage": {
+        "type": "object",
+        "description": "A page of patients, carried under `data` of the patient register response.",
+        "properties": {
+          "patients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Patient"
+            }
+          },
+          "totalItems": {
+            "type": "integer",
+            "description": "Total matching patients."
+          },
+          "totalRecords": {
+            "type": "integer",
+            "description": "Alternative total used by some builds."
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          }
         }
       },
       "PatientListResponse": {
         "type": "object",
+        "description": "The patient register. The adaptor's getPatients reads `data.patients`.",
         "properties": {
-          "data": {
-            "type": "object",
-            "properties": {
-              "patients": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/Patient" }
-              },
-              "totalRecords": { "type": "integer" },
-              "pageSize": { "type": "integer" },
-              "currentPage": { "type": "integer" }
-            }
+          "statusCode": {
+            "type": "integer"
           },
-          "message": { "type": "string", "nullable": true },
-          "status": { "type": "string", "nullable": true }
-        }
-      },
-      "Visit": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "uuid": { "type": "string", "format": "uuid" },
-          "patientId": { "type": "integer" },
-          "visitDate": { "type": "string", "format": "date" },
-          "visitType": { "type": "string", "nullable": true },
-          "facilityId": { "type": "integer", "nullable": true },
-          "checkInDateTime": { "type": "string", "format": "date-time", "nullable": true },
-          "checkOutDateTime": { "type": "string", "format": "date-time", "nullable": true }
-        }
-      },
-      "VisitInput": {
-        "type": "object",
-        "required": ["patientId", "visitDate"],
-        "properties": {
-          "patientId": { "type": "integer" },
-          "visitDate": { "type": "string", "format": "date" },
-          "visitType": { "type": "string" },
-          "facilityId": { "type": "integer" }
-        }
-      },
-      "VisitListResponse": {
-        "type": "object",
-        "properties": {
+          "message": {
+            "type": "string"
+          },
           "data": {
-            "type": "object",
-            "properties": {
-              "visits": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/Visit" }
-              },
-              "totalRecords": { "type": "integer" }
+            "$ref": "#/components/schemas/PatientPage"
+          }
+        }
+      },
+      "PatientResponse": {
+        "type": "object",
+        "description": "A single patient wrapped in the core `{ statusCode, message, data }` envelope.",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Patient"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "description": "A LAMISPlus user account.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the account may sign in."
+          }
+        }
+      },
+      "UserSettings": {
+        "type": "object",
+        "description": "Settings of the signed-in user.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "description": "A role a user can be granted.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "Role name."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Plugin": {
+        "type": "object",
+        "description": "A LAMISPlus plugin (module) as reported by the plugin registry.",
+        "properties": {
+          "pluginId": {
+            "type": "string",
+            "description": "Plugin identifier, e.g. lamisplus-ehr."
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "description": "Whether the plugin is enabled for this facility/tenant."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PluginListResponse": {
+        "type": "object",
+        "description": "Plugin list wrapped in the core `{ message, data }` envelope.",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Plugin"
             }
           }
         }
       },
-      "Encounter": {
+      "PagedResponse": {
         "type": "object",
+        "description": "The `{ totalRecords, pageNumber, pageSize, totalPages, records }` paging envelope used across the core and plugin list endpoints. Record shapes are endpoint-specific and are not documented by the vendor.",
         "properties": {
-          "id": { "type": "integer" },
-          "uuid": { "type": "string", "format": "uuid" },
-          "visitId": { "type": "integer" },
-          "patientId": { "type": "integer" },
-          "encounterType": { "type": "string", "nullable": true },
-          "encounterDate": { "type": "string", "format": "date" },
-          "formData": { "type": "object", "additionalProperties": true, "nullable": true }
+          "totalRecords": {
+            "type": "integer"
+          },
+          "pageNumber": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "records": {
+            "type": "array",
+            "items": {},
+            "description": "The page of records."
+          }
         }
       },
-      "Biometric": {
+      "ContentPage": {
         "type": "object",
+        "description": "The Spring Data `{ content, page }` paging envelope used by the EHR plugin's service-point and service-location endpoints.",
         "properties": {
-          "id": { "type": "integer" },
-          "patientId": { "type": "integer" },
-          "biometricType": { "type": "string", "nullable": true },
-          "template": { "type": "string", "description": "Base64-encoded biometric template", "nullable": true },
-          "fingerType": { "type": "string", "nullable": true },
-          "captureDate": { "type": "string", "format": "date-time", "nullable": true }
+          "content": {
+            "type": "array",
+            "items": {},
+            "description": "The page of records."
+          },
+          "page": {
+            "description": "Spring Data page metadata (size, number, totalElements, totalPages)."
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        }
+      },
+      "ServicePoint": {
+        "type": "object",
+        "description": "A service point patients are routed to (for example IMMUNIZATION or FAMILY_PLANNING).",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uuid": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Service point name."
+          },
+          "servicePointName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alternative name property returned by some builds."
+          }
+        }
+      },
+      "ServicePointPage": {
+        "type": "object",
+        "description": "A page of service points.",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServicePoint"
+            }
+          },
+          "page": {
+            "description": "Spring Data page metadata."
+          }
+        }
+      },
+      "ConsultationDashboard": {
+        "type": "object",
+        "description": "Outpatient consultation dashboard counters.",
+        "properties": {
+          "monthsStats": {
+            "type": "array",
+            "description": "One entry per month.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "monthName": {
+                  "type": "string"
+                },
+                "numberOfOutpatient": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "totalStats": {
+            "type": "object",
+            "properties": {
+              "totalNumberOfpatients": {
+                "type": "integer",
+                "description": "Spelt this way by the API."
+              }
+            }
+          },
+          "totalByAgeSegregation": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Counts keyed by age band."
+          }
+        }
+      },
+      "DischargeInput": {
+        "type": "object",
+        "description": "Body for discharging an admitted patient.",
+        "properties": {
+          "admissionUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "visitUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
         }
       }
     }
-  },
-  "security": [
-    { "bearerAuth": [] }
-  ]
+  }
 }

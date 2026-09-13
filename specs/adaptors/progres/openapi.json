@@ -1,95 +1,224 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "PROGRES adaptor surface (synthesized)",
-    "version": "1.0",
-    "description": "The OpenFn progres adaptor exposes a single operation, postData, which makes a mutual-TLS POST (client key + certificate via agentOptions) with an Ocp-Apim-Subscription-Key header to an Azure API Management endpoint of Algeria's PROGRES higher-education platform (MESRS). There is no public vendor machine spec, so this OpenAPI 3.0 document is synthesized from the adaptor surface: a generic data-submission endpoint plus representative student-record submission paths reflecting the postData usage.",
-    "x-openfn-adaptor": "progres"
+    "title": "UNHCR proGres v4 interoperability API (DTP)",
+    "version": "4",
+    "description": "proGres v4 is UNHCR's refugee registration and case management system. It has no public REST API: partner systems reach it through UNHCR's Data Transfer Platform (DTP), an Azure API Management gateway that fronts proGres and is reachable only with a UNHCR-issued subscription key and a client certificate. The surface is message-oriented rather than resourceful \u2014 one POST endpoint per interoperability message type, with the same type repeated in the body's `request_type` field. This document is reverse-engineered from the OpenFn progres adaptor and from OpenFn's UNICEF/UNHCR reference integration (OpenFn/primero-progres), which is the only public source of DTP endpoint paths and payloads; UNHCR publishes no specification. The adaptor exposes a single operation, `postData({ url, body, headers, agentOptions })`, a mutual-TLS POST to whichever DTP URL the credential supplies. The two messages proGres sends back out (PrimeroOutgoingReferral and PrimeroIncomingReferralDecision) are delivered to a partner inbox rather than served here, so they are modelled as component schemas with no path.",
+    "x-openfn-adaptor": "progres",
+    "contact": {
+      "name": "UNHCR proGres / PRIMES",
+      "url": "https://www.unhcr.org/registration-guidance/"
+    }
   },
   "servers": [
-    { "url": "https://progres.example.azure-api.net", "description": "Azure APIM-fronted PROGRES API (instance-specific)" }
+    {
+      "url": "https://{host}/{deployment}",
+      "description": "UNHCR DTP gateway (Azure API Management). Both segments are issued by UNHCR per integration; the values below are the UAT endpoint used by OpenFn's reference integration.",
+      "variables": {
+        "host": {
+          "default": "antirrio.azure-api.net",
+          "description": "DTP gateway host."
+        },
+        "deployment": {
+          "default": "primero-uat",
+          "description": "DTP API path for this integration and environment."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "subscriptionKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "referrals",
+      "description": "Interagency referral messages exchanged with proGres v4 through DTP."
+    }
   ],
   "paths": {
-    "/data": {
+    "/ReceiveIncomingReferral": {
       "post": {
-        "operationId": "postData",
-        "summary": "Submit a data payload via mutual-TLS POST (generic postData)",
-        "parameters": [
-          {
-            "name": "Ocp-Apim-Subscription-Key",
-            "in": "header",
-            "required": true,
-            "schema": { "type": "string" },
-            "description": "Azure API Management subscription key"
-          }
+        "operationId": "postIncomingReferral",
+        "tags": [
+          "referrals"
         ],
+        "summary": "Send an interagency referral into proGres v4",
+        "description": "Creates a proGres intervention from a partner system's referral. Send one message per referred service. The body's `request_type` must be `ReceiveIncomingReferral`. proGres answers asynchronously: its review decision arrives later as a `PrimeroIncomingReferralDecision` message posted to the partner's inbox.",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/DataSubmission" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboundReferral"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "Submission acknowledgement",
+            "description": "The message was accepted and queued for proGres.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/SubmissionResult" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpAcknowledgement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid subscription key, or the client certificate was rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The subscription is not authorised for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "DTP could not hand the message to proGres.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
             }
           }
         }
       }
     },
-    "/students": {
+    "/ReceiveDecisionOutgoingReferral": {
       "post": {
-        "operationId": "postStudent",
-        "summary": "Submit a student record",
-        "parameters": [
-          {
-            "name": "Ocp-Apim-Subscription-Key",
-            "in": "header",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+        "operationId": "postOutgoingReferralDecision",
+        "tags": [
+          "referrals"
         ],
+        "summary": "Report the partner system's decision on a referral proGres sent out",
+        "description": "Closes the loop on a `PrimeroOutgoingReferral`: tells proGres whether the partner caseworker accepted or rejected the intervention, and why.",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Student" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutgoingReferralDecision"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The accepted student record",
+            "description": "The message was accepted and queued for proGres.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/SubmissionResult" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpAcknowledgement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid subscription key, or the client certificate was rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The subscription is not authorised for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "DTP could not hand the message to proGres.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
             }
           }
         }
       }
     },
-    "/enrollments": {
+    "/Feedback": {
       "post": {
-        "operationId": "postEnrollment",
-        "summary": "Submit a student enrollment record",
-        "parameters": [
-          {
-            "name": "Ocp-Apim-Subscription-Key",
-            "in": "header",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+        "operationId": "postReferralFeedback",
+        "tags": [
+          "referrals"
         ],
+        "summary": "Acknowledge delivery of an intervention, or report that it failed",
+        "description": "Delivery notification for one intervention. A success notice carries `status: \"Pending Acknowledgement\"`; a failure carries `status: \"Delivery Fail\"`, `request_type: \"Feedback\"` and a `closure_reason`. In the OpenFn reference integration both are posted to the single DTP URL held in the credential's `url` field, so the path segment below is the request type's own name rather than an independently confirmed route.",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Enrollment" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferralFeedback"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The accepted enrollment record",
+            "description": "The message was accepted and queued for proGres.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/SubmissionResult" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpAcknowledgement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid subscription key, or the client certificate was rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The subscription is not authorised for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "DTP could not hand the message to proGres.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DtpError"
+                }
+              }
             }
           }
         }
@@ -97,44 +226,457 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "subscriptionKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Ocp-Apim-Subscription-Key",
+        "description": "UNHCR-issued Azure API Management subscription key. DTP additionally requires mutual TLS: the client must present a UNHCR-issued certificate and private key on the connection (the OpenFn adaptor passes them as `agentOptions.cert` and `agentOptions.key`). OpenAPI 3.0 cannot express that transport requirement, so it is stated here rather than as a security scheme."
+      }
+    },
     "schemas": {
-      "DataSubmission": {
+      "InboundReferral": {
         "type": "object",
-        "description": "Arbitrary JSON payload posted by the generic postData operation",
+        "description": "An interagency referral sent from a partner case-management system into proGres v4. One message per service. DTP routes on `request_type`, matches the individual on `unhcr_individual_no` / `unhcr_id_no`, and raises a proGres intervention.",
+        "properties": {
+          "request_type": {
+            "type": "string",
+            "enum": [
+              "ReceiveIncomingReferral"
+            ],
+            "description": "Message type. DTP routes on this value."
+          },
+          "id": {
+            "type": "string",
+            "description": "Referral id supplied by the sender; unique per case/service pair."
+          },
+          "service_implementing_agency": {
+            "type": "string",
+            "description": "Agency that will deliver the service."
+          },
+          "owned_by_agency_id": {
+            "type": "string",
+            "description": "Agency that owns the referring case."
+          },
+          "service_type": {
+            "type": "string",
+            "description": "proGres service label, e.g. `Child Protection Service`, `Legal Assistance Service`."
+          },
+          "service_type_other": {
+            "type": "string",
+            "nullable": true
+          },
+          "service_response_day_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the service is expected to be delivered."
+          },
+          "service_referral_notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "primero_user": {
+            "type": "string",
+            "description": "Username of the referring caseworker."
+          },
+          "full_name": {
+            "type": "string",
+            "description": "Name of the referring caseworker."
+          },
+          "position": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "unhcr_individual_no": {
+            "type": "string",
+            "description": "UNHCR individual number of the person referred."
+          },
+          "unhcr_id_no": {
+            "type": "string",
+            "description": "UNHCR proof-of-registration / ID number."
+          },
+          "name_first": {
+            "type": "string"
+          },
+          "name_middle": {
+            "type": "string",
+            "nullable": true
+          },
+          "name_last": {
+            "type": "string"
+          },
+          "name_nickname": {
+            "type": "string",
+            "nullable": true
+          },
+          "date_of_birth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "sex": {
+            "type": "string",
+            "enum": [
+              "female",
+              "male",
+              "other",
+              "unknown"
+            ],
+            "nullable": true
+          },
+          "address_current": {
+            "type": "string",
+            "nullable": true
+          },
+          "telephone_current": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "description": "Comma-separated language labels."
+          },
+          "protection_concerns": {
+            "type": "string",
+            "nullable": true
+          },
+          "protection_concerns_other": {
+            "type": "string",
+            "nullable": true
+          },
+          "risk_level": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "request_type",
+          "id",
+          "unhcr_individual_no"
+        ],
+        "additionalProperties": true,
+        "example": {
+          "request_type": "ReceiveIncomingReferral",
+          "id": "9c506517-96c8-48e7-8fad-bb9711707174",
+          "service_implementing_agency": "UNICEF",
+          "owned_by_agency_id": "UNICEF",
+          "service_type": "Documentation",
+          "service_type_other": null,
+          "service_response_day_time": "2021-04-28T19:34:43.000Z",
+          "service_referral_notes": "Interoperability referral",
+          "primero_user": "caseworker",
+          "full_name": "CP Worker",
+          "position": "Case Worker",
+          "email": "caseworker@example.org",
+          "phone": "0000000000",
+          "unhcr_individual_no": "AAA0000000000",
+          "unhcr_id_no": "AAA0000000000-A",
+          "name_first": "Given",
+          "name_middle": null,
+          "name_last": "Family",
+          "name_nickname": null,
+          "date_of_birth": "2008-01-25",
+          "sex": "female",
+          "address_current": "Camp A",
+          "telephone_current": "+10000000000",
+          "protection_concerns": "CR-AF",
+          "language": "English",
+          "risk_level": "Normal"
+        }
+      },
+      "OutgoingReferralDecision": {
+        "type": "object",
+        "description": "The referring system's decision on a referral proGres sent out to it: the partner caseworker accepted or rejected the intervention.",
+        "properties": {
+          "request_type": {
+            "type": "string",
+            "enum": [
+              "ReceiveDecisionOutgoingReferral"
+            ]
+          },
+          "case_id": {
+            "type": "string",
+            "description": "Identifier of the case in the referring system."
+          },
+          "primero_user": {
+            "type": "string",
+            "description": "Username of the caseworker the decision belongs to."
+          },
+          "progres_interventionnumber": {
+            "type": "string",
+            "description": "proGres intervention number the message relates to, e.g. `NAI-20-PRTITV-0000006`."
+          },
+          "status": {
+            "type": "string",
+            "description": "Referral state, e.g. `Pending Acknowledgement`, `acknowledged`, `rejected`, `Delivery Fail`."
+          },
+          "closure_reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Free text explaining a rejection or a delivery failure."
+          }
+        },
+        "required": [
+          "request_type",
+          "progres_interventionnumber",
+          "status"
+        ],
+        "additionalProperties": true,
+        "example": {
+          "request_type": "ReceiveDecisionOutgoingReferral",
+          "case_id": "b30cba6b-8d97-4524-b77f-a8f50cfcc974",
+          "primero_user": "caseworker",
+          "progres_interventionnumber": "NAI-20-PRTITV-0000006",
+          "status": "acknowledged",
+          "closure_reason": "No reason specified."
+        }
+      },
+      "ReferralFeedback": {
+        "type": "object",
+        "description": "A delivery acknowledgement or failure notice for one intervention, posted back to DTP after the partner system has (or has not) created the record.",
+        "properties": {
+          "request_type": {
+            "type": "string",
+            "enum": [
+              "Feedback"
+            ],
+            "description": "Omitted on success notices in some deployments."
+          },
+          "case_id": {
+            "type": "string",
+            "description": "Identifier of the case in the referring system."
+          },
+          "primero_user": {
+            "type": "string",
+            "description": "Username of the caseworker the decision belongs to."
+          },
+          "progres_interventionnumber": {
+            "type": "string",
+            "description": "proGres intervention number the message relates to, e.g. `NAI-20-PRTITV-0000006`."
+          },
+          "status": {
+            "type": "string",
+            "description": "Referral state, e.g. `Pending Acknowledgement`, `acknowledged`, `rejected`, `Delivery Fail`."
+          },
+          "closure_reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Free text explaining a rejection or a delivery failure."
+          }
+        },
+        "required": [
+          "progres_interventionnumber",
+          "status"
+        ],
+        "additionalProperties": true,
+        "example": {
+          "case_id": "b30cba6b-8d97-4524-b77f-a8f50cfcc974",
+          "primero_user": "caseworker",
+          "progres_interventionnumber": "NAI-20-PRTITV-0000006",
+          "status": "Delivery Fail",
+          "request_type": "Feedback",
+          "closure_reason": "Intervention referral is missing fields required for sending. Please include missing fields and re-send the request."
+        }
+      },
+      "DtpAcknowledgement": {
+        "type": "object",
+        "description": "What the DTP gateway returns on a successful submission. DTP answers 2xx once the message is queued; the body is not documented by UNHCR and the OpenFn jobs ignore it, so no fields are asserted here.",
         "additionalProperties": true
       },
-      "SubmissionResult": {
+      "DtpError": {
         "type": "object",
+        "description": "Azure API Management error body returned when the gateway rejects a request.",
         "properties": {
-          "success": { "type": "boolean" },
-          "id": { "type": "string" },
-          "message": { "type": "string" },
-          "errors": {
-            "type": "array",
-            "items": { "type": "string" }
+          "statusCode": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
           }
-        }
+        },
+        "additionalProperties": true
       },
-      "Student": {
+      "ProgresIntervention": {
         "type": "object",
+        "description": "One proGres v4 intervention, as DTP emits it. Keys are proGres/Dataverse attribute names, dotted where the value is drawn from a related entity.",
         "properties": {
-          "identifiant": { "type": "string", "description": "Student national identifier" },
-          "nom": { "type": "string" },
-          "prenom": { "type": "string" },
-          "dateNaissance": { "type": "string", "format": "date" },
-          "sexe": { "type": "string" },
-          "etablissement": { "type": "string" }
-        }
+          "progres_interventionnumber": {
+            "type": "string",
+            "description": "Human-readable intervention number."
+          },
+          "progres_lpinterventionid": {
+            "type": "string",
+            "description": "Dataverse GUID of the intervention."
+          },
+          "progres_interventiontype2": {
+            "type": "string",
+            "description": "GUID of the intervention type."
+          },
+          "progres_interventionstartdate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "progres_businessowner": {
+            "type": "string",
+            "description": "GUID of the owning business unit."
+          },
+          "individuals.progres_id": {
+            "type": "string",
+            "description": "proGres individual id, e.g. `NUR-00142746`."
+          },
+          "individuals.progres_givenname": {
+            "type": "string"
+          },
+          "individuals.progres_familyname": {
+            "type": "string"
+          },
+          "individuals.progres_dateofbirth": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "individuals.progres_sex": {
+            "type": "string",
+            "description": "proGres option-set code for sex."
+          },
+          "individuals.progres_registrationgroupid": {
+            "type": "object",
+            "description": "Dataverse lookup to the registration (case) group.",
+            "properties": {
+              "Id": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "LogicalName": {
+                "type": "string"
+              },
+              "KeyAttributes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "RowVersion": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "additionalProperties": true
+          },
+          "childprotection.progres_priority": {
+            "type": "string",
+            "description": "proGres option-set code for priority."
+          },
+          "user.internalemailaddress": {
+            "type": "string",
+            "description": "Email of the proGres caseworker."
+          },
+          "interventiontype.progres_description": {
+            "type": "string",
+            "description": "Service label of the intervention type."
+          }
+        },
+        "additionalProperties": true
       },
-      "Enrollment": {
+      "ProgresOutgoingReferral": {
         "type": "object",
+        "description": "Inbound message: a referral proGres v4 is sending out to a partner system. DTP posts this to the partner's inbox (an OpenFn webhook URL); it is not an endpoint this API serves.",
         "properties": {
-          "identifiantEtudiant": { "type": "string" },
-          "anneeUniversitaire": { "type": "string", "example": "2025-2026" },
-          "niveau": { "type": "string" },
-          "filiere": { "type": "string" },
-          "etablissement": { "type": "string" }
-        }
+          "request_type": {
+            "type": "string",
+            "enum": [
+              "PrimeroOutgoingReferral"
+            ]
+          },
+          "interventions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgresIntervention"
+            }
+          },
+          "__query_params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Query string of the inbox request, added by OpenFn."
+          }
+        },
+        "additionalProperties": true
+      },
+      "ProgresReferralDecision": {
+        "type": "object",
+        "description": "A proGres caseworker's review decision on a referral the partner system sent in.",
+        "properties": {
+          "progres_individualid": {
+            "type": "string"
+          },
+          "progres_interoperabilityreferralnumber": {
+            "type": "string"
+          },
+          "progres_interoperabilityreferralrouteto": {
+            "type": "string"
+          },
+          "progres_interoperabiltyreferralrejectionreason": {
+            "type": "string",
+            "nullable": true
+          },
+          "progres_interoperabilityreferralrejectioncomment": {
+            "type": "string",
+            "nullable": true
+          },
+          "progres_interventiontype": {
+            "type": "string"
+          },
+          "progres_orgreferralid": {
+            "type": "string",
+            "description": "The `id` the partner system sent on the original referral."
+          },
+          "progres_reviewby": {
+            "type": "string"
+          },
+          "progres_reviewdate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "progres_reviewdecision": {
+            "type": "string",
+            "description": "proGres option-set code for the decision."
+          }
+        },
+        "additionalProperties": true
+      },
+      "ProgresIncomingReferralDecision": {
+        "type": "object",
+        "description": "Inbound message: proGres v4's decision on a referral the partner system sent in. DTP posts this to the partner's inbox; it is not an endpoint this API serves.",
+        "properties": {
+          "request_type": {
+            "type": "string",
+            "enum": [
+              "PrimeroIncomingReferralDecision"
+            ]
+          },
+          "interventions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgresReferralDecision"
+            }
+          },
+          "__query_params": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
       }
     }
   }

@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msupply/RequisitionLineNode",
+  "title": "RequisitionLineNode",
+  "x-openfn-adaptor": "msupply",
+  "x-source": {
+    "openapi": "#/components/schemas/RequisitionLineNode",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "__typename": {
+      "type": "string",
+      "description": "GraphQL type name of this object."
+    },
+    "id": {
+      "type": "string"
+    },
+    "itemId": {
+      "type": "string"
+    },
+    "itemName": {
+      "type": "string"
+    },
+    "comment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "item": {
+      "$ref": "ItemNode.json"
+    },
+    "requestedQuantity": {
+      "type": "number",
+      "format": "double",
+      "description": "Quantity requested"
+    },
+    "supplyQuantity": {
+      "type": "number",
+      "format": "double",
+      "description": "Quantity to be supplied in the next shipment, only used in response requisition"
+    },
+    "suggestedQuantity": {
+      "type": "number",
+      "format": "double",
+      "description": "Calculated quantity When months_of_stock < requisition.min_months_of_stock, calculated = average_monthly_consumption * requisition.max_months_of_stock - months_of_stock"
+    },
+    "approvedQuantity": {
+      "type": "number",
+      "format": "double"
+    },
+    "approvalComment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pricePerUnit": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "ancillaryParents": {
+      "type": "array",
+      "items": {
+        "$ref": "ItemNode.json"
+      },
+      "description": "Items that have this line's item configured as an ancillary. Empty when the line is not an ancillary of anything. Used by the UI to flag ancillary lines and surface their parents in a popover. Batched per request via dataloader so a 200-line requisition issues two queries (link rows + parent items), not 400."
+    },
+    "outboundShipmentLines": {
+      "$ref": "InvoiceLineConnector.json",
+      "description": "OutboundShipment lines linked to requisitions line"
+    },
+    "inboundShipmentLines": {
+      "$ref": "InvoiceLineConnector.json",
+      "description": "InboundShipment lines linked to requisitions line"
+    },
+    "itemStats": {
+      "$ref": "ItemStatsNode.json",
+      "description": "For request requisition: snapshot stats (when requisition was created) For response requisition current item stats"
+    },
+    "remainingQuantityToSupply": {
+      "type": "number",
+      "format": "double",
+      "description": "Quantity remaining to supply supplyQuantity minus all (including unallocated) linked invoice lines numberOfPacks * packSize Only available in response requisition, request requisition returns 0"
+    },
+    "alreadyIssued": {
+      "type": "number",
+      "format": "double",
+      "description": "Quantity already issued in outbound shipments"
+    },
+    "linkedRequisitionLine": {
+      "anyOf": [
+        {
+          "$ref": "RequisitionLineNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "averageMonthlyConsumption": {
+      "type": "number",
+      "format": "double"
+    },
+    "initialStockOnHandUnits": {
+      "type": "number",
+      "format": "double"
+    },
+    "incomingUnits": {
+      "type": "number",
+      "format": "double"
+    },
+    "outgoingUnits": {
+      "type": "number",
+      "format": "double"
+    },
+    "lossInUnits": {
+      "type": "number",
+      "format": "double"
+    },
+    "additionInUnits": {
+      "type": "number",
+      "format": "double"
+    },
+    "expiringUnits": {
+      "type": "number",
+      "format": "double"
+    },
+    "daysOutOfStock": {
+      "type": "number",
+      "format": "double"
+    },
+    "optionId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "$ref": "ReasonOptionNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "availableStockOnHand": {
+      "type": "number",
+      "format": "double"
+    },
+    "requisitionNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "requisitionId": {
+      "type": "string"
+    },
+    "availableVolumeAtLocationType": {
+      "anyOf": [
+        {
+          "$ref": "AvailableVolumeAtLocationTypeNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "forecastTotalDoses": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "forecastTotalUnits": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "vaccineCourses": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

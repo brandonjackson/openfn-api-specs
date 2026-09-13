@@ -5,14 +5,35 @@
   "x-openfn-adaptor": "msupply",
   "x-source": {
     "openapi": "#/components/schemas/AuthToken",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "Authentication token payload.",
   "properties": {
+    "__typename": {
+      "type": "string",
+      "description": "GraphQL type name of this object."
+    },
     "token": {
       "type": "string",
-      "description": "JWT bearer token."
+      "description": "Bearer token. Web clients ignore this — the browser sends the HttpOnly `session_{port}` cookie automatically. Kept in the response for backwards-compatible API integrations (e.g. Sage) that pass it as `Authorization: Bearer`."
+    },
+    "expiryDate": {
+      "type": "integer",
+      "format": "int32",
+      "description": "When the session expires, as a unix timestamp [s]."
+    },
+    "refresh": {
+      "type": "string",
+      "description": "**Deprecated** — there is no longer a separate refresh token. Returned as a duplicate of `token` purely so existing integrations that read this field don't break."
+    },
+    "refreshExpiryDate": {
+      "type": "integer",
+      "format": "int32",
+      "description": "**Deprecated** — there is no longer a separate refresh-token expiry. Returned as a duplicate of `expiry_date` purely so existing integrations that read this field don't break."
+    },
+    "user": {
+      "$ref": "UserNode.json",
+      "description": "The authenticated user, in the same shape as the `me` query. Lets clients fetch user details (stores, permissions, language, auth timing durations, ...) in the same round trip as the login itself."
     }
   }
 }

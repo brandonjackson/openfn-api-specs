@@ -5,50 +5,111 @@
   "x-openfn-adaptor": "openboxes",
   "x-source": {
     "openapi": "#/components/schemas/Product",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A product (item) in the catalogue. Responses always carry `id`; request bodies and embedded product references carry a subset (often just name and productCode).",
   "properties": {
     "id": {
-      "type": "string",
-      "example": "ff80818163e2de8d0163eba1b1e90002"
+      "type": "string"
     },
     "productCode": {
-      "type": "string",
-      "example": "10001"
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Auto-generated when not supplied on create."
     },
     "name": {
-      "type": "string",
-      "example": "Acetaminophen 325mg tablet"
+      "type": "string"
     },
     "description": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "category": {
-      "$ref": "CategoryRef.json"
+      "anyOf": [
+        {
+          "$ref": "CategoryRef.json"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Category reference; some endpoints render it as the category name only."
     },
     "unitOfMeasure": {
-      "type": "string",
-      "example": "EA"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pricePerUnit": {
-      "type": "number",
-      "example": 0.05
-    },
-    "active": {
-      "type": "boolean",
-      "example": true
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "color": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "handlingIcons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lotAndExpiryControl": {
+      "type": "boolean"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "displayNames": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "updatedBy": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "dateCreated": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     },
     "lastUpdated": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     }
+  },
+  "example": {
+    "id": "ff80818155df9de40155df9e329b0009",
+    "productCode": "00003",
+    "name": "Aspirin 20mg",
+    "category": {
+      "id": "1",
+      "name": "Medicines"
+    },
+    "description": null,
+    "dateCreated": "2016-07-12T14:58:55Z",
+    "lastUpdated": "2016-07-12T14:58:55Z"
   }
 }

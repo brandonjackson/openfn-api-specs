@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index openmrs` — do not edit by hand -->
 
-base: http://demo.standard.mybahmni.in/openmrs/ws/rest/v1 | auth: http/basic | 554 operations in 99 resources
+base: https://demo.standard.mybahmni.in/openmrs/ws/rest/v1 | auth: http/basic | 554 operations in 99 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -120,11 +120,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /concept/{uuid} — getBahmniConcept: Fetch by uuid
 - POST /concept/{uuid} — updateBahmniConcept: Edit with given uuid, only modifying properties in request
 - DELETE /concept/{uuid} — deleteBahmniConcept: Delete or purge resource by uuid
-- GET /concept/{parent-uuid}/mapping — getAllConceptMaps: Fetch all non-retired mapping subresources
-- POST /concept/{parent-uuid}/mapping — createConceptMap: Create mapping subresource with properties in request
-- GET /concept/{parent-uuid}/mapping/{uuid} — getConceptMap: Fetch mapping subresources by uuid
-- POST /concept/{parent-uuid}/mapping/{uuid} — updateConceptMap: edit mapping subresource with given uuid, only modifying properties in request
-- DELETE /concept/{parent-uuid}/mapping/{uuid} — deleteConceptMap: Delete or purge resource by uuid
+- GET /concept/{parent-uuid}/name — getAllConceptNames: Fetch all non-retired name subresources
+- POST /concept/{parent-uuid}/name — createConceptName: Create name subresource with properties in request
+- GET /concept/{parent-uuid}/name/{uuid} — getConceptName: Fetch name subresources by uuid
+- POST /concept/{parent-uuid}/name/{uuid} — updateConceptName: edit name subresource with given uuid, only modifying properties in request
+- DELETE /concept/{parent-uuid}/name/{uuid} — deleteConceptName: Delete or purge resource by uuid
 - GET /concept/{parent-uuid}/attribute — getAllConceptAttributes: Fetch all non-retired attribute subresources
 - POST /concept/{parent-uuid}/attribute — createConceptAttribute: Create attribute subresource with properties in request
 - GET /concept/{parent-uuid}/attribute/{uuid} — getConceptAttribute: Fetch attribute subresources by uuid
@@ -135,11 +135,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /concept/{parent-uuid}/description/{uuid} — getConceptDescription: Fetch description subresources by uuid
 - POST /concept/{parent-uuid}/description/{uuid} — updateConceptDescription: edit description subresource with given uuid, only modifying properties in request
 - DELETE /concept/{parent-uuid}/description/{uuid} — deleteConceptDescription: Delete or purge resource by uuid
-- GET /concept/{parent-uuid}/name — getAllConceptNames: Fetch all non-retired name subresources
-- POST /concept/{parent-uuid}/name — createConceptName: Create name subresource with properties in request
-- GET /concept/{parent-uuid}/name/{uuid} — getConceptName: Fetch name subresources by uuid
-- POST /concept/{parent-uuid}/name/{uuid} — updateConceptName: edit name subresource with given uuid, only modifying properties in request
-- DELETE /concept/{parent-uuid}/name/{uuid} — deleteConceptName: Delete or purge resource by uuid
+- GET /concept/{parent-uuid}/mapping — getAllConceptMaps: Fetch all non-retired mapping subresources
+- POST /concept/{parent-uuid}/mapping — createConceptMap: Create mapping subresource with properties in request
+- GET /concept/{parent-uuid}/mapping/{uuid} — getConceptMap: Fetch mapping subresources by uuid
+- POST /concept/{parent-uuid}/mapping/{uuid} — updateConceptMap: edit mapping subresource with given uuid, only modifying properties in request
+- DELETE /concept/{parent-uuid}/mapping/{uuid} — deleteConceptMap: Delete or purge resource by uuid
 
 ## conceptattributetype
 - GET /conceptattributetype — getAllConceptAttributeTypes: Fetch all non-retired conceptattributetype resources or perform search
@@ -308,16 +308,16 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /form/{uuid} — getForm: Fetch by uuid
 - POST /form/{uuid} — updateForm: Edit with given uuid, only modifying properties in request
 - DELETE /form/{uuid} — deleteForm: Delete or purge resource by uuid
-- GET /form/{parent-uuid}/formfield — getAllFormFields: Fetch all non-retired formfield subresources
-- POST /form/{parent-uuid}/formfield — createFormField: Create formfield subresource with properties in request
-- GET /form/{parent-uuid}/formfield/{uuid} — getFormField: Fetch formfield subresources by uuid
-- POST /form/{parent-uuid}/formfield/{uuid} — updateFormField: edit formfield subresource with given uuid, only modifying properties in request
-- DELETE /form/{parent-uuid}/formfield/{uuid} — deleteFormField: Delete or purge resource by uuid
 - GET /form/{parent-uuid}/resource — getAllFormResources: Fetch all non-retired resource subresources
 - POST /form/{parent-uuid}/resource — createFormResource: Create resource subresource with properties in request
 - GET /form/{parent-uuid}/resource/{uuid} — getFormResource: Fetch resource subresources by uuid
 - POST /form/{parent-uuid}/resource/{uuid} — updateFormResource: edit resource subresource with given uuid, only modifying properties in request
 - DELETE /form/{parent-uuid}/resource/{uuid} — deleteFormResource: Delete or purge resource by uuid
+- GET /form/{parent-uuid}/formfield — getAllFormFields: Fetch all non-retired formfield subresources
+- POST /form/{parent-uuid}/formfield — createFormField: Create formfield subresource with properties in request
+- GET /form/{parent-uuid}/formfield/{uuid} — getFormField: Fetch formfield subresources by uuid
+- POST /form/{parent-uuid}/formfield/{uuid} — updateFormField: edit formfield subresource with given uuid, only modifying properties in request
+- DELETE /form/{parent-uuid}/formfield/{uuid} — deleteFormField: Delete or purge resource by uuid
 
 ## hl7
 - GET /hl7 — getAllHL7Messages: Search for hl7
@@ -473,16 +473,16 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /patient/{uuid} — getPatient: Fetch by uuid
 - POST /patient/{uuid} — updatePatient: Edit with given uuid, only modifying properties in request
 - DELETE /patient/{uuid} — deletePatient: Delete or purge resource by uuid
-- GET /patient/{parent-uuid}/allergy — getAllPatientAllergies: Fetch all non-retired allergy subresources
-- POST /patient/{parent-uuid}/allergy — createPatientAllergy: Create allergy subresource with properties in request
-- GET /patient/{parent-uuid}/allergy/{uuid} — getPatientAllergy: Fetch allergy subresources by uuid
-- POST /patient/{parent-uuid}/allergy/{uuid} — updatePatientAllergy: edit allergy subresource with given uuid, only modifying properties in request
-- DELETE /patient/{parent-uuid}/allergy/{uuid} — deletePatientAllergy: Delete or purge resource by uuid
 - GET /patient/{parent-uuid}/identifier — getAllPatientIdentifiers: Fetch all non-retired identifier subresources
 - POST /patient/{parent-uuid}/identifier — createPatientIdentifier: Create identifier subresource with properties in request
 - GET /patient/{parent-uuid}/identifier/{uuid} — getPatientIdentifier: Fetch identifier subresources by uuid
 - POST /patient/{parent-uuid}/identifier/{uuid} — updatePatientIdentifier: edit identifier subresource with given uuid, only modifying properties in request
 - DELETE /patient/{parent-uuid}/identifier/{uuid} — deletePatientIdentifier: Delete or purge resource by uuid
+- GET /patient/{parent-uuid}/allergy — getAllPatientAllergies: Fetch all non-retired allergy subresources
+- POST /patient/{parent-uuid}/allergy — createPatientAllergy: Create allergy subresource with properties in request
+- GET /patient/{parent-uuid}/allergy/{uuid} — getPatientAllergy: Fetch allergy subresources by uuid
+- POST /patient/{parent-uuid}/allergy/{uuid} — updatePatientAllergy: edit allergy subresource with given uuid, only modifying properties in request
+- DELETE /patient/{parent-uuid}/allergy/{uuid} — deletePatientAllergy: Delete or purge resource by uuid
 
 ## patientdiagnoses
 - GET /patientdiagnoses — getAllDiagnoses: Search for patientdiagnoses
@@ -561,15 +561,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /programattributetype/{uuid} — deleteProgramAttributeType: Delete or purge resource by uuid
 
 ## programenrollment
+- POST /programenrollment/{parent-uuid}/state — createPatientState: Create state subresource with properties in request
+- GET /programenrollment/{parent-uuid}/state/{uuid} — getPatientState: Fetch state subresources by uuid
+- POST /programenrollment/{parent-uuid}/state/{uuid} — updatePatientState: edit state subresource with given uuid, only modifying properties in request
+- DELETE /programenrollment/{parent-uuid}/state/{uuid} — deletePatientState: Delete or purge resource by uuid
 - GET /programenrollment/{parent-uuid}/attribute — getAllPatientProgramAttributes: Fetch all non-retired attribute subresources
 - POST /programenrollment/{parent-uuid}/attribute — createPatientProgramAttribute: Create attribute subresource with properties in request
 - GET /programenrollment/{parent-uuid}/attribute/{uuid} — getPatientProgramAttribute: Fetch attribute subresources by uuid
 - POST /programenrollment/{parent-uuid}/attribute/{uuid} — updatePatientProgramAttribute: edit attribute subresource with given uuid, only modifying properties in request
 - DELETE /programenrollment/{parent-uuid}/attribute/{uuid} — deletePatientProgramAttribute: Delete or purge resource by uuid
-- POST /programenrollment/{parent-uuid}/state — createPatientState: Create state subresource with properties in request
-- GET /programenrollment/{parent-uuid}/state/{uuid} — getPatientState: Fetch state subresources by uuid
-- POST /programenrollment/{parent-uuid}/state/{uuid} — updatePatientState: edit state subresource with given uuid, only modifying properties in request
-- DELETE /programenrollment/{parent-uuid}/state/{uuid} — deletePatientState: Delete or purge resource by uuid
 
 ## provider
 - GET /provider — getAllProviders: Fetch all non-retired provider resources or perform search

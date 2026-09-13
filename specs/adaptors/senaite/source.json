@@ -1,15 +1,44 @@
 {
   "adaptor": "senaite",
   "npm": "@openfn/language-senaite",
+
   "origin": "generated",
   "upstreamFormat": "docs",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+
+  "attempts": [
+    { "kind": "openapi", "url": "https://github.com/senaite/senaite.jsonapi", "result": "not-found", "note": "the add-on that provides the API ships no OpenAPI/Swagger file and registers no spec route — every route is declared with an @add_route decorator in src/senaite/jsonapi/v1/routes/*.py." },
+    { "kind": "openapi", "url": "https://demo.senaite.org/@@API/senaite/v1/openapi.json", "result": "not-found", "note": "also tried /openapi.json and /swagger.json on the demo host; demo.senaite.org is not reachable from this environment (the egress proxy refuses CONNECT), so this is a negative from the package source rather than from a live probe." },
+    { "kind": "docs", "url": "https://senaitejsonapi.readthedocs.io/en/latest/api.html", "result": "used", "note": "Sphinx documentation. objects.inv confirms it renders the same docs/*.rst that live in the repository, which were read directly (api.rst, crud.rst, auth.rst)." },
+    { "kind": "github", "url": "https://github.com/senaite/senaite.jsonapi", "result": "used", "note": "vendor source of truth. Every route below was taken from the @add_route declarations at commit ea7d780e1bcaa9a2f970e7e615b6c11bf11af6d6 (setup.py version 2.7.0, master, 2026-07-31), and every response envelope from the handler that builds it." },
+    { "kind": "apis-guru", "url": "https://api.apis.guru/v2/list.json", "result": "not-found", "note": "no senaite entry." },
+    { "kind": "postman", "url": "https://www.postman.com/senaite", "result": "not-found", "note": "no vendor-owned public workspace." }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source"],
+
+  "modifications": [],
+
   "sources": [
+    "https://github.com/senaite/senaite.jsonapi",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/content.py",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/users.py",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/catalogs.py",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/registry.py",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/settings.py",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/push.py",
+    "https://github.com/senaite/senaite.jsonapi/blob/master/src/senaite/jsonapi/v1/routes/version.py",
     "https://senaitejsonapi.readthedocs.io/en/latest/api.html",
     "https://senaitejsonapi.readthedocs.io/en/latest/crud.html",
-    "https://github.com/senaite/senaite.jsonapi",
+    "https://senaitejsonapi.readthedocs.io/en/latest/auth.html",
     "https://cdn.jsdelivr.net/npm/@openfn/language-senaite/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/senaite"
+    "https://cdn.jsdelivr.net/npm/@openfn/language-senaite/dist/index.cjs"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The @openfn/language-senaite adaptor exposes only a generic request(method, path, options) operation plus common helpers (fn, fnIf), so there is no vendor machine spec. This OpenAPI 3.0.3 doc was authored by hand from the SENAITE JSON API (senaite.jsonapi) documentation. Covers the routes under the @@API/senaite/v1 base that the adaptor's request() targets: version, catalogs (+ by id), users (+ current / by username), search, generic resource listing, get-by-uid, create, update and delete. Server URL points at the public demo.senaite.org instance; real instances live under a Plone site path such as /senaite/@@API/senaite/v1. All write/get responses share the paged APIResponse envelope (count, page, pages, pagesize, _runtime, next, previous, items[]); resource item shapes (AnalysisRequest, Client, Sample, Contact, User, Catalog) are representative subsets of the many schema fields SENAITE returns and are not exhaustive."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "SENAITE LIMS is an open-source laboratory information management system built on Plone; its REST surface is the senaite.jsonapi add-on, mounted at the Plone site's @@API traversal point with the base route /senaite/v1. There is no vendor machine spec, so this document was authored from the add-on's own route declarations (@add_route in src/senaite/jsonapi/v1/routes/*.py at commit ea7d780e, setup.py version 2.7.0) cross-checked against the Sphinx docs. Coverage is 'full': all 35 operations of the API are here — version, auth/login/logout (plus their /users aliases), users, catalogs, registry, settings, search, push and the generic content routes — and that is the complete route table, not a slice. Completeness is 'best-effort' (docs-only) because the JSON API is schemaless by design: a content record is whatever catalog metadata or schema fields the portal type carries, so ContentRecord declares the keys every record has and stays open, and Client/Contact/AnalysisRequest add the commonly-used fields of those portal types without claiming to be exhaustive. Two modelling notes. First, the routing is Werkzeug-based and distinguishes a UID segment by its 32-character length, which OpenAPI path templates cannot express: /{resource} therefore also matches a bare UID (and then returns the single record rather than the batch envelope), and the create/update/delete verb routes are written out as literal paths. Second, the JWT half of /login (Bearer tokens, the 'token' cookie) and the permission checks on /registry and /settings arrived in senaite.jsonapi 2.7.0 and need its GenericSetup profile installed; 2.6.x instances answer /login with the __ac session cookie only, which is what the OpenFn adaptor reuses. The adaptor itself exposes only request(method, path, options) against this base, so any of these routes is reachable from a job."
 }

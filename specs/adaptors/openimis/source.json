@@ -3,13 +3,88 @@
   "npm": "@openfn/language-openimis",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openimis/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/openimis",
-    "https://github.com/openimis/openimis-be-api_fhir_r4_py",
-    "https://openimis.atlassian.net/wiki/spaces/OP/pages/1233649676/openIMIS+FHIR+R4+Overview+Page",
-    "https://openimis.atlassian.net/wiki/spaces/OP/pages/1814822920/FHIR+R4+Contract"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://demo.openimis.org/api/api_fhir_r4/docs/?format=json",
+      "result": "rejected",
+      "note": "openIMIS does wire drf-spectacular's SpectacularAPIView into api_fhir_r4/urls.py, so a healthy instance would serve an OpenAPI 3 document here. The public demo returns HTTP 500 (OperationOutcome: \"cannot access local variable 'user' where it is not associated with a value\") both anonymously and with a valid Bearer token, so no machine spec could be captured. Re-try this URL on the next check — it is the one place a vendor spec would come from."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://demo.openimis.org/api/api_fhir_r4/docs/swagger/",
+      "result": "rejected",
+      "note": "the Swagger UI page renders (HTTP 200) but only loads the same /docs/ schema URL, which 500s."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://demo.openimis.org/api/schema/",
+      "result": "not-found",
+      "note": "404; drf-spectacular is not mounted at the project root."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/openimis",
+      "result": "rejected",
+      "note": "org-wide code search for openapi.json / swagger / an openapi YAML found exactly one machine spec, \"OpenIMIS DCI API.openapi.json\" in openimis-be-api_dci_py — that is the SPDCI Registry Core API of a different backend module, not the FHIR R4 API this adaptor calls, so it was not used."
+    },
+    {
+      "kind": "github",
+      "url": "https://raw.githubusercontent.com/openimis/openimis-be-api_fhir_r4_py/develop/api_fhir_r4/urls.py",
+      "result": "used",
+      "note": "the DRF router registration is the authoritative endpoint inventory: every FHIR resource, CodeSystem and ValueSet route is listed here, gated on which openIMIS modules are installed."
+    },
+    {
+      "kind": "github",
+      "url": "https://raw.githubusercontent.com/openimis/openimis-be-api_fhir_r4_py/develop/api_fhir_r4/views/fhir/base/__init__.py",
+      "result": "used",
+      "note": "BaseFHIRView mixes in CreateModelMixin/UpdateModelMixin/DestroyModelMixin, which is why every FHIR viewset accepts POST on the collection and PUT/PATCH/DELETE on the instance even when its own class only declares List/Retrieve."
+    },
+    {
+      "kind": "live-instance",
+      "url": "https://demo.openimis.org/api/api_fhir_r4/",
+      "result": "used",
+      "note": "the DRF browsable API root lists all 34 registered endpoints; HTTP OPTIONS on each collection and instance route gave the exact Allow method set, and GET on each gave real response bodies used as the field-level evidence for the schemas."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no openimis.org entry in the 2529-API directory."
+    },
+    {
+      "kind": "docs",
+      "url": "https://openimis.atlassian.net/wiki/spaces/OP/pages/1233649676/openIMIS+FHIR+R4+Overview+Page",
+      "result": "used",
+      "note": "the project wiki describes the resource mapping (insuree->Patient, family->Group, policy->Contract/Coverage) but does not enumerate methods or field sets."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Adaptor exposes a single generic getFHIR(path, params) operation that GETs {baseUrl}/api/api_fhir_r4/{path} (plus an internal login POST). No machine-readable spec is published upstream, so this OpenAPI doc was authored by hand from the openIMIS FHIR R4 module docs and source. Covers 14 FHIR resources with search (Bundle) + read-by-id operations plus login = 29 ops. FHIR resource schemas are focused/simplified (not the full HL7 R4 element set). openIMIS also supports POST/PUT/DELETE on these resources, but the adaptor only issues GET, so only read operations are modelled."
+  "upstream": null,
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "api_fhir_r4/urls.py",
+    "live demo instance (demo.openimis.org)",
+    "openfn-mocker conformance exchanges"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/openimis/openimis-be-api_fhir_r4_py",
+    "https://raw.githubusercontent.com/openimis/openimis-be-api_fhir_r4_py/develop/api_fhir_r4/urls.py",
+    "https://raw.githubusercontent.com/openimis/openimis-be-api_fhir_r4_py/develop/api_fhir_r4/views/fhir/__init__.py",
+    "https://raw.githubusercontent.com/openimis/openimis-be-api_fhir_r4_py/develop/api_fhir_r4/views/fhir/base/__init__.py",
+    "https://demo.openimis.org/api/api_fhir_r4/",
+    "https://openimis.atlassian.net/wiki/spaces/OP/pages/1233649676/openIMIS+FHIR+R4+Overview+Page",
+    "https://openimis.atlassian.net/wiki/spaces/OP/pages/1814822920/FHIR+R4+Contract",
+    "https://openimis.github.io/openimis_fhir_r4_ig/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openimis/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/openimis"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "openIMIS is an open-source health-insurance management system; this is its FHIR R4 API, served by the openimis-be-api_fhir_r4_py module at <host>/api/api_fhir_r4. No machine spec could be captured: the module does mount drf-spectacular at /api/api_fhir_r4/docs/, but that endpoint returns HTTP 500 on the public demo even with a valid token, so the spec was authored from the module's own DRF router (api_fhir_r4/urls.py), its viewset classes, and live introspection of demo.openimis.org — the API root listing, an HTTP OPTIONS probe of every collection and instance route for the exact allowed methods, and a GET of every resource for the field sets. 'Full' here means every route the router registers: 19 FHIR resource types (Patient, Group, Claim, ClaimResponse, Contract, Coverage, CoverageEligibilityRequest, Location, Organization, Practitioner, PractitionerRole, Medication, ActivityDefinition, InsurancePlan, Communication, CommunicationRequest, Invoice, PaymentNotice, Subscription), 13 CodeSystem lookups, 2 ValueSet pricelists and login — 56 paths / 136 operations, against 29 GET-only operations in the previous copy. The previous copy also carried HealthcareService and Condition, which the current module does not register; they were removed (health facilities are Organization/Location and diagnoses are CodeSystem/diagnosis). Resource schemas are element sets observed on the demo instance rather than the full HL7 FHIR R4 element set, so a field the demo data never populates may be missing; no example values are carried because the demo database holds person-level data. Communication, Invoice, PaymentNotice, Subscription, CoverageEligibilityRequest and the two ValueSet pricelists returned no instances (or 500) on the demo, so those schemas are minimal and marked as such in their descriptions. Which endpoints a given deployment exposes depends on which openIMIS modules are installed — urls.py registers Patient/Group only when the insuree module is present, Claim only with the claim module, and so on. openIMIS also ships a separate SPDCI Registry Core API (openimis-be-api_dci_py, which does publish an OpenAPI file) and a GraphQL API; neither is reachable through this adaptor and neither is modelled here."
 }

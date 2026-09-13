@@ -5,24 +5,33 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Individual",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "An individual registrant — res.partner with is_group=false, is_registrant=true.",
+  "description": "An individual registrant, addressed by external identifier (never a database id).",
   "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "spp_id": {
+    "identifier": {
       "type": "string",
-      "example": "IND_Q4VGGZPF"
+      "description": "External identifier, `<namespace-uri>|<value>`.",
+      "example": "urn:openspp:id:spp-id|IND_Q4VGGZPF"
     },
     "name": {
       "type": "string",
       "example": "Jane Doe"
     },
-    "address": {
+    "given_name": {
       "type": "string"
+    },
+    "family_name": {
+      "type": "string"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "gender": {
+      "type": "string",
+      "description": "Vocabulary code (urn:openspp:vocabulary:gender)."
     },
     "phone": {
       "type": "string"
@@ -31,23 +40,18 @@
       "type": "string",
       "format": "email"
     },
-    "gender": {
-      "type": "string",
-      "example": "Female"
+    "address": {
+      "type": "string"
     },
-    "birthdate": {
+    "area": {
       "type": "string",
-      "format": "date"
+      "description": "Administrative area identifier."
     },
-    "category_id": {
-      "description": "Category tags (many2many list of ids)",
-      "type": "array",
-      "items": {
-        "type": "integer"
-      }
+    "active": {
+      "type": "boolean"
+    },
+    "extension": {
+      "$ref": "ApiExtension.json"
     }
-  },
-  "required": [
-    "name"
-  ]
+  }
 }

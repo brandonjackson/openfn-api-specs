@@ -5,66 +5,114 @@
   "x-openfn-adaptor": "satusehat",
   "x-source": {
     "openapi": "#/components/schemas/Encounter",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
-  "type": "object",
-  "required": [
-    "resourceType"
-  ],
-  "properties": {
-    "resourceType": {
-      "type": "string",
-      "enum": [
-        "Encounter"
-      ]
+  "description": "One episode of a patient interacting with a facility (rawat jalan, rawat inap, IGD). Documented-subset of the FHIR R4 StructureDefinition; servers may return further R4 elements.",
+  "allOf": [
+    {
+      "$ref": "DomainResource.json"
     },
-    "id": {
-      "type": "string"
-    },
-    "identifier": {
-      "type": "array",
-      "items": {
-        "$ref": "Identifier.json"
-      }
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "planned",
-        "arrived",
-        "in-progress",
-        "finished",
-        "cancelled"
-      ]
-    },
-    "class": {
-      "$ref": "Coding.json"
-    },
-    "subject": {
-      "$ref": "Reference.json"
-    },
-    "participant": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "array",
-            "items": {
-              "$ref": "CodeableConcept.json"
-            }
-          },
-          "individual": {
-            "$ref": "Reference.json"
+    {
+      "type": "object",
+      "required": [
+        "resourceType"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "enum": [
+            "Encounter"
+          ]
+        },
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "Identifier.json"
           }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "arrived",
+            "triaged",
+            "in-progress",
+            "onleave",
+            "finished",
+            "cancelled",
+            "entered-in-error",
+            "unknown"
+          ]
+        },
+        "statusHistory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "class": {
+          "$ref": "Coding.json"
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "$ref": "CodeableConcept.json"
+          }
+        },
+        "serviceType": {
+          "$ref": "CodeableConcept.json"
+        },
+        "priority": {
+          "$ref": "CodeableConcept.json"
+        },
+        "subject": {
+          "$ref": "Reference.json"
+        },
+        "participant": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "period": {
+          "$ref": "Period.json"
+        },
+        "length": {
+          "$ref": "Quantity.json"
+        },
+        "reasonCode": {
+          "type": "array",
+          "items": {
+            "$ref": "CodeableConcept.json"
+          }
+        },
+        "diagnosis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "hospitalization": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "serviceProvider": {
+          "$ref": "Reference.json"
+        },
+        "partOf": {
+          "$ref": "Reference.json"
         }
       }
-    },
-    "period": {
-      "$ref": "Period.json"
-    },
-    "serviceProvider": {
-      "$ref": "Reference.json"
     }
-  }
+  ]
 }

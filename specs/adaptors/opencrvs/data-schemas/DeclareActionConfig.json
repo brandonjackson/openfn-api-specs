@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/DeclareActionConfig",
+  "title": "DeclareActionConfig",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/DeclareActionConfig",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "label": {
+      "description": "Human readable description of the action",
+      "$ref": "TranslationConfigOutput.json"
+    },
+    "flags": {
+      "default": [],
+      "description": "Flag actions which are executed when the action is performed.",
+      "type": "array",
+      "items": {
+        "$ref": "ActionFlagConfig.json"
+      }
+    },
+    "supportingCopy": {
+      "description": "Text displayed on the confirmation dialog",
+      "$ref": "TranslationConfigOutput.json"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon representing the action"
+    },
+    "conditionals": {
+      "description": "Conditionals which can disable or hide actions.",
+      "type": "array",
+      "items": {
+        "$ref": "ActionConditional.json"
+      }
+    },
+    "deduplication": {
+      "$ref": "DeduplicationConfig.json"
+    },
+    "type": {
+      "type": "string",
+      "const": "DECLARE"
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "description": "Title of the review page",
+          "$ref": "TranslationConfigOutput.json"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "FieldConfig.json"
+          },
+          "description": "Fields displayed on the review page for annotations."
+        }
+      },
+      "required": [
+        "title",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "description": "Configuration of the review page fields."
+    },
+    "dialogCopy": {
+      "type": "object",
+      "properties": {
+        "notify": {
+          "description": "Confirmation text for the notify action",
+          "$ref": "TranslationConfigOutput.json"
+        },
+        "declare": {
+          "description": "Confirmation text for the declare action",
+          "$ref": "TranslationConfigOutput.json"
+        },
+        "register": {
+          "description": "Confirmation text for the register action",
+          "$ref": "TranslationConfigOutput.json"
+        }
+      },
+      "required": [
+        "notify",
+        "declare",
+        "register"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "label",
+    "flags",
+    "type",
+    "review"
+  ],
+  "additionalProperties": false,
+  "description": "Configuration for the declare action. Includes review-page fields. Shared with the notify action (ActionType.NOTIFY)."
+}

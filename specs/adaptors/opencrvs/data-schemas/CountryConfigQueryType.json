@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/CountryConfigQueryType",
+  "title": "CountryConfigQueryType",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/CountryConfigQueryType",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "anyOf": [
+        {
+          "type": "string",
+          "const": "and"
+        },
+        {
+          "type": "string",
+          "const": "or"
+        }
+      ],
+      "default": "and"
+    },
+    "clauses": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "CountryConfigQueryExpression.json"
+          },
+          {
+            "$ref": "CountryConfigQueryType.json"
+          }
+        ]
+      },
+      "default": [
+        {
+          "eventType": "tennis-club-membership",
+          "status": {
+            "type": "anyOf",
+            "terms": [
+              "CREATED",
+              "NOTIFIED",
+              "DECLARED",
+              "REGISTERED",
+              "ARCHIVED"
+            ]
+          },
+          "updatedAt": {
+            "type": "range",
+            "gte": "2025-05-22",
+            "lte": "2025-05-29"
+          },
+          "data": {}
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "clauses"
+  ],
+  "additionalProperties": false
+}

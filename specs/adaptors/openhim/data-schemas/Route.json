@@ -5,50 +5,99 @@
   "x-openfn-adaptor": "openhim",
   "x-source": {
     "openapi": "#/components/schemas/Route",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "An upstream endpoint a channel forwards to. HTTP and Kafka routes are supported.",
   "required": [
-    "name",
-    "host",
-    "port"
+    "name"
   ],
   "properties": {
     "name": {
       "type": "string"
     },
-    "host": {
-      "type": "string"
-    },
-    "port": {
-      "type": "integer"
-    },
-    "path": {
-      "type": "string"
-    },
-    "pathTransform": {
-      "type": "string"
-    },
-    "primary": {
-      "type": "boolean"
-    },
     "type": {
       "type": "string",
       "enum": [
         "http",
-        "tcp",
-        "mllp"
-      ]
+        "kafka"
+      ],
+      "default": "http"
     },
-    "secured": {
-      "type": "boolean"
+    "cert": {
+      "allOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$",
+          "description": "24-character hex MongoDB ObjectId."
+        }
+      ],
+      "description": "Client certificate from the keystore, for mutual TLS."
     },
     "status": {
       "type": "string",
       "enum": [
         "enabled",
         "disabled"
-      ]
+      ],
+      "default": "enabled"
+    },
+    "secured": {
+      "type": "boolean",
+      "description": "Use TLS to reach the route."
+    },
+    "host": {
+      "type": "string"
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65536
+    },
+    "path": {
+      "type": "string",
+      "description": "Fixed path to send to, instead of the incoming path."
+    },
+    "pathTransform": {
+      "type": "string",
+      "description": "sed-style transform applied to the incoming path."
+    },
+    "primary": {
+      "type": "boolean",
+      "description": "The route whose response is returned to the client."
+    },
+    "username": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    },
+    "forwardAuthHeader": {
+      "type": "boolean",
+      "default": false
+    },
+    "waitPrimaryResponse": {
+      "type": "boolean"
+    },
+    "statusCodesCheck": {
+      "type": "string"
+    },
+    "kafkaClientId": {
+      "type": "string"
+    },
+    "kafkaTopic": {
+      "type": "string"
     }
+  },
+  "example": {
+    "name": "FHIR Server",
+    "type": "http",
+    "status": "enabled",
+    "secured": false,
+    "host": "localhost",
+    "port": 3447,
+    "path": "",
+    "primary": true,
+    "forwardAuthHeader": false
   }
 }

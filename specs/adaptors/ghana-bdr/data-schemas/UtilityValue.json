@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ghana-bdr/UtilityValue",
+  "title": "UtilityValue",
+  "x-openfn-adaptor": "ghana-bdr",
+  "x-source": {
+    "openapi": "#/components/schemas/UtilityValue",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "One row of a coded-value lookup list. Location lookups (COUNTRY, REGION, DISTRICT, REGISTRY) return objects with numeric ids and may embed their parent row; the flat lookups (GENDER, BIRTH_TYPE, RELIGION, ...) return plain strings instead.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Numeric id to send as region_id / district_id / registry_id."
+    },
+    "name": {
+      "type": "string",
+      "example": "Ashanti",
+      "description": "Exact name to send in coded name fields."
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": "05"
+    },
+    "country_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Set on REGION rows."
+    },
+    "region_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Set on DISTRICT rows."
+    },
+    "district_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Set on REGISTRY rows."
+    },
+    "officer_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "allOf": [
+        {
+          "$ref": "UtilityValue.json"
+        }
+      ],
+      "description": "Parent region, embedded on DISTRICT rows."
+    },
+    "district": {
+      "allOf": [
+        {
+          "$ref": "UtilityValue.json"
+        }
+      ],
+      "description": "Parent district, embedded on REGISTRY rows."
+    },
+    "officer": {
+      "allOf": [
+        {
+          "$ref": "UtilityOfficer.json"
+        }
+      ]
+    }
+  }
+}

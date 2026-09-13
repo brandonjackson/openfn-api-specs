@@ -1,14 +1,72 @@
 {
   "adaptor": "progres",
   "npm": "@openfn/language-progres",
+
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://antirrio.azure-api.net/primero-uat/swagger.json",
+      "result": "not-found",
+      "note": "The DTP Azure API Management gateway serves no discovery document; /swagger.json and /openapi.json both 404. APIM developer-portal metadata is behind a subscription."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.unhcr.org/docs/index.html",
+      "result": "rejected",
+      "note": "UNHCR's only public API portal covers the RSQ / Refugee Statistics APIs - population statistics, not proGres registration or case management. Wrong API."
+    },
+    {
+      "kind": "apis.guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No UNHCR or proGres entry among the 2529 listed APIs."
+    },
+    {
+      "kind": "docs",
+      "url": "https://www.unhcr.org/registration-guidance/",
+      "result": "not-found",
+      "note": "UNHCR publishes proGres v4 / PRIMES programme material but no API reference. Integration requires a UNHCR-issued subscription key and client certificate, and the interface spec (SRD_DTP_PRIMERO) lives on a UNHCR SharePoint that is not public."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-progres/dist/index.cjs",
+      "result": "used",
+      "note": "postData({ url, body, headers, agentOptions }) is the adaptor's only operation: a POST to a caller-supplied URL with the client key/cert in agentOptions. The configuration-schema confirms the credential fields url, key, cert, token."
+    },
+    {
+      "kind": "reference-integration",
+      "url": "https://github.com/OpenFn/primero-progres",
+      "result": "used",
+      "note": "OpenFn's UNICEF/UNHCR interoperability project - the only public source of DTP endpoint paths (ReceiveIncomingReferral, ReceiveDecisionOutgoingReferral), the Ocp-Apim-Subscription-Key header, and real request/response payloads (sampleData/*.json)."
+    }
+  ],
+
+  "verifiedAgainst": ["ast.json", "adaptor-source", "reference-integration"],
+
+  "modifications": [],
+
   "sources": [
     "https://cdn.jsdelivr.net/npm/@openfn/language-progres/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-progres/dist/index.cjs",
-    "https://progres.mesrs.dz/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-progres/configuration-schema.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-progres/README.md",
+    "https://github.com/OpenFn/primero-progres",
+    "https://github.com/OpenFn/primero-progres/tree/main/jobs/PROD",
+    "https://github.com/OpenFn/primero-progres/tree/main/sampleData",
     "https://github.com/OpenFn/adaptors/tree/main/packages/progres"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "PROGRES is Algeria's national higher-education (MESRS) platform. The adaptor exposes a single operation, postData, doing a mutual-TLS POST (client key+cert via agentOptions) with an Ocp-Apim-Subscription-Key header to an Azure API Management endpoint. No public vendor machine spec or REST docs exist (the platform is access-controlled). Synthesized a minimal OpenAPI 3.0 from the adaptor surface: a generic /data submission endpoint plus representative student/enrollment submission paths and a generic acknowledgement response. Server URL and paths are placeholders; the real target URL is supplied per-call."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "proGres v4 is UNHCR's refugee registration and case management system (part of PRIMES). It has no public REST API: partner systems reach it through UNHCR's Data Transfer Platform (DTP), an Azure API Management gateway that requires a UNHCR-issued subscription key (Ocp-Apim-Subscription-Key) and mutual TLS with a UNHCR-issued client certificate. The surface is message-oriented, one POST per interoperability message type, with the same type repeated in the body's request_type field - it is not a resourceful CRUD API. Because UNHCR publishes nothing, this spec is reverse-engineered from the adaptor (whose single operation, postData, is a mutual-TLS POST to a caller-supplied URL) and from OpenFn/primero-progres, the UNICEF/UNHCR reference integration, which is the only public source of DTP paths and payloads. 'Full' means everything recoverable from those sources: the two endpoints with confirmed URLs (/ReceiveIncomingReferral, /ReceiveDecisionOutgoingReferral), the delivery-feedback message (/Feedback - its request_type is confirmed from sampleData, but the reference jobs post it to the single DTP URL held in the credential, so the path segment is the request type's own name rather than an independently confirmed route), and the two messages proGres sends the other way, PrimeroOutgoingReferral and PrimeroIncomingReferralDecision, which DTP delivers to a partner inbox and so are modelled as component schemas with no path. Response bodies are undocumented and the reference jobs ignore them, so DtpAcknowledgement asserts no fields - which is why data-schemas/ carries only that one object. This replaces an earlier spec that described the wrong system entirely (Algeria's MESRS 'Progres' higher-education platform) with fabricated /data, /students and /enrollments paths. Conformance note: the OpenFn mocker's progres plugin serves POST/GET /api/v4/individuals, which is not a real proGres or DTP route - there is no public /api/v4 REST surface - so those three exchanges remain unmatched. The mock should be retargeted at the DTP message endpoints above; the gap was left open rather than closed by inventing routes."
 }

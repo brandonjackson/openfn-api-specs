@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "primero/PotentialMatch",
+  "title": "PotentialMatch",
+  "x-openfn-adaptor": "primero",
+  "x-source": {
+    "openapi": "#/components/schemas/PotentialMatch",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "A scored case/trace pairing produced by the family-tracing matcher.",
+  "properties": {
+    "likelihood": {
+      "type": "string",
+      "enum": [
+        "likely",
+        "possible"
+      ]
+    },
+    "score": {
+      "type": "number"
+    },
+    "case": {
+      "$ref": "Case.json"
+    },
+    "trace": {
+      "$ref": "Trace.json"
+    },
+    "comparison": {
+      "type": "object",
+      "description": "Field-by-field comparison behind the score.",
+      "properties": {
+        "case_to_trace": {
+          "type": "array",
+          "items": {
+            "$ref": "MatchComparisonField.json"
+          }
+        },
+        "family_to_inquirer": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "MatchComparisonField.json"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

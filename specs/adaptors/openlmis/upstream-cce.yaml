@@ -1,0 +1,637 @@
+#%RAML 0.8
+---
+title: OpenLMIS CCE API
+version: "@version@"
+baseUri: "@baseUrl@"
+protocols: [ HTTP, HTTPS ]
+
+documentation:
+    - title: Getting Started
+      content: Welcome to the OpenLMIS cce-service documentation. This minimal API is intended for illustrative purposes.
+
+schemas:
+  - localizedErrorResponse: |
+        {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema",
+            "title": "LocalizedErrorResponse",
+            "description": "Localized Error response",
+            "properties": {
+                "messageKey": { "type": "string", "title": "message key" },
+                "message": { "type": "string", "title": "message" }
+            },
+            "required": ["messageKey"]
+        }
+
+  - uploadResult: !include schemas/uploadResult.json
+
+  - catalogItem: !include schemas/catalogItem.json
+
+  - catalogItemArray: |
+        {
+            "type": "array",
+            "items": { "type": "object", "$ref": "schemas/catalogItem.json" }
+        }
+
+  - catalogItemPage: !include schemas/catalogItemPage.json
+
+  - cceAlert: !include schemas/cceAlert.json
+
+  - cceAlertPage: !include schemas/cceAlertPage.json
+
+  - inventoryItem: !include schemas/inventoryItem.json
+
+  - inventoryItemTransfer: !include schemas/inventoryItemTransfer.json
+
+  - inventoryItemPage: !include schemas/inventoryItemPage.json
+
+  - auditLogEntry: !include schemas/auditLogEntry.json
+
+  - auditLogEntryArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/auditLogEntry.json" }
+      }
+
+  - version: |
+      {   "$schema": "http://json-schema.org/draft-03/schema",
+          "description": "Service version and build information",
+          "type": "object",
+          "properties": {
+              "service": { "type": "string", "required": true},
+              "build": { "type": "string", "required": true},
+              "branch": { "type": "string", "required": true},
+              "timeStamp": { "type": "string", "required": true},
+              "version": { "type": "string", "required": true}
+          }
+      }
+
+  - volume: !include schemas/volumeDto.json
+
+  #FHIR schemas
+  - Device: !include schemas/fhir/Device.schema.json
+  - Element: !include schemas/fhir/Element.schema.json
+  - Reference: !include schemas/fhir/Reference.schema.json
+  - Resource: !include schemas/fhir/Resource.schema.json
+
+traits:
+    - secured:
+          queryParameters:
+              access_token:
+                  displayName: access_token
+                  description: OAuth2 access token
+                  type: string
+                  required: false
+                  repeat: false
+          headers:
+              Authorization:
+                  displayName: Authorization
+                  description: OAuth2 authorization token header. Takes the form of 'Bearer <token>'.
+                  type: string
+                  required: false
+                  repeat: false
+    - paginated:
+          queryParameters:
+              page:
+                  description: The page number which should be displayed. Note that the first page is numbered zero rather than one. Additionally, negative and undefined valued are interpreted as zero.
+                  type: integer
+                  required: false
+                  repeat: false
+              size:
+                  description: The desired size of each page. This specifies the maximum number of values that should be returned by the server. Zero, undefined, and negative values should result in all possible values being returned.
+                  type: integer
+                  required: false
+                  repeat: false
+    - expandible:
+          queryParameters:
+              expand:
+                  description: "Allows to specify which reference fields should contain an expanded representation."
+                  type: string
+                  required: false
+                  repeat: true
+    - sorted:
+        queryParameters:
+            sort:
+                description: Sorting criteria in the format "property(,asc|desc)". Default sort order is ascending. Multiple sort criteria are supported.
+                type: string
+                required: false
+                repeat: true
+
+resourceTypes:
+    - auditLog:
+        description: This represents the audit log for all <<resourcePathName|!singularize>> resources.
+        get:
+          description: Returns all or part of the resource's audit log
+          # Although /auditLog endpoints support "page" and "number" query parameters for pagination,
+          # they don’t return the response body and set of pagination-related values expected to be
+          # returned for core domain resources.
+          is: [ paginated ]
+          queryParameters:
+              author:
+                  displayName: author
+                  description: Name of the author of changes which should be returned. By default, all changes are returned regardless of author.
+                  type: string
+                  required: false
+                  repeat: false
+              changedPropertyName:
+                  displayName: changedPropertyName
+                  description: The name of the property about which changes should be returned. If null or empty, changes associated with any and all properties are returned.
+                  type: string
+                  required: false
+                  repeat: false
+          responses:
+              200:
+                body:
+                  application/json:
+                    schema: auditLogEntryArray
+                    example: |
+                      [
+                        {
+                          "changeType": "ValueChange",
+                          "globalId": {
+                            "entity": "org.openlmis.SomeClass",
+                            "cdoId": 1
+                          },
+                          "commitMetadata": {
+                            "author": "SomeUserName",
+                            "properties": [],
+                            "commitDate": "2016-12-17T19:39:57.621",
+                            "id": 3
+                          },
+                          "property": "PropertyName",
+                          "left": "OldValue",
+                          "right": "NewValue"
+                        }
+                      ]
+              404:
+                description: The specified <<resourcePathName|!singularize>> does not exist.
+
+    - instanceAuditLog:
+        description: This represents the audit log for a specified instance of the <<resourcePathName|!singularize>> resource.
+        type: auditLog
+        uriParameters:
+            id:
+                type: string
+                required: true
+                repeat: false
+    - collection:
+        get:
+            is: [ secured ]
+            responses:
+                200:
+                  description: Collection retrieved successfully
+                  body:
+                      application/json:
+                          schema: <<schema>>
+                404:
+                  description: Collection is empty.
+        post:
+            is: [ secured ]
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                201:
+                  description: Item created successfully
+                  body:
+                      application/json:
+                          schema: <<schema>>
+    - member:
+        get:
+            is: [ secured ]
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        post:
+            is: [ secured ]
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        delete:
+            is: [ secured ]
+            responses:
+                200:
+/cce:
+    displayName: Version
+    get:
+        description: Get version
+        responses:
+          200:
+            description: Returns version information.
+            headers:
+              X-Content-Type-Options:
+              X-XSS-Protection:
+            body:
+              application/json:
+                schema: version
+/api:
+  /catalogItems:
+      displayName: CCE Catalog Item
+      get:
+          is: [ secured, paginated ]
+          description: Returns all CCE catalog items that are matching given request parameters by conjunction.
+          queryParameters:
+              format:
+                  description: "This parameter specifies return type of this endpoint. If it is not specified json format is returned. Supported formats: csv. Note that other parameters will not work when format is specified."
+                  type: string
+                  required: false
+                  repeat: false
+              type:
+                  description: "Type of catalog item."
+                  type: string
+                  required: false
+                  repeat: false
+              archived:
+                  description: "Is catalog item archived."
+                  type: string
+                  required: false
+                  repeat: false
+              visibleInCatalog:
+                  description: "Is catalog item visible in catalog."
+                  type: string
+                  required: false
+                  repeat: false
+          responses:
+              "200":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: catalogItemPage
+                    text/csv:
+              "400":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+              "403":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+              "404":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+      post:
+          is: [ secured ]
+          description: Creates given CCE catalog item if possible.
+          queryParameters:
+              format:
+                  description: "This parameter specifies format of body. If it is not specified json format is required. Supported formats: csv."
+                  type: string
+                  required: false
+                  repeat: false
+          body:
+              application/json:
+                  schema: catalogItem
+              multipart/form-data:
+                  formParameters:
+                      file:
+                         displayName: File with .csv format
+                         type: file
+                         required: true
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: uploadResult
+              "201":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: catalogItem
+              "400":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+              "403":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          get:
+              is: [ secured ]
+              description: Get chosen CCE catalog item.
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: catalogItem
+                  "403":
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+                  "404":
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+          put:
+              is: [ secured ]
+              description: Update existing CCE catalog item.
+              body:
+                  application/json:
+                    schema: catalogItem
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: catalogItem
+                  "400":
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+                  "403":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+  /cceAlerts:
+      displayName: CCE Alerts
+      get:
+          is: [ secured, paginated, expandible ]
+          description: Get CCE alerts.
+          queryParameters:
+              deviceId:
+                  description: "Filters alerts by assigned device(s)."
+                  type: string
+                  required: false
+                  repeat: true
+              active:
+                  description: "Filters alerts by active. An active alert is valuable to surface to a human."
+                  type: boolean
+                  required: false
+                  repeat: false
+          responses:
+              "200":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: cceAlertPage
+      put:
+          is: [ secured ]
+          description: Creates or updates a CCE alert.
+          body:
+              application/json:
+                  schema: cceAlert
+          responses:
+              "200":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: cceAlert
+              "400":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+              "403":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+  /inventoryItems:
+      displayName: CCE Inventory item
+      get:
+          is: [ secured, paginated, expandible, sorted ]
+          description: Get all CCE Inventory items.
+          queryParameters:
+              facilityId:
+                  description: "Filters inventory items by assigned facility."
+                  type: string
+                  required: false
+                  repeat: false
+              programId:
+                  description: "Filters inventory items by assigned program."
+                  type: string
+                  required: false
+                  repeat: false
+              functionalStatus:
+                  description: "Filters inventory items by their functional status."
+                  type: string
+                  required: false
+                  repeat: false
+                  enum:
+                      - FUNCTIONING
+                      - AWAITING_REPAIR
+                      - UNSERVICEABLE
+                      - NEEDS_ATTENTION
+          responses:
+              "200":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: inventoryItemPage
+              "403":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+      post:
+          is: [ secured ]
+          description: Creates given CCE Inventory item if possible.
+          body:
+              application/json:
+                  schema: inventoryItem
+          responses:
+              "201":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: inventoryItem
+              "400":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+              "403":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          /transfer:
+            put:
+              is: [ secured ]
+              description: Transfers CCE Inventory to specified facility
+              body:
+                application/json:
+                  schema: inventoryItemTransfer
+              responses:
+                "204":
+                "400":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+                "403":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+          get:
+              is: [ secured, expandible ]
+              description: Get chosen CCE Inventory item.
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: inventoryItem
+                  "403":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+                  "404":
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+          put:
+              is: [ secured ]
+              description: Update existing CCE Inventory item.
+              body:
+                  application/json:
+                    schema: inventoryItem
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: inventoryItem
+                  "400":
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+                  "403":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+          delete:
+              is: [ secured ]
+              description: Delete chosen CCE Inventory item.
+              responses:
+                  "204":
+                      headers:
+                        Keep-Alive:
+                  "403":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+                  "404":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedErrorResponse
+      /volume:
+          get:
+              is: [ secured ]
+              description: Get CCE Inventory items volume for facility.
+              queryParameters:
+                facilityId:
+                  description: "Filters inventory items by assigned facility."
+                  type: string
+                  required: true
+                  repeat: false
+              responses:
+                "200":
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: volume
+                "403":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+                "404":
+                  body:
+                    application/json:
+                      schema: localizedErrorResponse
+      /download:
+        displayName: CCE Inventory Item
+        get:
+          is: [ secured, paginated ]
+          description: Returns all CCE inventory items that are matching given request parameters by conjunction.
+          queryParameters:
+            programId:
+              description: "The specific program id where items belong."
+              required: true
+            facilityId:
+              description: "The specific facility id where items belong."
+              required: true
+          responses:
+            "200":
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: inventoryItemPage
+                text/csv:
+            "400":
+              body:
+                application/json:
+                  schema: localizedErrorResponse
+            "403":
+              body:
+                application/json:
+                  schema: localizedErrorResponse
+            "404":
+              body:
+                application/json:
+                  schema: localizedErrorResponse
+  /Device:
+      displayName: FHIR Device
+      get:
+          is: [ secured ]
+          description: "Get local resources (like inventory items) as FHIR Device instances."
+          responses:
+              200:
+                  headers:
+                    Keep-Alive:
+                  body:
+                      application/json:
+                          schema: Device

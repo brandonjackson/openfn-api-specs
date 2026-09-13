@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/ActionFlagConfig",
+  "title": "ActionFlagConfig",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/ActionFlagConfig",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(delete|create|notify|declare|register|edit|duplicate_detected|reject|mark_as_duplicate|mark_as_not_duplicate|archive|print_certificate|request_correction|reject_correction|approve_correction|read|assign|unassign|custom):(requested|accepted|rejected)$"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "incomplete",
+                "rejected",
+                "correction-requested",
+                "potential-duplicate",
+                "edit-in-progress"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "string",
+          "description": "Custom flag identifier defined by the country config."
+        }
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "add",
+        "remove"
+      ],
+      "description": "Operation to perform on the flag."
+    },
+    "conditional": {
+      "description": "When conditional is met, the operation is performed on the flag. If not provided, the operation is performed unconditionally.",
+      "$ref": "Conditional.json"
+    }
+  },
+  "required": [
+    "id",
+    "operation"
+  ],
+  "additionalProperties": false,
+  "description": "Add or remove operation applied to a flag when the parent action is accepted. Optionally gated by a conditional."
+}

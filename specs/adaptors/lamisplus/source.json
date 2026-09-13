@@ -1,13 +1,71 @@
 {
   "adaptor": "lamisplus",
   "npm": "@openfn/language-lamisplus",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
+  "origin": "generated",
+  "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://lamisplus.org/v3/api-docs",
+      "result": "not-found",
+      "note": "lamisplus.org is a WordPress marketing site; /v3/api-docs and every other well-known spec path return the same 3164-byte HTML page. docs.lamisplus.org and www.lamisplus.org do not resolve."
+    },
+    {
+      "kind": "swagger",
+      "url": "https://github.com/lamisplus/Patient-Module/blob/master/src/main/java/org/lamisplus/modules/patient/PatientModule.java",
+      "result": "rejected",
+      "note": "LAMISPlus modules DO configure Springfox (Docket, DocumentationType.SWAGGER_2, title 'Lamisplus'), and the v3 core ships a Redoc page at GET /redoc.html — so every running deployment serves its own machine spec at /v2/api-docs or /v3/api-docs. There is no public deployment to fetch it from: LAMISPlus is installed per facility behind a login, and the implementing partner's own test tooling records that '/swagger-ui/index.html and every api-docs path on QA answer 401 to an anonymous request, to a valid bearer token and to basic auth'. Anyone with instance credentials should re-capture this spec from their own /v3/api-docs and the origin becomes found-openapi."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/lamisplus",
+      "result": "not-found",
+      "note": "Searched all 45 repos of the vendor GitHub org (Core, Patient-Module, HIV-Module, HTS-Module, Laboratory-Module, Pharmacy-Module, Report-Module, Quick-Sync-Module, NDR_Module, ...) for openapi/swagger/api-spec files: none committed. The org holds the v2-era module sources; the v3 backend ('Lamisplus3.0/api') is not published."
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/Data-Fi-Nigeria-LAMISPlus/LamisplusV3-QA-Automation",
+      "result": "used",
+      "note": "The implementing partner's API test suite for LAMISPlus v3, last regenerated 2026-08-15. cypress/fixtures/api-endpoints.json is produced by scripts/extract-api-endpoints.mjs from the real v3 backend source and records the totals (457 endpoints: 244 GET, 106 POST, 62 PUT, 36 DELETE, 9 PATCH), the plugin mount-prefix map, and the 83 side-effect-free GET paths in full. cypress/e2e/api/*.cy.js and cypress/support/modules/*.js add ~25 more paths and assert the actual response envelopes and field names against a live instance."
+    },
+    {
+      "kind": "docs",
+      "url": "https://github.com/lamisplus/Patient-Module",
+      "result": "used",
+      "note": "Vendor source for the patient object: PersonResponseDto, PersonDto, PersonMetaDataDto and the Person JPA entity gave the property names and the real column types (notably sex as an unconstrained String, uuid as a plain String, and address/contact/contactPoint/identifier/gender/maritalStatus/education/employmentStatus/organization as jsonb)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Not listed among the 2529 apis.guru entries."
+    },
+    {
+      "kind": "postman",
+      "result": "not-found",
+      "note": "No LAMISPlus public Postman workspace or SwaggerHub organisation found."
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source", "partner-api-test-suite"],
+  "modifications": [],
   "sources": [
+    "https://github.com/Data-Fi-Nigeria-LAMISPlus/LamisplusV3-QA-Automation/blob/master/cypress/fixtures/api-endpoints.json",
+    "https://github.com/Data-Fi-Nigeria-LAMISPlus/LamisplusV3-QA-Automation/blob/master/scripts/extract-api-endpoints.mjs",
+    "https://github.com/Data-Fi-Nigeria-LAMISPlus/LamisplusV3-QA-Automation/tree/master/cypress/e2e/api",
+    "https://github.com/Data-Fi-Nigeria-LAMISPlus/LamisplusV3-QA-Automation/blob/master/cypress/support/modules/api-client.js",
+    "https://github.com/lamisplus/Patient-Module/blob/master/src/main/java/org/lamisplus/modules/patient/controller/PatientController.java",
+    "https://github.com/lamisplus/Patient-Module/blob/master/src/main/java/org/lamisplus/modules/patient/domain/dto/PersonResponseDto.java",
+    "https://github.com/lamisplus/Patient-Module/blob/master/src/main/java/org/lamisplus/modules/patient/domain/entity/Person.java",
+    "https://github.com/lamisplus/Core",
     "https://cdn.jsdelivr.net/npm/@openfn/language-lamisplus/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-lamisplus/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/lamisplus"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No official LAMISPlus OpenAPI/Swagger/Postman spec or public API docs could be found (LAMISPlus is a self-hosted Nigerian HIV/health EMR; each deployment configures its own baseUrl). Spec synthesized from the adaptor's compiled source. Two endpoints are called verbatim by the adaptor and are accurate: POST core/api/v1/auth/login (implicit login step, returns accessToken used as a Bearer token) and GET plugin/ehr/api/v1/patient (getPatients; adaptor reads body.data.patients). The adaptor also exposes generic http.get/http.post/http.request helpers that can hit any path on the configured instance. The remaining endpoints and resource shapes (patient create/get-by-id, visit, encounter, biometric) are PLAUSIBLE RECONSTRUCTIONS added to seed representative collections, not verified against a real LAMISPlus instance. Field names, response envelopes, and status codes for the reconstructed endpoints are best-effort guesses. servers[0].url is a placeholder; the real base URL is per-deployment via configuration.baseUrl."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "LAMISPlus is a self-hosted, open-source EMR used across Nigeria; there is no vendor API portal, no published machine spec, and no public instance, so this document is authored rather than captured. It describes LAMISPlus v3 — the version the adaptor targets, identifiable by the { statusCode, message, data } envelope the adaptor's getPatients reads (body.data.patients) — and covers 106 operations over 104 paths of the ~460 endpoints a v3 deployment exposes, which is why completeness is best-effort with reason partial-docs rather than complete. Every path here has evidence behind it: 83 come from the endpoint inventory the implementing partner generates from the real v3 backend source, ~25 more from the paths their API and UI tests call against a live instance, and the patient create/read-by-id pair from the vendor's own PatientController plus the adaptor's generic helpers. Two transcription bugs in the partner's generated inventory were corrected against the paths their hand-written tests actually call: '/plugin/ehrapi/v1/...' and '/plugin/inpatientapi/v1/...' are really '/plugin/ehr/api/v1/...' and '/plugin/inpatient/api/v1/...'. What is NOT covered: the ~350 remaining endpoints (all the POST/PUT/DELETE/PATCH surface and every GET that needs a path variable), and the billing and sync plugins, which the partner's extractor skips because it has no mount prefix for them. Response bodies are modelled only where they were observed: 11 named data objects (Patient, User, UserSettings, Role, Plugin, ServicePoint, PagedResponse, ContentPage, PatientPage, ConsultationDashboard, LoginResponse). The rest carry an empty schema and a description saying the shape is not documented — deliberately, rather than inventing fields. This replaces an earlier synthesized spec whose eight endpoints were mostly 'plausible reconstructions'; its Patient schema constrained sex to an enum, uuid to format uuid and address to a string, all three contradicted by the vendor's Person entity (unconstrained String, plain String, jsonb) and all three the cause of the ten conformance violations the mocker was reporting. Finally: every deployment serves its own Springfox/Redoc spec behind the login (GET /redoc.html is in the core inventory), so anyone with instance credentials can turn this into a found-openapi capture."
 }

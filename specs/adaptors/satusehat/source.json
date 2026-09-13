@@ -3,16 +3,98 @@
   "npm": "@openfn/language-satusehat",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://satusehat.kemkes.go.id/platform/docs/openapi.json",
+      "result": "rejected",
+      "note": "HTTP 200 but the docs host answers every unknown path with a redirect stub to /platform/docs/id/index.html; not a spec."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api-satusehat.kemkes.go.id/openapi.json",
+      "result": "not-found",
+      "note": "404 on the API host."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://satusehat.kemkes.go.id/platform/swagger.json",
+      "result": "not-found",
+      "note": "404."
+    },
+    {
+      "kind": "fhir-capability",
+      "url": "https://api-satusehat.kemkes.go.id/fhir-r4/v1/metadata",
+      "result": "rejected",
+      "note": "the FHIR CapabilityStatement exists but returns 401 without a production client credential, so it cannot be captured here; sandbox /metadata is 401 too."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no satusehat/kemkes entry among the 2529 indexed APIs."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/kemenkesri",
+      "result": "not-found",
+      "note": "the ministry's published SDKs (satusehat-mediator-client-php and community packages) are Swagger-Codegen output but none ships the source spec."
+    },
+    {
+      "kind": "postman",
+      "url": "https://satusehat.kemkes.go.id/platform/docs/id/postman-workshop/endpoint-information/",
+      "result": "rejected",
+      "note": "SatuSehat runs a Postman workshop collection, but it is shared through a forkable workspace behind portal login, not a public, fetchable collection URL."
+    },
+    {
+      "kind": "docs",
+      "url": "https://satusehat.kemkes.go.id/platform/docs/id/playbook/",
+      "result": "used",
+      "note": "the Antora docs site navigation is the full endpoint inventory: api-catalogue (authentication, onboardings, integrations), master-data (KFA, MPI, MSI, wilayah) and KYC; each reference page states the URL, HTTP verb, query/body parameters and an example response."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-satusehat/ast.json",
+      "result": "used",
+      "note": "the adaptor exposes only generic get/post/put/patch, so every documented endpoint is reachable and none is privileged."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "vendor-docs",
+    "openfn-mocker-exchanges"
+  ],
+  "modifications": [],
   "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-satusehat/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/satusehat",
-    "https://docs.openfn.org/adaptors/satusehat",
-    "https://satusehat.kemkes.go.id/platform/docs/id/fhir/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/playbook/",
     "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/authentication/apis/token/",
     "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/onboardings/apis/patient/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/onboardings/apis/practitioner/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/onboardings/apis/organization/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/onboardings/apis/location/",
     "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/encounter/",
-    "https://simplifier.net/guide/SATUSEHAT-FHIR-R4-Implementation-Guide/Home"
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/observation/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/condition/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/procedure/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/medication-request/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/imaging-study/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/related-person/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/apis/slot/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/fhir/resources/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/master-data/kfa/rest-api-kfa/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/master-data/master-patient-index/rest-api-mpi/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/master-data/master-sarana-index/rest-api-msi/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/master-data/master-wilayah/rest-api-wilayah/",
+    "https://satusehat.kemkes.go.id/platform/docs/id/kyc/kyc-doc/rest-api-kyc/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-satusehat/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/satusehat"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The satusehat adaptor exposes only generic HTTP verbs (get, post, put, patch) against the SatuSehat Platform FHIR R4 REST API; it has no resource-specific operations. This spec was hand-authored from the SatuSehat developer docs (satusehat.kemkes.go.id) and FHIR R4 conventions. It models a representative subset of FHIR resources the adaptor targets (Patient, Encounter, Observation, Condition, Organization, Location) with read/search/create/update ops under the /fhir-r4/v1 base path, plus the OAuth2 client_credentials token endpoint (/oauth2/v1/accesstoken). Base URLs: production https://api-satusehat.kemkes.go.id, sandbox https://api-satusehat-stg.dto.kemkes.go.id. FHIR resource schemas are simplified subsets, not the full R4 StructureDefinitions or SatuSehat FHIR IG profiles. Search endpoints return FHIR Bundle (searchset); errors return OperationOutcome. SatuSehat supports many more FHIR resources (Practitioner, Procedure, Medication, MedicationRequest, Composition, etc.) not modeled here."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "SATUSEHAT is Indonesia's national health-data exchange (Kementerian Kesehatan). No machine spec is published: the FHIR CapabilityStatement at /fhir-r4/v1/metadata needs a production credential (401), and the developer portal is prose. This spec is therefore authored from the portal's own reference pages, whose navigation doubles as the endpoint inventory. 'Full' here means every endpoint that inventory lists, not just the ones the adaptor names: 29 FHIR R4 resources under /fhir-r4/v1 (4 onboarding — Patient, Practitioner, Organization, Location — and 25 integration resources), the OAuth2 client-credentials token endpoint, the KFA drug/device catalogue (v1 JKN prices, v2 products, v3 alkes), the Master Sarana Index, master wilayah v1 and v2, and the two KYC endpoints: 152 operations over 75 paths. Interactions are modelled exactly as each page documents them rather than assuming the full FHIR verb set, which is why the set differs per resource (Patient has search, read, create and patch but no update; Practitioner is read-only; ImagingStudy and QuestionnaireResponse have no patch; Medication and Slot have no search). BEST-EFFORT, reason docs-only: the resource schemas carry the FHIR R4 elements the SatuSehat examples and field tables show plus the standard R4 element names for that resource, extending a shared DomainResource base — they are documented subsets, not the full R4 StructureDefinitions or the SatuSehat FHIR IG profiles on Simplifier, and servers may return more. Searches return a per-resource searchset Bundle; errors return OperationOutcome; PATCH takes an RFC 6902 JSON Patch document. KNOWN GAP: openfn-mocker drives PUT /fhir-r4/v1/Patient/{id}, which the SatuSehat Patient and MPI pages do not document (they document PATCH for partial updates and no full replace), so it is deliberately absent here rather than invented; that single exchange stays unknown-operation. Everything else the mocker drives now conforms."
 }

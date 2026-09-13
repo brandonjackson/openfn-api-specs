@@ -3,13 +3,90 @@
   "npm": "@openfn/language-openspp",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "rpc-transport",
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://demo.openspp.org/api/v2/spp/openapi.json",
+      "result": "not-found",
+      "note": "spp_api_v2 generates an OpenAPI document per deployment at this path, but OpenSPP hosts no public instance — the demo host does not resolve (HTTP 522) and there is no vendor-hosted copy to capture."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://openspp.org/openapi.json",
+      "result": "rejected",
+      "note": "returns HTTP 200 but serves the marketing site's HTML shell (text/html), not a spec."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.openspp.org/openapi.json",
+      "result": "not-found",
+      "note": "404; the docs site (Antora) is prose, not spec-rendered."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenSPP/openspp-api",
+      "result": "not-found",
+      "note": "the spp_api / spp_base_api / spp_oauth Odoo addons are here but no openapi.json or swagger.json is committed; repo archived 2024-09-25."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenSPP/openspp-modules",
+      "result": "not-found",
+      "note": "no committed machine spec under spp_api_v2/ (checked the static/ paths the Odoo addons would use)."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no openspp/odoo entry in the 2529-API index."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=openspp",
+      "result": "not-found",
+      "note": "no OpenSPP-owned public workspace."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.openspp.org/reference/modules/spp_api_v2",
+      "result": "used",
+      "note": "endpoint tables and response-field tables for spp_api_v2 and its six extension modules; the REST API v2 half of this spec is authored from these."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/openspp/src/Adaptor.js",
+      "result": "used",
+      "note": "all 20 operations go through odoo-await (sppConnector.connect/searchRead/search/create/update); odoo-await speaks XML-RPC at /xmlrpc/2/common and /xmlrpc/2/object."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "odoo-await-source",
+    "openfn-mocker-exchanges"
+  ],
+  "modifications": [],
   "sources": [
     "https://cdn.jsdelivr.net/npm/@openfn/language-openspp/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openspp/types/index.d.ts",
     "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/openspp/src/Adaptor.js",
-    "https://docs.openspp.org",
-    "https://www.odoo.com/documentation/master/developer/reference/external_api.html"
+    "https://raw.githubusercontent.com/vettloffah/odoo-await/master/lib/index.js",
+    "https://www.odoo.com/documentation/master/developer/reference/external_api.html",
+    "https://docs.openspp.org/reference/modules/spp_api_v2",
+    "https://docs.openspp.org/reference/modules/spp_api_v2_cycles",
+    "https://docs.openspp.org/reference/modules/spp_api_v2_data",
+    "https://docs.openspp.org/reference/modules/spp_api_v2_entitlements",
+    "https://docs.openspp.org/reference/modules/spp_api_v2_products",
+    "https://docs.openspp.org/reference/modules/spp_api_v2_service_points",
+    "https://docs.openspp.org/reference/modules/spp_api_v2_vocabulary",
+    "https://docs.openspp.org/howto/developer_guides/rest_api",
+    "https://github.com/OpenSPP/openspp-api"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No upstream REST OpenAPI exists. OpenSPP is a social-protection platform built on Odoo; the openspp adaptor uses the odoo-await client to speak Odoo's external API over JSON-RPC (common.authenticate for login, object.execute_kw for search/search_read/create/write). This spec is synthesized from the adaptor surface (ast.json + Adaptor.js source) and projected onto a REST-style resource API so the mocker can seed collections. Covers all 20 public adaptor operations (getGroup, getIndividual, getGroupMembers, getServicePoint, searchGroup, searchIndividual, getProgram, getPrograms, getEnrolledPrograms, enroll, unenroll, createIndividual, createGroup, updateGroup, updateIndividual, addToGroup, removeFromGroup, searchServicePoint, getArea, searchArea) plus a listGroups helper. Resource schemas mirror the underlying Odoo models: Group/Individual -> res.partner, GroupMember -> g2p.group.membership, Program -> g2p.program, ProgramMembership -> g2p.program_membership, ServicePoint -> spp.service.point, Area -> spp.area. Many2one fields are represented as Odoo's [id, name] pairs; field selections match the defaultFields used in the adaptor. Search endpoints take Odoo domain arrays rather than query params."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "OpenSPP is a social-protection registry built on Odoo, and its externally reachable API has two halves, both described here. (1) Odoo's external API, which is RPC and not REST: the openspp adaptor uses the odoo-await client, which speaks XML-RPC at POST /xmlrpc/2/common (authenticate) and POST /xmlrpc/2/object (execute_kw) with text/xml bodies; POST /web/session/authenticate and POST /jsonrpc are Odoo's JSON equivalents and are modelled with JSON schemas so the record shapes the adaptor actually reads (res.partner registrants, g2p.group.membership, g2p.program, g2p.program_membership, spp.service.point, spp.area — the Odoo* component schemas) are captured. (2) OpenSPP's own REST API v2 (the spp_api_v2 FastAPI module family, base path /api/v2/spp), authored from the module reference pages: Individual, Group, Program, ProgramMembership, Cycle, Entitlement, Product/ProductCategory/UnitOfMeasure, ServicePoint, Vocabulary and Data push/pull. BEST-EFFORT, reason rpc-transport, for two independent reasons. First, execute_kw dispatches model methods by name at runtime, so the XML-RPC/JSON-RPC surface is two endpoints wide and open-ended in depth — OpenAPI cannot enumerate it, and the XML wire format cannot be described at all (those two operations carry text/xml string bodies). Second, the REST API v2 docs give endpoint tables and response-field tables but no list envelope or full payload examples, so search endpoints are modelled as bare arrays of the documented fields and each such operation says so; a deployment's own generated schema at /api/v2/spp/openapi.json is the authority there. This replaces an earlier synthesized spec that projected the adaptor's twenty operations onto invented REST paths (/groups/{spp_id}, /individuals/search, ...) which no OpenSPP instance has ever served: all ten openfn-mocker exchanges were unknown-operation against it. Cross-checked against ast.json (20 operations, all funnelling through execute_kw), the adaptor source, odoo-await's transport, and the mocker's recorded XML-RPC traffic, which now conforms with 0 violations."
 }

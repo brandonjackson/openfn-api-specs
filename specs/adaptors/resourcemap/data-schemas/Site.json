@@ -5,66 +5,75 @@
   "x-openfn-adaptor": "resourcemap",
   "x-source": {
     "openapi": "#/components/schemas/Site",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A site (a mapped resource/facility) as returned by the query API.",
   "properties": {
     "id": {
-      "type": "integer",
-      "example": 1234
-    },
-    "uuid": {
-      "type": "string",
-      "example": "b3f4c1a2-7d8e-4f90-9a11-2c3d4e5f6a7b"
+      "type": "integer"
     },
     "name": {
+      "type": "string"
+    },
+    "createdAt": {
       "type": "string",
-      "example": "My Site"
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deletedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Present only for sites returned by a deleted_since query."
     },
     "lat": {
       "type": [
         "number",
         "null"
-      ],
-      "format": "double",
-      "example": 48.86
+      ]
     },
-    "lng": {
+    "long": {
       "type": [
         "number",
         "null"
       ],
-      "format": "double",
-      "example": 2.35
-    },
-    "collection_id": {
-      "type": "integer",
-      "example": 303
-    },
-    "version": {
-      "type": "integer",
-      "example": 1
+      "description": "Longitude (spelled `long`, not `lng`, in query responses)."
     },
     "properties": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Map of field es_code (or code) to value",
-      "example": {
-        "phone": "85512345678",
-        "Comment": "sample"
-      }
+      "description": "Field values keyed by field code (or numeric field id when codes are not used)."
     },
-    "updated_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Group memberships, when the collection uses them."
     }
   },
-  "required": [
-    "id",
-    "name"
-  ]
+  "example": {
+    "id": 17442,
+    "name": "Sunshine Hospital",
+    "createdAt": "2012-03-28T07:55:56+00:00",
+    "updatedAt": "2012-03-28T07:55:56+00:00",
+    "lat": -1.901301,
+    "long": 30.418267,
+    "properties": {
+      "Color": "1",
+      "Services": [
+        "XR",
+        "OBG"
+      ],
+      "NUMBEDS": "20",
+      "MGR": "Site manager"
+    },
+    "groups": []
+  }
 }

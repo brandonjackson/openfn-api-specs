@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openhim/User",
+  "title": "User",
+  "x-openfn-adaptor": "openhim",
+  "x-source": {
+    "openapi": "#/components/schemas/User",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "A console/API user.",
+  "required": [
+    "firstname",
+    "surname",
+    "email"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$",
+      "description": "24-character hex MongoDB ObjectId."
+    },
+    "firstname": {
+      "type": "string"
+    },
+    "surname": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "passports": {
+      "allOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$",
+          "description": "24-character hex MongoDB ObjectId."
+        }
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "local",
+        "token"
+      ],
+      "default": "local"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Role names the user belongs to."
+    },
+    "msisdn": {
+      "type": "string"
+    },
+    "dailyReport": {
+      "type": "boolean"
+    },
+    "weeklyReport": {
+      "type": "boolean"
+    },
+    "settings": {
+      "type": "object"
+    },
+    "token": {
+      "type": "string"
+    },
+    "tokenType": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "newUser",
+        "existingUser"
+      ]
+    },
+    "expiry": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locked": {
+      "type": "boolean"
+    },
+    "passwordAlgorithm": {
+      "type": "string",
+      "deprecated": true
+    },
+    "passwordHash": {
+      "type": "string",
+      "deprecated": true
+    },
+    "passwordSalt": {
+      "type": "string",
+      "deprecated": true
+    }
+  }
+}

@@ -1,14 +1,99 @@
 {
   "adaptor": "cht",
   "npm": "@openfn/language-cht",
-  "origin": "generated",
-  "upstreamFormat": "docs",
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.1",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://docs.communityhealthtoolkit.org/cht-datasource/openapi.json",
+    "format": "openapi-3.1",
+    "contentHash": "sha256:5b97ce86a399406c1e22ea5ba3a0c9f3a71e83eb5e82aa090a2e97cb4c23b4f1",
+    "fetchedAt": "2026-09-13"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://docs.communityhealthtoolkit.org/cht-datasource/openapi.json",
+      "result": "used",
+      "note": "Medic's own generated CHT API spec (OpenAPI 3.1.0, 65 paths / 86 operations / 44 schemas). Not linked as a file from the docs: found by reading the Swagger UI bootstrap at https://docs.communityhealthtoolkit.org/js/swagger.js, which the API reference page loads."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.communityhealthtoolkit.org/openapi.json",
+      "result": "not-found",
+      "note": "well-known path on the docs host: 404 (Hugo 404 page)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.communityhealthtoolkit.org/api/openapi.json",
+      "result": "not-found",
+      "note": "well-known path variant on the docs host: 404."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/medic/cht-core/master/shared-libs/cht-datasource/docs/openapi.json",
+      "result": "not-found",
+      "note": "the output path of medic/cht-core scripts/build/generate-openapi.js, but the artifact is not committed to the repo \u2014 it is built in CI and published to the docs host (the URL used above)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/medic/cht-core/master/api/openapi.json",
+      "result": "not-found",
+      "note": "no spec file checked into the api package; the spec is assembled from @openapi JSDoc in api/src/routing.js and api/src/controllers/**."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "apis.guru carries no medic / cht / communityhealthtoolkit entry (2529 APIs listed)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://cdn.jsdelivr.net/npm/@medic/cht-datasource/docs/openapi.json",
+      "result": "not-found",
+      "note": "cht-datasource is not published to npm, so the generated spec is not reachable that way."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://{instance}/api/openapi.json",
+      "result": "not-found",
+      "note": "a running CHT API server serves no spec route: medic/cht-core api/src/routing.js registers no /openapi, /swagger or /api-docs handler."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.communityhealthtoolkit.org/building/reference/api/",
+      "result": "used",
+      "note": "the vendor's REST API reference; it is a Swagger UI rendering of the spec above, and the docs sitemap (492 URLs) contains no other endpoint reference page, so the documented API and the spec are the same set."
+    },
+    {
+      "kind": "adaptor-surface",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-cht/ast.json",
+      "result": "used",
+      "note": "the adaptor publishes only generic builders (get, post, put, request), so it names no fixed endpoint of its own."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs",
+    "medic/cht-core@master"
+  ],
+  "modifications": [],
   "sources": [
+    "https://docs.communityhealthtoolkit.org/cht-datasource/openapi.json",
+    "https://docs.communityhealthtoolkit.org/js/swagger.js",
     "https://docs.communityhealthtoolkit.org/building/reference/api/",
+    "https://docs.communityhealthtoolkit.org/sitemap.xml",
+    "https://github.com/medic/cht-core/blob/master/scripts/build/generate-openapi.js",
     "https://github.com/medic/cht-core/tree/master/api/src/controllers",
+    "https://docs.communityhealthtoolkit.org/technical-overview/data/db-schema/",
     "https://cdn.jsdelivr.net/npm/@openfn/language-cht/ast.json",
     "https://docs.openfn.org/adaptors/cht"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Hand-authored OpenAPI 3.0.3 subset of the CHT Core / Medic REST API. The cht adaptor exposes only generic HTTP verbs (get/post/put/request) against a CHT instance, so operations here reflect the concrete CHT REST endpoints those calls target, derived from the @openapi JSDoc annotations in medic/cht-core api/src/controllers (person.js, place.js, contact.js, records.js, settings.js, export-data.js, monitoring.js, users.js, routing.js) and the adaptor's own examples (POST /api/v1/people, GET /api/v2/export/contacts, PUT /api/v1/settings). CHT's real machine spec is generated at build time (scripts/build/generate-openapi.js, OpenAPI 3.1.0) but is not published to a stable URL, so this is marked origin=generated / upstreamFormat=docs. Caveats: (1) upstream uses 3.1.0 features (const, deep oneOf, cht-datasource $refs) that were down-converted to 3.0.3 and simplified. (2) Export endpoints (/api/v2/export/contacts) actually return text/csv; modelled here as application/json arrays so the mocker can seed collections. (3) Person/Place/Contact document schemas are representative approximations of CHT CouchDB docs, not the exact cht-datasource schemas. (4) Base server uses an {instance} variable defaulting to demo.app.medicmobile.org; auth is HTTP basic in real CHT and omitted here."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "CHT (Community Health Toolkit / Medic cht-core) is a community-health platform built on CouchDB; the OpenFn cht adaptor is a thin generic HTTP client (get/post/put/request) pointed at a CHT instance, so the whole server API is in scope. openapi.json is Medic's own published spec for CHT API 5.3.0, saved verbatim as upstream.json (OpenAPI 3.1.0, 65 paths / 86 operations / 44 schemas) with the single addition of info.x-openfn-adaptor so the file is self-identifying; nothing else differs from upstream. The spec is generated by the vendor from @openapi JSDoc in cht-core api/src/routing.js and api/src/controllers/** plus TypeScript types in shared-libs/cht-datasource, and published to the docs host \u2014 it was verified by re-running the vendor's own generator (scripts/build/generate-openapi.js) against cht-core@master, which reproduced the same 65 paths and 86 operations. 'Full' here means the vendor's complete API-server surface (/api/v1, /api/v2, /api/v3, /api/info, /api/sms). KNOWN SCOPE GAP: the CHT API server also reverse-proxies the CouchDB databases it fronts (GET/PUT/DELETE /medic/{docId}, POST /medic/_bulk_docs, POST /medic/_bulk_get, GET|POST /medic/_changes, GET|POST /medic/_all_docs, view queries, and the per-user medic-user-<name>-meta databases, plus /_session cookie auth); workflows do use those routes through the adaptor, but they are CouchDB's API, not CHT's, and Medic's spec does not describe them, so they are absent here rather than hand-added on top of a verbatim vendor spec. Other caveats: servers[0].url is the vendor's own \"/\" (CHT is self-hosted, so the base URL is whatever instance host the credential points at); the /api/v2/export/* endpoints return text/csv downloads and the spec declares only that content type; and the spec uses OpenAPI 3.1 constructs (const, type arrays with null, $refs into cht-datasource types) that were kept as-is."
 }

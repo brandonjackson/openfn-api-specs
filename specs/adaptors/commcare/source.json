@@ -3,14 +3,126 @@
   "npm": "@openfn/language-commcare",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://www.commcarehq.org/openapi.json",
+      "result": "not-found",
+      "note": "well-known path on the production host: 404."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://www.commcarehq.org/api/openapi.json",
+      "result": "not-found",
+      "note": "404; CommCare HQ serves no spec document under /api/."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://www.commcarehq.org/api/schema/",
+      "result": "not-found",
+      "note": "drf-spectacular's default schema path: 404. The Data API is Tastypie + hand-written Django views, not DRF."
+    },
+    {
+      "kind": "swagger",
+      "url": "https://www.commcarehq.org/swagger.json",
+      "result": "not-found",
+      "note": "404; no Swagger document is served."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/dimagi/commcare-hq",
+      "result": "not-found",
+      "note": "cloned master and searched the whole tree: no file matching openapi/swagger anywhere in the repo, and no spec-generation step in corehq/apps/api/."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://commcare-api-explorer.dimagi.com/",
+      "result": "rejected",
+      "note": "Dimagi's API Explorer, linked from the docs as the way to browse the Data APIs. It is a React app driven by hard-coded endpoint config plus OAuth, not a spec-backed Swagger/Redoc UI: the only JSON schema it loads is /static/json-schemas/data-source.json (a UCR data-source schema), not an API description."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "apis.guru carries no commcare / dimagi entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/",
+      "result": "not-found",
+      "note": "no Dimagi-owned public Postman workspace or SwaggerHub organisation for CommCare HQ."
+    },
+    {
+      "kind": "docs",
+      "url": "https://commcare-hq.readthedocs.io/api/index.html",
+      "result": "used",
+      "note": "the vendor's API reference (27 pages: Data APIs, User APIs, Form Submission API, SMS APIs), mirrored in the repo as docs/api/*.rst. Every page was read; the inventory came from this toctree."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/dimagi/commcare-hq/blob/master/corehq/apps/api/urls.py",
+      "result": "used",
+      "note": "CommCare's own URL routing, used to enumerate the Tastypie resource names and both URL families (/api/v0.5/<resource>/ and /api/<resource>/v1/) and to confirm the docs inventory is complete."
+    },
+    {
+      "kind": "adaptor-surface",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-commcare/ast.json",
+      "result": "used",
+      "note": "adaptor operations: get, post, request, submit, submitXls, bulk, fetchReportData."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-commcare/dist/index.cjs",
+      "result": "used",
+      "note": "read the built adaptor to confirm every URL it constructs: /a/{domain}/api/{path}, /a/{domain}/api/v0.5/{resource}, /a/{domain}/receiver/{appId}/, /a/{domain}/importer/excel/bulk_upload_api/, /a/{domain}/fixtures/fixapi/, /a/{domain}/api/v0.5/configurablereportdata/{reportId}/. All are present in openapi.json."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs",
+    "dimagi/commcare-hq@master"
+  ],
+  "modifications": [],
   "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-commcare/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-commcare/dist/index.cjs",
     "https://commcare-hq.readthedocs.io/api/index.html",
     "https://commcare-hq.readthedocs.io/api/cases-v1.html",
+    "https://commcare-hq.readthedocs.io/api/cases-v2.html",
     "https://commcare-hq.readthedocs.io/api/form-data.html",
-    "https://dimagi.atlassian.net/wiki/spaces/commcarepublic/pages/2279637003/CommCare+API+Overview"
+    "https://commcare-hq.readthedocs.io/api/list-forms.html",
+    "https://commcare-hq.readthedocs.io/api/application-structure.html",
+    "https://commcare-hq.readthedocs.io/api/list-mobile-workers.html",
+    "https://commcare-hq.readthedocs.io/api/mobile-worker.html",
+    "https://commcare-hq.readthedocs.io/api/list-webusers.html",
+    "https://commcare-hq.readthedocs.io/api/webuser.html",
+    "https://commcare-hq.readthedocs.io/api/bulk-user.html",
+    "https://commcare-hq.readthedocs.io/api/user-group.html",
+    "https://commcare-hq.readthedocs.io/api/list-groups.html",
+    "https://commcare-hq.readthedocs.io/api/fixture.html",
+    "https://commcare-hq.readthedocs.io/api/locations-v1.html",
+    "https://commcare-hq.readthedocs.io/api/locations-v2.html",
+    "https://commcare-hq.readthedocs.io/api/location-types.html",
+    "https://commcare-hq.readthedocs.io/api/list-reports.html",
+    "https://commcare-hq.readthedocs.io/api/download-report-data.html",
+    "https://commcare-hq.readthedocs.io/api/det-exports.html",
+    "https://commcare-hq.readthedocs.io/api/messaging-events.html",
+    "https://commcare-hq.readthedocs.io/api/form-submission.html",
+    "https://commcare-hq.readthedocs.io/api/ota-api-restore.html",
+    "https://commcare-hq.readthedocs.io/api/bulk-upload-cases.html",
+    "https://commcare-hq.readthedocs.io/api/import-app.html",
+    "https://commcare-hq.readthedocs.io/api/sso.html",
+    "https://commcare-hq.readthedocs.io/api/user-domain-list.html",
+    "https://github.com/dimagi/commcare-hq/blob/master/corehq/apps/api/urls.py",
+    "https://github.com/dimagi/commcare-hq/tree/master/docs/api",
+    "https://dimagi.atlassian.net/wiki/spaces/commcarepublic/pages/2279637003/CommCare+API+Overview",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-commcare/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-commcare/dist/index.cjs"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No machine-readable OpenAPI/Swagger spec is published by CommCare HQ (Dimagi); this spec was hand-authored from the public API docs (ReadTheDocs + Confluence) and cross-checked against the actual paths the adaptor builds in dist/index.cjs. The adaptor is a thin HTTP client: get/post/request map to /a/{domain}/api/v0.5/{resource}/ (Tastypie, v0.5); submit posts XForm XML to /a/{domain}/receiver/{app_id}/; submitXls and bulk('case-data') POST an XLSX to /a/{domain}/importer/excel/bulk_upload_api/; bulk('lookup-table') POSTs an XLSX (field 'file-to-upload') to /a/{domain}/fixtures/fixapi/; fetchReportData GETs /a/{domain}/api/v0.5/configurablereportdata/{report_id}/. Domain is modelled as a server variable. CommCare read endpoints use the Tastypie {meta,objects} envelope, modelled here as reusable component schemas so the mocker can seed Case/Form/User/Group/Fixture collections. Caveats: the receiver actually returns OpenRosa XML (modelled as JSON here for the mocker); the current docs also expose newer versioned paths like /api/case/v1/, but the adaptor pins v0.5. 12 operations. Response field sets are representative, not exhaustive."
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "CommCare HQ (Dimagi) publishes no machine-readable API description \u2014 the Data API is Tastypie plus hand-written Django views, and a full clone of dimagi/commcare-hq contains no openapi/swagger file (see attempts[]). This spec was authored from the vendor's own API reference (the 27 pages of commcare-hq.readthedocs.io/api, mirrored as docs/api/*.rst) and cross-checked against CommCare's URL routing in corehq/apps/api/urls.py, which is what made it possible to enumerate resources the prose does not name. 'Full' means every endpoint the vendor documents, plus the resources its router registers: 137 paths / 181 operations covering cases (Data API v1 and v2), forms and attachments, applications, mobile workers, web users, invitations, groups, locations (v1 and v2) and location types, lookup tables and fixtures, configurable reports, UCR data and data sources, DET exports, OData feeds, messaging events, device logs, project-space metadata, the navigation audit log, the OpenRosa form receiver and OTA restore, the case and lookup-table spreadsheet uploads, and the two account-level endpoints (identity, user_domains). CommCare versions resources individually, so each resource is modelled at BOTH URLs it is served at \u2014 the current `/a/{domain}/api/<resource>/v1/` and the legacy `/a/{domain}/api/v0.5/<resource>/` (or v0.6/v2) that CommCare still serves and that the OpenFn adaptor pins \u2014 which is why the operation count is roughly double the resource count. Caveats: (1) best-effort because it is docs-derived \u2014 field sets come from the documented example responses and are representative, not exhaustive, and every resource schema therefore allows additional properties; (2) the form receiver and OTA restore really return OpenRosa XML and are declared as text/xml, and case/form attachments as binary, so those operations have no JSON response schema; (3) Tastypie's `{meta, objects}` envelope is used for every Tastypie list even where an old docs page (cases-v1, list-reports) still shows a bare array \u2014 the live API and the mock both send the envelope; (4) the superseded v0.3/v0.4 aliases of the Data API are still registered by CommCare but are not modelled here except for `product`, which is only served at v0.3; (5) the admin-only accounting resources (billing, subscriptions, invoices) under ADMIN_API_LIST are deliberately out of scope \u2014 they are not part of the project-space API and are not documented for integrators."
 }

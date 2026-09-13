@@ -5,82 +5,70 @@
   "x-openfn-adaptor": "openlmis",
   "x-source": {
     "openapi": "#/components/schemas/Orderable",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A single orderable",
   "properties": {
     "id": {
       "type": "string",
-      "format": "uuid"
+      "title": "id"
     },
     "productCode": {
-      "type": "string"
+      "type": "string",
+      "title": "productCode"
     },
     "fullProductName": {
-      "type": "string"
+      "type": "string",
+      "title": "fullProductName"
     },
     "description": {
-      "type": "string"
+      "type": "string",
+      "title": "description"
     },
     "netContent": {
-      "type": "integer"
+      "type": "number",
+      "title": "netContent"
     },
     "packRoundingThreshold": {
-      "type": "integer"
+      "type": "integer",
+      "title": "packRoundingThreshold"
     },
     "roundToZero": {
-      "type": "boolean"
+      "type": "boolean",
+      "title": "roundToZero"
     },
-    "dispensable": {
-      "type": "object",
-      "properties": {
-        "dispensingUnit": {
-          "type": "string"
-        }
-      }
-    },
-    "programOrderables": {
+    "children": {
       "type": "array",
+      "title": "children",
       "items": {
-        "type": "object",
-        "properties": {
-          "programId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "orderableDisplayCategoryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "active": {
-            "type": "boolean"
-          },
-          "fullSupply": {
-            "type": "boolean"
-          },
-          "pricePerPack": {
-            "type": "number"
-          }
-        }
+        "$ref": "OrderableChildDto.json"
       }
+    },
+    "programs": {
+      "type": "array",
+      "title": "programs",
+      "items": {
+        "$ref": "ProgramOrderableDto.json"
+      },
+      "uniqueItems": true
     },
     "identifiers": {
       "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
+      "title": "identifiers"
+    },
+    "extraData": {
+      "type": "object",
+      "title": "extraData"
     },
     "meta": {
-      "type": "object",
-      "properties": {
-        "versionNumber": {
-          "type": "integer"
-        },
-        "lastUpdated": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
+      "$ref": "Metadata.json"
     }
-  }
+  },
+  "required": [
+    "productCode",
+    "packRoundingThreshold",
+    "roundToZero",
+    "netContent"
+  ]
 }

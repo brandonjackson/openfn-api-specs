@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/CountryConfigCustomActionOutput",
+  "title": "CountryConfigCustomActionOutput",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/CountryConfigCustomActionOutput",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "description": "Unique identifier of the action."
+    },
+    "transactionId": {
+      "type": "string",
+      "description": "Unique identifier of the transaction."
+    },
+    "createdByUserType": {
+      "type": "string",
+      "enum": [
+        "user",
+        "system"
+      ],
+      "description": "Indicates whether the action was created by a human-user or by a system-user."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+      "description": "Timestamp indicating when the action was created."
+    },
+    "createdBy": {
+      "type": "string",
+      "description": "Identifier of the user who created the action."
+    },
+    "createdByRole": {
+      "description": "Role of the user who created the action.",
+      "type": "string"
+    },
+    "createdBySignature": {
+      "description": "Reference to the signature of the user who created the action.",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "A relative path within the S3 bucket, never starting with /. e.g. document-id.jpg or directory/document-id.jpg. The document service constructs the full /bucket/path internally."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "createdAtLocation": {
+      "description": "Reference to the location of the user who created the action.",
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "declaration": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "description": "Value that matches exactly one of the possible schema types (TextValue, DateValue, DateRangeFieldValue). The best matching schema is chosen by priority."
+      },
+      "description": "Declaration data defined by the ActionConfig. Supports partial updates."
+    },
+    "annotation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "description": "Value that matches exactly one of the possible schema types (TextValue, DateValue, DateRangeFieldValue). The best matching schema is chosen by priority."
+          },
+          "description": "Record of field-level changes made by an action. Supports partial updates and nullable values."
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Action-specific metadata used to annotate the event."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Requested",
+        "Accepted",
+        "Rejected"
+      ],
+      "description": "Current status of the action. Actions may be validated asynchronously by third-party integrations."
+    },
+    "originalActionId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Reference to the original action asynchronously accepted or rejected by a third-party integration."
+    },
+    "type": {
+      "type": "string",
+      "const": "CUSTOM"
+    },
+    "customActionType": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "transactionId",
+    "createdByUserType",
+    "createdAt",
+    "createdBy",
+    "declaration",
+    "status",
+    "type",
+    "customActionType"
+  ],
+  "additionalProperties": false
+}

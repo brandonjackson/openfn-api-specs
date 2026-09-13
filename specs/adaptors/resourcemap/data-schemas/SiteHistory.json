@@ -5,13 +5,19 @@
   "x-openfn-adaptor": "resourcemap",
   "x-source": {
     "openapi": "#/components/schemas/SiteHistory",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "One stored version of a site. Resource Map writes a history row on every change; each row holds the complete site, not just the changed values.",
   "properties": {
-    "version": {
-      "type": "integer",
-      "example": 2
+    "id": {
+      "type": "integer"
+    },
+    "site_id": {
+      "type": "integer"
+    },
+    "collection_id": {
+      "type": "integer"
     },
     "name": {
       "type": "string"
@@ -20,35 +26,92 @@
       "type": [
         "number",
         "null"
-      ],
-      "format": "double"
+      ]
     },
     "lng": {
       "type": [
         "number",
         "null"
-      ],
-      "format": "double"
+      ]
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "location_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id_with_prefix": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uuid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "description": "Autoincrementing version number of this site."
     },
     "valid_since": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When this version became current."
     },
     "valid_to": {
       "type": [
         "string",
         "null"
       ],
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When this version stopped being current; null for the current version."
+    },
+    "user_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "user": {
-      "type": "string",
-      "format": "email",
-      "example": "user@example.org"
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Email of the user who made this change."
     },
-    "properties": {
-      "type": "object",
-      "additionalProperties": true
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
     }
+  },
+  "example": {
+    "id": 9001,
+    "site_id": 119815,
+    "collection_id": 428,
+    "name": "angola",
+    "lat": -12.892942,
+    "lng": 16.776647,
+    "properties": {
+      "1561": 2.34,
+      "1562": 2,
+      "1563": true
+    },
+    "version": 3,
+    "valid_since": "2013-10-29T20:07:07Z",
+    "valid_to": "2013-10-31T21:14:42Z",
+    "uuid": "cc33e476-4879-4096-a5e5-1baf8fd2af0b",
+    "created_at": "2013-10-29T20:07:07Z",
+    "updated_at": "2013-10-31T21:14:42Z"
   }
 }

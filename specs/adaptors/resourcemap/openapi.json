@@ -2,184 +2,180 @@
   "openapi": "3.0.3",
   "info": {
     "title": "InSTEDD Resource Map REST API",
-    "version": "1.0.0",
-    "description": "Focused OpenAPI description of the InSTEDD Resource Map REST API, covering the collections, sites, fields/layers, history and membership endpoints. The @openfn/language-resourcemap adaptor calls POST /api/collections/{collection_id}/sites.json (submitSite); the surrounding endpoints are documented from the vendor REST API wiki to give the mocker realistic seed shapes. All endpoints use HTTP Basic auth (email/password).",
-    "x-openfn-adaptor": "resourcemap"
+    "version": "1.0",
+    "description": "Resource Map (InSTEDD) maps facilities and resources as *sites* grouped into *collections*; each collection defines its own *layers* of *fields*, and layer membership is also the unit of read/write permission. This document covers the whole `/api` surface of the open-source Rails application. Routes carry a format suffix (`.json`, and `.rss`/`.csv` where the server renders them). The OpenFn resourcemap adaptor reaches this API over HTTP Basic auth; its one named operation, `submitSite`, posts to `/api/collections/{id}/sites.json`, and its inherited generic builders can reach every other endpoint here.",
+    "x-openfn-adaptor": "resourcemap",
+    "contact": {
+      "name": "InSTEDD Resource Map",
+      "url": "https://github.com/instedd/resourcemap"
+    },
+    "license": {
+      "name": "AGPL-3.0"
+    }
   },
   "servers": [
     {
       "url": "https://resourcemap.instedd.org",
-      "description": "InSTEDD-hosted Resource Map instance (baseUrl is configurable per deployment)"
+      "description": "InSTEDD-hosted Resource Map"
+    },
+    {
+      "url": "https://{host}",
+      "description": "Self-hosted Resource Map deployment",
+      "variables": {
+        "host": {
+          "default": "resourcemap.instedd.org",
+          "description": "Hostname of the Resource Map deployment."
+        }
+      }
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "basicAuth": {
-        "type": "http",
-        "scheme": "basic"
-      }
-    },
-    "schemas": {
-      "Collection": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "example": 303 },
-          "name": { "type": "string", "example": "Health Facilities" },
-          "description": { "type": "string" },
-          "lat": { "type": "number", "format": "double", "nullable": true },
-          "lng": { "type": "number", "format": "double", "nullable": true },
-          "count": { "type": "integer", "description": "Number of sites in the collection" }
-        },
-        "required": ["id", "name"]
-      },
-      "CollectionDetail": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "sites": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/Site" }
-          }
-        }
-      },
-      "Site": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "example": 1234 },
-          "uuid": { "type": "string", "example": "b3f4c1a2-7d8e-4f90-9a11-2c3d4e5f6a7b" },
-          "name": { "type": "string", "example": "My Site" },
-          "lat": { "type": "number", "format": "double", "nullable": true, "example": 48.86 },
-          "lng": { "type": "number", "format": "double", "nullable": true, "example": 2.35 },
-          "collection_id": { "type": "integer", "example": 303 },
-          "version": { "type": "integer", "example": 1 },
-          "properties": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Map of field es_code (or code) to value",
-            "example": { "phone": "85512345678", "Comment": "sample" }
-          },
-          "updated_at": { "type": "string", "format": "date-time" },
-          "created_at": { "type": "string", "format": "date-time" }
-        },
-        "required": ["id", "name"]
-      },
-      "SiteInput": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string", "example": "My Site" },
-          "lat": { "type": "number", "format": "double", "example": 48.86 },
-          "lng": { "type": "number", "format": "double", "example": 2.35 },
-          "lon": { "type": "number", "format": "double", "description": "Alias accepted for longitude", "example": 2.35 },
-          "properties": {
-            "type": "object",
-            "additionalProperties": true,
-            "example": { "phone": "85512345678", "Comment": "sample" }
-          }
-        },
-        "required": ["name"]
-      },
-      "Layer": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "example": 12 },
-          "name": { "type": "string", "example": "Basic info" },
-          "ord": { "type": "integer", "example": 1 },
-          "fields": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/Field" }
-          }
-        }
-      },
-      "Field": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "example": 45 },
-          "es_code": { "type": "string", "example": "45" },
-          "code": { "type": "string", "example": "phone" },
-          "name": { "type": "string", "example": "Phone" },
-          "kind": {
-            "type": "string",
-            "description": "Field type",
-            "example": "text",
-            "enum": ["text", "numeric", "yes_no", "select_one", "select_many", "date", "site", "user", "email", "phone", "hierarchy"]
-          },
-          "config": { "type": "object", "additionalProperties": true, "nullable": true }
-        }
-      },
-      "LayerInput": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string", "example": "Basic info" },
-          "ord": { "type": "integer", "example": 1 },
-          "fields_attributes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "code": { "type": "string" },
-                "name": { "type": "string" },
-                "kind": { "type": "string" },
-                "ord": { "type": "integer" }
-              }
-            }
-          }
-        },
-        "required": ["name"]
-      },
-      "SiteHistory": {
-        "type": "object",
-        "properties": {
-          "version": { "type": "integer", "example": 2 },
-          "name": { "type": "string" },
-          "lat": { "type": "number", "format": "double", "nullable": true },
-          "lng": { "type": "number", "format": "double", "nullable": true },
-          "valid_since": { "type": "string", "format": "date-time" },
-          "valid_to": { "type": "string", "format": "date-time", "nullable": true },
-          "user": { "type": "string", "format": "email", "example": "user@example.org" },
-          "properties": { "type": "object", "additionalProperties": true }
-        }
-      },
-      "Membership": {
-        "type": "object",
-        "properties": {
-          "user_id": { "type": "integer", "example": 7 },
-          "user_display_name": { "type": "string", "example": "Jane Doe" },
-          "admin": { "type": "boolean", "example": false },
-          "layers": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "layer_id": { "type": "integer" },
-                "read": { "type": "boolean" },
-                "write": { "type": "boolean" }
-              }
-            }
-          }
-        }
-      },
-      "StatusResponse": {
-        "type": "object",
-        "properties": {
-          "status": { "type": "string", "example": "ok" }
-        }
-      }
+  "security": [
+    {
+      "basicAuth": []
     }
-  },
-  "security": [{ "basicAuth": [] }],
+  ],
+  "tags": [
+    {
+      "name": "collections",
+      "description": "Collections and the site queries scoped to them."
+    },
+    {
+      "name": "sites",
+      "description": "Individual sites and their version history."
+    },
+    {
+      "name": "layers",
+      "description": "Layers: named groups of field definitions."
+    },
+    {
+      "name": "fields",
+      "description": "Field definitions and field metadata."
+    },
+    {
+      "name": "memberships",
+      "description": "Collection members and their layer/site permissions."
+    },
+    {
+      "name": "activity",
+      "description": "Activity feed."
+    },
+    {
+      "name": "tokens",
+      "description": "API authentication tokens."
+    }
+  ],
   "paths": {
     "/api/collections.json": {
       "get": {
         "operationId": "listCollections",
-        "summary": "List all collections the authenticated user can access",
+        "tags": [
+          "collections"
+        ],
+        "summary": "List the collections the authenticated user can access",
         "responses": {
           "200": {
-            "description": "Array of collections",
+            "description": "Every collection the user is a member of, each with its site count.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Collection" }
+                  "items": {
+                    "$ref": "#/components/schemas/Collection"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCollection",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Create a collection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "collection": {
+                    "$ref": "#/components/schemas/Collection"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -188,21 +184,402 @@
       }
     },
     "/api/collections/{id}.json": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
       "get": {
-        "operationId": "getCollection",
-        "summary": "Get a collection and its sites (supports filter query params)",
+        "operationId": "getCollectionSites",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Query the sites in a collection",
+        "description": "The main query endpoint. Any field code may also be passed as a query parameter to filter on that field; values may be comma-separated lists or `a..b` ranges. The same URL with a `.rss` or `.csv` suffix returns GeoRSS or CSV.",
         "parameters": [
-          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          },
+          {
+            "$ref": "#/components/parameters/sortDirection"
+          },
+          {
+            "$ref": "#/components/parameters/box"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/radius"
+          },
+          {
+            "$ref": "#/components/parameters/updatedSince"
+          },
+          {
+            "$ref": "#/components/parameters/createdSince"
+          },
+          {
+            "$ref": "#/components/parameters/deletedSince"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/nameParam"
+          },
+          {
+            "$ref": "#/components/parameters/sitename"
+          },
+          {
+            "$ref": "#/components/parameters/human"
+          },
+          {
+            "$ref": "#/components/parameters/locationMissing"
+          },
+          {
+            "$ref": "#/components/parameters/siteId"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Collection detail with nested sites",
+            "description": "A page of matching sites.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CollectionDetail" }
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionSites"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteCollection",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Delete a collection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{id}.csv": {
+      "get": {
+        "operationId": "exportCollectionSitesCsv",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Export the sites in a collection as CSV",
+        "description": "Same query parameters as `getCollectionSites`. Pass `page=all` to export every site.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          },
+          {
+            "$ref": "#/components/parameters/sortDirection"
+          },
+          {
+            "$ref": "#/components/parameters/box"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/radius"
+          },
+          {
+            "$ref": "#/components/parameters/updatedSince"
+          },
+          {
+            "$ref": "#/components/parameters/createdSince"
+          },
+          {
+            "$ref": "#/components/parameters/deletedSince"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/nameParam"
+          },
+          {
+            "$ref": "#/components/parameters/sitename"
+          },
+          {
+            "$ref": "#/components/parameters/human"
+          },
+          {
+            "$ref": "#/components/parameters/locationMissing"
+          },
+          {
+            "$ref": "#/components/parameters/siteId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV export of the matching sites, one row per site.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{id}.rss": {
+      "get": {
+        "operationId": "getCollectionSitesRss",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Query the sites in a collection as GeoRSS",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          },
+          {
+            "$ref": "#/components/parameters/sortDirection"
+          },
+          {
+            "$ref": "#/components/parameters/box"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/radius"
+          },
+          {
+            "$ref": "#/components/parameters/updatedSince"
+          },
+          {
+            "$ref": "#/components/parameters/createdSince"
+          },
+          {
+            "$ref": "#/components/parameters/deletedSince"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/nameParam"
+          },
+          {
+            "$ref": "#/components/parameters/sitename"
+          },
+          {
+            "$ref": "#/components/parameters/human"
+          },
+          {
+            "$ref": "#/components/parameters/locationMissing"
+          },
+          {
+            "$ref": "#/components/parameters/siteId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A GeoRSS 2.0 feed; latitude and longitude are carried in `geo:lat` and `geo:long`.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -210,20 +587,114 @@
       }
     },
     "/api/collections/{id}/count.json": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
       "get": {
         "operationId": "getCollectionCount",
-        "summary": "Count the number of sites in a collection",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Count the sites matching a query",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          },
+          {
+            "$ref": "#/components/parameters/sortDirection"
+          },
+          {
+            "$ref": "#/components/parameters/box"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/radius"
+          },
+          {
+            "$ref": "#/components/parameters/updatedSince"
+          },
+          {
+            "$ref": "#/components/parameters/createdSince"
+          },
+          {
+            "$ref": "#/components/parameters/deletedSince"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/nameParam"
+          },
+          {
+            "$ref": "#/components/parameters/sitename"
+          },
+          {
+            "$ref": "#/components/parameters/human"
+          },
+          {
+            "$ref": "#/components/parameters/locationMissing"
+          },
+          {
+            "$ref": "#/components/parameters/siteId"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Site count",
+            "description": "The number of matching sites, as a bare JSON number.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": { "count": { "type": "integer", "example": 42 } }
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -232,26 +703,115 @@
       }
     },
     "/api/collections/{id}/geo.json": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
       "get": {
         "operationId": "getCollectionGeoJson",
-        "summary": "Get collection sites as a GeoJSON FeatureCollection",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Query the geolocated sites in a collection as GeoJSON",
+        "description": "Only sites that have a location are returned.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          },
+          {
+            "$ref": "#/components/parameters/sortDirection"
+          },
+          {
+            "$ref": "#/components/parameters/box"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/radius"
+          },
+          {
+            "$ref": "#/components/parameters/updatedSince"
+          },
+          {
+            "$ref": "#/components/parameters/createdSince"
+          },
+          {
+            "$ref": "#/components/parameters/deletedSince"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/nameParam"
+          },
+          {
+            "$ref": "#/components/parameters/sitename"
+          },
+          {
+            "$ref": "#/components/parameters/human"
+          },
+          {
+            "$ref": "#/components/parameters/locationMissing"
+          },
+          {
+            "$ref": "#/components/parameters/siteId"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "GeoJSON FeatureCollection",
+            "description": "A GeoJSON Feature carrying the FeatureCollection of matching sites.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": { "type": "string", "example": "FeatureCollection" },
-                    "features": {
-                      "type": "array",
-                      "items": { "type": "object", "additionalProperties": true }
-                    }
-                  }
+                  "$ref": "#/components/schemas/CollectionGeoJson"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -259,160 +819,332 @@
         }
       }
     },
-    "/api/collections/{collection_id}/sites.json": {
-      "parameters": [
-        { "name": "collection_id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
-      "post": {
-        "operationId": "submitSite",
-        "summary": "Create a new site in a collection",
-        "description": "Primary endpoint used by the @openfn/language-resourcemap submitSite operation.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/SiteInput" }
-            }
+    "/api/collections/{id}/sample_csv.csv": {
+      "get": {
+        "operationId": "getCollectionSampleCsv",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Download a sample CSV import template for a collection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "Created site",
+          "200": {
+            "description": "A CSV template whose header row matches the collection's fields.",
             "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Site" }
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           },
-          "200": {
-            "description": "Created site (some deployments return 200)",
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Site" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/api/sites/{id}.json": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
-      "get": {
-        "operationId": "getSite",
-        "summary": "Retrieve a single site by id",
-        "responses": {
-          "200": {
-            "description": "Site object",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Site" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/sites/{site_id}": {
-      "parameters": [
-        { "name": "site_id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
-      "delete": {
-        "operationId": "deleteSite",
-        "summary": "Delete a site",
-        "responses": {
-          "200": {
-            "description": "Deletion status",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/StatusResponse" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/sites/{site_id}/update_property.json": {
-      "parameters": [
-        { "name": "site_id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
+    "/api/collections/{id}/sites.json": {
       "post": {
-        "operationId": "updateSiteProperty",
-        "summary": "Update a single property (field) on a site",
+        "operationId": "submitSite",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Create a site in a collection",
+        "description": "The endpoint the @openfn/language-resourcemap `submitSite` operation calls. Resource Map reads the site from a `site` parameter holding a JSON document.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "es_code": { "type": "string", "description": "Field id / es_code" },
-                  "value": {}
-                },
-                "required": ["es_code", "value"]
+                "$ref": "#/components/schemas/SiteInput"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated site",
+            "description": "The created site.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Site" }
+                "schema": {
+                  "$ref": "#/components/schemas/SiteRecord"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/api/sites/{site_id}/partial_update.json": {
-      "parameters": [
-        { "name": "site_id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
+    "/api/collections/{id}/update_sites.json": {
       "post": {
-        "operationId": "partialUpdateSite",
-        "summary": "Update multiple properties on a site",
+        "operationId": "bulkUpdateSites",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Update every site matching a query",
+        "description": "The sites to update are selected with the same query parameters as `getCollectionSites`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection id."
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          },
+          {
+            "$ref": "#/components/parameters/sortDirection"
+          },
+          {
+            "$ref": "#/components/parameters/box"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/radius"
+          },
+          {
+            "$ref": "#/components/parameters/updatedSince"
+          },
+          {
+            "$ref": "#/components/parameters/createdSince"
+          },
+          {
+            "$ref": "#/components/parameters/deletedSince"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/nameParam"
+          },
+          {
+            "$ref": "#/components/parameters/sitename"
+          },
+          {
+            "$ref": "#/components/parameters/human"
+          },
+          {
+            "$ref": "#/components/parameters/locationMissing"
+          },
+          {
+            "$ref": "#/components/parameters/siteId"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/SiteInput" }
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateInput"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated site",
+            "description": "Applied. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Site" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/api/collections/{collection_id}/sites/{site_id}/histories.json": {
-      "parameters": [
-        { "name": "collection_id", "in": "path", "required": true, "schema": { "type": "integer" } },
-        { "name": "site_id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
+    "/api/collections/{collection_id}/sites/{id}/histories.json": {
       "get": {
         "operationId": "getSiteHistories",
-        "summary": "Get the version history of a site",
+        "tags": [
+          "sites"
+        ],
+        "summary": "List the stored versions of a site",
+        "description": "Collection-admin only. Pass `version` to fetch one version.",
         "parameters": [
-          { "name": "version", "in": "query", "required": false, "schema": { "type": "integer" } }
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Return only this version."
+          }
         ],
         "responses": {
           "200": {
-            "description": "Array of site history versions",
+            "description": "Every version of the site, oldest first.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/SiteHistory" }
+                  "items": {
+                    "$ref": "#/components/schemas/SiteHistory"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -421,20 +1153,58 @@
       }
     },
     "/api/collections/{collection_id}/layers.json": {
-      "parameters": [
-        { "name": "collection_id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
       "get": {
         "operationId": "listCollectionLayers",
-        "summary": "Get the layers and field definitions (metadata) of a collection",
+        "tags": [
+          "layers"
+        ],
+        "summary": "List a collection's layers and their field definitions",
+        "description": "Collection-admin only. This is the metadata endpoint: field codes, kinds and option lists.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Array of layers with nested fields",
+            "description": "The collection's layers, each with its fields.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Layer" }
+                  "items": {
+                    "$ref": "#/components/schemas/Layer"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -443,45 +1213,2620 @@
       },
       "post": {
         "operationId": "createCollectionLayer",
-        "summary": "Create a new layer in a collection",
+        "tags": [
+          "layers"
+        ],
+        "summary": "Create a layer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LayerInput" }
+              "schema": {
+                "$ref": "#/components/schemas/LayerInput"
+              }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Created layer",
+          "200": {
+            "description": "The created layer, including its fields.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Layer" }
+                "schema": {
+                  "$ref": "#/components/schemas/Layer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/api/collections/{id}/memberships.json": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
-      "get": {
-        "operationId": "listCollectionMemberships",
-        "summary": "List members of a collection",
+    "/api/collections/{collection_id}/layers/{id}.json": {
+      "put": {
+        "operationId": "updateCollectionLayer",
+        "tags": [
+          "layers"
+        ],
+        "summary": "Update a layer and its fields",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Layer id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LayerInput"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Array of memberships",
+            "description": "The updated layer, including its fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Layer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteCollectionLayer",
+        "tags": [
+          "layers"
+        ],
+        "summary": "Delete a layer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Layer id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/layers/{layer_id}/fields.json": {
+      "post": {
+        "operationId": "createLayerFields",
+        "tags": [
+          "fields"
+        ],
+        "summary": "Add fields to a layer",
+        "description": "Field order is assigned by the server; custom field config and metadata are not accepted here.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "layer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Layer id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`\"ok\"` when the fields were created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/fields.json": {
+      "get": {
+        "operationId": "listCollectionFields",
+        "tags": [
+          "fields"
+        ],
+        "summary": "List the layers and fields visible to the caller",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The layers the caller can read, each with its fields.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Membership" }
+                  "items": {
+                    "$ref": "#/components/schemas/Layer"
+                  }
                 }
               }
             }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/fields/mapping.json": {
+      "get": {
+        "operationId": "getFieldMapping",
+        "tags": [
+          "fields"
+        ],
+        "summary": "List every field's name, code and kind",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A compact mapping of the collection's fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FieldMapping"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships.json": {
+      "get": {
+        "operationId": "listCollectionMemberships",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "List a collection's members and their permissions",
+        "description": "Collection-admin only.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every membership of the collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Membership"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCollectionMembership",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "Add an existing user to a collection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MembershipInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The membership that was created (or already existed).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembershipResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships/personal.json": {
+      "get": {
+        "operationId": "getPersonalMembership",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "Fetch the caller's own membership of a collection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's membership, or an empty object when they have no access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Membership"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships/invitable.json": {
+      "get": {
+        "operationId": "listInvitableUsers",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "List users who can still be invited to a collection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search term matched against the user's email."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email addresses of users who are not yet members.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships/{id}.json": {
+      "delete": {
+        "operationId": "deleteCollectionMembership",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "Remove a user from a collection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User id of the member."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships/{id}/set_admin.json": {
+      "post": {
+        "operationId": "setMembershipAdmin",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "Make a member a collection admin",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User id of the member."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Applied. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships/{id}/unset_admin.json": {
+      "post": {
+        "operationId": "unsetMembershipAdmin",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "Revoke a member's collection-admin rights",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User id of the member."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Applied. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{collection_id}/memberships/{id}/set_layer_access.json": {
+      "post": {
+        "operationId": "setMembershipLayerAccess",
+        "tags": [
+          "memberships"
+        ],
+        "summary": "Grant or revoke a member's access to one layer",
+        "description": "Documented in the Resource Map REST API wiki. The controller action exists in every release; recent `config/routes.rb` revisions do not declare the route, so treat availability as deployment-specific.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/collectionId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User id of the member."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LayerAccessInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`\"ok\"` when the access change was applied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sites/{id}.json": {
+      "get": {
+        "operationId": "getSite",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Fetch a single site by id",
+        "description": "`id` is Resource Map's internal site id, not a field you defined as an identifier.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The site.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Site"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateSite",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Replace a site's name, location and properties",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated site record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteRecord"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteSite",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Delete a site",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sites/{id}.rss": {
+      "get": {
+        "operationId": "getSiteRss",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Fetch a single site as GeoRSS",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A GeoRSS 2.0 item for the site.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sites/{id}/update_property.json": {
+      "post": {
+        "operationId": "updateSiteProperty",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Set a single property on a site",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePropertyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated site record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteRecord"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sites/{id}/partial_update.json": {
+      "post": {
+        "operationId": "partialUpdateSite",
+        "tags": [
+          "sites"
+        ],
+        "summary": "Update several properties on a site",
+        "description": "Only the properties present in the payload are changed; the rest are left alone.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Site id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated site record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteRecord"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/histogram/{field_id}.json": {
+      "get": {
+        "operationId": "getFieldHistogram",
+        "tags": [
+          "collections"
+        ],
+        "summary": "Count sites bucketed by the values of one field",
+        "parameters": [
+          {
+            "name": "field_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Field id or field code."
+          },
+          {
+            "name": "collection_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Collection to histogram."
+          },
+          {
+            "name": "filters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSON object of field-code/value filters to apply first."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site counts keyed by field value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Histogram"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/activity.rss": {
+      "get": {
+        "operationId": "listActivity",
+        "tags": [
+          "activity"
+        ],
+        "summary": "Feed of recent activity across the caller's collections",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "collection_ids[]",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "Restrict to these collections; defaults to every collection the caller belongs to."
+          },
+          {
+            "name": "kinds[]",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Filter by `<item_type>,<action>` pairs, e.g. `site,created` or `layer,deleted`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A GeoRSS/RSS 2.0 feed, 50 items per page. Only the RSS representation is rendered.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tokens.json": {
+      "get": {
+        "operationId": "getAuthenticationToken",
+        "tags": [
+          "tokens"
+        ],
+        "summary": "Fetch the caller's long-lived authentication token",
+        "responses": {
+          "200": {
+            "description": "The caller's authentication token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationToken"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tokens/{id}.json": {
+      "delete": {
+        "operationId": "resetAuthenticationToken",
+        "tags": [
+          "tokens"
+        ],
+        "summary": "Reset the caller's authentication token",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token id; any value resets the caller's own token."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The token was reset. The response has no body."
+          },
+          "403": {
+            "description": "Forbidden \u2014 the credentials have no access to this collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity \u2014 validation failed or the record was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generic error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "HTTP Basic with a Resource Map user's email and password. InSTEDD deployments may also accept a GUISSO single sign-on session."
+      }
+    },
+    "parameters": {
+      "collectionId": {
+        "name": "collection_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Collection id."
+      },
+      "page": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 1
+        },
+        "description": "Page number, or the literal `all` to disable paging."
+      },
+      "pageSize": {
+        "name": "page_size",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Sites per page."
+      },
+      "search": {
+        "name": "search",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Full-text search across site names and property values."
+      },
+      "sort": {
+        "name": "sort",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Field code to sort by (`name`, `lat`, `lng`, `created_at`, `updated_at` or a field code)."
+      },
+      "sortDirection": {
+        "name": "sort_direction",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        }
+      },
+      "box": {
+        "name": "box",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Bounding box as four comma-separated numbers: west,south,east,north."
+      },
+      "lat": {
+        "name": "lat",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "number"
+        },
+        "description": "Latitude of a radius search centre. Requires `lng` and `radius`."
+      },
+      "lng": {
+        "name": "lng",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "number"
+        },
+        "description": "Longitude of a radius search centre. Requires `lat` and `radius`."
+      },
+      "radius": {
+        "name": "radius",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "number"
+        },
+        "description": "Radius in metres. Requires `lat` and `lng`."
+      },
+      "updatedSince": {
+        "name": "updated_since",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": "Only sites updated at or after this time."
+      },
+      "createdSince": {
+        "name": "created_since",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "deletedSince": {
+        "name": "deleted_since",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": "Return sites deleted at or after this time."
+      },
+      "fieldsParam": {
+        "name": "fields",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Comma-separated list of field codes to include in each site's properties."
+      },
+      "nameParam": {
+        "name": "name",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Exact site-name match."
+      },
+      "sitename": {
+        "name": "sitename",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Site-name prefix match."
+      },
+      "human": {
+        "name": "human",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "`true` to render property values as human-readable labels instead of codes."
+      },
+      "locationMissing": {
+        "name": "location_missing",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "Only sites without a location."
+      },
+      "siteId": {
+        "name": "site_id",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Restrict the query to one site id."
+      }
+    },
+    "schemas": {
+      "Collection": {
+        "type": "object",
+        "description": "A Resource Map collection: a named set of sites with its own layers and field definitions.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Collection id."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "description": "Marker icon name."
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of sites in the collection."
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true,
+            "description": "Collection centre latitude."
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true,
+            "description": "Collection centre longitude."
+          },
+          "min_lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "anonymous_name_permission": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "none",
+              "read",
+              null
+            ]
+          },
+          "anonymous_location_permission": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "none",
+              "read",
+              null
+            ]
+          },
+          "public": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the collection has a public layer."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 350,
+          "name": "Hospitals",
+          "description": "",
+          "icon": "default",
+          "count": 3,
+          "lat": -2.002419,
+          "lng": 29.933107,
+          "public": null,
+          "created_at": "2012-03-27T07:40:06Z",
+          "updated_at": "2012-03-28T07:58:02Z"
+        }
+      },
+      "Site": {
+        "type": "object",
+        "description": "A site (a mapped resource/facility) as returned by the query API.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Present only for sites returned by a deleted_since query."
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "long": {
+            "type": "number",
+            "nullable": true,
+            "description": "Longitude (spelled `long`, not `lng`, in query responses)."
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Field values keyed by field code (or numeric field id when codes are not used)."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Group memberships, when the collection uses them."
+          }
+        },
+        "example": {
+          "id": 17442,
+          "name": "Sunshine Hospital",
+          "createdAt": "2012-03-28T07:55:56+00:00",
+          "updatedAt": "2012-03-28T07:55:56+00:00",
+          "lat": -1.901301,
+          "long": 30.418267,
+          "properties": {
+            "Color": "1",
+            "Services": [
+              "XR",
+              "OBG"
+            ],
+            "NUMBEDS": "20",
+            "MGR": "Site manager"
+          },
+          "groups": []
+        }
+      },
+      "SiteRecord": {
+        "type": "object",
+        "description": "A site as returned by the write endpoints (create, update, partial_update, update_property): the raw Site record rather than the query-API projection.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "collection_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Field values keyed by the internal es_code of each field."
+          },
+          "location_mode": {
+            "type": "string",
+            "enum": [
+              "automatic",
+              "manual",
+              "none"
+            ],
+            "nullable": true
+          },
+          "id_with_prefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "uuid": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "nullable": true
+          },
+          "deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 17445,
+          "collection_id": 350,
+          "name": "Kigali Health Post",
+          "lat": -1.9536,
+          "lng": 30.0606,
+          "properties": {
+            "1561": "20"
+          },
+          "location_mode": "manual",
+          "uuid": "cc33e476-4879-4096-a5e5-1baf8fd2af0b",
+          "version": 1,
+          "created_at": "2013-10-29T20:07:07Z",
+          "updated_at": "2013-10-29T20:07:07Z"
+        }
+      },
+      "SiteHistory": {
+        "type": "object",
+        "description": "One stored version of a site. Resource Map writes a history row on every change; each row holds the complete site, not just the changed values.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "site_id": {
+            "type": "integer"
+          },
+          "collection_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "location_mode": {
+            "type": "string",
+            "nullable": true
+          },
+          "id_with_prefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "uuid": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "description": "Autoincrementing version number of this site."
+          },
+          "valid_since": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this version became current."
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this version stopped being current; null for the current version."
+          },
+          "user_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "user": {
+            "type": "string",
+            "nullable": true,
+            "description": "Email of the user who made this change."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 9001,
+          "site_id": 119815,
+          "collection_id": 428,
+          "name": "angola",
+          "lat": -12.892942,
+          "lng": 16.776647,
+          "properties": {
+            "1561": 2.34,
+            "1562": 2,
+            "1563": true
+          },
+          "version": 3,
+          "valid_since": "2013-10-29T20:07:07Z",
+          "valid_to": "2013-10-31T21:14:42Z",
+          "uuid": "cc33e476-4879-4096-a5e5-1baf8fd2af0b",
+          "created_at": "2013-10-29T20:07:07Z",
+          "updated_at": "2013-10-31T21:14:42Z"
+        }
+      },
+      "Field": {
+        "type": "object",
+        "description": "A field definition inside a layer. `kind` drives which extra config keys are present.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "collection_id": {
+            "type": "integer"
+          },
+          "layer_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable code used as the key in a site's `properties`."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "numeric",
+              "yes_no",
+              "select_one",
+              "select_many",
+              "date",
+              "hierarchy",
+              "site",
+              "user",
+              "email",
+              "phone",
+              "photo",
+              "identifier",
+              "custom_aggregator"
+            ]
+          },
+          "ord": {
+            "type": "integer",
+            "nullable": true
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Kind-specific configuration (option lists, hierarchy trees, ranges)."
+          },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Layer": {
+        "type": "object",
+        "description": "A layer: a named group of field definitions within a collection. Layer membership is also the unit of read/write permission.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "collection_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ord": {
+            "type": "integer",
+            "nullable": true
+          },
+          "anonymous_user_permission": {
+            "type": "string",
+            "enum": [
+              "none",
+              "read"
+            ],
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Field"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FieldMapping": {
+        "type": "object",
+        "description": "Compact name/code/kind mapping for every field in a collection.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          }
+        }
+      },
+      "SiteReference": {
+        "type": "object",
+        "description": "A site referenced from a permission list.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "SitePermission": {
+        "type": "object",
+        "description": "Which sites a membership grants access to.",
+        "properties": {
+          "all_sites": {
+            "type": "boolean"
+          },
+          "some_sites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SiteReference"
+            }
+          }
+        }
+      },
+      "LayerPermission": {
+        "type": "object",
+        "description": "Read/write access to one layer.",
+        "properties": {
+          "layer_id": {
+            "type": "integer"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "write": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Membership": {
+        "type": "object",
+        "description": "A user's membership of a collection and the layer/site permissions it carries.",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          },
+          "user_display_name": {
+            "type": "string",
+            "description": "Display name (the user's email in most deployments)."
+          },
+          "admin": {
+            "type": "boolean"
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LayerPermission"
+            }
+          },
+          "sites": {
+            "type": "object",
+            "properties": {
+              "read": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SitePermission"
+                  }
+                ],
+                "nullable": true
+              },
+              "write": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SitePermission"
+                  }
+                ],
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "MembershipResult": {
+        "type": "object",
+        "description": "Result of creating a membership.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "added"
+            ]
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "user_display_name": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthenticationToken": {
+        "type": "object",
+        "description": "The current user's long-lived API authentication token.",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "CollectionSites": {
+        "type": "object",
+        "description": "A page of the sites in a collection, as returned by the collection query endpoint.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Collection name."
+          },
+          "count": {
+            "type": "integer",
+            "description": "Total number of matching sites."
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "previousPage": {
+            "type": "string",
+            "format": "uri",
+            "description": "Absolute URL of the previous page; absent on the first page."
+          },
+          "nextPage": {
+            "type": "string",
+            "format": "uri",
+            "description": "Absolute URL of the next page; absent on the last page."
+          },
+          "sites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Site"
+            }
+          }
+        }
+      },
+      "SiteFeature": {
+        "type": "object",
+        "description": "One site as a GeoJSON Feature.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "id": {
+            "type": "integer"
+          },
+          "geometry": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "Point"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "description": "[longitude, latitude]"
+              }
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "CollectionGeoJson": {
+        "type": "object",
+        "description": "A page of a collection's geolocated sites, wrapped as a GeoJSON Feature whose properties carry the FeatureCollection plus paging info.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "geometry": {
+            "type": "object",
+            "nullable": true
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              },
+              "previousPage": {
+                "type": "string",
+                "format": "uri"
+              },
+              "nextPage": {
+                "type": "string",
+                "format": "uri"
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "FeatureCollection"
+                    ]
+                  },
+                  "features": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/SiteFeature"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Histogram": {
+        "type": "object",
+        "description": "Site counts bucketed by the values of one field. Keys are the field's option ids (or values); values are counts.",
+        "additionalProperties": {
+          "type": "integer"
+        }
+      },
+      "SiteInput": {
+        "type": "object",
+        "description": "Site payload. Resource Map reads it from a `site` request parameter holding a JSON document; the OpenFn adaptor sends that JSON as the request body with a `content-disposition: form-data; name=\"site\"` header.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Field values keyed by field code or es_code."
+          }
+        }
+      },
+      "LayerInput": {
+        "type": "object",
+        "description": "Layer payload for create/update. Wrapped in a `layer` key.",
+        "properties": {
+          "layer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "ord": {
+                "type": "integer"
+              },
+              "fields_attributes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "FieldsInput": {
+        "type": "object",
+        "description": "Fields to add to a layer.",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "code",
+                "kind"
+              ]
+            }
+          }
+        }
+      },
+      "MembershipInput": {
+        "type": "object",
+        "description": "Invite an existing Resource Map user to a collection.",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "LayerAccessInput": {
+        "type": "object",
+        "description": "Grant or revoke a membership's access to one layer.",
+        "properties": {
+          "layer_id": {
+            "type": "integer"
+          },
+          "verb": {
+            "type": "string",
+            "enum": [
+              "read",
+              "write"
+            ]
+          },
+          "access": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdatePropertyInput": {
+        "type": "object",
+        "description": "Set a single field value on a site.",
+        "properties": {
+          "es_code": {
+            "type": "string",
+            "description": "Internal field code (or field code) of the property to set."
+          },
+          "value": {
+            "description": "New value; type depends on the field kind. Send an empty string to clear it."
+          }
+        },
+        "required": [
+          "es_code"
+        ]
+      },
+      "BulkUpdateInput": {
+        "type": "object",
+        "description": "Apply the same changes to every site matching the query filters passed as query parameters.",
+        "properties": {
+          "updates": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error envelope used by every /api endpoint.",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "integer",
+            "description": "1 generic, 2 unprocessable entity, 3 forbidden, 4 conflict."
+          },
+          "error_object": {
+            "description": "Validation details, when available."
           }
         }
       }

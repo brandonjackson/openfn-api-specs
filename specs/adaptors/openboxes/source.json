@@ -1,13 +1,58 @@
 {
   "adaptor": "openboxes",
   "npm": "@openfn/language-openboxes",
+
   "origin": "generated",
   "upstreamFormat": "docs",
+
+  "coverage": "full",
+  "derivedFrom": null,
+
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+
+  "attempts": [
+    { "kind": "openapi", "url": "https://docs.openboxes.com/openapi.json", "result": "not-found", "note": "404; the docs site is MkDocs Material (ReadTheDocs), rendered from Markdown, not from a spec" },
+    { "kind": "openapi", "url": "https://openboxes.com/openapi.json", "result": "not-found", "note": "404" },
+    { "kind": "openapi", "url": "https://demo.openboxes.com/openboxes/api/openapi.json", "result": "not-found", "note": "404 on the live demo instance; the Grails app serves no spec endpoint" },
+    { "kind": "openapi", "url": "https://raw.githubusercontent.com/openboxes/openboxes/develop/openapi.json", "result": "not-found", "note": "no openapi.json/swagger.json anywhere in the openboxes/openboxes repo" },
+    { "kind": "swagger", "url": "https://raw.githubusercontent.com/openboxes/openboxes/develop/swagger.json", "result": "not-found", "note": "no Swagger/springfox plugin in the Grails build" },
+    { "kind": "apis.guru", "url": "https://api.apis.guru/v2/list.json", "result": "not-found", "note": "openboxes is not listed" },
+    { "kind": "docs", "url": "https://docs.openboxes.com/en/develop/api-guide/", "result": "used", "note": "27 API-guide pages enumerated from https://docs.openboxes.com/sitemap.xml (sitemap URLs omit the version segment and 404; /en/develop/ resolves)" },
+    { "kind": "adaptor-source", "url": "https://github.com/openboxes/openboxes/blob/develop/grails-app/controllers/org/pih/warehouse/UrlMappings.groovy", "result": "used", "note": "209 /api URL mappings plus their per-method controller actions, used to reach the whole HTTP surface the docs do not cover" }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source", "vendor-source", "mock-conformance"],
+
+  "modifications": [],
+
   "sources": [
     "https://docs.openboxes.com/en/develop/api-guide/",
-    "https://github.com/openboxes/openboxes/tree/develop/docs/api-guide",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openboxes/ast.json"
+    "https://docs.openboxes.com/en/develop/api-guide/authentication/",
+    "https://docs.openboxes.com/en/develop/api-guide/getting-started/",
+    "https://docs.openboxes.com/en/develop/api-guide/formatting/",
+    "https://docs.openboxes.com/en/develop/api-guide/pagination/",
+    "https://docs.openboxes.com/en/develop/api-guide/lookup/",
+    "https://docs.openboxes.com/en/develop/api-guide/core/identifier/",
+    "https://docs.openboxes.com/en/develop/api-guide/core/internalLocation/",
+    "https://docs.openboxes.com/en/develop/api-guide/core/localization/",
+    "https://docs.openboxes.com/en/develop/api-guide/core/location/",
+    "https://docs.openboxes.com/en/develop/api-guide/core/reasonCode/",
+    "https://docs.openboxes.com/en/develop/api-guide/products/product/",
+    "https://docs.openboxes.com/en/develop/api-guide/products/category/",
+    "https://docs.openboxes.com/en/develop/api-guide/inbound/putaway/",
+    "https://docs.openboxes.com/en/develop/api-guide/inbound/receiving/",
+    "https://docs.openboxes.com/en/develop/api-guide/outbound/stockMovement/",
+    "https://docs.openboxes.com/en/develop/api-guide/outbound/stockMovementItem/",
+    "https://docs.openboxes.com/en/develop/api-guide/outbound/stockMovementStatus/",
+    "https://docs.openboxes.com/en/develop/api-guide/generic/",
+    "https://github.com/openboxes/openboxes/blob/develop/grails-app/controllers/org/pih/warehouse/UrlMappings.groovy",
+    "https://github.com/openboxes/openboxes/tree/develop/grails-app/controllers/org/pih/warehouse/api",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openboxes/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/openboxes"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored from the OpenBoxes API guide (no machine spec published). The adaptor uses generic get/post/request against /openboxes/api paths. Covers products, categories, locations, stock movements and the generic domain API. Most endpoints wrap payloads in a {data:...} envelope; the dedicated products list/detail endpoints are a documented exception that return raw arrays/objects (modeled that way). stockMovements dates are MM/DD/YYYY strings while product dates are ISO 8601. organization/active on Location are unverified and omitted."
+
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+
+  "notes": "OpenBoxes is an open-source inventory and supply-chain management system for health commodities, built on Grails; its HTTP API lives under the application context path (normally /openboxes) at /api and is authenticated with a JSESSIONID cookie from POST /api/login. No machine spec exists anywhere (see attempts), so this document is hand-authored. 'Full' here means both halves of the surface: every endpoint in the vendor's API guide, modelled from its example responses with named schemas, plus every one of the 209 /api URL mappings in UrlMappings.groovy on the develop branch, which is the vendor's own authoritative route table and covers the ~200 endpoints the React UI uses that the guide never documents. Undocumented routes are carried with their real path, methods and controller action but an unconstrained application/json response schema and a description saying the shape is not documented - no fields were invented for them. Where the 2018-era guide and the current source disagree, the source wins and the guide is treated as stale: GET /api/products returns { data, totalCount } (not the bare array the guide shows), POST /api/products answers 200 with a { product } wrapper rather than the usual { data } envelope, and the Generic API create returns 201 while delete returns 204. Required-ness is deliberately not asserted on the resource schemas, because the same schemas describe request bodies and embedded partial references. The openboxes adaptor exposes only generic get/post/request helpers (ast.json confirms: no named operations, so there is no fixed endpoint list to cross-check); the whole spec is therefore the reachable surface. Still unknown: response shapes for the undocumented routes, the exact query-parameter sets on most of them, and per-deployment context paths other than /openboxes."
 }

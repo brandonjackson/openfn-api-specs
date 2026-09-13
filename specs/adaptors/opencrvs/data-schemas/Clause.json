@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opencrvs/Clause",
+  "title": "Clause",
+  "x-openfn-adaptor": "opencrvs",
+  "x-source": {
+    "openapi": "#/components/schemas/Clause",
+    "capturedAt": "2026-09-13"
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "not"
+        },
+        "clause": {
+          "$ref": "Clause.json"
+        }
+      },
+      "required": [
+        "type",
+        "clause"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "and"
+        },
+        "clauses": {
+          "type": "array",
+          "items": {
+            "$ref": "Clause.json"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "clauses"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "or"
+        },
+        "clauses": {
+          "type": "array",
+          "items": {
+            "$ref": "Clause.json"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "clauses"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "fieldId": {
+          "type": "string"
+        },
+        "options": {
+          "default": {
+            "fuzziness": "AUTO:4,7",
+            "boost": 1
+          },
+          "type": "object",
+          "properties": {
+            "fuzziness": {
+              "default": "AUTO:4,7",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "boost": {
+              "default": 1,
+              "type": "number"
+            },
+            "matchAgainst": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "fuzziness",
+            "boost"
+          ],
+          "additionalProperties": false
+        },
+        "type": {
+          "type": "string",
+          "const": "fuzzy"
+        }
+      },
+      "required": [
+        "fieldId",
+        "options",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "fieldId": {
+          "type": "string"
+        },
+        "options": {
+          "default": {
+            "boost": 1
+          },
+          "type": "object",
+          "properties": {
+            "boost": {
+              "default": 1,
+              "type": "number"
+            },
+            "value": {
+              "type": "string"
+            },
+            "matchAgainst": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "boost"
+          ],
+          "additionalProperties": false
+        },
+        "type": {
+          "type": "string",
+          "const": "strict"
+        }
+      },
+      "required": [
+        "fieldId",
+        "options",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "fieldId": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "pivot": {
+              "type": "number"
+            },
+            "days": {
+              "type": "number"
+            },
+            "boost": {
+              "default": 1,
+              "type": "number"
+            },
+            "matchAgainst": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "days",
+            "boost"
+          ],
+          "additionalProperties": false
+        },
+        "type": {
+          "type": "string",
+          "const": "dateRange"
+        }
+      },
+      "required": [
+        "fieldId",
+        "options",
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "type": "object"
+}

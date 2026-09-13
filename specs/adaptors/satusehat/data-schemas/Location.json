@@ -5,44 +5,77 @@
   "x-openfn-adaptor": "satusehat",
   "x-source": {
     "openapi": "#/components/schemas/Location",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
-  "type": "object",
-  "required": [
-    "resourceType"
-  ],
-  "properties": {
-    "resourceType": {
-      "type": "string",
-      "enum": [
-        "Location"
-      ]
+  "description": "A physical place of care within an organization (ward, room, bed, ambulance). Documented-subset of the FHIR R4 StructureDefinition; servers may return further R4 elements.",
+  "allOf": [
+    {
+      "$ref": "DomainResource.json"
     },
-    "id": {
-      "type": "string"
-    },
-    "identifier": {
-      "type": "array",
-      "items": {
-        "$ref": "Identifier.json"
+    {
+      "type": "object",
+      "required": [
+        "resourceType"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "enum": [
+            "Location"
+          ]
+        },
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "Identifier.json"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "suspended",
+            "inactive"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "$ref": "CodeableConcept.json"
+          }
+        },
+        "telecom": {
+          "type": "array",
+          "items": {
+            "$ref": "ContactPoint.json"
+          }
+        },
+        "address": {
+          "$ref": "Address.json"
+        },
+        "physicalType": {
+          "$ref": "CodeableConcept.json"
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "managingOrganization": {
+          "$ref": "Reference.json"
+        },
+        "partOf": {
+          "$ref": "Reference.json"
+        }
       }
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "suspended",
-        "inactive"
-      ]
-    },
-    "name": {
-      "type": "string"
-    },
-    "physicalType": {
-      "$ref": "CodeableConcept.json"
-    },
-    "managingOrganization": {
-      "$ref": "Reference.json"
     }
-  }
+  ]
 }

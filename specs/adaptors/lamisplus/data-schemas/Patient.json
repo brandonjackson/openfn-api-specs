@@ -5,26 +5,52 @@
   "x-openfn-adaptor": "lamisplus",
   "x-source": {
     "openapi": "#/components/schemas/Patient",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A patient (LAMISPlus calls the underlying record a Person). Property names and types follow the vendor's PersonResponseDto / Person entity in github.com/lamisplus/Patient-Module. The jsonb-backed properties (address, contact, contactPoint, identifier, gender, maritalStatus, education, employmentStatus, organization) are free-form JSON in the database and are not constrained here.",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": "integer",
+      "format": "int64",
+      "description": "Numeric primary key."
     },
     "uuid": {
       "type": "string",
-      "format": "uuid"
+      "description": "Record UUID. A plain string column — deployments do not all store a formatted UUID."
     },
     "hospitalNumber": {
-      "type": "string",
-      "description": "Facility patient/hospital number"
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Facility hospital number."
+    },
+    "emrId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "EMR identifier."
+    },
+    "ninNumber": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "National Identification Number."
     },
     "firstName": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "surname": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "otherName": {
       "type": [
@@ -33,39 +59,28 @@
       ]
     },
     "sex": {
-      "type": "string",
-      "enum": [
-        "Male",
-        "Female"
-      ]
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Sex as a free-text codeset value; the column is an unconstrained string, so casing varies between deployments (e.g. Male / MALE)."
+    },
+    "gender": {
+      "description": "Gender codeset entry (free-form JSON)."
     },
     "dateOfBirth": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date"
     },
-    "maritalStatus": {
+    "IsDateOfBirthEstimated": {
       "type": [
-        "string",
+        "boolean",
         "null"
-      ]
-    },
-    "phoneNumber": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "address": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "facilityId": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      ],
+      "description": "Whether dateOfBirth is an estimate. Spelt with a leading capital in PersonResponseDto."
     },
     "dateOfRegistration": {
       "type": [
@@ -74,9 +89,96 @@
       ],
       "format": "date"
     },
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "deceased": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "deceasedDateTime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
     "archived": {
-      "type": "boolean",
-      "default": false
+      "description": "Soft-delete flag. Modelled as an integer (0/1) on the Person entity; some responses carry a boolean."
+    },
+    "biometricStatus": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "facilityId": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "int64"
+    },
+    "visitId": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "int64"
+    },
+    "address": {
+      "description": "Address(es) as free-form JSON (jsonb column; an object or an array of AddressDto)."
+    },
+    "contact": {
+      "description": "Contact details as free-form JSON."
+    },
+    "contactPoint": {
+      "description": "Contact points as free-form JSON."
+    },
+    "identifier": {
+      "description": "Identifiers as free-form JSON."
+    },
+    "maritalStatus": {
+      "description": "Marital-status codeset entry (free-form JSON)."
+    },
+    "employmentStatus": {
+      "description": "Employment-status codeset entry (free-form JSON)."
+    },
+    "education": {
+      "description": "Education codeset entry (free-form JSON)."
+    },
+    "organization": {
+      "description": "Organisation the record belongs to (free-form JSON)."
+    },
+    "dynamicHivStatus": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "longitude": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Where the record came from (e.g. the registering module)."
     }
   }
 }

@@ -5,95 +5,121 @@
   "x-openfn-adaptor": "openhim",
   "x-source": {
     "openapi": "#/components/schemas/Transaction",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A logged request/response transaction routed through OpenHIM.",
+  "description": "One message that passed through the OpenHIM router, with its request, response, routes and orchestrations.",
+  "required": [
+    "status"
+  ],
   "properties": {
     "_id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$",
+      "description": "24-character hex MongoDB ObjectId."
     },
     "clientID": {
+      "allOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$",
+          "description": "24-character hex MongoDB ObjectId."
+        }
+      ]
+    },
+    "clientIP": {
       "type": "string"
+    },
+    "parentID": {
+      "allOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$",
+          "description": "24-character hex MongoDB ObjectId."
+        }
+      ]
+    },
+    "childIDs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$",
+        "description": "24-character hex MongoDB ObjectId."
+      }
     },
     "channelID": {
-      "type": "string"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "Processing",
-        "Successful",
-        "Completed",
-        "Completed with error(s)",
-        "Failed"
+      "allOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$",
+          "description": "24-character hex MongoDB ObjectId."
+        }
       ]
     },
     "request": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string"
-        },
-        "port": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "querystring": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "headers": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "body": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
+      "$ref": "TransactionRequest.json"
     },
     "response": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "integer"
-        },
-        "headers": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "body": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
+      "$ref": "TransactionResponse.json"
     },
     "routes": {
       "type": "array",
       "items": {
-        "type": "object"
+        "$ref": "RouteMetadata.json"
       }
     },
     "orchestrations": {
       "type": "array",
       "items": {
-        "type": "object"
+        "$ref": "Orchestration.json"
       }
+    },
+    "properties": {
+      "type": "object"
+    },
+    "canRerun": {
+      "type": "boolean",
+      "default": true
+    },
+    "autoRetry": {
+      "type": "boolean",
+      "default": false
+    },
+    "autoRetryAttempt": {
+      "type": "integer"
+    },
+    "wasRerun": {
+      "type": "boolean",
+      "default": false
+    },
+    "error": {
+      "$ref": "ErrorDetails.json"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Processing",
+        "Pending Async",
+        "Successful",
+        "Completed",
+        "Completed with error(s)",
+        "Failed"
+      ]
+    }
+  },
+  "example": {
+    "_id": "74786e2d3100000000000000",
+    "clientID": "636c69656e742d6368770000",
+    "channelID": "6368616e2d63687700000000",
+    "status": "Successful",
+    "request": {
+      "path": "/chw/encounter",
+      "method": "POST",
+      "timestamp": "2024-03-01T10:05:00.000Z"
+    },
+    "response": {
+      "status": 201,
+      "timestamp": "2024-03-01T10:05:01.000Z"
     }
   }
 }

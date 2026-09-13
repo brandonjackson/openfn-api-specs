@@ -2,29 +2,133 @@
   "openapi": "3.0.3",
   "info": {
     "title": "SENAITE JSON API",
-    "version": "1.0.0",
-    "description": "Focused OpenAPI description of the SENAITE LIMS JSON REST API (senaite.jsonapi), as consumed by the OpenFn senaite adaptor. The adaptor exposes a single generic `request(method, path, options)` operation, so this spec documents the underlying senaite.jsonapi routes that requests target (version, catalogs, users, search, resource listing, get-by-uid, create, update and delete). Base route prefix is `@@API/senaite/v1`.",
+    "version": "2.7.0",
+    "description": "The JSON REST API of SENAITE LIMS, an open-source laboratory information management system built on Plone. It is provided by the `senaite.jsonapi` add-on, which mounts itself at the Plone site's `@@API` traversal point with the base route `/senaite/v1`; a full URL therefore looks like `https://<host>/<plone-site>/@@API/senaite/v1/<route>`. Every SENAITE portal type is reachable through one generic content route \u2014 reads by GET, and create / update / delete by POST with the operation in the path \u2014 plus dedicated routes for users, authentication, catalogs, registry, settings, search and push. The OpenFn `senaite` adaptor exposes a single generic `request(method, path, options)` operation against this base, logging in first with `GET /login?__ac_name=&__ac_password=` and reusing the session cookie.",
     "x-openfn-adaptor": "senaite"
   },
   "servers": [
     {
       "url": "https://demo.senaite.org/@@API/senaite/v1",
-      "description": "SENAITE JSON API v1 base (public demo instance)"
+      "description": "The public SENAITE demo instance. A real deployment is `https://<host>/<plone-site>/@@API/senaite/v1`, e.g. `https://lims.example.org/senaite/@@API/senaite/v1`."
+    },
+    {
+      "url": "https://{host}/{site}/@@API/senaite/v1",
+      "description": "Any SENAITE instance.",
+      "variables": {
+        "host": {
+          "default": "lims.example.org",
+          "description": "Host of the SENAITE instance."
+        },
+        "site": {
+          "default": "senaite",
+          "description": "Plone site id the SENAITE portal is mounted at."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    },
+    {
+      "bearerAuth": []
+    },
+    {
+      "sessionCookie": []
+    },
+    {
+      "tokenCookie": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authentication: HTTP Basic, form login and the JSON Web Token it issues."
+    },
+    {
+      "name": "catalogs",
+      "description": "The catalogs content is indexed in, and the indexes available for searching and sorting."
+    },
+    {
+      "name": "content",
+      "description": "The generic content routes: read, create, update and deactivate any SENAITE portal type."
+    },
+    {
+      "name": "push",
+      "description": "Hand a record to a named push consumer registered by an add-on."
+    },
+    {
+      "name": "registry",
+      "description": "Plone registry records."
+    },
+    {
+      "name": "search",
+      "description": "Catalog search across portal types."
+    },
+    {
+      "name": "settings",
+      "description": "Control-panel settings records."
+    },
+    {
+      "name": "users",
+      "description": "SENAITE user accounts, and the users-route aliases of the auth endpoints."
+    },
+    {
+      "name": "version",
+      "description": "API version information."
     }
   ],
   "paths": {
-    "/version": {
+    "/": {
       "get": {
-        "operationId": "getVersion",
-        "summary": "Get API and SENAITE version information",
+        "operationId": "getApiRoot",
+        "summary": "Get the API version at the base URL",
+        "tags": [
+          "version"
+        ],
+        "description": "The JSON API base route (`@@API/senaite/v1`) answers with the same payload as `/version`.",
         "responses": {
           "200": {
-            "description": "Version information",
+            "description": "senaite.jsonapi version information.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/VersionResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/auth": {
+      "get": {
+        "operationId": "authenticate",
+        "summary": "Trigger HTTP Basic authentication",
+        "tags": [
+          "auth"
+        ],
+        "description": "Returns an empty object for an authenticated caller. For an anonymous caller it answers 401 with a `WWW-Authenticate: basic realm=\"JSONAPI AUTH\"` header, which makes a browser show the Basic login prompt.",
+        "responses": {
+          "200": {
+            "description": "The caller is authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -32,15 +136,32 @@
     "/catalogs": {
       "get": {
         "operationId": "listCatalogs",
-        "summary": "List all registered catalogs",
+        "summary": "List the registered catalogs",
+        "tags": [
+          "catalogs"
+        ],
+        "description": "SENAITE indexes content in several catalogs. This route reports each catalog with the indexes that can be used as search filters and sort keys, the metadata schema it stores, and the portal types it holds.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/b_start"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Catalog listing",
+            "description": "Batched list of catalogs.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CatalogListResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogList"
+                }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -48,62 +169,454 @@
     "/catalogs/{catalog_id}": {
       "get": {
         "operationId": "getCatalog",
-        "summary": "Get catalog details (indexes, columns, portal_types)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CatalogId" }
+        "summary": "Get one catalog",
+        "tags": [
+          "catalogs"
         ],
-        "responses": {
-          "200": {
-            "description": "Catalog detail",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/CatalogListResponse" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users": {
-      "get": {
-        "operationId": "listUsers",
-        "summary": "List all users",
-        "parameters": [
-          { "$ref": "#/components/parameters/Limit" }
-        ],
-        "responses": {
-          "200": {
-            "description": "User listing",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/UserListResponse" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users/{username}": {
-      "get": {
-        "operationId": "getUser",
-        "summary": "Get a specific user, or the authenticated user with username `current`",
+        "description": "Returns the catalog record directly (not wrapped in the batch envelope).",
         "parameters": [
           {
-            "name": "username",
+            "name": "catalog_id",
             "in": "path",
             "required": true,
-            "description": "User id, or the literal `current` for the authenticated user.",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            },
+            "description": "Catalog id, e.g. `portal_catalog`, `senaite_catalog_sample`, `bika_catalog`."
           }
         ],
         "responses": {
           "200": {
-            "description": "User detail",
+            "description": "The catalog record.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/UserListResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/create": {
+      "post": {
+        "operationId": "createContent",
+        "summary": "Create content",
+        "tags": [
+          "content"
+        ],
+        "description": "Creates an object. The portal type comes from the `<resource>` path segment or from `portal_type` in the body; the target container comes from the `<uid>` path segment or from `parent_path` / `parent_uid` in the body. Creation into the portal root or into `senaite/bika_setup` is refused with 401. Everything is taken from the request body on this form of the route.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/create/{uid}": {
+      "post": {
+        "operationId": "createContentByUid",
+        "summary": "Create content in the container with this UID",
+        "tags": [
+          "content"
+        ],
+        "description": "Creates an object. The portal type comes from the `<resource>` path segment or from `portal_type` in the body; the target container comes from the `<uid>` path segment or from `parent_path` / `parent_uid` in the body. Creation into the portal root or into `senaite/bika_setup` is refused with 401.",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/delete": {
+      "post": {
+        "operationId": "deleteContent",
+        "summary": "Deactivate content",
+        "tags": [
+          "content"
+        ],
+        "description": "Deactivates an object \u2014 SENAITE does not delete content, for traceability. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body. Everything is taken from the request body on this form of the route.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/delete/{uid}": {
+      "post": {
+        "operationId": "deleteContentByUid",
+        "summary": "Deactivate the content object with this UID",
+        "tags": [
+          "content"
+        ],
+        "description": "Deactivates an object \u2014 SENAITE does not delete content, for traceability. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body.",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/login": {
+      "get": {
+        "operationId": "loginByGet",
+        "summary": "Log in and issue a JWT (deprecated GET form)",
+        "tags": [
+          "auth"
+        ],
+        "description": "Authenticates the caller and issues a JSON Web Token. Two modes are supported: HTTP Basic auth (no body fields needed), or a form login with `__ac_name` / `__ac_password`. The response body is the `/users/<userid>` payload with `token` and `expires` merged in; the token is also set as the HttpOnly `token` cookie, and the Plone session cookie `__ac` is set. Subsequent calls authenticate with either the cookie or `Authorization: Bearer <token>`. The JWT half of this arrived in senaite.jsonapi 2.7.0 and needs its GenericSetup profile installed; on 2.6.x and earlier the route sets only the `__ac` session cookie and returns no `token`.",
+        "parameters": [
+          {
+            "name": "__ac_name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "User name (form login)."
+          },
+          {
+            "name": "__ac_password",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Password (form login). Passing credentials on a GET is deprecated in senaite.jsonapi and is scheduled for removal in 2.8.0 \u2014 use POST."
+          }
+        ],
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "The authenticated user plus the issued JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "login",
+        "summary": "Log in and issue a JWT",
+        "tags": [
+          "auth"
+        ],
+        "description": "Authenticates the caller and issues a JSON Web Token. Two modes are supported: HTTP Basic auth (no body fields needed), or a form login with `__ac_name` / `__ac_password`. The response body is the `/users/<userid>` payload with `token` and `expires` merged in; the token is also set as the HttpOnly `token` cookie, and the Plone session cookie `__ac` is set. Subsequent calls authenticate with either the cookie or `Authorization: Bearer <token>`. The JWT half of this arrived in senaite.jsonapi 2.7.0 and needs its GenericSetup profile installed; on 2.6.x and earlier the route sets only the `__ac` session cookie and returns no `token`.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The authenticated user plus the issued JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "operationId": "logout",
+        "summary": "Log out",
+        "tags": [
+          "auth"
+        ],
+        "description": "De-authenticates the caller and expires the `__ac` and `token` cookies. The JWT itself stays valid until its `exp` claim: to revoke it server-side, rotate the user signing secret.",
+        "responses": {
+          "200": {
+            "description": "Logout confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/push": {
+      "post": {
+        "operationId": "push",
+        "summary": "Push a record to a named consumer",
+        "tags": [
+          "push"
+        ],
+        "description": "Hands one JSON record to the `IPushConsumer` adapter named by its `consumer` field. Add-ons register consumers to receive instrument or integration payloads; exactly one record per request is accepted.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The consumer processed the record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/registry": {
+      "get": {
+        "operationId": "listRegistryRecords",
+        "summary": "List the Plone registry records",
+        "tags": [
+          "registry"
+        ],
+        "description": "Requires the \"Manage portal\" permission: the registry can hold sensitive configuration.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/b_start"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batched list of registry records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/registry/{key}": {
+      "get": {
+        "operationId": "getRegistryRecords",
+        "summary": "Get registry records matching a keyword",
+        "tags": [
+          "registry"
+        ],
+        "description": "Requires the \"Manage portal\" permission.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Registry keyword to match."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batched list of the matching registry records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -111,39 +624,515 @@
     "/search": {
       "get": {
         "operationId": "search",
-        "summary": "Search across indexed content in a catalog",
+        "summary": "Search any indexed content",
+        "tags": [
+          "search"
+        ],
+        "description": "Searches across content without naming a portal type. Any index of the queried catalog may be passed as an extra query parameter (`portal_type`, `id`, `review_state`, `getClientID`, ...); `catalog` selects which catalog to query, since SENAITE spreads content over several. Results are batched and, per the API's two-step design, carry only catalog metadata unless `complete=yes` is set.",
         "parameters": [
           {
-            "name": "q",
-            "in": "query",
-            "description": "Full text search term.",
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/q"
           },
           {
-            "name": "catalog",
-            "in": "query",
-            "description": "Target a specific catalog (e.g. senaite_catalog_sample).",
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/path"
+          },
+          {
+            "$ref": "#/components/parameters/depth"
+          },
+          {
+            "$ref": "#/components/parameters/catalog"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/sort_on"
+          },
+          {
+            "$ref": "#/components/parameters/sort_order"
+          },
+          {
+            "$ref": "#/components/parameters/sort_limit"
+          },
+          {
+            "$ref": "#/components/parameters/complete"
+          },
+          {
+            "$ref": "#/components/parameters/children"
+          },
+          {
+            "$ref": "#/components/parameters/workflow"
+          },
+          {
+            "$ref": "#/components/parameters/filedata"
+          },
+          {
+            "$ref": "#/components/parameters/recent_created"
+          },
+          {
+            "$ref": "#/components/parameters/recent_modified"
+          },
+          {
+            "$ref": "#/components/parameters/created_since"
+          },
+          {
+            "$ref": "#/components/parameters/modified_since"
+          },
+          {
+            "$ref": "#/components/parameters/b_start"
           },
           {
             "name": "portal_type",
             "in": "query",
-            "description": "Filter by portal type (e.g. AnalysisRequest, Client, Sample).",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by portal type, e.g. `Client`."
           },
-          { "$ref": "#/components/parameters/Complete" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/SortOn" },
-          { "$ref": "#/components/parameters/SortOrder" }
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by object id."
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by object UID."
+          },
+          {
+            "name": "review_state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by workflow state, e.g. `published`, `inactive`."
+          }
         ],
         "responses": {
           "200": {
-            "description": "Search results",
+            "description": "Batched search results.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/APIResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ContentList"
+                }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/settings": {
+      "get": {
+        "operationId": "listSettings",
+        "summary": "List the control-panel settings",
+        "tags": [
+          "settings"
+        ],
+        "description": "Requires the \"Manage portal\" permission: control-panel settings can expose sensitive configuration.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/b_start"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batched list of settings records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/settings/{key}": {
+      "get": {
+        "operationId": "getSettings",
+        "summary": "Get settings matching a keyword",
+        "tags": [
+          "settings"
+        ],
+        "description": "Requires the \"Manage portal\" permission.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Settings keyword to match."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batched list of the matching settings records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/update": {
+      "post": {
+        "operationId": "updateContent",
+        "summary": "Update content",
+        "tags": [
+          "content"
+        ],
+        "description": "Updates an object. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body. A `transition` field additionally runs that workflow transition. Updating the portal root or `senaite/bika_setup` is refused with 401. Everything is taken from the request body on this form of the route.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/update/{uid}": {
+      "post": {
+        "operationId": "updateContentByUid",
+        "summary": "Update the content object with this UID",
+        "tags": [
+          "content"
+        ],
+        "description": "Updates an object. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body. A `transition` field additionally runs that workflow transition. Updating the portal root or `senaite/bika_setup` is refused with 401.",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List SENAITE users",
+        "tags": [
+          "users"
+        ],
+        "description": "Lists the users of the instance, batched like every other list route. Callers without the \"Manage users\" permission are silently collapsed to their own record, and anonymous callers to the anonymous view, so the route cannot be used to enumerate accounts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/b_start"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batched list of users.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/users/auth": {
+      "get": {
+        "operationId": "authenticateUser",
+        "summary": "Trigger HTTP Basic authentication (users route alias)",
+        "tags": [
+          "users"
+        ],
+        "description": "Alias of `/auth` registered under the users route.",
+        "responses": {
+          "200": {
+            "description": "The caller is authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "get": {
+        "operationId": "loginUserByGet",
+        "summary": "Log in and issue a JWT (users route alias, deprecated GET form)",
+        "tags": [
+          "users"
+        ],
+        "description": "Alias of `/login` registered under the users route. Authenticates the caller and issues a JSON Web Token. Two modes are supported: HTTP Basic auth (no body fields needed), or a form login with `__ac_name` / `__ac_password`. The response body is the `/users/<userid>` payload with `token` and `expires` merged in; the token is also set as the HttpOnly `token` cookie, and the Plone session cookie `__ac` is set. Subsequent calls authenticate with either the cookie or `Authorization: Bearer <token>`. The JWT half of this arrived in senaite.jsonapi 2.7.0 and needs its GenericSetup profile installed; on 2.6.x and earlier the route sets only the `__ac` session cookie and returns no `token`.",
+        "parameters": [
+          {
+            "name": "__ac_name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "User name (form login)."
+          },
+          {
+            "name": "__ac_password",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Password (form login). Passing credentials on a GET is deprecated in senaite.jsonapi and is scheduled for removal in 2.8.0 \u2014 use POST."
+          }
+        ],
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "The authenticated user plus the issued JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "loginUser",
+        "summary": "Log in and issue a JWT (users route alias)",
+        "tags": [
+          "users"
+        ],
+        "description": "Alias of `/login` registered under the users route. Authenticates the caller and issues a JSON Web Token. Two modes are supported: HTTP Basic auth (no body fields needed), or a form login with `__ac_name` / `__ac_password`. The response body is the `/users/<userid>` payload with `token` and `expires` merged in; the token is also set as the HttpOnly `token` cookie, and the Plone session cookie `__ac` is set. Subsequent calls authenticate with either the cookie or `Authorization: Bearer <token>`. The JWT half of this arrived in senaite.jsonapi 2.7.0 and needs its GenericSetup profile installed; on 2.6.x and earlier the route sets only the `__ac` session cookie and returns no `token`.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The authenticated user plus the issued JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/users/logout": {
+      "get": {
+        "operationId": "logoutUser",
+        "summary": "Log out (users route alias)",
+        "tags": [
+          "users"
+        ],
+        "description": "Alias of `/logout` registered under the users route. De-authenticates the caller and expires the `__ac` and `token` cookies. The JWT itself stays valid until its `exp` claim: to revoke it server-side, rotate the user signing secret.",
+        "responses": {
+          "200": {
+            "description": "Logout confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/users/{username}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get one user",
+        "tags": [
+          "users"
+        ],
+        "description": "Returns one user. The reserved user name `current` returns the authenticated caller.",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User id, or the literal `current` for the authenticated caller."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batched list holding the requested user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "operationId": "getVersion",
+        "summary": "Get the senaite.jsonapi version",
+        "tags": [
+          "version"
+        ],
+        "description": "Returns the package version and release date of the installed senaite.jsonapi.",
+        "responses": {
+          "200": {
+            "description": "senaite.jsonapi version information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -151,43 +1140,89 @@
     "/{resource}": {
       "get": {
         "operationId": "listResource",
-        "summary": "List resources of a given type / catalog route",
-        "description": "Retrieve a paged list of resources for a routed content type or catalog, e.g. `analysisrequest`, `client`, `sample`, `patient`, `contact`.",
-        "parameters": [
-          { "$ref": "#/components/parameters/Resource" },
-          { "$ref": "#/components/parameters/Complete" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/SortOn" },
-          { "$ref": "#/components/parameters/SortOrder" }
+        "summary": "List content of one portal type",
+        "tags": [
+          "content"
         ],
-        "responses": {
-          "200": {
-            "description": "Paged resource listing",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/APIResponse" }
-              }
-            }
+        "description": "senaite.jsonapi exposes every SENAITE portal type through one generic content route. Reads are HTTP GET; create, update and delete are HTTP POST, with the operation named in the path (`<resource>/create`, `create/<uid>`, ...). `delete` deactivates the object rather than removing it, because SENAITE keeps a full audit trail. Any catalog index may be used as a query parameter. Passing a 32-character UID in place of the portal type returns that one record on its own \u2014 the bare content object, not the batch envelope.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/path"
+          },
+          {
+            "$ref": "#/components/parameters/depth"
+          },
+          {
+            "$ref": "#/components/parameters/catalog"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/sort_on"
+          },
+          {
+            "$ref": "#/components/parameters/sort_order"
+          },
+          {
+            "$ref": "#/components/parameters/sort_limit"
+          },
+          {
+            "$ref": "#/components/parameters/complete"
+          },
+          {
+            "$ref": "#/components/parameters/children"
+          },
+          {
+            "$ref": "#/components/parameters/workflow"
+          },
+          {
+            "$ref": "#/components/parameters/filedata"
+          },
+          {
+            "$ref": "#/components/parameters/recent_created"
+          },
+          {
+            "$ref": "#/components/parameters/recent_modified"
+          },
+          {
+            "$ref": "#/components/parameters/created_since"
+          },
+          {
+            "$ref": "#/components/parameters/modified_since"
+          },
+          {
+            "$ref": "#/components/parameters/b_start"
           }
-        }
-      }
-    },
-    "/{resource}/{uid}": {
-      "get": {
-        "operationId": "getResourceByUid",
-        "summary": "Get a single resource by UID",
-        "parameters": [
-          { "$ref": "#/components/parameters/Resource" },
-          { "$ref": "#/components/parameters/Uid" }
         ],
         "responses": {
           "200": {
-            "description": "Resource retrieved",
+            "description": "Batched list of content records.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/APIResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ContentList"
+                }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -195,259 +1230,765 @@
     "/{resource}/create": {
       "post": {
         "operationId": "createResource",
-        "summary": "Create a new content object",
+        "summary": "Create content of one portal type",
+        "tags": [
+          "content"
+        ],
+        "description": "Creates an object. The portal type comes from the `<resource>` path segment or from `portal_type` in the body; the target container comes from the `<uid>` path segment or from `parent_path` / `parent_uid` in the body. Creation into the portal root or into `senaite/bika_setup` is refused with 401.",
         "parameters": [
-          { "$ref": "#/components/parameters/Resource" }
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Object created",
+            "description": "The affected records.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/APIResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     },
-    "/{resource}/update/{uid}": {
+    "/{resource}/create/{uid}": {
       "post": {
-        "operationId": "updateResource",
-        "summary": "Update an existing content object by UID",
+        "operationId": "createResourceByUid",
+        "summary": "Create content of one portal type in the container with this UID",
+        "tags": [
+          "content"
+        ],
+        "description": "Creates an object. The portal type comes from the `<resource>` path segment or from `portal_type` in the body; the target container comes from the `<uid>` path segment or from `parent_path` / `parent_uid` in the body. Creation into the portal root or into `senaite/bika_setup` is refused with 401.",
         "parameters": [
-          { "$ref": "#/components/parameters/Resource" },
-          { "$ref": "#/components/parameters/Uid" }
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UpdateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Object updated",
+            "description": "The affected records.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/APIResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/{resource}/delete": {
+      "post": {
+        "operationId": "deleteResource",
+        "summary": "Deactivate content of one portal type",
+        "tags": [
+          "content"
+        ],
+        "description": "Deactivates an object \u2014 SENAITE does not delete content, for traceability. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     },
     "/{resource}/delete/{uid}": {
       "post": {
-        "operationId": "deleteResource",
-        "summary": "Deactivate / delete a content object by UID",
+        "operationId": "deleteResourceByUid",
+        "summary": "Deactivate the content object of one portal type with this UID",
+        "tags": [
+          "content"
+        ],
+        "description": "Deactivates an object \u2014 SENAITE does not delete content, for traceability. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body.",
         "parameters": [
-          { "$ref": "#/components/parameters/Resource" },
-          { "$ref": "#/components/parameters/Uid" }
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/{resource}/update": {
+      "post": {
+        "operationId": "updateResource",
+        "summary": "Update content of one portal type",
+        "tags": [
+          "content"
+        ],
+        "description": "Updates an object. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body. A `transition` field additionally runs that workflow transition. Updating the portal root or `senaite/bika_setup` is refused with 401.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/{resource}/update/{uid}": {
+      "post": {
+        "operationId": "updateResourceByUid",
+        "summary": "Update the content object of one portal type with this UID",
+        "tags": [
+          "content"
+        ],
+        "description": "Updates an object. The object is identified by the `<uid>` path segment or by `uid`, `path`, or `id` + `parent_path` in the body. A `transition` field additionally runs that workflow transition. Updating the portal root or `senaite/bika_setup` is refused with 401.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/{resource}/{uid}": {
+      "get": {
+        "operationId": "getResourceByUid",
+        "summary": "Read one content object by UID",
+        "tags": [
+          "content"
+        ],
+        "description": "senaite.jsonapi exposes every SENAITE portal type through one generic content route. Reads are HTTP GET; create, update and delete are HTTP POST, with the operation named in the path (`<resource>/create`, `create/<uid>`, ...). `delete` deactivates the object rather than removing it, because SENAITE keeps a full audit trail. Any catalog index may be used as a query parameter. A read by UID wakes the object up, so the full field set is returned.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          },
+          {
+            "$ref": "#/components/parameters/children"
+          },
+          {
+            "$ref": "#/components/parameters/workflow"
+          },
+          {
+            "$ref": "#/components/parameters/filedata"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Object deleted",
+            "description": "Batched list holding the requested record.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/APIResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ContentList"
+                }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "actionOnResourceByUid",
+        "summary": "Run create/update/delete on one object via a method override",
+        "tags": [
+          "content"
+        ],
+        "description": "POST to an object without naming the operation in the path. The operation is taken from the `X-HTTP-Method-Override` header (`create`, `update` or `delete`), which is how Backbone.js-style clients drive the API.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          },
+          {
+            "name": "X-HTTP-Method-Override",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "create",
+                "update",
+                "delete"
+              ]
+            },
+            "description": "The operation to run."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "HTTP Basic auth with a SENAITE user name and password."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "The JSON Web Token returned by `/login`, sent as `Authorization: Bearer <token>`."
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__ac",
+        "description": "The Plone session cookie set by `/login`. This is what the OpenFn senaite adaptor reuses."
+      },
+      "tokenCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token",
+        "description": "HttpOnly cookie carrying the same JWT that `/login` returns in the body."
+      }
+    },
     "parameters": {
-      "Resource": {
-        "name": "resource",
-        "in": "path",
-        "required": true,
-        "description": "Routed content type or catalog resource name (e.g. analysisrequest, client, sample, patient, contact).",
-        "schema": { "type": "string" }
+      "b_start": {
+        "name": "b_start",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Index of the first item of the requested batch page."
       },
-      "Uid": {
-        "name": "uid",
-        "in": "path",
-        "required": true,
-        "description": "Unique object identifier (UID).",
-        "schema": { "type": "string" }
+      "catalog": {
+        "name": "catalog",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Catalog to search against, e.g. `senaite_catalog_sample`. Defaults to `portal_catalog`."
       },
-      "CatalogId": {
-        "name": "catalog_id",
-        "in": "path",
-        "required": true,
-        "description": "Catalog identifier (e.g. senaite_catalog_sample).",
-        "schema": { "type": "string" }
+      "children": {
+        "name": "children",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "y",
+            "1",
+            "True"
+          ]
+        },
+        "description": "Include a folder's contents under the `children` key. Only honoured with `complete` or a UID."
       },
-      "Complete": {
+      "complete": {
         "name": "complete",
         "in": "query",
-        "description": "Return full object data for each item instead of a summary.",
-        "schema": { "type": "string", "enum": ["yes", "y", "1", "True"] }
+        "schema": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "y",
+            "1",
+            "True"
+          ]
+        },
+        "description": "Return the full object data immediately instead of only catalog metadata (bypasses the two-step design)."
       },
-      "Limit": {
+      "created_since": {
+        "name": "created_since",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Items created since a date (`%Y-%m-%d`, `%Y%m%d%H%M%S`, or a relative `2d` / `2h`)."
+      },
+      "depth": {
+        "name": "depth",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Depth of a `path` query."
+      },
+      "filedata": {
+        "name": "filedata",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "y",
+            "1",
+            "True"
+          ]
+        },
+        "description": "Include file fields as base64 data."
+      },
+      "limit": {
         "name": "limit",
         "in": "query",
-        "description": "Maximum number of results per page.",
-        "schema": { "type": "integer", "minimum": 1 }
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Page size; the response is batched into pages of this many items."
       },
-      "SortOn": {
+      "modified_since": {
+        "name": "modified_since",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Items modified since a date (`%Y-%m-%d`, `%Y%m%d%H%M%S`, or a relative `2d` / `2h`)."
+      },
+      "path": {
+        "name": "path",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Physical path; only results below it are returned."
+      },
+      "q": {
+        "name": "q",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Free-text query against the `SearchableText` index."
+      },
+      "recent_created": {
+        "name": "recent_created",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "today",
+            "yesterday",
+            "this-week",
+            "this-month",
+            "this-year"
+          ]
+        },
+        "description": "Items created within this range up to today."
+      },
+      "recent_modified": {
+        "name": "recent_modified",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "today",
+            "yesterday",
+            "this-week",
+            "this-month",
+            "this-year"
+          ]
+        },
+        "description": "Items modified within this range up to today."
+      },
+      "sort_limit": {
+        "name": "sort_limit",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Limit the result set the catalog returns to n items."
+      },
+      "sort_on": {
         "name": "sort_on",
         "in": "query",
-        "description": "Index name to sort on.",
-        "schema": { "type": "string" }
+        "schema": {
+          "type": "string"
+        },
+        "description": "Catalog index to sort by."
       },
-      "SortOrder": {
+      "sort_order": {
         "name": "sort_order",
         "in": "query",
-        "description": "Sort direction.",
-        "schema": { "type": "string", "enum": ["asc", "desc"] }
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        },
+        "description": "Sort direction. Default: ascending."
+      },
+      "workflow": {
+        "name": "workflow",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "y",
+            "1",
+            "True"
+          ]
+        },
+        "description": "Include workflow data under the `workflow` key."
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "The caller is anonymous or lacks the permission the route requires.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "No such route, portal type or object.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
       }
     },
     "schemas": {
-      "APIResponse": {
-        "type": "object",
-        "description": "Standard paged JSON API response envelope.",
-        "properties": {
-          "count": { "type": "integer", "description": "Number of items in the current page." },
-          "pagesize": { "type": "integer" },
-          "page": { "type": "integer" },
-          "pages": { "type": "integer" },
-          "_runtime": { "type": "number", "description": "Server processing time in seconds." },
-          "next": { "type": "string", "nullable": true, "description": "URL of the next page." },
-          "previous": { "type": "string", "nullable": true, "description": "URL of the previous page." },
-          "items": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/CatalogItem" }
-          }
-        }
-      },
-      "CatalogItem": {
-        "type": "object",
-        "description": "Generic SENAITE content object summary as returned in items[].",
-        "properties": {
-          "uid": { "type": "string" },
-          "id": { "type": "string" },
-          "portal_type": { "type": "string" },
-          "url": { "type": "string" },
-          "api_url": { "type": "string" },
-          "path": { "type": "string" },
-          "parent_id": { "type": "string" },
-          "parent_uid": { "type": "string" },
-          "parent_path": { "type": "string" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "created": { "type": "string" },
-          "modified": { "type": "string" },
-          "review_state": { "type": "string" },
-          "tags": { "type": "array", "items": { "type": "string" } }
-        }
-      },
       "AnalysisRequest": {
         "type": "object",
-        "description": "A sample / analysis request (portal_type AnalysisRequest).",
+        "description": "A sample (portal type `AnalysisRequest` \u2014 in SENAITE the sample is modelled as an analysis request).",
         "allOf": [
-          { "$ref": "#/components/schemas/CatalogItem" },
+          {
+            "$ref": "#/components/schemas/ContentRecord"
+          },
           {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
-              "ClientID": { "type": "string" },
-              "ClientSampleID": { "type": "string" },
-              "SampleTypeTitle": { "type": "string" },
-              "DateSampled": { "type": "string" },
-              "DateReceived": { "type": "string" },
-              "Priority": { "type": "string" },
-              "getClientTitle": { "type": "string" }
-            }
-          }
-        ]
-      },
-      "Client": {
-        "type": "object",
-        "description": "A laboratory client (portal_type Client).",
-        "allOf": [
-          { "$ref": "#/components/schemas/CatalogItem" },
-          {
-            "type": "object",
-            "properties": {
-              "ClientID": { "type": "string" },
-              "Name": { "type": "string" },
-              "EmailAddress": { "type": "string" },
-              "Phone": { "type": "string" },
-              "TaxNumber": { "type": "string" }
-            }
-          }
-        ]
-      },
-      "Sample": {
-        "type": "object",
-        "description": "A sample object (portal_type Sample / AnalysisRequest sample record).",
-        "allOf": [
-          { "$ref": "#/components/schemas/CatalogItem" },
-          {
-            "type": "object",
-            "properties": {
-              "SampleType": { "type": "string" },
-              "SampleTypeTitle": { "type": "string" },
-              "DateSampled": { "type": "string" },
-              "DateReceived": { "type": "string" },
-              "Priority": { "type": "string" }
-            }
-          }
-        ]
-      },
-      "Contact": {
-        "type": "object",
-        "description": "A client contact (portal_type Contact).",
-        "allOf": [
-          { "$ref": "#/components/schemas/CatalogItem" },
-          {
-            "type": "object",
-            "properties": {
-              "Firstname": { "type": "string" },
-              "Surname": { "type": "string" },
-              "EmailAddress": { "type": "string" },
-              "Fullname": { "type": "string" }
-            }
-          }
-        ]
-      },
-      "User": {
-        "type": "object",
-        "description": "A SENAITE user account.",
-        "properties": {
-          "username": { "type": "string" },
-          "userid": { "type": "string" },
-          "email": { "type": "string" },
-          "fullname": { "type": "string" },
-          "roles": { "type": "array", "items": { "type": "string" } },
-          "groups": { "type": "array", "items": { "type": "string" } },
-          "authenticated": { "type": "boolean" },
-          "api_url": { "type": "string" }
-        }
-      },
-      "UserListResponse": {
-        "type": "object",
-        "allOf": [
-          { "$ref": "#/components/schemas/APIResponse" },
-          {
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/User" }
+              "getClientTitle": {
+                "type": "string"
+              },
+              "getClientID": {
+                "type": "string"
+              },
+              "getClientSampleID": {
+                "type": "string"
+              },
+              "getSampleTypeUID": {
+                "type": "string"
+              },
+              "getDateSampled": {
+                "type": "string"
+              },
+              "getDateReceived": {
+                "type": "string"
+              },
+              "getDueDate": {
+                "type": "string"
+              },
+              "getProgress": {
+                "type": "number"
+              },
+              "getContactFullName": {
+                "type": "string"
+              },
+              "getInternalUse": {
+                "type": "boolean"
+              },
+              "Priority": {
+                "type": "string"
               }
             }
           }
@@ -455,61 +1996,676 @@
       },
       "Catalog": {
         "type": "object",
-        "description": "A registered catalog descriptor.",
+        "description": "A catalog registered in the SENAITE instance, with the indexes that can be used as search filters or sort keys, the metadata schema it stores, and the portal types it indexes.",
+        "additionalProperties": true,
         "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "indexes": { "type": "array", "items": { "type": "string" } },
-          "columns": { "type": "array", "items": { "type": "string" } },
-          "portal_types": { "type": "array", "items": { "type": "string" } }
+          "id": {
+            "type": "string",
+            "description": "Catalog id, e.g. `senaite_catalog_sample`."
+          },
+          "indexes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Metadata columns the catalog stores."
+          },
+          "portal_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "_runtime": {
+            "type": "number"
+          }
         }
       },
-      "CatalogListResponse": {
+      "CatalogList": {
         "type": "object",
+        "description": "Batched list of catalogs.",
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of items found \u2014 can exceed the page size."
+          },
+          "pagesize": {
+            "type": "integer",
+            "description": "Items per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page of the batched result set."
+          },
+          "pages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "_runtime": {
+            "type": "number",
+            "description": "Time the server needed to build the payload."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page, or null."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page, or null."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Catalog"
+            }
+          }
+        }
+      },
+      "Client": {
+        "type": "object",
+        "description": "A laboratory client (portal type `Client`).",
         "allOf": [
-          { "$ref": "#/components/schemas/APIResponse" },
+          {
+            "$ref": "#/components/schemas/ContentRecord"
+          },
           {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
-              "items": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/Catalog" }
+              "ClientID": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              },
+              "Phone": {
+                "type": "string"
+              },
+              "TaxNumber": {
+                "type": "string"
               }
             }
           }
         ]
       },
-      "VersionResponse": {
+      "Contact": {
         "type": "object",
+        "description": "A client contact (portal type `Contact`).",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContentRecord"
+          },
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "Firstname": {
+                "type": "string"
+              },
+              "Surname": {
+                "type": "string"
+              },
+              "Fullname": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "ContentActionRequest": {
+        "type": "object",
+        "description": "Body of a create / update / delete action. Every field of the target portal type may be sent alongside the addressing fields below.",
+        "additionalProperties": true,
         "properties": {
-          "url": { "type": "string" },
-          "version": { "type": "string", "description": "senaite.jsonapi package version." },
-          "api_version": { "type": "string", "description": "API route version (e.g. v1)." },
-          "_runtime": { "type": "number" }
+          "portal_type": {
+            "type": "string",
+            "description": "Type to create. Required on `create` when the path does not name the resource."
+          },
+          "parent_path": {
+            "type": "string",
+            "description": "Physical path of the target container, e.g. `/senaite/clients`."
+          },
+          "parent_uid": {
+            "type": "string",
+            "description": "UID of the target container, instead of `parent_path`."
+          },
+          "uid": {
+            "type": "string",
+            "description": "UID of the object to update or deactivate."
+          },
+          "path": {
+            "type": "string",
+            "description": "Physical path of the object to update or deactivate."
+          },
+          "id": {
+            "type": "string",
+            "description": "Object id, used together with `parent_path`."
+          },
+          "transition": {
+            "type": "string",
+            "description": "Workflow transition to run after an update, e.g. `receive`, `publish`."
+          }
+        },
+        "example": {
+          "portal_type": "Client",
+          "title": "Example District Hospital",
+          "ClientID": "EXDH-01",
+          "parent_path": "/senaite/clients"
         }
       },
-      "CreateRequest": {
+      "ContentActionResponse": {
         "type": "object",
-        "description": "Request body for creating a content object.",
-        "required": ["portal_type"],
+        "description": "Response of a create / update / delete action: the records the action affected.",
+        "additionalProperties": true,
         "properties": {
-          "portal_type": { "type": "string", "description": "Type of object to create (e.g. Client, AnalysisRequest)." },
-          "parent_path": { "type": "string", "description": "Path of the target container." },
-          "parent_uid": { "type": "string", "description": "UID of the target container." },
-          "title": { "type": "string" }
+          "count": {
+            "type": "integer",
+            "description": "Number of affected records."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentRecord"
+            }
+          },
+          "url": {
+            "type": "string",
+            "description": "URL of the action route that ran."
+          }
+        }
+      },
+      "ContentList": {
+        "type": "object",
+        "description": "Batched list of content records \u2014 the standard response envelope of every list, search and read route.",
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of items found \u2014 can exceed the page size."
+          },
+          "pagesize": {
+            "type": "integer",
+            "description": "Items per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page of the batched result set."
+          },
+          "pages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "_runtime": {
+            "type": "number",
+            "description": "Time the server needed to build the payload."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page, or null."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page, or null."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentRecord"
+            }
+          }
+        }
+      },
+      "ContentRecord": {
+        "type": "object",
+        "description": "One SENAITE content object as the JSON API returns it. In a list or search response this is the catalog metadata for the object; with `complete=yes`, or when the object is addressed by UID, it is the full field set. The fields below are the ones every record carries \u2014 every other key is the catalog index or schema field of that portal type.",
+        "additionalProperties": true,
+        "properties": {
+          "uid": {
+            "type": "string",
+            "description": "32-character hexadecimal unique id."
+          },
+          "id": {
+            "type": "string",
+            "description": "Object id within its container, e.g. `WB-00012`."
+          },
+          "portal_type": {
+            "type": "string",
+            "description": "SENAITE type name, e.g. `AnalysisRequest`."
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "Object URL in the SENAITE UI."
+          },
+          "api_url": {
+            "type": "string",
+            "description": "Object URL in this JSON API."
+          },
+          "path": {
+            "type": "string",
+            "description": "Physical path of the object."
+          },
+          "parent_id": {
+            "type": "string"
+          },
+          "parent_uid": {
+            "type": "string"
+          },
+          "parent_path": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "description": "ISO 8601 creation date."
+          },
+          "modified": {
+            "type": "string",
+            "description": "ISO 8601 modification date."
+          },
+          "review_state": {
+            "type": "string",
+            "description": "Workflow state, e.g. `active`, `published`."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
+        "example": {
+          "uid": "19697c28034a4d3a960540b938203b50",
+          "id": "WB-00012",
+          "portal_type": "AnalysisRequest",
+          "path": "/senaite/clients/client-1/WB-00012",
+          "api_url": "https://lims.example.org/@@API/senaite/v1/analysisrequest/19697c28034a4d3a960540b938203b50",
+          "review_state": "sample_received",
+          "getClientTitle": "Example District Hospital",
+          "getDateSampled": "2026-04-27T00:00:00+02:00"
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error payload. `type` carries the senaite.jsonapi exception class name (`BadRequestError`, `UnauthorizedError`, `NotFoundError`, ...).",
+        "additionalProperties": true,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "traceback": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "description": "Form login credentials. Omit both fields when authenticating with HTTP Basic.",
+        "additionalProperties": true,
+        "properties": {
+          "__ac_name": {
+            "type": "string",
+            "description": "User name."
+          },
+          "__ac_password": {
+            "type": "string",
+            "format": "password",
+            "description": "Password."
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "description": "The `/users/<userid>` payload for the authenticated caller, with the issued JWT merged in.",
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of items found \u2014 can exceed the page size."
+          },
+          "pagesize": {
+            "type": "integer",
+            "description": "Items per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page of the batched result set."
+          },
+          "pages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "_runtime": {
+            "type": "number",
+            "description": "Time the server needed to build the payload."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page, or null."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page, or null."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "url": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Signed JSON Web Token; also set as the HttpOnly `token` cookie."
+          },
+          "expires": {
+            "type": "integer",
+            "description": "Unix timestamp at which the token expires."
+          }
+        }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "description": "Logout confirmation.",
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "authenticated": {
+            "type": "boolean"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PushRequest": {
+        "type": "object",
+        "description": "One record for a named push consumer. Every field other than `consumer` is passed through to the consumer adapter.",
+        "required": [
+          "consumer"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "consumer": {
+            "type": "string",
+            "description": "Name of the registered `IPushConsumer` adapter."
+          }
+        }
+      },
+      "PushResponse": {
+        "type": "object",
+        "description": "Result of a push.",
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the consumer processed the record."
+          }
+        }
+      },
+      "RegistryList": {
+        "type": "object",
+        "description": "Batched list of registry records.",
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of items found \u2014 can exceed the page size."
+          },
+          "pagesize": {
+            "type": "integer",
+            "description": "Items per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page of the batched result set."
+          },
+          "pages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "_runtime": {
+            "type": "number",
+            "description": "Time the server needed to build the payload."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page, or null."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page, or null."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegistryRecord"
+            }
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistryRecord": {
+        "type": "object",
+        "description": "One Plone registry record, as a single-key mapping of the record name to its value.",
         "additionalProperties": true
       },
-      "UpdateRequest": {
+      "SettingsList": {
         "type": "object",
-        "description": "Request body for updating a content object. Identify the object by uid (path param), or by path/id, and include fields to change plus an optional workflow transition.",
+        "description": "Batched list of settings records.",
+        "additionalProperties": true,
         "properties": {
-          "uid": { "type": "string" },
-          "path": { "type": "string" },
-          "id": { "type": "string" },
-          "transition": { "type": "string", "description": "Optional workflow transition to apply." }
-        },
+          "count": {
+            "type": "integer",
+            "description": "Number of items found \u2014 can exceed the page size."
+          },
+          "pagesize": {
+            "type": "integer",
+            "description": "Items per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page of the batched result set."
+          },
+          "pages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "_runtime": {
+            "type": "number",
+            "description": "Time the server needed to build the payload."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page, or null."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page, or null."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SettingsRecord"
+            }
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "SettingsRecord": {
+        "type": "object",
+        "description": "One control-panel settings record, as a mapping of setting name to value.",
         "additionalProperties": true
+      },
+      "User": {
+        "type": "object",
+        "description": "A SENAITE user account.",
+        "additionalProperties": true,
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "userid": {
+            "type": "string"
+          },
+          "fullname": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "home_page": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "authenticated": {
+            "type": "boolean",
+            "description": "True when this record is the authenticated caller."
+          },
+          "listed": {
+            "type": "boolean"
+          },
+          "visible_ids": {
+            "type": "boolean"
+          },
+          "linked_contact_uid": {
+            "type": "string"
+          },
+          "api_url": {
+            "type": "string"
+          },
+          "login_time": {
+            "type": "string"
+          },
+          "last_login_time": {
+            "type": "string"
+          }
+        }
+      },
+      "UserList": {
+        "type": "object",
+        "description": "Batched list of users.",
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of items found \u2014 can exceed the page size."
+          },
+          "pagesize": {
+            "type": "integer",
+            "description": "Items per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page of the batched result set."
+          },
+          "pages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "_runtime": {
+            "type": "number",
+            "description": "Time the server needed to build the payload."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page, or null."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page, or null."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      },
+      "VersionResponse": {
+        "type": "object",
+        "description": "Version information for the installed senaite.jsonapi.",
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "description": "senaite.jsonapi package version, e.g. `2.7.0`."
+          },
+          "date": {
+            "type": "string",
+            "description": "Release date of that version."
+          }
+        }
       }
     }
   }

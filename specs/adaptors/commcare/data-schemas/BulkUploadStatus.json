@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "commcare/BulkUploadStatus",
+  "title": "BulkUploadStatus",
+  "x-openfn-adaptor": "commcare",
+  "x-source": {
+    "openapi": "#/components/schemas/BulkUploadStatus",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "Processing status of a spreadsheet upload.",
+  "properties": {
+    "state": {
+      "type": "integer",
+      "description": "Task state: 2 complete, 3 error."
+    },
+    "progress": {
+      "type": "object",
+      "description": "Progress of the task.",
+      "properties": {
+        "percent": {
+          "type": "number",
+          "description": "Percent complete."
+        }
+      },
+      "additionalProperties": true
+    },
+    "result": {
+      "type": "object",
+      "description": "Outcome once processing finished.",
+      "properties": {
+        "match_count": {
+          "type": "integer",
+          "description": "Rows matched to existing records."
+        },
+        "created_count": {
+          "type": "integer",
+          "description": "Records created."
+        },
+        "num_chunks": {
+          "type": "integer",
+          "description": "Number of chunks processed."
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A business-rule error found while importing.",
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Error title."
+              },
+              "description": {
+                "type": "string",
+                "description": "What went wrong."
+              },
+              "column": {
+                "type": "string",
+                "description": "Spreadsheet column at fault."
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "description": "Spreadsheet rows at fault."
+              }
+            },
+            "additionalProperties": true
+          },
+          "description": "Errors encountered."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

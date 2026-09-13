@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ghana-bdr/ProcessFlow",
+  "title": "ProcessFlow",
+  "x-openfn-adaptor": "ghana-bdr",
+  "x-source": {
+    "openapi": "#/components/schemas/ProcessFlow",
+    "capturedAt": "2026-09-13"
+  },
+  "type": "object",
+  "description": "Where the record currently sits in the registry workflow. Returned by the status-lookup endpoint.",
+  "properties": {
+    "current_stage": {
+      "type": "string",
+      "enum": [
+        "SUBMITTED",
+        "DRAFT",
+        "PENDING_REVIEW",
+        "MARKED_COMPLETE",
+        "IN_VERIFICATION",
+        "VERIFIED",
+        "DUPLICATE_REJECTED",
+        "IN_REGISTRATION",
+        "APPROVED",
+        "CERTIFIED"
+      ],
+      "description": "One of SUBMITTED, DRAFT, PENDING_REVIEW, MARKED_COMPLETE, IN_VERIFICATION, VERIFIED, DUPLICATE_REJECTED, IN_REGISTRATION, APPROVED, CERTIFIED. APPROVED is a polling stage only — it is never delivered as a callback."
+    },
+    "stages": {
+      "type": "object",
+      "description": "Per-stage detail. stages.certification.is_certified turns true once the certificate has been issued. The vendor documents the certification flag; the full stage map is not documented field by field.",
+      "additionalProperties": true
+    }
+  }
+}

@@ -5,30 +5,29 @@
   "x-openfn-adaptor": "resourcemap",
   "x-source": {
     "openapi": "#/components/schemas/Field",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
+  "description": "A field definition inside a layer. `kind` drives which extra config keys are present.",
   "properties": {
     "id": {
-      "type": "integer",
-      "example": 45
+      "type": "integer"
     },
-    "es_code": {
-      "type": "string",
-      "example": "45"
+    "collection_id": {
+      "type": "integer"
+    },
+    "layer_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
     },
     "code": {
       "type": "string",
-      "example": "phone"
-    },
-    "name": {
-      "type": "string",
-      "example": "Phone"
+      "description": "Stable code used as the key in a site's `properties`."
     },
     "kind": {
       "type": "string",
-      "description": "Field type",
-      "example": "text",
       "enum": [
         "text",
         "numeric",
@@ -36,11 +35,20 @@
         "select_one",
         "select_many",
         "date",
+        "hierarchy",
         "site",
         "user",
         "email",
         "phone",
-        "hierarchy"
+        "photo",
+        "identifier",
+        "custom_aggregator"
+      ]
+    },
+    "ord": {
+      "type": [
+        "integer",
+        "null"
       ]
     },
     "config": {
@@ -48,7 +56,26 @@
         "object",
         "null"
       ],
-      "additionalProperties": true
+      "additionalProperties": true,
+      "description": "Kind-specific configuration (option lists, hierarchy trees, ranges)."
+    },
+    "metadata": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
     }
   }
 }

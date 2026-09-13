@@ -5,19 +5,25 @@
   "x-openfn-adaptor": "openhim",
   "x-source": {
     "openapi": "#/components/schemas/Client",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-13"
   },
   "type": "object",
-  "description": "A registered client that authenticates to OpenHIM to submit requests.",
+  "description": "A system authorised to send messages through OpenHIM's router.",
   "required": [
     "clientID",
     "name"
   ],
   "properties": {
     "_id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$",
+      "description": "24-character hex MongoDB ObjectId."
     },
     "clientID": {
+      "type": "string",
+      "description": "Unique client identifier."
+    },
+    "clientDomain": {
       "type": "string"
     },
     "name": {
@@ -27,15 +33,19 @@
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "description": "Roles matched against a channel's `allow` list."
+    },
+    "customTokenID": {
+      "type": "string"
     },
     "passwordAlgorithm": {
       "type": "string"
     },
-    "passwordSalt": {
+    "passwordHash": {
       "type": "string"
     },
-    "passwordHash": {
+    "passwordSalt": {
       "type": "string"
     },
     "certFingerprint": {
@@ -44,8 +54,30 @@
     "organization": {
       "type": "string"
     },
+    "location": {
+      "type": "string"
+    },
+    "softwareName": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
     "contactPerson": {
       "type": "string"
+    },
+    "contactPersonEmail": {
+      "type": "string",
+      "format": "email"
     }
+  },
+  "example": {
+    "_id": "636c69656e742d6368770000",
+    "clientID": "chw",
+    "name": "CHW Mobile App",
+    "roles": [
+      "chw"
+    ],
+    "organization": "MoHS"
   }
 }
