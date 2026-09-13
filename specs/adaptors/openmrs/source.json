@@ -1,14 +1,64 @@
 {
   "adaptor": "openmrs",
   "npm": "@openfn/language-openmrs",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://rest.openmrs.org/",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openmrs/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/openmrs",
-    "https://wiki.openmrs.org/display/docs/REST+Web+Services+API+For+Clients"
+  "origin": "converted",
+  "upstreamFormat": "swagger-2.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "third-party-spec",
+  "upstream": {
+    "specUrl": "https://demo.mybahmni.org/openmrs/module/webservices/rest/swagger.json",
+    "format": "swagger-2.0",
+    "contentHash": "sha256:72f824345bd3016d27996bfef166634951f940c117cb452817d511f39dc6c384",
+    "fetchedAt": "2026-09-13"
+  },
+  "attempts": [
+    {
+      "kind": "swagger",
+      "url": "https://demo.mybahmni.org/openmrs/module/webservices/rest/swagger.json",
+      "result": "used",
+      "note": "OpenMRS's own webservices.rest module (2.5.14) generating its own spec, on the only reachable server running it. Served to a logged-in client only, so the bytes were fetched out of band and captured with `convert --from`."
+    },
+    {
+      "kind": "swagger",
+      "url": "https://demo.openmrs.org/openmrs/module/webservices/rest/swagger.json",
+      "result": "not-found",
+      "note": "OpenMRS's own demo is behind a Cloudflare JS challenge (HTTP 403 to any non-browser client); same for o3.openmrs.org, o2.openmrs.org, test3.openmrs.org and qa-refapp.openmrs.org"
+    },
+    {
+      "kind": "swagger",
+      "url": "https://dev3.openmrs.org/openmrs/module/webservices/rest/swagger.json",
+      "result": "rejected",
+      "note": "reachable and authenticates, but spec generation throws NoClassDefFoundError com/fasterxml/jackson/dataformat/yaml/YAMLFactory - that instance cannot emit its spec"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://rest.openmrs.org/",
+      "result": "rejected",
+      "note": "the official REST reference is a static Slate site with no underlying spec file; used for the cross-reference pass instead"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "OpenMRS is not listed on apis.guru"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The openmrs adaptor is a generic CRUD wrapper (get/create/update/upsert/destroy) over OpenMRS REST Web Services resource paths under /ws/rest/v1/, so no per-endpoint operations exist in the adaptor surface to enumerate. Spec authored by hand from the official OpenMRS REST API reference (rest.openmrs.org) and wiki, covering the core resources the adaptor targets: patient, person, encounter, obs (observation), concept, location, visit, patientidentifiertype, encountertype, visittype, provider, plus the patient/allergy subresource. 30 operations across list/get/create/update/delete. OpenMRS list endpoints return a { results: [...] } envelope; single-resource GETs return the object directly; all resources carry uuid, display and links. Could not fetch the module's live swagger.json (demo.openmrs.org uses cookie/session auth, not basic auth over the proxy) so shapes reflect the documented default representations rather than a converted machine spec. Representation (v), q, and paging (limit/startIndex) query params are modeled where relevant."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "rest.openmrs.org"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://demo.mybahmni.org/openmrs/module/webservices/rest/swagger.json",
+    "https://rest.openmrs.org/",
+    "https://wiki.openmrs.org/display/docs/REST+Web+Services+API+For+Clients",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openmrs/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/openmrs"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "OpenMRS serves its REST API from the webservices.rest module, which generates its own Swagger 2.0 document at /module/webservices/rest/swagger.json. This is that document (module 2.5.14), converted to OpenAPI 3.0.3 by src/swagger.ts: 244 paths / 554 operations / 646 schemas, replacing a 30-operation hand-authored spec covering 12 resources. Full coverage matters here because @openfn/language-openmrs is a generic CRUD wrapper (get/create/update/upsert/destroy) over an arbitrary /ws/rest/v1/ resource path - it names no endpoints of its own, so any path in this file is reachable from a job. Why best-effort rather than complete: OpenMRS's own demo servers were unreachable (Cloudflare challenge) or could not emit a spec (a missing YAMLFactory class), so the capture came from the only reachable server running the module, a Bahmni distribution. The generator is OpenMRS's own code and the core resources are OpenMRS's, but the output reflects that server's installed modules. Cross-referenced against the official reference at rest.openmrs.org: every core resource the adaptor is documented against is present (patient, person, encounter, obs, concept, location, visit, order, program, provider, relationship, user, role and their subresources), eight documented groups are absent because their modules are not installed there (addresstemplate, session/logged-in-users, systeminformation, emrapi configuration, locale-and-theme configuration, visits configuration, queue, queueroom), and around a dozen roots come from add-on modules rather than core (bahmni*, bed*, surgical*, admissionLocation, apptemplate, entitymapping, drugreferencemap, obstree, patientdiagnoses, patientprofile, reportingrest, openconceptlab, metadatamapping, idgen). Two upstream traits are preserved rather than tidied: schema names carry the generator's Get/GetRef/Create/Update suffixes (PatientGet, ConceptGetRef) instead of bare resource names, and servers[0].url is that demo host because OpenMRS is self-hosted with no canonical base URL - the adaptor takes the host from state.configuration.instanceUrl and appends /ws/rest/v1."
 }

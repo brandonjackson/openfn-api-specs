@@ -1,9 +1,53 @@
 {
   "adaptor": "dhis2",
   "npm": "@openfn/language-dhis2",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": ["https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/introduction.html"],
-  "capturedAt": "2026-07-06",
-  "notes": "Test fixture copied from existing specs/dhis2.openapi.json to validate seed-schema derivation."
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://play.im.dhis2.org/stable-2-43-1/api/openapi/openapi.json",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:fbbf85a26463fbd5c0c9ff95c9e1c2abff39a644f26da87e3f740f1532080507",
+    "fetchedAt": "2026-09-13"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://play.im.dhis2.org/stable-2-43-1/api/openapi/openapi.json",
+      "result": "used",
+      "note": "DHIS2 core generates this itself from its controllers; served from the vendor's own public demo instance. Requires a logged-in session, so the bytes were fetched out of band and captured with `convert --from` to keep credentials out of the recorded specUrl."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.dhis2.org/en/develop/api/openapi.json",
+      "result": "not-found",
+      "note": "the docs site renders prose, not a spec file"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://dhis2.github.io/openapi/openapi.json",
+      "result": "not-found",
+      "note": "no spec published under the dhis2 GitHub Pages org; dhis2-core, dhis2-docs and api-specification carry no committed openapi.json on their default branches"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "DHIS2 is not listed on apis.guru"
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "modifications": [],
+  "sources": [
+    "https://play.im.dhis2.org/stable-2-43-1/api/openapi/openapi.json",
+    "https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/introduction.html",
+    "https://dhis2.org/demo/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-dhis2/ast.json"
+  ],
+  "capturedAt": "2026-09-13",
+  "lastCheckedAt": "2026-09-13",
+  "notes": "DHIS2 is an open-source health information platform whose core server generates its own OpenAPI 3.0 document at /api/openapi/openapi.json. This is that document, captured verbatim from the DHIS2 project's own public play instance running stable 2.43.1 (/api/system/info reports version 2.43.1, revision 9cbfbf3; info.version inside the spec still reads 2.42, which is DHIS2's own labelling and is left untouched). 1779 paths / 2574 operations / 925 schemas, replacing a 20 KiB hand-made test fixture that covered a token slice of the API. Full coverage matters more here than for most adaptors: @openfn/language-dhis2 exposes only generic CRUD builders (create, get, update, upsert, destroy) over an arbitrary resource path, so a job can reach any endpoint in this file. servers[0].url points at the demo host because DHIS2 is self-hosted and has no single production base URL - the adaptor takes the host from state.configuration.hostUrl and prefixes /api (optionally /api/{apiVersion}). Two upstream quirks are preserved as-is: path keys carry a #operationName fragment where DHIS2 disambiguates several operations on one path, and the legacy /api/events and /api/trackedEntityInstances endpoints are absent because 2.41+ replaced them with /api/tracker/*. The spec endpoint is only served to a logged-in client, so re-checking drift needs the public demo login documented at https://dhis2.org/demo; the contentHash will also move whenever the play instance is rebuilt on a newer patch."
 }

@@ -265,3 +265,39 @@ test('convertSchema leaves literal example/default/enum values alone', () => {
   assert.deepEqual(out.example, { type: 'file' });
   assert.deepEqual(out.enum, [{ $ref: '#/definitions/X' }]);
 });
+
+test('a $ref to an undeclared definition is grounded, not passed through', () => {
+  // OpenMRS's webservices.rest module references seventeen definitions it never
+  // defines. A reference with no target makes the converted document invalid and
+  // leaves the data-object extractor writing a sibling $ref to a missing file.
+  const { openapi: out, warnings: warns } = swaggerToOpenApi(
+    {
+      swagger: '2.0',
+      info: { title: 'Dangling', version: '1' },
+      paths: {
+        '/orders': {
+          get: {
+            responses: { 200: { description: 'ok', schema: { $ref: '#/definitions/OrderGet' } } },
+          },
+        },
+      },
+      definitions: {
+        OrderGet: {
+          type: 'object',
+          properties: {
+            set: { $ref: '#/definitions/OrdersetGetRef' },
+            self: { $ref: '#/definitions/OrderGet' },
+          },
+        },
+      },
+    } as any,
+    'demo'
+  );
+
+  const props = out.components.schemas.OrderGet.properties;
+  assert.equal(props.set.$ref, undefined);
+  assert.match(props.set.description, /OrdersetGetRef/);
+  // a ref that does resolve is untouched
+  assert.equal(props.self.$ref, '#/components/schemas/OrderGet');
+  assert.ok(warns.some((w) => w.includes('OrdersetGetRef')));
+});
