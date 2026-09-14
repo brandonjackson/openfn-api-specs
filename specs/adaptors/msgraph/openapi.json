@@ -9,7 +9,7 @@
       "toolVersion": "0.0.0.0"
     },
     "x-openfn-adaptor": "msgraph",
-    "x-openfn-subset-note": "This document is a curated subset of the full Microsoft Graph v1.0 OpenAPI (see upstream.yaml, the verbatim vendor file this was derived from). It covers the resource groups a Graph integration realistically reaches (users, groups, sites, drives/driveItems, applications, servicePrincipals, organization, directory objects/roles, domains, invitations, teams/teamwork/chats, planner, and contacts), restricted to paths at most 5 segments deep (entity plus one or two levels of relationship). That keeps common single-hop operations (e.g. a drive item's /content or /createUploadSession) while dropping Graph's deep, rarely-used relationship chains (analytics-of-analytics, nested OneNote pages, etc.). Every path, parameter, and schema below is copied verbatim from Microsoft's own spec, not authored; see source.json for the full rationale."
+    "x-openfn-subset-note": "This document is a curated subset of the full Microsoft Graph v1.0 OpenAPI (see upstream.yaml, the verbatim vendor file this was derived from). It covers the resource groups a Graph integration realistically reaches (users, groups, sites, drives/driveItems, applications, servicePrincipals, organization, directory objects/roles, domains, invitations, teams/teamwork/chats, planner, and contacts), restricted to paths at most 5 segments deep (entity plus one or two levels of relationship), plus the bare /me singleton (the signed-in user). That keeps common single-hop operations (e.g. a drive item's /content or /createUploadSession) while dropping Graph's deep, rarely-used relationship chains (analytics-of-analytics, nested OneNote pages, etc.). Every path, parameter, and schema below is copied verbatim from Microsoft's own spec, not authored; see source.json for the full rationale."
   },
   "servers": [
     {
@@ -170079,6 +170079,126 @@
           }
         },
         "x-ms-docs-operation-type": "action"
+      }
+    },
+    "/me": {
+      "description": "Provides operations to manage the user singleton.",
+      "get": {
+        "tags": [
+          "me.user"
+        ],
+        "summary": "Get a user",
+        "description": "Retrieve the properties and relationships of user object. This operation returns by default only a subset of the more commonly used properties for each user. These default properties are noted in the Properties section. To get properties that are not returned by default, do a GET operation for the user and specify the properties in a $select OData query option. Because the user resource supports extensions, you can also use the GET operation to get custom properties and extension data in a user instance. Customers through Microsoft Entra ID for customers can also use this API operation to retrieve their details.",
+        "externalDocs": {
+          "description": "Find more info here",
+          "url": "https://learn.microsoft.com/graph/api/user-get?view=graph-rest-1.0"
+        },
+        "operationId": "me.user.GetUser",
+        "parameters": [
+          {
+            "name": "ConsistencyLevel",
+            "in": "header",
+            "description": "Indicates the requested consistency level. Documentation URL: https://docs.microsoft.com/graph/aad-advanced-queries",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "example-1": {
+                "description": "$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'.",
+                "value": "eventual"
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to be returned",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Retrieved entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/microsoft.graph.user"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          },
+          "5XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "x-ms-docs-operation-type": "operation"
+      },
+      "patch": {
+        "tags": [
+          "me.user"
+        ],
+        "summary": "Update user",
+        "description": "Update the properties of a user object. To use this API to update an agentUser, specify an @odata.type property with a value of #microsoft.graph.agentUser in the request body.",
+        "externalDocs": {
+          "description": "Find more info here",
+          "url": "https://learn.microsoft.com/graph/api/user-update?view=graph-rest-1.0"
+        },
+        "operationId": "me.user.UpdateUser",
+        "requestBody": {
+          "description": "New property values",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/microsoft.graph.user"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/microsoft.graph.user"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          },
+          "5XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "x-ms-docs-operation-type": "operation"
       }
     }
   },

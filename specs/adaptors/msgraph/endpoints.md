@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index msgraph` — do not edit by hand -->
 
-base: https://graph.microsoft.com/v1.0 | auth: not declared | 2603 operations in 190 resources
+base: https://graph.microsoft.com/v1.0 | auth: not declared | 2605 operations in 191 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -1246,6 +1246,10 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PATCH /invitations/invitedUser/mailboxSettings — invitations.invitedUser.UpdateMailboxSettings: Update property mailboxSettings value.
 - GET /invitations/invitedUser/serviceProvisioningErrors — invitations.invitedUser.ListServiceProvisioningErrors: Get serviceProvisioningErrors property value
 - GET /invitations/invitedUser/serviceProvisioningErrors/$count — invitations.invitedUser.ServiceProvisioningErrors.GetCount-df29: Get the number of the resource
+
+## me.user
+- GET /me — me.user.GetUser: Get a user
+- PATCH /me — me.user.UpdateUser: Update user
 
 ## organization.certificateBasedAuthConfiguration
 - GET /organization/{organization-id}/certificateBasedAuthConfiguration — organization.ListCertificateBasedAuthConfiguration: List certificateBasedAuthConfigurations
