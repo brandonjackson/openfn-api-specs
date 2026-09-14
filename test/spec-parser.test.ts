@@ -27,6 +27,17 @@ const doc = {
       // path key containing a tilde/slash-ish char to test pointer escaping
       get: { operationId: 'weird', responses: { default: { content: { 'application/json': { schema: { type: 'object' } } } } } },
     },
+    '/admin': {
+      // Microsoft Graph's generated spec uses only '2XX'/'4XX'/'5XX' range
+      // keys, never a literal status code.
+      get: {
+        operationId: 'getAdmin',
+        responses: {
+          '2XX': { content: { 'application/json': { schema: { $ref: '#/components/schemas/Thing' } } } },
+          '4XX': { description: 'error' },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -39,7 +50,7 @@ const doc = {
 test('parseSpec extracts one operation per path+method', () => {
   const { operations } = parseSpec(doc);
   const ids = operations.map((o) => o.operationId).sort();
-  assert.deepEqual(ids, ['createThing', 'listThings', 'weird']);
+  assert.deepEqual(ids, ['createThing', 'getAdmin', 'listThings', 'weird']);
 });
 
 test('parseSpec chooses the lowest 2xx response', () => {
@@ -57,6 +68,13 @@ test('parseSpec falls back to the default response when no 2xx exists', () => {
   // No 2xx -> GET keeps default 200 status, but still resolves the default schema.
   assert.equal(weird.successStatus, 200);
   assert.deepEqual(weird.responseSchema, { type: 'object' });
+});
+
+test('parseSpec accepts a 2XX range key when no literal 2xx code is present', () => {
+  const { operations } = parseSpec(doc);
+  const admin = operations.find((o) => o.operationId === 'getAdmin')!;
+  assert.deepEqual(admin.responseSchema, { $ref: '#/components/schemas/Thing' });
+  assert.equal(admin.successStatus, 200); // range key carries no literal code; keeps the method default
 });
 
 test('deref follows a $ref chain to its target', () => {

@@ -1,0 +1,789 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "SurveyCTO Server API v1",
+    "description" : "SurveyCTO Server REST API v1 (Legacy)",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "https://your-server.surveycto.com"
+  } ],
+  "tags" : [ {
+    "name" : "Forms"
+  }, {
+    "name" : "Server Configuration"
+  } ],
+  "paths" : {
+    "/api/v1/forms/data/csv/{formID:.+}" : {
+      "get" : {
+        "tags" : [ "Forms" ],
+        "summary" : "Download CSV data in long format",
+        "description" : "Downloads form data as CSV files in long format. Unlike wide format, long format does not truncate field data and maintains data integrity for large text fields. You can filter data by review status and optionally download as an attachment.",
+        "operationId" : "formCsvDataHandlerV1",
+        "parameters" : [ {
+          "name" : "formID",
+          "in" : "path",
+          "description" : "The unique identifier of the form for which to download CSV data in long format.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "r",
+          "in" : "query",
+          "description" : "Optional comma-separated list of review statuses to filter the data. Valid values include: 'approved', 'rejected'.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dl",
+          "in" : "query",
+          "description" : "Optional flag to specify whether the file should be downloaded as an attachment.",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully downloaded CSV file",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request - Invalid form ID, review status, or request parameters"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not found - Form does not exist"
+          }
+        }
+      }
+    },
+    "/api/v1/forms/data/csv/{formID:.+}/{repeatName:.+}" : {
+      "get" : {
+        "tags" : [ "Forms" ],
+        "summary" : "Download CSV data for a specific repeat group",
+        "description" : "Downloads CSV data for a specific repeat group from a form in long format. This endpoint allows you to retrieve data for individual repeat groups. You can filter data by review status and optionally download as an attachment.",
+        "operationId" : "formCsvDataHandlerRepeatV1",
+        "parameters" : [ {
+          "name" : "formID",
+          "in" : "path",
+          "description" : "The unique identifier of the form containing the repeat group for which to download CSV data.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "r",
+          "in" : "query",
+          "description" : "Optional comma-separated list of review statuses to filter the data. Valid values include: 'approved', 'rejected'.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dl",
+          "in" : "query",
+          "description" : "Optional flag to specify whether the file should be downloaded as an attachment.",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "repeatName",
+          "in" : "path",
+          "description" : "The name of the specific repeat group to download. This should match the repeat group name as defined in the form.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully downloaded CSV file for the specified repeat group",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request - Invalid form ID, repeat group name, review status, or request parameters"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not found - Form or repeat group does not exist"
+          }
+        }
+      }
+    },
+    "/api/v1/forms/data/wide/csv/{formID:.+}" : {
+      "get" : {
+        "tags" : [ "Forms" ],
+        "summary" : "Download CSV data in wide format",
+        "description" : "Downloads form data as a CSV file in wide format. Wide format consolidates all data into a single file with repeat groups represented as separate columns. **Important:** Field data will be truncated at 16,384 characters in CSV wide format. For complete data, use long format, JSON format, or export via SurveyCTO Desktop. You can filter data by review status and optionally download as an attachment.",
+        "operationId" : "formCsvWideDataHandlerV1",
+        "parameters" : [ {
+          "name" : "formID",
+          "in" : "path",
+          "description" : "The unique identifier of the form for which to download CSV data in wide format.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "r",
+          "in" : "query",
+          "description" : "Optional comma-separated list of review statuses to filter the data. Valid values include: 'approved', 'rejected'.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dl",
+          "in" : "query",
+          "description" : "Optional flag (query parameter) to specify whether the file should be downloaded as an attachment.",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully downloaded CSV file",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not found - Form does not exist"
+          }
+        }
+      }
+    },
+    "/api/v1/forms/data/wide/json/{formID:.+}" : {
+      "get" : {
+        "tags" : [ "Forms" ],
+        "summary" : "Download JSON data in wide format",
+        "description" : "Downloads form submission data in wide JSON format. Supports filtering by review status, optional attachment download, and an optional exclusive lower bound on submission date (`date` query parameter).",
+        "operationId" : "formJsonWideDataHandlerV1",
+        "parameters" : [ {
+          "name" : "formID",
+          "in" : "path",
+          "description" : "The unique identifier of the form.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "r",
+          "in" : "query",
+          "description" : "Optional comma-separated list of review statuses to filter the data. Valid values include: 'approved', 'rejected'.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dl",
+          "in" : "query",
+          "description" : "Optional flag to specify whether the file should be downloaded as an attachment.",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "date",
+          "in" : "query",
+          "description" : "Optional exclusive lower bound on submission date for included rows (format as accepted by the server API date parser).",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully downloaded JSON export",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not found - Form does not exist"
+          }
+        }
+      }
+    },
+    "/api/v1/forms/files/csv/{formID:.+}" : {
+      "get" : {
+        "tags" : [ "Forms" ],
+        "summary" : "List CSV export file URLs",
+        "description" : "Returns a plain-text, newline-separated list of URLs for pre-generated CSV export files for the form (approved submissions). Each URL can be used to download the corresponding export.",
+        "operationId" : "formCsvFileUrlsHandlerV1",
+        "parameters" : [ {
+          "name" : "formID",
+          "in" : "path",
+          "description" : "The unique identifier of the form.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "my_form"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully returned newline-separated URLs",
+            "content" : {
+              "text/plain" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not found - Form does not exist"
+          }
+        }
+      }
+    },
+    "/api/v1/forms/settings/csv/linebreak" : {
+      "post" : {
+        "tags" : [ "Server Configuration" ],
+        "summary" : "Configure CSV line break replacement",
+        "description" : "Sets the server-wide CSV line break replacement value used when generating CSV exports via the API. Pass the new value in the `v` query parameter.",
+        "operationId" : "formCsvSettingsLinebreakHandlerV1",
+        "parameters" : [ {
+          "name" : "v",
+          "in" : "query",
+          "description" : "The line break replacement value to store (e.g. a space or empty string).",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Line break setting updated or unchanged",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request - Missing or invalid value"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Server Configuration" ],
+        "summary" : "Delete CSV line break replacement",
+        "description" : "Removes the server-wide CSV line break replacement setting and purges cached API data files so subsequent exports use the default behavior.",
+        "operationId" : "formCsvSettingsLinebreakDeleterV1",
+        "responses" : {
+          "200" : {
+            "description" : "Line break setting deleted or was already unset",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ProgressSummary" : {
+        "type" : "object"
+      },
+      "BulkUserFailureResult" : {
+        "type" : "object"
+      },
+      "LocationContext" : {
+        "required" : [ "parentGroupId" ],
+        "type" : "object",
+        "properties" : {
+          "parentGroupId" : {
+            "type" : "integer",
+            "description" : "ID of the parent group where this dataset will be positioned",
+            "example" : "25"
+          },
+          "siblingBelow" : {
+            "$ref" : "#/components/schemas/ContextItem"
+          },
+          "siblingAbove" : {
+            "$ref" : "#/components/schemas/ContextItem"
+          }
+        },
+        "description" : "Context for positioning the dataset within the group hierarchy and relative to other items"
+      },
+      "OffsetPaginatedResponse" : {
+        "type" : "object"
+      },
+      "DataStructure" : {
+        "type" : "string",
+        "enum" : [ "CSV", "JSON" ]
+      },
+      "GenericResponse" : {
+        "type" : "object"
+      },
+      "BulkUserSummary" : {
+        "type" : "object"
+      },
+      "DatasetOptionsModel" : {
+        "type" : "object"
+      },
+      "DatasetStatus" : {
+        "type" : "string",
+        "description" : "**Possible values:**\n\n* **READY**: Dataset is ready for use, all data is synchronized and up-to-date\n* **DIRTY**: Dataset is currently being synchronized, data may be incomplete or in transition",
+        "enum" : [ "READY", "DIRTY" ],
+        "x-enum-descriptions" : [ "* **READY**: Dataset is ready for use, all data is synchronized and up-to-date", "* **DIRTY**: Dataset is currently being synchronized, data may be incomplete or in transition" ],
+        "x-enum-varnames" : [ "READY", "DIRTY" ]
+      },
+      "IdFormatOptions" : {
+        "type" : "object",
+        "properties" : {
+          "prefix" : {
+            "type" : "string",
+            "description" : "Prefix to be added at the beginning of the generated ID"
+          },
+          "allowCapitalLetters" : {
+            "type" : "boolean",
+            "description" : "Whether to allow capital letters in the generated ID"
+          },
+          "suffix" : {
+            "type" : "string",
+            "description" : "Suffix to be added at the end of the generated ID"
+          },
+          "numberOfDigits" : {
+            "type" : "integer",
+            "description" : "Number of digits to include in the generated ID"
+          }
+        },
+        "description" : "Configuration options for ID format used in auto-generation of enumerator IDs"
+      },
+      "DatasetType" : {
+        "type" : "string",
+        "enum" : [ "SERVER", "CLIENT", "REPORT" ]
+      },
+      "DataLinkClass" : {
+        "type" : "string",
+        "enum" : [ "FORM", "FUSION_TABLE", "SPREADSHEET", "ZAPIER", "WEBHOOK" ]
+      },
+      "ContextItem" : {
+        "type" : "object",
+        "properties" : {
+          "itemClass" : {
+            "$ref" : "#/components/schemas/ItemClass"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Unique identifier of the item to use as a positioning reference"
+          }
+        },
+        "description" : "Reference to an item in the group hierarchy used for relative positioning"
+      },
+      "CasesManagementOptions" : {
+        "type" : "object",
+        "properties" : {
+          "otherUserCode" : {
+            "type" : "string",
+            "description" : "Require users to enter a manager override code to view or select enumerators that aren't explicitly available to their username. Leave blank to allow all usernames to view or select all enumerators."
+          },
+          "showFinalizedSentWhenTree" : {
+            "type" : "boolean",
+            "description" : "Whether to show finalized/sent cases when using tree view",
+            "example" : "true"
+          },
+          "enumeratorDatasetId" : {
+            "type" : "string",
+            "description" : "ID of the enumerator dataset used to filter the case list.",
+            "example" : "enum_dataset_123"
+          },
+          "showColumnsWhenTable" : {
+            "type" : "array",
+            "description" : "List of column names to display when using table view. Only applicable when displayMode is 'table'",
+            "example" : "[\"id\", \"label\"]",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "displayMode" : {
+            "type" : "string",
+            "description" : "Display mode for cases - either 'tree' or 'table' view",
+            "example" : "table",
+            "enum" : [ "tree", "table" ]
+          },
+          "entryMode" : {
+            "$ref" : "#/components/schemas/EnumeratorAppearanceEntryModeDef"
+          }
+        },
+        "description" : "Configuration options for cases management."
+      },
+      "DataLinkModel" : {
+        "type" : "object"
+      },
+      "DataLinkSummary" : {
+        "type" : "object"
+      },
+      "FieldInfo" : {
+        "type" : "object"
+      },
+      "HelpPlaceholder" : {
+        "type" : "string",
+        "enum" : [ "CLIENT_NAME" ]
+      },
+      "Dataset" : {
+        "type" : "object"
+      },
+      "DatasetDataResponse" : {
+        "type" : "object"
+      },
+      "Direction" : {
+        "type" : "string",
+        "enum" : [ "ASC", "DESC" ]
+      },
+      "ItemClass" : {
+        "type" : "string",
+        "enum" : [ "DATASET", "FORM", "GROUP", "FORM_WORKBOOK" ]
+      },
+      "DataLinkType" : {
+        "type" : "string",
+        "enum" : [ "INCOMING", "OUTGOING" ]
+      },
+      "DatasetUploadMode" : {
+        "type" : "string",
+        "enum" : [ "append", "merge", "clear" ]
+      },
+      "DatasetDiscriminator" : {
+        "type" : "string",
+        "enum" : [ "CASES", "ENUMERATORS", "DATA" ]
+      },
+      "CursorPaginatedResponse" : {
+        "type" : "object",
+        "properties" : {
+          "nextCursor" : {
+            "type" : "string",
+            "description" : "Cursor for retrieving the next page. If null, there are no more pages available."
+          },
+          "total" : {
+            "type" : "long",
+            "description" : "Total number of items available across all pages"
+          },
+          "data" : {
+            "type" : "array",
+            "description" : "Array of data items for the current page"
+          },
+          "limit" : {
+            "type" : "integer",
+            "description" : "Page size limit for pagination. Maximum allowed is 1000 items per request."
+          }
+        },
+        "description" : "Generic paginated response using cursor-based pagination for efficient data retrieval"
+      },
+      "BulkUserDeletionResponse" : {
+        "type" : "object"
+      },
+      "PasswordOption" : {
+        "type" : "string",
+        "description" : "**Possible values:**\n\n* **USER_SET_OWN**: Send the new user an invitation to choose their own password. No password is sent in this request.\n* **SET_NOW**: Set the password in this request. Requires password and confirmPassword. This is the default when passwordOption is omitted.",
+        "enum" : [ "USER_SET_OWN", "SET_NOW" ],
+        "x-enum-descriptions" : [ "* **USER_SET_OWN**: Send the new user an invitation to choose their own password. No password is sent in this request.", "* **SET_NOW**: Set the password in this request. Requires password and confirmPassword. This is the default when passwordOption is omitted." ],
+        "x-enum-varnames" : [ "USER_SET_OWN", "SET_NOW" ]
+      },
+      "UserInput" : {
+        "required" : [ "username" ],
+        "type" : "object",
+        "properties" : {
+          "password" : {
+            "type" : "string",
+            "description" : "Initial password. Required when passwordOption is \"SET_NOW\" (including when passwordOption is omitted), unless the username's domain is configured for external authentication. Must satisfy the server's password requirements.",
+            "example" : "S0me-Str0ng-Passw0rd"
+          },
+          "roleId" : {
+            "type" : "string",
+            "description" : "The role to assign. Required when creating a user; on a bulk edit supply it only to change the role, where at least one of roleId or password must be present. Must be an existing role, and no higher than the calling user's own role (403 otherwise); only an administrator can create an administrator.",
+            "example" : "enumerator"
+          },
+          "includePasswordInEmail" : {
+            "type" : "boolean",
+            "description" : "Whether to include the password in the account email sent to the new user. Default: false.",
+            "example" : "false"
+          },
+          "confirmPassword" : {
+            "type" : "string",
+            "description" : "Repeat of password, required whenever password is required. Must match password exactly.",
+            "example" : "S0me-Str0ng-Passw0rd"
+          },
+          "passwordOption" : {
+            "$ref" : "#/components/schemas/PasswordOption"
+          },
+          "username" : {
+            "type" : "string",
+            "description" : "The username to create. Must be an email address unless roleId is a data-collector role, and must not already exist on the server (409 otherwise).",
+            "example" : "field.worker@example.com"
+          }
+        },
+        "description" : "A user in a create or bulk-edit request. This one schema serves POST /api/v2/users, the bulk create endpoints, and the bulk edit endpoints, so only username is required on every one of them. On the create paths roleId is required as well, and password/confirmPassword follow passwordOption; on the bulk edit paths supply only the fields you want to change, with at least one of password or roleId present. Each operation's description states its own rules."
+      },
+      "UserUpdateInput" : {
+        "type" : "object",
+        "properties" : {
+          "password" : {
+            "type" : "string",
+            "description" : "New password. Optional; when present, confirmPassword is required and must match. Must satisfy the server's password requirements.",
+            "example" : "N3w-Str0ng-Passw0rd"
+          },
+          "roleId" : {
+            "type" : "string",
+            "description" : "New role. Optional; when present it must be an existing role and no higher than the calling user's own role.",
+            "example" : "enumerator"
+          },
+          "confirmPassword" : {
+            "type" : "string",
+            "description" : "Repeat of the new password. Required when password is present, ignored otherwise.",
+            "example" : "N3w-Str0ng-Passw0rd"
+          }
+        },
+        "description" : "Request body for updating a user. Every field is individually optional, but at least one of password or roleId must be present — an otherwise empty body is rejected with 400."
+      },
+      "DatasetOutput" : {
+        "type" : "object",
+        "properties" : {
+          "idFormatOptions" : {
+            "$ref" : "#/components/schemas/IdFormatOptions"
+          },
+          "totalRecords" : {
+            "type" : "integer",
+            "description" : "Number of rows/records in the dataset"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "description" : "ID of the group that owns this dataset. Groups are used to organize and control access to datasets."
+          },
+          "fieldNames" : {
+            "type" : "string",
+            "description" : "Comma-separated list of field names"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "Dataset title"
+          },
+          "createdOn" : {
+            "type" : "string",
+            "description" : "Dataset creation date"
+          },
+          "version" : {
+            "type" : "integer",
+            "description" : "Dataset version number"
+          },
+          "discriminator" : {
+            "$ref" : "#/components/schemas/DatasetDiscriminator"
+          },
+          "uniqueRecordField" : {
+            "type" : "string",
+            "description" : "Field name used for unique record identification"
+          },
+          "modifiedOn" : {
+            "type" : "string",
+            "description" : "Dataset last modification date"
+          },
+          "allowOfflineUpdates" : {
+            "type" : "boolean",
+            "description" : "Whether offline updates are allowed"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Dataset identifier",
+            "example" : "cases"
+          },
+          "casesManagementOptions" : {
+            "$ref" : "#/components/schemas/CasesManagementOptions"
+          },
+          "lastIncomingDataDate" : {
+            "type" : "string",
+            "description" : "Timestamp of the last incoming data"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/DatasetStatus"
+          }
+        }
+      },
+      "QualityCheckType" : {
+        "type" : "string",
+        "enum" : [ "NOT_UNIQUE_KEY", "NUMERIC_DATA", "VAL_TOO_LOW", "VAL_TOO_HIGH", "VAL_IS_OUTLIER", "MEAN_TOO_LOW", "MEAN_TOO_HIGH", "VALUE_TOO_FREQ", "VALUE_TOO_INFREQ", "GROUP_MEAN_DIFFERENT", "GROUP_DIST_DIFFERENT" ]
+      },
+      "DatasetRecordFieldMap" : {
+        "type" : "object",
+        "description" : "Object whose keys are dataset field names and values are the corresponding string values for one record."
+      },
+      "RoleOutput" : {
+        "type" : "object"
+      },
+      "BulkUserResponse" : {
+        "type" : "object"
+      },
+      "RecordSearchRequest" : {
+        "type" : "object",
+        "description" : "Optional search body with \"filters\" and/or \"fields\". Dataset search: filters on dataset columns plus optional modifiedAt filters; form submissions: filters only on submission metadata fields (see Forms operation descriptions)."
+      },
+      "DatasetDto" : {
+        "type" : "object"
+      },
+      "UserOutput" : {
+        "type" : "object"
+      },
+      "DatasetChanges" : {
+        "type" : "object",
+        "properties" : {
+          "errorMessages" : {
+            "type" : "array",
+            "description" : "List of error messages encountered during the upload",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "rowsAdded" : {
+            "type" : "integer",
+            "description" : "Number of new records added to the dataset"
+          },
+          "rowsUpdated" : {
+            "type" : "integer",
+            "description" : "Number of existing records updated in the dataset"
+          },
+          "valuesTruncated" : {
+            "type" : "integer",
+            "description" : "Number of values that were truncated due to length constraints (maximum length is 255 characters)"
+          },
+          "enumeratorDatasetLinkedMessage" : {
+            "type" : "string",
+            "description" : "Message about enumerator dataset linking, if applicable"
+          },
+          "columnsAdded" : {
+            "type" : "integer",
+            "description" : "Number of new columns added to the dataset"
+          }
+        },
+        "description" : "Summary of changes made to the dataset during the upload operation"
+      },
+      "DatasetSummary" : {
+        "type" : "object"
+      },
+      "PublishingStatus" : {
+        "type" : "object"
+      },
+      "EnumeratorAppearanceEntryModeDef" : {
+        "type" : "string",
+        "enum" : [ "LIST", "ENTRY", "SCAN" ]
+      },
+      "DatasetInput" : {
+        "required" : [ "discriminator" ],
+        "type" : "object",
+        "properties" : {
+          "idFormatOptions" : {
+            "$ref" : "#/components/schemas/IdFormatOptions"
+          },
+          "allowOfflineUpdates" : {
+            "type" : "boolean",
+            "description" : "Whether the dataset allows offline updates. "
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Unique identifier for the dataset. Must be unique across the system."
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "Display title for the dataset."
+          },
+          "casesManagementOptions" : {
+            "$ref" : "#/components/schemas/CasesManagementOptions"
+          },
+          "locationContext" : {
+            "$ref" : "#/components/schemas/LocationContext"
+          },
+          "discriminator" : {
+            "$ref" : "#/components/schemas/DatasetDiscriminator"
+          },
+          "uniqueRecordField" : {
+            "type" : "string",
+            "description" : "Field name to use for unique record identification. "
+          }
+        },
+        "description" : "Input model for creating and updating datasets with all required configuration options"
+      },
+      "Operator" : {
+        "type" : "string",
+        "enum" : [ "GT", "GTE", "LT", "LTE" ]
+      },
+      "RemoteErrorResponse" : {
+        "type" : "object"
+      }
+    }
+  }
+}

@@ -1,29 +1,590 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "RapidPro API v2 (mock subset)",
+    "title": "RapidPro / TextIt REST API v2",
     "version": "2.0",
-    "description": "Focused subset of the RapidPro/TextIt API v2 used by the OpenFn rapidpro adaptor: contacts (list, create, upsert by URN), flow starts and broadcasts. RapidPro endpoints are served under /api/v2/ and accept/return JSON with a .json suffix.",
+    "description": "RapidPro's REST API v2 documents 26 resources (contacts, flows, campaigns, channels, messages, tickets, ...), served under /api/v2/ with a .json suffix. The OpenFn rapidpro adaptor has no generic get/post/request builder: its four public functions (addContact, upsertContact, startFlow, sendBroadcast) each POST to exactly one fixed resource (contacts, flow_starts, broadcasts), confirmed by reading the adaptor's compiled source. This document covers those resources in full (every documented method, field and filter, not just the fields the adaptor's own request bodies set), plus /flows (referenced by UUID from flow_starts but not itself callable through the adaptor) for context. The other ~22 documented resources are unreachable through this adaptor and are out of scope.",
     "x-openfn-adaptor": "rapidpro"
   },
   "servers": [
-    { "url": "https://app.rapidpro.io", "description": "RapidPro cloud host (self-hosted instances vary)" }
+    {
+      "url": "https://app.rapidpro.io",
+      "description": "RapidPro cloud host (self-hosted instances configure their own host + apiVersion)"
+    }
   ],
+  "components": {
+    "schemas": {
+      "ObjectRef": {
+        "type": "object",
+        "description": "A lightweight reference to another object (contact, group, flow, ...).",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "Contact's unique identifier."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked",
+              "stopped",
+              "archived"
+            ]
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "description": "3-letter ISO 639-3 code."
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated URNs, e.g. 'tel:+12065551212'."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom contact field values, keyed by field key."
+          },
+          "flow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectRef"
+              }
+            ],
+            "nullable": true,
+            "description": "The flow the contact is currently in, if any."
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_seen_on": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ContactWrite": {
+        "type": "object",
+        "description": "Request body for creating or updating a contact. Only included fields are modified on update.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name."
+          },
+          "language": {
+            "type": "string",
+            "description": "3-letter ISO 639-3 code."
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Up to 100 custom field key/value pairs."
+          }
+        }
+      },
+      "ContactList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            }
+          }
+        }
+      },
+      "FlowStart": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "flow": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "queued",
+              "started",
+              "completed",
+              "failed",
+              "interrupted"
+            ]
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Extra parameters passed to the flow start, accessible via @trigger.params."
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FlowStartWrite": {
+        "type": "object",
+        "required": [
+          "flow"
+        ],
+        "properties": {
+          "flow": {
+            "type": "string",
+            "description": "UUID of the flow to start contacts in."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "restart_participants": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to restart participants already active in the flow."
+          },
+          "exclude_active": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to exclude contacts currently active in any flow."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Extra parameters accessible via @trigger.params; up to 10K characters JSON-encoded."
+          }
+        }
+      },
+      "FlowStartList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowStart"
+            }
+          }
+        }
+      },
+      "Broadcast": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "text": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Message text per language code, e.g. {\"eng\": \"Hello\"}."
+          },
+          "attachments": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Attachment URLs per language code."
+          },
+          "quick_replies": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "description": "Quick reply option sets per language code."
+          },
+          "base_language": {
+            "type": "string",
+            "description": "Default translation language code."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "queued",
+              "started",
+              "completed",
+              "failed",
+              "interrupted"
+            ]
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BroadcastWrite": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "text": {
+            "description": "Message text: either a plain string (used as-is in the org's default language) or a language-code -> string dict of translations.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "attachments": {
+            "description": "Attachment URLs: either a plain array of strings (the org's default language) or a language-code -> array-of-strings dict of translations.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "quick_replies": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "description": "Quick reply option sets per language code."
+          },
+          "base_language": {
+            "type": "string"
+          }
+        }
+      },
+      "BroadcastList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Broadcast"
+            }
+          }
+        }
+      },
+      "Flow": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "message",
+              "voice",
+              "survey"
+            ]
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "expires": {
+            "type": "integer",
+            "description": "Minutes of inactivity before a contact's run in this flow expires."
+          },
+          "runs": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "integer"
+              },
+              "completed": {
+                "type": "integer"
+              },
+              "interrupted": {
+                "type": "integer"
+              },
+              "expired": {
+                "type": "integer"
+              }
+            }
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "The result keys this flow may save."
+          },
+          "parent_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FlowList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Flow"
+            }
+          }
+        }
+      }
+    }
+  },
   "paths": {
     "/api/v2/contacts.json": {
       "get": {
         "operationId": "listContacts",
         "summary": "List contacts",
         "parameters": [
-          { "name": "uuid", "in": "query", "schema": { "type": "string" } },
-          { "name": "urn", "in": "query", "schema": { "type": "string" } },
-          { "name": "group", "in": "query", "schema": { "type": "string" } }
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by contact UUID."
+          },
+          {
+            "name": "urn",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by a URN the contact has."
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by group name or UUID."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return contacts modified before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return contacts modified after this time."
+          }
         ],
         "responses": {
           "200": {
             "description": "Paginated contacts",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ContactList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactList"
+                }
+              }
             }
           }
         }
@@ -32,26 +593,83 @@
         "operationId": "addContact",
         "summary": "Create or upsert a contact (upsert when a urn query param is supplied)",
         "parameters": [
-          { "name": "urn", "in": "query", "schema": { "type": "string" }, "description": "When present, upsert the contact matching this URN" }
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the contact matching this UUID."
+          },
+          {
+            "name": "urn",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the contact matching this URN (creating it if it does not exist)."
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ContactWrite" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactWrite"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The created or updated contact",
+            "description": "The updated contact",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Contact" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
             }
           },
           "201": {
             "description": "Created contact",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Contact" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
             }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteContact",
+        "summary": "Delete a contact",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The contact to delete, by UUID."
+          },
+          {
+            "name": "urn",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The contact to delete, by URN."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No matching contact"
           }
         }
       }
@@ -60,11 +678,40 @@
       "get": {
         "operationId": "listFlowStarts",
         "summary": "List flow starts",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Paginated flow starts",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/FlowStartList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowStartList"
+                }
+              }
             }
           }
         }
@@ -75,14 +722,22 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/FlowStartWrite" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowStartWrite"
+              }
+            }
           }
         },
         "responses": {
           "201": {
             "description": "The queued flow start",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/FlowStart" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowStart"
+                }
+              }
             }
           }
         }
@@ -92,11 +747,40 @@
       "get": {
         "operationId": "listBroadcasts",
         "summary": "List broadcasts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Paginated broadcasts",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/BroadcastList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastList"
+                }
+              }
             }
           }
         }
@@ -107,14 +791,22 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/BroadcastWrite" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastWrite"
+              }
+            }
           }
         },
         "responses": {
           "201": {
             "description": "The queued broadcast",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Broadcast" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Broadcast"
+                }
+              }
             }
           }
         }
@@ -124,138 +816,61 @@
       "get": {
         "operationId": "listFlows",
         "summary": "List flows",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "message",
+                "voice",
+                "survey"
+              ]
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Paginated flows",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/FlowList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowList"
+                }
+              }
             }
           }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "ObjectRef": {
-        "type": "object",
-        "properties": {
-          "uuid": { "type": "string" },
-          "name": { "type": "string" }
-        }
-      },
-      "Contact": {
-        "type": "object",
-        "properties": {
-          "uuid": { "type": "string" },
-          "name": { "type": "string", "nullable": true },
-          "language": { "type": "string", "nullable": true },
-          "urns": { "type": "array", "items": { "type": "string" }, "example": ["tel:+250788123123"] },
-          "groups": { "type": "array", "items": { "$ref": "#/components/schemas/ObjectRef" } },
-          "fields": { "type": "object", "additionalProperties": true },
-          "blocked": { "type": "boolean", "nullable": true },
-          "stopped": { "type": "boolean", "nullable": true },
-          "created_on": { "type": "string", "format": "date-time" },
-          "modified_on": { "type": "string", "format": "date-time" }
-        }
-      },
-      "ContactWrite": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "language": { "type": "string" },
-          "urns": { "type": "array", "items": { "type": "string" } },
-          "groups": { "type": "array", "items": { "type": "string" } },
-          "fields": { "type": "object", "additionalProperties": true }
-        }
-      },
-      "ContactList": {
-        "type": "object",
-        "properties": {
-          "next": { "type": "string", "nullable": true },
-          "previous": { "type": "string", "nullable": true },
-          "results": { "type": "array", "items": { "$ref": "#/components/schemas/Contact" } }
-        }
-      },
-      "FlowStart": {
-        "type": "object",
-        "properties": {
-          "uuid": { "type": "string" },
-          "flow": { "$ref": "#/components/schemas/ObjectRef" },
-          "groups": { "type": "array", "items": { "$ref": "#/components/schemas/ObjectRef" } },
-          "contacts": { "type": "array", "items": { "$ref": "#/components/schemas/ObjectRef" } },
-          "status": { "type": "string", "example": "pending" },
-          "params": { "type": "object", "additionalProperties": true },
-          "created_on": { "type": "string", "format": "date-time" },
-          "modified_on": { "type": "string", "format": "date-time" }
-        }
-      },
-      "FlowStartWrite": {
-        "type": "object",
-        "required": ["flow"],
-        "properties": {
-          "flow": { "type": "string", "description": "Flow UUID" },
-          "contacts": { "type": "array", "items": { "type": "string" } },
-          "groups": { "type": "array", "items": { "type": "string" } },
-          "urns": { "type": "array", "items": { "type": "string" } },
-          "restart_participants": { "type": "boolean" },
-          "extra": { "type": "object", "additionalProperties": true }
-        }
-      },
-      "FlowStartList": {
-        "type": "object",
-        "properties": {
-          "next": { "type": "string", "nullable": true },
-          "previous": { "type": "string", "nullable": true },
-          "results": { "type": "array", "items": { "$ref": "#/components/schemas/FlowStart" } }
-        }
-      },
-      "Broadcast": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "urns": { "type": "array", "items": { "type": "string" } },
-          "contacts": { "type": "array", "items": { "$ref": "#/components/schemas/ObjectRef" } },
-          "groups": { "type": "array", "items": { "$ref": "#/components/schemas/ObjectRef" } },
-          "text": { "type": "object", "additionalProperties": { "type": "string" } },
-          "status": { "type": "string", "example": "queued" },
-          "created_on": { "type": "string", "format": "date-time" }
-        }
-      },
-      "BroadcastWrite": {
-        "type": "object",
-        "required": ["text"],
-        "properties": {
-          "text": { "type": "string" },
-          "urns": { "type": "array", "items": { "type": "string" } },
-          "contacts": { "type": "array", "items": { "type": "string" } },
-          "groups": { "type": "array", "items": { "type": "string" } }
-        }
-      },
-      "BroadcastList": {
-        "type": "object",
-        "properties": {
-          "next": { "type": "string", "nullable": true },
-          "previous": { "type": "string", "nullable": true },
-          "results": { "type": "array", "items": { "$ref": "#/components/schemas/Broadcast" } }
-        }
-      },
-      "Flow": {
-        "type": "object",
-        "properties": {
-          "uuid": { "type": "string" },
-          "name": { "type": "string" },
-          "type": { "type": "string" },
-          "archived": { "type": "boolean" },
-          "created_on": { "type": "string", "format": "date-time" }
-        }
-      },
-      "FlowList": {
-        "type": "object",
-        "properties": {
-          "next": { "type": "string", "nullable": true },
-          "previous": { "type": "string", "nullable": true },
-          "results": { "type": "array", "items": { "$ref": "#/components/schemas/Flow" } }
         }
       }
     }

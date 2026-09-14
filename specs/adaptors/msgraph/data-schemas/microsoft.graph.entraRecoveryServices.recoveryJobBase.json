@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msgraph/microsoft.graph.entraRecoveryServices.recoveryJobBase",
+  "title": "microsoft.graph.entraRecoveryServices.recoveryJobBase",
+  "x-openfn-adaptor": "msgraph",
+  "x-source": {
+    "openapi": "#/components/schemas/microsoft.graph.entraRecoveryServices.recoveryJobBase",
+    "capturedAt": "2026-09-14"
+  },
+  "allOf": [
+    {
+      "$ref": "microsoft.graph.entity.json"
+    },
+    {
+      "title": "recoveryJobBase",
+      "required": [
+        "@odata.type"
+      ],
+      "type": "object",
+      "properties": {
+        "filteringCriteria": {
+          "anyOf": [
+            {
+              "$ref": "microsoft.graph.entraRecoveryServices.recoveryJobFilteringCriteriaBase.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ],
+          "description": "Optional filtering criteria used to scope the job to specific entity types or entity IDs."
+        },
+        "jobCompletionDateTime": {
+          "pattern": "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$",
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The date and time when the job completed. Null if the job is still running.",
+          "format": "date-time"
+        },
+        "jobStartDateTime": {
+          "pattern": "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$",
+          "type": "string",
+          "description": "The date and time when the job started.",
+          "format": "date-time"
+        },
+        "status": {
+          "$ref": "microsoft.graph.entraRecoveryServices.recoveryStatus.json"
+        },
+        "targetStateDateTime": {
+          "pattern": "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$",
+          "type": "string",
+          "description": "The target snapshot timestamp to which the tenant is being restored. Supports $filter (eq, ne).",
+          "format": "date-time"
+        },
+        "totalChangedLinksCalculated": {
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The total count of changed directory object links (relationships) calculated by the job. null until the job completes calculation. Not all calculated link changes may be successfully applied; see totalLinksModified on derived types for the count of links that were actually modified.",
+          "format": "int32"
+        },
+        "totalChangedObjectsCalculated": {
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The total count of changed directory objects calculated by the job. null until the job completes calculation. Not all calculated object changes may be successfully applied; see totalObjectsModified on derived types for the count of objects that were actually modified.",
+          "format": "int32"
+        },
+        "@odata.type": {
+          "type": "string"
+        }
+      },
+      "discriminator": {
+        "propertyName": "@odata.type",
+        "mapping": {
+          "#microsoft.graph.entraRecoveryServices.recoveryJob": "#/components/schemas/microsoft.graph.entraRecoveryServices.recoveryJob",
+          "#microsoft.graph.entraRecoveryServices.recoveryPreviewJob": "#/components/schemas/microsoft.graph.entraRecoveryServices.recoveryPreviewJob"
+        }
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index vtiger` — do not edit by hand -->
 
-base: https://{instance}.od1.vtiger.com | auth: not declared | 12 operations in 1 resource
+base: https://{instance}.od1.vtiger.com | auth: not declared | 13 operations in 1 resource
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -19,3 +19,4 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /webservice.php/delete — deleteElement: Delete a CRM record
 - GET /webservice.php/query — query: Run a VtigerQL query
 - GET /webservice.php/sync — sync: Fetch records changed since a timestamp
+- GET /webservice.php/lookup — lookup: Search records by phone or email across modules

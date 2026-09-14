@@ -3,12 +3,54 @@
   "npm": "@openfn/language-erpnext",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no Frappe/ERPNext entry"
+    },
+    {
+      "kind": "docs",
+      "url": "https://frappeframework.com/docs/user/en/api/rest",
+      "result": "used",
+      "note": "the generic REST API every DocType gets: list/create under /api/resource/{doctype}, read/update/delete under /api/resource/{doctype}/{name}, and the /api/method/<dotted.path> RPC convention"
+    },
+    {
+      "kind": "source",
+      "url": "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/client.py",
+      "result": "used",
+      "note": "frappe.client, the framework's own whitelisted RPC module (get_list, get_count, get, get_value, set_value, insert, insert_many, save, rename_doc, submit, cancel, delete, bulk_update, has_permission, get_doc_permissions, get_password, attach_file, validate_link_and_fetch, ~20 methods total, all callable at /api/method/frappe.client.<name>). Read to confirm what the adaptor's getCount call (get_count) does server-side, and to check whether the other ~19 are reachable through the adaptor: they are not (see notes)"
+    },
+    {
+      "kind": "source",
+      "url": "https://registry.npmjs.org/frappe-js-sdk/-/frappe-js-sdk-1.14.1.tgz",
+      "result": "used",
+      "note": "the third-party SDK the adaptor actually calls (frappeClient.db()...). Its FrappeDB class implements getDoc/getDocList/createDoc/updateDoc/deleteDoc/getCount (what the adaptor exposes) plus getLastDoc/renameDoc/getValue/setValue/getSingleValue/submit/cancel (which the adaptor does not expose as functions and so cannot reach)"
+    },
+    {
+      "kind": "source",
+      "url": "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/api/v1.py",
+      "result": "used",
+      "note": "the actual server-side route handlers, read after openfn-mocker's conformance run flagged the old spec's date-time format and create status as suspect. Confirms delete_doc explicitly sets HTTP 202 (not 200/204), and that create_doc/update_doc/read_doc never set an explicit status so they fall through to the framework default (200, not 201)"
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
   "sources": [
     "https://frappeframework.com/docs/user/en/api/rest",
-    "https://frappeframework.com/docs/user/en/api/database",
+    "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/client.py",
+    "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/api/v1.py",
+    "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/utils/response.py",
+    "https://registry.npmjs.org/frappe-js-sdk/-/frappe-js-sdk-1.14.1.tgz",
     "https://cdn.jsdelivr.net/npm/@openfn/language-erpnext/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-erpnext/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/erpnext"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "ERPNext uses the generic Frappe Framework REST API. Adaptor operations map as: create -> POST /api/resource/{doctype}, read -> GET /api/resource/{doctype}/{name}, update -> PUT /api/resource/{doctype}/{name}, deleteRecord -> DELETE, getList -> GET /api/resource/{doctype}, getCount -> GET /api/method/frappe.client.get_count. Documents are schemaless per doctype; Customer/Item/SalesOrder modelled as representative reusable shapes. Server URL is a placeholder site host."
+  "capturedAt": "2026-09-14",
+  "lastCheckedAt": "2026-09-14",
+  "notes": "ERPNext runs on the Frappe Framework, whose generic REST API (documented once, applied to every DocType) is the source of truth here. Unlike most adaptors in this registry, @openfn/language-erpnext has no generic get/post/request builder: every one of its six public functions (create, read, update, deleteRecord, getList, getCount) delegates straight to a fixed method on the third-party frappe-js-sdk's FrappeDB class, confirmed by reading that SDK's source. That SDK itself exposes more methods (getLastDoc, renameDoc, getValue, setValue, getSingleValue, submit, cancel, all thin wrappers around frappe.client.* whitelisted RPC methods) but the adaptor never calls them, so they are not reachable through it and stay out of scope: coverage:full here means the complete set of six endpoints this adaptor can actually issue, not the whole Frappe REST surface. Cross-checking against the SDK source also fixed two real bugs in the old spec's getList: the query param is `limit`, not `limit_page_length` (the SDK sends `limit`; Frappe's REST layer treats them as aliases, but the adaptor only ever sends the former), and `or_filters`/`group_by`/`as_dict` were missing entirely. getCount's `filters` param and optional `debug` flag are now modelled from the SDK call too. Two more fixes came from running openfn-mocker's conformance check against this spec and then reading Frappe's actual route handlers (frappe/api/v1.py) to settle what looked wrong: `creation`/`modified` are Frappe-formatted timestamps ('2019-06-03 14:19:00.281026', space-separated, not RFC3339), so they no longer carry an incorrect `format: date-time`; and DELETE genuinely responds 202 Accepted (delete_doc sets frappe.response.http_status_code = 202 explicitly), not 200. Documents are schemaless per doctype (Frappe lets any app define arbitrary DocTypes with arbitrary fields); Customer/Item/SalesOrder are kept as representative reusable shapes for common ERPNext doctypes, not an exhaustive list. Server URL is a placeholder site host, since the adaptor is configured with an arbitrary per-tenant baseUrl."
 }

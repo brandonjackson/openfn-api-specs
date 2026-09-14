@@ -1,15 +1,38 @@
 {
   "adaptor": "msgraph",
   "npm": "@openfn/language-msgraph",
-  "origin": "converted",
-  "upstreamFormat": "csdl",
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "subset",
+  "derivedFrom": "upstream.yaml",
+  "completeness": "complete",
+  "completenessReason": null,
   "sources": [
+    "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/openapi.yaml",
     "https://github.com/microsoftgraph/msgraph-metadata/blob/master/openapi/v1.0/openapi.yaml",
     "https://learn.microsoft.com/en-us/graph/api/overview",
     "https://cdn.jsdelivr.net/npm/@openfn/language-msgraph/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-msgraph/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/msgraph"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Focused subset covering the Graph resources the adaptor touches. The msgraph adaptor exposes 6 public operations (create, get, getDrive, getFolder, getFile, uploadFile) against base https://graph.microsoft.com/v1.0. Endpoints were confirmed from the adaptor's dist/index.cjs: getDrive hits /drives/{id} or /{owner}/{id}/drive (sites, groups); getFolder hits /drives/{id}/items/{id}/children (or /root:/{path}); getFile hits /drives/{id}/items/{id}/content; uploadFile POSTs /drives/{id}/items/{id}:/{name}:/createUploadSession (or the /sites/{id}/drive equivalent) then PUTs to the returned uploadUrl; create POSTs to any resource (applications shown as the doc example); get is generic (sites/root/lists shown). Reusable shapes (DriveItem, Drive, Site, List, User, Group, Application, Worksheet, UploadSession) were subset by hand from the official Microsoft Graph metadata (CSDL/EDMX converted to OpenAPI, published at microsoftgraph/msgraph-metadata). The full Graph OpenAPI is multi-megabyte and deliberately NOT vendored; only ~17 operations relevant to the adaptor are modeled."
+  "capturedAt": "2026-09-14",
+  "notes": "Microsoft publishes the full Graph v1.0 surface as an OpenAPI 3.0 document (generated from their CSDL metadata by their own tooling, not by us) at microsoftgraph/msgraph-metadata, which makes this found-openapi, not converted. The verbatim upstream (upstream.yaml, 43 MB, hash-locked) is 17,777 operations / 11,493 paths / 5,127 schemas across every Microsoft 365 workload (Teams, SharePoint, Intune device management, security & compliance, identity governance, education, print, ...). openapi.json serves a curated coverage:subset derived mechanically from that file (a filter script, not hand-authored): every path whose top-level resource is one a Graph integration realistically reaches (users, groups, sites, drives/driveItems, applications, servicePrincipals, organization, directory objects/roles, domains, invitations, teams/teamwork/chats, planner, contacts), restricted to at most 5 path segments (entity plus one or two levels of relationship/action), plus the bare /me singleton (the signed-in user, which the mock/adaptor address directly rather than through /users/{id}). That keeps single-hop operations like a driveItem's /content or /createUploadSession while dropping Graph's deep, rarely-used relationship chains (nested OneNote pages, analytics-of-analytics, etc.). Every path/parameter/schema kept is copied byte-for-byte from Microsoft's document (1,737 paths, 2,605 operations, 1,056 schemas) via a transitive $ref closure, not re-authored, so completeness is 'complete' rather than best-effort. Verified against ast.json: the adaptor's 6 HTTP operations (create, get, getDrive, getFolder, getFile, uploadFile) are all generic builders with no fixed path, and every endpoint their docs/source name as an example (/drives/{id}, /drives/{id}/items/{id}/children, /drives/{id}/items/{id}/content, /drives/{id}/items/{id}/createUploadSession, /sites/{id}/drive, /groups/{id}/drive, /applications) is present in the subset. Previously this adaptor's spec was a ~17-endpoint hand-picked stub, the exact 'focused subset' anti-pattern AGENTS.md warns against; this replaces it with a real vendor document narrowed by a documented, mechanical rule instead of by guessing at adaptor usage. Left out: Intune/device management, security & compliance, identity governance, education, print, reports, and most of onenote/todo/presence, all real Graph resources the adaptor's generic builders could reach but that no realistic OpenFn workflow targets; a future pass could widen the depth/tag allowlist if that changes.",
+  "upstream": {
+    "specUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/openapi.yaml",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:6e3a4c9bab98c7c759742769fae115e8c50241674ffc99d834d223ab93c91889",
+    "fetchedAt": "2026-09-14"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/openapi.yaml",
+      "result": "used",
+      "note": "Microsoft's own OpenAPI 3.0 rendering of the full Graph v1.0 metadata, linked from their public docs; 17,777 operations verbatim"
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json"
+  ],
+  "lastCheckedAt": "2026-09-14"
 }

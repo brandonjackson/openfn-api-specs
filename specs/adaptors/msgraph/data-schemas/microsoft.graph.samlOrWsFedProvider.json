@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msgraph/microsoft.graph.samlOrWsFedProvider",
+  "title": "microsoft.graph.samlOrWsFedProvider",
+  "x-openfn-adaptor": "msgraph",
+  "x-source": {
+    "openapi": "#/components/schemas/microsoft.graph.samlOrWsFedProvider",
+    "capturedAt": "2026-09-14"
+  },
+  "allOf": [
+    {
+      "$ref": "microsoft.graph.identityProviderBase.json"
+    },
+    {
+      "title": "samlOrWsFedProvider",
+      "required": [
+        "@odata.type"
+      ],
+      "type": "object",
+      "properties": {
+        "issuerUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Issuer URI of the federation server."
+        },
+        "metadataExchangeUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "URI of the metadata exchange endpoint used for authentication from rich client applications."
+        },
+        "passiveSignInUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "URI that web-based clients are directed to when signing in to Microsoft Entra services."
+        },
+        "preferredAuthenticationProtocol": {
+          "anyOf": [
+            {
+              "$ref": "microsoft.graph.authenticationProtocol.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ],
+          "description": "Preferred authentication protocol. The possible values are: wsFed, saml, unknownFutureValue."
+        },
+        "signingCertificate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Current certificate used to sign tokens passed to the Microsoft identity platform. The certificate is formatted as a Base64 encoded string of the public portion of the federated IdP's token signing certificate and must be compatible with the X509Certificate2 class.   This property is used in the following scenarios:  if a rollover is required outside of the autorollover update a new federation service is being set up  if the new token signing certificate isn't present in the federation properties after the federation service certificate has been updated.   Microsoft Entra ID updates certificates via an autorollover process in which it attempts to retrieve a new certificate from the federation service metadata, 30 days before expiry of the current certificate. If a new certificate isn't available, Microsoft Entra ID monitors the metadata daily and will update the federation settings for the domain when a new certificate is available."
+        },
+        "@odata.type": {
+          "type": "string",
+          "default": "#microsoft.graph.samlOrWsFedProvider"
+        }
+      },
+      "discriminator": {
+        "propertyName": "@odata.type",
+        "mapping": {
+          "#microsoft.graph.internalDomainFederation": "#/components/schemas/microsoft.graph.internalDomainFederation",
+          "#microsoft.graph.samlOrWsFedExternalDomainFederation": "#/components/schemas/microsoft.graph.samlOrWsFedExternalDomainFederation"
+        }
+      }
+    }
+  ]
+}

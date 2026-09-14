@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msgraph/microsoft.graph.processContentMetadataBase",
+  "title": "processContentMetadataBase",
+  "x-openfn-adaptor": "msgraph",
+  "x-source": {
+    "openapi": "#/components/schemas/microsoft.graph.processContentMetadataBase",
+    "capturedAt": "2026-09-14"
+  },
+  "required": [
+    "@odata.type"
+  ],
+  "type": "object",
+  "properties": {
+    "content": {
+      "anyOf": [
+        {
+          "$ref": "microsoft.graph.contentBase.json"
+        },
+        {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      ],
+      "description": "Represents the actual content, either as text (textContent) or binary data (binaryContent). Optional if metadata alone is sufficient for policy evaluation. Do not use for contentActivities."
+    },
+    "contentCategory": {
+      "anyOf": [
+        {
+          "$ref": "microsoft.graph.contentCategory.json"
+        },
+        {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      ]
+    },
+    "correlationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "An identifier used to group multiple related content entries (for example, different parts of the same file upload, messages in a conversation)."
+    },
+    "createdDateTime": {
+      "pattern": "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$",
+      "type": "string",
+      "description": "Required. Timestamp indicating when the original content was created (for example, file creation time, message sent time).",
+      "format": "date-time"
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Required. A unique identifier for this specific content entry within the context of the calling application or enforcement plane (for example, message ID, file path/URL)."
+    },
+    "isTruncated": {
+      "type": "boolean",
+      "description": "Required. Indicates if the provided content has been truncated from its original form (for example, due to size limits)."
+    },
+    "length": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The length of the original content in bytes.",
+      "format": "int64"
+    },
+    "modifiedDateTime": {
+      "pattern": "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$",
+      "type": "string",
+      "description": "Required. Timestamp indicating when the original content was last modified. For ephemeral content like messages, this might be the same as createdDateTime.",
+      "format": "date-time"
+    },
+    "name": {
+      "type": "string",
+      "description": "Required. A descriptive name for the content (for example, file name, web page title, 'Chat Message')."
+    },
+    "sequenceNumber": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "A sequence number indicating the order in which content was generated or should be processed, required when correlationId is used.",
+      "format": "int64"
+    },
+    "@odata.type": {
+      "type": "string"
+    }
+  },
+  "discriminator": {
+    "propertyName": "@odata.type",
+    "mapping": {
+      "#microsoft.graph.processConversationMetadata": "#/components/schemas/microsoft.graph.processConversationMetadata",
+      "#microsoft.graph.processFileMetadata": "#/components/schemas/microsoft.graph.processFileMetadata"
+    }
+  }
+}

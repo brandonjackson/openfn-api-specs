@@ -3,11 +3,40 @@
   "npm": "@openfn/language-rapidpro",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://rapidpro.io/api/v2/",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/dist/index.cjs"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no RapidPro/TextIt entry"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/rapidpro/rapidpro/main/openapi.json",
+      "result": "not-found"
+    },
+    {
+      "kind": "docs",
+      "url": "https://rapidpro.io/api/v2/",
+      "result": "used",
+      "note": "server-rendered per-resource reference pages (26 resources total: contacts, flows, campaigns, channels, messages, tickets, ...); each documents its HTTP methods, fields and filters in a consistent format. Direct curl gets a 403 (bot-challenged); fetched successfully via a browser-rendering fetch instead"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "RapidPro documents a REST API v2 but publishes no OpenAPI machine spec (docs are HTML + a self-hosted API explorer). Authored OpenAPI 3.0 by hand. Endpoint paths (/api/v2/contacts.json, /api/v2/flow_starts.json, /api/v2/broadcasts.json) and the upsert-by-URN query-param behaviour confirmed from the adaptor dist source. Host is instance-specific; app.rapidpro.io used as the default server."
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "sources": [
+    "https://rapidpro.io/api/v2/contacts",
+    "https://rapidpro.io/api/v2/flow_starts",
+    "https://rapidpro.io/api/v2/broadcasts",
+    "https://rapidpro.io/api/v2/flows",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/dist/index.cjs",
+    "https://raw.githubusercontent.com/rapidpro/rapidpro/main/temba/api/v2/fields.py"
+  ],
+  "capturedAt": "2026-09-14",
+  "lastCheckedAt": "2026-09-14",
+  "notes": "RapidPro/TextIt's REST API v2 documents 26 resources, but @openfn/language-rapidpro has no generic get/post/request builder: reading the adaptor's compiled source shows its four public functions (addContact, upsertContact, startFlow, sendBroadcast) each POST to exactly one fixed resource (contacts.json, flow_starts.json, broadcasts.json) built from a configurable host + apiVersion, and nothing else is reachable through it. coverage:full here means every documented method/field/filter of the four resources this adaptor can reach or reference (contacts, flow_starts, broadcasts, and flows, which flow_starts references by UUID but never itself calls) -- not the other ~22 REST v2 resources, which are out of scope. Previously this was a genuinely mislabelled spec: info.title was literally '(mock subset)' and the description said so too, modelling roughly a third of even these four resources' documented fields (no DELETE on contacts, no filters beyond the bare minimum, no query params on flow_starts/broadcasts/flows, thin Contact/FlowStart/Broadcast/Flow schemas). Rewritten field-for-field from the live per-resource docs pages (each resource has its own reference page under /api/v2/<resource>, consistently documenting GET/POST/DELETE, every field, and an example). upsertContact's own logic (POST without urns, and a second POST with ?urn=<urn> when the first response's urns[0] looks like an array) is an adaptor-side workaround, not a distinct endpoint; the underlying resource is the same POST /api/v2/contacts.json?urn=... modelled here. Host and API version are configurable per credential (app.rapidpro.io used as the default server), matching self-hosted RapidPro instances. Two corrections came from running openfn-mocker's conformance check against a first draft: dropped a `format: uuid` on every id field (RapidPro's docs never specify a wire format, and the mocker deliberately uses human-readable ids like 'grp-0001-anc' for guide/usage clarity, so a strict UUID pattern was an invention, not a documented fact); and BroadcastWrite's `text`/`attachments` now allow a plain string/array as well as a language-dict, confirmed from RapidPro's real serializer source (temba/api/v2/fields.py TranslatedTextField.to_internal_value: a plain string is treated as the org's default language, not rejected)."
 }
