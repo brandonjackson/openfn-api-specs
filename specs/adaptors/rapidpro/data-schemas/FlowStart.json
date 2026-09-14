@@ -5,21 +5,16 @@
   "x-openfn-adaptor": "rapidpro",
   "x-source": {
     "openapi": "#/components/schemas/FlowStart",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-14"
   },
   "type": "object",
   "properties": {
     "uuid": {
-      "type": "string"
+      "type": "string",
+      "format": "uuid"
     },
     "flow": {
       "$ref": "ObjectRef.json"
-    },
-    "groups": {
-      "type": "array",
-      "items": {
-        "$ref": "ObjectRef.json"
-      }
     },
     "contacts": {
       "type": "array",
@@ -27,13 +22,27 @@
         "$ref": "ObjectRef.json"
       }
     },
+    "groups": {
+      "type": "array",
+      "items": {
+        "$ref": "ObjectRef.json"
+      }
+    },
     "status": {
       "type": "string",
-      "example": "pending"
+      "enum": [
+        "pending",
+        "queued",
+        "started",
+        "completed",
+        "failed",
+        "interrupted"
+      ]
     },
     "params": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "description": "Extra parameters passed to the flow start, accessible via @trigger.params."
     },
     "created_on": {
       "type": "string",

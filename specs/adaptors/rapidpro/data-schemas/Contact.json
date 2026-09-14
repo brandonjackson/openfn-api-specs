@@ -5,12 +5,14 @@
   "x-openfn-adaptor": "rapidpro",
   "x-source": {
     "openapi": "#/components/schemas/Contact",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-09-14"
   },
   "type": "object",
   "properties": {
     "uuid": {
-      "type": "string"
+      "type": "string",
+      "format": "uuid",
+      "description": "Contact's unique identifier."
     },
     "name": {
       "type": [
@@ -18,20 +20,28 @@
         "null"
       ]
     },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "blocked",
+        "stopped",
+        "archived"
+      ]
+    },
     "language": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "description": "3-letter ISO 639-3 code."
     },
     "urns": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "example": [
-        "tel:+250788123123"
-      ]
+      "description": "Associated URNs, e.g. 'tel:+12065551212'."
     },
     "groups": {
       "type": "array",
@@ -41,19 +51,16 @@
     },
     "fields": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "description": "Custom contact field values, keyed by field key."
     },
-    "blocked": {
-      "type": [
-        "boolean",
-        "null"
-      ]
-    },
-    "stopped": {
-      "type": [
-        "boolean",
-        "null"
-      ]
+    "flow": {
+      "allOf": [
+        {
+          "$ref": "ObjectRef.json"
+        }
+      ],
+      "description": "The flow the contact is currently in, if any."
     },
     "created_on": {
       "type": "string",
@@ -61,6 +68,13 @@
     },
     "modified_on": {
       "type": "string",
+      "format": "date-time"
+    },
+    "last_seen_on": {
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     }
   }
