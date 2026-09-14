@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msgraph/microsoft.graph.stsPolicy",
+  "title": "microsoft.graph.stsPolicy",
+  "x-openfn-adaptor": "msgraph",
+  "x-source": {
+    "openapi": "#/components/schemas/microsoft.graph.stsPolicy",
+    "capturedAt": "2026-09-14"
+  },
+  "allOf": [
+    {
+      "$ref": "microsoft.graph.policyBase.json"
+    },
+    {
+      "title": "stsPolicy",
+      "required": [
+        "@odata.type"
+      ],
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A string collection containing a JSON string that defines the rules and settings for a policy. The syntax for the definition differs for each derived policy type. Required."
+        },
+        "isOrganizationDefault": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "If set to true, activates this policy. There can be many policies for the same policy type, but only one can be activated as the organization default. Optional, default value is false."
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": {
+            "$ref": "microsoft.graph.directoryObject.json"
+          },
+          "x-ms-navigationProperty": true
+        },
+        "@odata.type": {
+          "type": "string",
+          "default": "#microsoft.graph.stsPolicy"
+        }
+      },
+      "discriminator": {
+        "propertyName": "@odata.type",
+        "mapping": {
+          "#microsoft.graph.activityBasedTimeoutPolicy": "#/components/schemas/microsoft.graph.activityBasedTimeoutPolicy",
+          "#microsoft.graph.claimsMappingPolicy": "#/components/schemas/microsoft.graph.claimsMappingPolicy",
+          "#microsoft.graph.homeRealmDiscoveryPolicy": "#/components/schemas/microsoft.graph.homeRealmDiscoveryPolicy",
+          "#microsoft.graph.tokenIssuancePolicy": "#/components/schemas/microsoft.graph.tokenIssuancePolicy",
+          "#microsoft.graph.tokenLifetimePolicy": "#/components/schemas/microsoft.graph.tokenLifetimePolicy"
+        }
+      }
+    }
+  ]
+}

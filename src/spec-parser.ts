@@ -66,14 +66,18 @@ export function parseSpec(raw: any): ParsedSpec {
       const reqJson = rb?.content?.['application/json'];
       if (reqJson?.schema) requestSchema = reqJson.schema;
 
-      // Success response: lowest 2xx, else 'default'.
+      // Success response: lowest literal 2xx, else a '2XX'-style range key
+      // (OpenAPI 3.0's own wildcard form, e.g. Microsoft Graph's generated
+      // spec uses '2XX'/'4XX'/'5XX' exclusively and never a literal code),
+      // else 'default'.
       let successStatus = method === 'post' ? 201 : 200;
       let responseSchema: any;
       const responses = (op.responses ?? {}) as Record<string, any>;
       const twoxx = Object.keys(responses)
         .filter((k) => /^2\d\d$/.test(k))
         .sort();
-      const chosen = twoxx[0] ?? (responses.default ? 'default' : undefined);
+      const rangeKey = Object.keys(responses).find((k) => /^2xx$/i.test(k));
+      const chosen = twoxx[0] ?? rangeKey ?? (responses.default ? 'default' : undefined);
       if (chosen && /^2\d\d$/.test(chosen)) successStatus = parseInt(chosen, 10);
       if (chosen) {
         const resp = deref(responses[chosen]);

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "msgraph/microsoft.graph.learningCourseActivity",
+  "title": "microsoft.graph.learningCourseActivity",
+  "x-openfn-adaptor": "msgraph",
+  "x-source": {
+    "openapi": "#/components/schemas/microsoft.graph.learningCourseActivity",
+    "capturedAt": "2026-09-14"
+  },
+  "allOf": [
+    {
+      "$ref": "microsoft.graph.entity.json"
+    },
+    {
+      "title": "learningCourseActivity",
+      "required": [
+        "@odata.type"
+      ],
+      "type": "object",
+      "properties": {
+        "completedDateTime": {
+          "pattern": "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$",
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Date and time when the assignment was completed. Optional.",
+          "format": "date-time"
+        },
+        "completionPercentage": {
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The percentage completion value of the course activity. Optional.",
+          "format": "int32"
+        },
+        "externalcourseActivityId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "learnerUserId": {
+          "type": "string",
+          "description": "The user ID of the learner to whom the activity is assigned. Required."
+        },
+        "learningContentId": {
+          "type": "string",
+          "description": "The ID of the learning content created in Viva Learning. Required."
+        },
+        "learningProviderId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The registration ID of the provider. Required."
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "microsoft.graph.courseStatus.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          ],
+          "description": "The status of the course activity. The possible values are: notStarted, inProgress, completed. Required."
+        },
+        "@odata.type": {
+          "type": "string"
+        }
+      },
+      "discriminator": {
+        "propertyName": "@odata.type",
+        "mapping": {
+          "#microsoft.graph.learningAssignment": "#/components/schemas/microsoft.graph.learningAssignment",
+          "#microsoft.graph.learningSelfInitiatedCourse": "#/components/schemas/microsoft.graph.learningSelfInitiatedCourse"
+        }
+      }
+    }
+  ]
+}
