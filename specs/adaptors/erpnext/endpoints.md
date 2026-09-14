@@ -1,4 +1,4 @@
-# ERPNext / Frappe REST API (subset) (erpnext) v1.0.0
+# ERPNext / Frappe Framework REST API (erpnext) v1.0.0
 
 <!-- derived from openapi.json by `pnpm specs index erpnext` — do not edit by hand -->
 
