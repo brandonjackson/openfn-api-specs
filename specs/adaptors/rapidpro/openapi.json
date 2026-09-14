@@ -19,8 +19,7 @@
         "description": "A lightweight reference to another object (contact, group, flow, ...).",
         "properties": {
           "uuid": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -32,7 +31,6 @@
         "properties": {
           "uuid": {
             "type": "string",
-            "format": "uuid",
             "description": "Contact's unique identifier."
           },
           "name": {
@@ -117,8 +115,7 @@
           "groups": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "maxItems": 100
           },
@@ -154,8 +151,7 @@
         "type": "object",
         "properties": {
           "uuid": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "flow": {
             "$ref": "#/components/schemas/ObjectRef"
@@ -206,22 +202,19 @@
         "properties": {
           "flow": {
             "type": "string",
-            "format": "uuid",
             "description": "UUID of the flow to start contacts in."
           },
           "groups": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "maxItems": 100
           },
           "contacts": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "maxItems": 100
           },
@@ -274,8 +267,7 @@
         "type": "object",
         "properties": {
           "uuid": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "urns": {
             "type": "array",
@@ -360,34 +352,49 @@
           "contacts": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "maxItems": 100
           },
           "groups": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           },
           "text": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "Message text per language code, e.g. {\"eng\": \"Hello\"}."
+            "description": "Message text: either a plain string (used as-is in the org's default language) or a language-code -> string dict of translations.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
           },
           "attachments": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
+            "description": "Attachment URLs: either a plain array of strings (the org's default language) or a language-code -> array-of-strings dict of translations.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               }
-            },
-            "description": "Attachment URLs per language code."
+            ]
           },
           "quick_replies": {
             "type": "object",
@@ -430,8 +437,7 @@
         "type": "object",
         "properties": {
           "uuid": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "name": {
             "type": "string"
