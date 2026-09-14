@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "surveycto/FormFillingConfig",
+  "title": "FormFillingConfig",
+  "x-openfn-adaptor": "surveycto",
+  "x-source": {
+    "openapi": "#/components/schemas/FormFillingConfig",
+    "capturedAt": "2026-09-14"
+  },
+  "type": "object",
+  "properties": {
+    "skip_welcome_page": {
+      "type": "boolean",
+      "description": "Skip the form's \"Welcome\" screen and land directly on the first question. Default: false.",
+      "example": "false"
+    },
+    "hide_finalize_checkbox": {
+      "type": "boolean",
+      "description": "Hide the \"Mark form as finalized\" checkbox; the form always submits as finalized. Default: false.",
+      "example": "false"
+    },
+    "hide_instance_name": {
+      "type": "boolean",
+      "description": "Hide the \"Name this form\" text input on the save-and-exit screen; the auto-generated instance name is used. Default: false.",
+      "example": "false"
+    },
+    "pinned_forms": {
+      "type": "array",
+      "description": "Form IDs to pin for quick access from the form-filling header/drawer. Pinned forms appear in a dedicated \"Forms\" menu item and modal while a form is being filled out. The form currently being filled is always excluded from its own pinned-forms menu. Can be overridden per form via form_overrides. Default: empty (no pinned forms).",
+      "example": "[\"registration_v2\",\"follow_up_v3\"]",
+      "items": {
+        "type": "string"
+      }
+    },
+    "post_submit_form_id": {
+      "type": "string",
+      "description": "Form ID to navigate to after submission (the client navigates to /collect/{form_id}); the thank-you screen is skipped. Must be a valid SurveyCTO form ID.",
+      "example": "follow_up_v3"
+    },
+    "post_submit_url": {
+      "type": "string",
+      "description": "Where to navigate after submission: either a relative path starting with '/' or an absolute https URL, which may point outside this server. Protocol-relative URLs ('//host/...') and any other scheme are rejected. Used only when post_submit_form_id is not set.",
+      "example": "/collect/cases.html"
+    },
+    "form_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "FormFillingOverride.json"
+      },
+      "description": "Per-form overrides. Keys are form IDs; values may override any of the global settings for that form. Fields left out (or null) inherit the global value."
+    },
+    "auto_send": {
+      "type": "boolean",
+      "description": "Completely skip the save-and-exit screen: the form auto-submits as finalized with the auto-generated instance name. When true, hide_instance_name and hide_finalize_checkbox are irrelevant. Default: false.",
+      "example": "false"
+    }
+  },
+  "description": "Form-filling behavior: welcome screen, submission flow, save-and-exit screen, and post-submission navigation. Settings apply globally; per-form overrides can be specified via form_overrides. All fields are optional; omitted fields keep their defaults."
+}

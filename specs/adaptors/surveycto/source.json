@@ -1,15 +1,50 @@
 {
   "adaptor": "surveycto",
   "npm": "@openfn/language-surveycto",
-  "origin": "generated",
-  "upstreamFormat": "docs",
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
   "sources": [
+    "https://developer.surveycto.com/specs/api-v2.json",
+    "https://developer.surveycto.com/specs/api-v1.json",
     "https://developer.surveycto.com/api-v2.html",
-    "https://docs.surveycto.com/05-exporting-and-publishing-data/03-api-access/01.api-access.html",
-    "https://support.surveycto.com/hc/en-us/articles/12958726083987-Using-the-REST-API",
+    "https://developer.surveycto.com/api-v1.html",
     "https://cdn.jsdelivr.net/npm/@openfn/language-surveycto/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-surveycto/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/surveycto"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "SurveyCTO does not publish a machine-readable OpenAPI/Swagger spec, so this document was hand-authored from vendor docs plus the OpenFn adaptor source (Adaptor.js/Utils.js). Coverage is scoped to the endpoints the adaptor actually calls. fetchSubmissions -> GET /forms/data/wide/json/{formId} and GET /forms/data/csv/{formId} (query: date, r=review status). list -> GET /datasets and GET /datasets/{datasetId}/records (paginated with limit/cursor; adaptor expects {data,nextCursor,total}). upsertDataset -> GET/POST/PUT /datasets(/{id}). upsertRecord -> PATCH /datasets/{datasetId}/record?recordId=. uploadCsvRecords -> POST /datasets/{datasetId}/records/upload (multipart file + metadata). Auth is HTTP Basic. Real base URL is https://{servername}.surveycto.com/api/{apiVersion}; Datasets endpoints use v2. Submission and DatasetRecord shapes are open (additionalProperties) because fields are form/dataset-specific; only stable metadata fields are enumerated. Caveats: exact response envelope for pagination and the upload-result body were inferred from adaptor behavior, not from a published schema."
+  "capturedAt": "2026-09-14",
+  "notes": "Dobility's SurveyCTO developer portal (developer.surveycto.com) is a VitePress site whose per-endpoint reference pages are rendered client-side from two vendor-published OpenAPI 3.0.1 documents at /specs/api-v1.json and /specs/api-v2.json (found by noticing the sidebar's exact method+title listing smelled like a generated-from-spec doc site, then guessing the conventional /specs/<page>.json path off the page's own slug -- confirmed live, not a lead). Previously this adaptor's spec was hand-authored, docs-only, and explicitly scoped to \"the endpoints the adaptor actually calls\" (9 ops); reading the adaptor's compiled source shows it has a real generic builder (http.get/post/request/_delete, reaching any relative path), so per AGENTS.md that narrow scope was the disallowed anti-pattern, not a legitimate design choice. api-v2.json (43 ops / 60 schemas, the current API: datasets, dataset records, form submissions, users, roles, teams, groups, workflow profiles) is committed verbatim as upstream.json. api-v1.json (6 ops, legacy form-export endpoints: long/wide/per-repeat-group CSV, file URL listing, CSV linebreak settings -- none of which api-v2 exposes) is committed verbatim as upstream-v1.json (sha256:9a608f5b8c85a3b893603f41ab5839eb6c9def40a05d2f9a7dbade087ce23cef); its 6 exclusive paths are merged into the served openapi.json alongside v2's 25, and its schemas are a strict subset of v2's under identical names (verified field-for-field equal before merging, so no renaming was needed). Both versions are genuinely reachable: the adaptor's buildUrl reads apiVersion from the credential (default 'v1') and inserts it into every request path, so which document applies depends on how a given credential is configured, not on anything the adaptor hardcodes. Verified against ast.json/adaptor source: fetchSubmissions builds forms/data/(wide/<format>|csv)/<formId>, matching both the v1 and v2 forms endpoints; list/upsertDataset/upsertRecord/uploadCsvRecords build /datasets(...) paths that only exist in v2. Server URL is the vendor's own placeholder (https://your-server.surveycto.com); the adaptor's real host is servername.surveycto.com, servername coming from the credential.",
+  "upstream": {
+    "specUrl": "https://developer.surveycto.com/specs/api-v2.json",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:a8dd33bbe7df30529d5fab42562575b617ef0f6410b390e47597e6ca610cc485",
+    "fetchedAt": "2026-09-14",
+    "note": "Primary/current document. api-v1.json (the legacy addendum) is committed separately as upstream-v1.json; see notes for its hash."
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://developer.surveycto.com/specs/api-v2.json",
+      "result": "used",
+      "note": "found by guessing the VitePress site's own /specs/<page>.json convention off its sidebar slug, then confirming live; not linked from the rendered docs page itself"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developer.surveycto.com/specs/api-v1.json",
+      "result": "used",
+      "note": "same discovery path; the legacy version, additive to api-v2"
+    },
+    {
+      "kind": "postman",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no surveycto/dobility entry"
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "lastCheckedAt": "2026-09-14"
 }

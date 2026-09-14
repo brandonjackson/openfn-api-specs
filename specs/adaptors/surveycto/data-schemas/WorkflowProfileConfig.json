@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "surveycto/WorkflowProfileConfig",
+  "title": "WorkflowProfileConfig",
+  "x-openfn-adaptor": "surveycto",
+  "x-source": {
+    "openapi": "#/components/schemas/WorkflowProfileConfig",
+    "capturedAt": "2026-09-14"
+  },
+  "type": "object",
+  "properties": {
+    "theme_config": {
+      "$ref": "ThemeConfig.json"
+    },
+    "locale_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "LocaleOverride.json"
+      },
+      "description": "Per-language translations of profile strings. Keys are browser-language codes (e.g. \"fr\", \"es\", \"hi\") or admin-uploaded translation-table basenames; values are partial overlays -- only non-null fields replace the top-level defaults. An override section is applied only when the corresponding base section is present in the profile."
+    },
+    "form_list_config": {
+      "$ref": "FormListConfig.json"
+    },
+    "form_filling_config": {
+      "$ref": "FormFillingConfig.json"
+    },
+    "collect_entry_url": {
+      "type": "string",
+      "description": "Landing page when the user navigates to /collect. Either a relative path starting with '/' or an absolute https URL, which may point outside this server. Protocol-relative URLs ('//host/...') and any other scheme are rejected. Null or blank = default main menu (/collect/main.html).",
+      "example": "/collect/cases.html"
+    },
+    "menu_config": {
+      "$ref": "MenuConfig.json"
+    },
+    "ui_messages": {
+      "$ref": "UiMessages.json"
+    },
+    "open_links_in_new_tab": {
+      "type": "boolean",
+      "description": "Global default for whether links (form fill-out buttons, pinned forms, custom menu items) open in a new browser tab. Individual custom items can override this via their own open_in_new_tab field. Default: true.",
+      "example": "true"
+    },
+    "form_header_config": {
+      "$ref": "FormHeaderConfig.json"
+    }
+  },
+  "description": "Workflow profile configuration. All sections and fields are optional; omitted sections/fields use their defaults (everything visible, no custom labels, messages, or theme)."
+}

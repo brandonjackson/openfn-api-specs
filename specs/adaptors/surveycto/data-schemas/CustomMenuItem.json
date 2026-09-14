@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "surveycto/CustomMenuItem",
+  "title": "CustomMenuItem",
+  "x-openfn-adaptor": "surveycto",
+  "x-source": {
+    "openapi": "#/components/schemas/CustomMenuItem",
+    "capturedAt": "2026-09-14"
+  },
+  "required": [
+    "type"
+  ],
+  "type": "object",
+  "properties": {
+    "open_in_new_tab": {
+      "type": "boolean",
+      "description": "Per-item override for the link target behavior. When omitted (null), inherits the global open_links_in_new_tab setting; when true or false, overrides it for this item only.",
+      "example": "false"
+    },
+    "icon": {
+      "type": "string",
+      "description": "FontAwesome icon class name matching fa-<name>. Optional.",
+      "example": "fa-briefcase"
+    },
+    "form_id": {
+      "type": "string",
+      "description": "Form ID to link to. Required when type is \"form\", ignored otherwise.",
+      "example": "registration_v2"
+    },
+    "id": {
+      "type": "string",
+      "description": "Stable identifier, unique within the list. Optional in general, but required to translate this item's label via locale_overrides (which references items by id, not position).",
+      "example": "my_cases"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display text for the item.",
+      "example": "My Cases"
+    },
+    "page": {
+      "type": "string",
+      "description": "Standard Collect page name. Required when type is \"page\", ignored otherwise.",
+      "example": "cases",
+      "enum": [
+        "cases",
+        "forms",
+        "saved"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "description": "Item type: \"form\" (link to fill a form), \"link\" (URL), or \"page\" (standard Collect page). Required on every custom item.",
+      "example": "page",
+      "enum": [
+        "form",
+        "link",
+        "page"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to link to. Required when type is \"link\". Either a relative path starting with '/' or an absolute 'https://' URL. Plaintext http, protocol-relative URLs and other schemes are rejected. Validated whenever present, whatever the type.",
+      "example": "/collect/cases.html"
+    }
+  },
+  "description": "A custom menu/navigation item, used by both menu_config.custom_items and form_header_config.custom_items. Only type is always required; formId, url and page are each required for the matching type. All other fields are optional."
+}
