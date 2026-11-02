@@ -202,28 +202,61 @@ export function samplePrompts(opts: { n: number; seed: number; mockedSystems: st
 
   const specs = new Map<string, any>();
   const out: PromptCase[] = [];
-  for (const { keys, q } of quotas.sort((a, b) => a.c.localeCompare(b.c))) {
-    // Without replacement while the stratum has room, then with replacement.
+  const seen = new Set<string>();
+  /** One draw from a system-level pair: entities, phrasing and modify step. */
+  const draw = (key: string): PromptCase => {
+    const p = pairs.get(key)!;
+    const s = pick(r, p.sources);
+    const t = pick(r, p.targets.filter((x) => x.adaptor !== s.adaptor));
+    const mod = modification(s, specs, r);
+    const a = systemName(s.adaptor);
+    const b = systemName(t.adaptor);
+    return {
+      id: '',
+      concept: p.concept,
+      peerType: p.peerType,
+      prompt: pick(r, TEMPLATES)(a, s.native, mod.instruction, b, t.native),
+      source: { adaptor: s.adaptor, system: a, entity: s.name, native: s.native, confidence: s.cr, origin: s.origin },
+      modify: mod,
+      target: { adaptor: t.adaptor, system: b, entity: t.name, native: t.native, confidence: t.cw, origin: t.origin },
+      confidence: s.cr == null || t.cw == null ? null : Math.min(s.cr, t.cw),
+    };
+  };
+  /**
+   * Every prompt text is distinct: the model only sees the text, so a repeat
+   * would be a wasted generation. A draw that repeats an earlier text is
+   * redrawn from the same stratum; a stratum with no distinct draws left gives
+   * up after MAX_TRIES and its slot goes to the largest strata afterwards.
+   */
+  const MAX_TRIES = 200;
+  const drawDistinct = (first: string | undefined, keys: string[]): PromptCase | undefined => {
+    for (let tries = 0; tries < MAX_TRIES; tries++) {
+      const c = draw(tries === 0 && first ? first : pick(r, keys));
+      if (!seen.has(c.prompt)) {
+        seen.add(c.prompt);
+        return c;
+      }
+    }
+    return undefined;
+  };
+  let shortfall = 0;
+  const strata = quotas.sort((a, b) => a.c.localeCompare(b.c));
+  for (const { keys, q } of strata) {
+    // Pairs without replacement while the stratum has room, then with replacement.
     const pool = [...keys];
     for (let i = 0; i < q; i++) {
-      const key = pool.length ? pool.splice(Math.floor(r() * pool.length), 1)[0] : pick(r, keys);
-      const p = pairs.get(key)!;
-      const s = pick(r, p.sources);
-      const t = pick(r, p.targets.filter((x) => x.adaptor !== s.adaptor));
-      const mod = modification(s, specs, r);
-      const a = systemName(s.adaptor);
-      const b = systemName(t.adaptor);
-      const prompt = pick(r, TEMPLATES)(a, s.native, mod.instruction, b, t.native);
-      out.push({
-        id: '',
-        concept: p.concept,
-        peerType: p.peerType,
-        prompt,
-        source: { adaptor: s.adaptor, system: a, entity: s.name, native: s.native, confidence: s.cr, origin: s.origin },
-        modify: mod,
-        target: { adaptor: t.adaptor, system: b, entity: t.name, native: t.native, confidence: t.cw, origin: t.origin },
-        confidence: s.cr == null || t.cw == null ? null : Math.min(s.cr, t.cw),
-      });
+      const first = pool.length ? pool.splice(Math.floor(r() * pool.length), 1)[0] : undefined;
+      const c = drawDistinct(first, keys);
+      if (c) out.push(c);
+      else shortfall++;
+    }
+  }
+  for (const { keys } of [...strata].sort((a, b) => b.keys.length - a.keys.length || a.c.localeCompare(b.c))) {
+    while (shortfall > 0) {
+      const c = drawDistinct(undefined, keys);
+      if (!c) break;
+      out.push(c);
+      shortfall--;
     }
   }
   // Shuffle so any prefix (e.g. a 50-prompt pilot) is itself a fair sample.

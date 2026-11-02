@@ -51,7 +51,8 @@ SatuSehat Platform."
   887 system-level pairs, down from 3,500, all covered by the 1,000 prompts.
 - **Sampling.** Stratified by peer type in proportion to how many pairs each
   type has (person 35%, user account 18%, product 10%, ...), then shuffled, so
-  any prefix is a fair pilot. Seeded (`--seed=120`), so it's reproducible.
+  any prefix is a fair pilot. Every prompt text is distinct, because a repeat
+  would be a wasted generation. Seeded (`--seed=120`), so it's reproducible.
 - **The "modify" step.** It is taken from the source object's own spec
   fields: a date field set to today when there is one (the ticket's birthday
   example), else a name/description field. 224 prompts have no suitable field
