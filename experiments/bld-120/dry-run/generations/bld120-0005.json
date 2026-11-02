@@ -1,0 +1,10 @@
+{
+  "id": "bld120-0005",
+  "prompt": "I need to move data from the Community Health Toolkit (CHT) to SatuSehat Platform: pull the newest report, leave the fields unchanged, and post it to SatuSehat Platform as a questionnaire response.",
+  "workflow_yaml": "name: dry-run\njobs:\n  fetch:\n    name: Fetch record\n    adaptor: '@openfn/language-cht@latest'\n    body: |\n      get('/api/v2/export/reports', { query: { filters: {} } });\n  post:\n    name: Post record\n    adaptor: '@openfn/language-satusehat@latest'\n    body: |\n      fn(state => {\n        const r = state.data[0];\n        state.qr = { resourceType: 'QuestionnaireResponse', status: 'completed', questionnaire: r.form,\n          authored: new Date(r.reported_date).toISOString(),\n          item: Object.entries(r.fields || {}).map(([k, v]) => ({ linkId: k, answer: [{ valueString: String(v) }] })) };\n        return state;\n      });\n      post('QuestionnaireResponse', state => state.qr);\ntriggers:\n  webhook:\n    type: webhook\nedges:\n  webhook->fetch:\n    source_trigger: webhook\n    target_job: fetch\n  fetch->post:\n    source_job: fetch\n    target_job: post\n    condition_type: on_job_success\n",
+  "response": null,
+  "usage": null,
+  "meta": null,
+  "ms": 0,
+  "at": "dry-run"
+}

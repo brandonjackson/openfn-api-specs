@@ -137,8 +137,9 @@ function modification(e: Entity, specs: Map<string, any>, r: () => number): { fi
   );
   const dates = props.filter(
     ([k, s]) =>
-      (s?.format === 'date' || s?.format === 'date-time' || (s?.type === 'string' && /date|birth|dob/i.test(k))) &&
-      !/^(created|updated|modified|last|_)/i.test(k)
+      (s?.format === 'date' || s?.format === 'date-time' || (s?.type === 'string' && /(?<!up)date|birth|dob/i.test(k))) &&
+      // System-managed timestamps aren't something an integration would set.
+      !/^_|last|created|updated|modified|login|lock|expir|deleted|sync/i.test(k)
   );
   if (dates.length) {
     const [k] = pick(r, dates);

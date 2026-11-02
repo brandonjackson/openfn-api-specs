@@ -1,0 +1,10 @@
+{
+  "id": "bld120-0002",
+  "prompt": "Get the latest contact from Go.Data, set its dateOfReporting to today's date, and upload it as a customer to Mailchimp.",
+  "workflow_yaml": "name: dry-run\njobs:\n  fetch:\n    name: Fetch record\n    adaptor: '@openfn/language-godata@latest'\n    body: |\n      listContacts('ob-sl-covid19');\n  post:\n    name: Post record\n    adaptor: '@openfn/language-mailchimp@latest'\n    body: |\n      fn(state => {\n        const c = state.data[state.data.length - 1];\n        state.member = { email_address: c.email || c.addresses?.[0]?.emailAddress, status: 'subscribed',\n          merge_fields: { FNAME: c.firstName, LNAME: c.lastName, REPORTED: new Date().toISOString().slice(0, 10) } };\n        return state;\n      });\n      addMember({ listId: 'list_seed01', member: state => state.member });\ntriggers:\n  webhook:\n    type: webhook\nedges:\n  webhook->fetch:\n    source_trigger: webhook\n    target_job: fetch\n  fetch->post:\n    source_job: fetch\n    target_job: post\n    condition_type: on_job_success\n",
+  "response": null,
+  "usage": null,
+  "meta": null,
+  "ms": 0,
+  "at": "dry-run"
+}

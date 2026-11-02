@@ -225,25 +225,34 @@ async function startMock(m: Mocker, system: string): Promise<RunningMock> {
  */
 const TRACK = (step: string) => `fn(state => {
   const IGNORE = new Set(['toJSON','then','read','constructor','inspect','asymmetricMatch','$$typeof','nodeType','length']);
-  const misses = (globalThis.__bld120 = globalThis.__bld120 || {})[${JSON.stringify(step)}] = [];
+  // Each miss is logged as a marker line rather than kept on state: some
+  // adaptors rebuild state (LAMISPlus's http.post replaces state.data with its
+  // login response), and a step that throws never reaches a final flush.
+  // Console output always reaches the run log.
+  const seen = new Set();
+  const misses = { push: (path) => { if (!seen.has(path)) { seen.add(path); console.log('__BLD120_MISS__' + JSON.stringify([${JSON.stringify(step)}, path])); } } };
   const wrap = (v, p) => v && typeof v === 'object' ? new Proxy(v, { get(t, k, r) {
     const x = Reflect.get(t, k, r);
     if (typeof k === 'string' && !(k in t) && !IGNORE.has(k) && !k.startsWith('__') && !(Array.isArray(t) && /^\\d+$/.test(k))) misses.push(p + '.' + k);
     return wrap(x, Array.isArray(t) && /^\\d+$/.test(k) ? p + '[]' : p + '.' + String(k));
   } }) : v;
   state.data = wrap(state.data, 'data');
+  console.log('__BLD120_TRACKING__');
   return state;
 });
 `;
-const FLUSH = `\nfn(state => { state.__bld120 = globalThis.__bld120 || {}; return state; });\n`;
+const FLUSH = '\n';
 
 interface RunOutcome {
   ok: boolean;
   errors: string[];
   log: string;
+  fullLog: string;
   misses: Record<string, string[]>;
   stepsCompleted: string[];
   timedOut: boolean;
+  /** The run failed before any job code ran (adaptor install, CLI crash): not the code's fault. */
+  infra: boolean;
 }
 
 function runWorkflow(steps: Step[], configs: Record<string, unknown>[], env: Record<string, string>, dir: string): Promise<RunOutcome> {
@@ -285,9 +294,17 @@ function runWorkflow(steps: Step[], configs: Record<string, unknown>[], env: Rec
         ok: code === 0 && !timedOut && errors.length === 0 && fatal.length === 0,
         errors: [...errors, ...fatal].slice(0, 5),
         log: log.slice(-4000),
-        misses: state?.__bld120 ?? {},
+        fullLog: log,
+        misses: [...log.matchAll(/__BLD120_MISS__(\[.*\])/g)].reduce<Record<string, string[]>>((acc, m) => {
+          try {
+            const [step, path] = JSON.parse(m[1]);
+            (acc[step] ??= []).push(path);
+          } catch { /* a truncated line */ }
+          return acc;
+        }, {}),
         stepsCompleted,
         timedOut,
+        infra: /Command failed: npm install|ETIMEDOUT|EAI_AGAIN|Failed to install|E403/.test(log) && stepsCompleted.length === 0,
       });
     });
   });
@@ -386,6 +403,37 @@ export function readStatus(responseSchema: any, path: string, schemas: Record<st
 
 const WRITE = new Set(['POST', 'PUT', 'PATCH']);
 
+/**
+ * Calls an adaptor makes for itself to authenticate (login, token exchange,
+ * session). The job's author didn't choose them, so they are left out of the
+ * verdict; they still appear in `exchanges` marked `auth`.
+ */
+const isAuth = (e: Exchange) =>
+  /(^|\/)(login|logout|token|accesstoken|oauth2?|auth|authenticate|session|sessions)(\/|$|\?)/i.test(e.path.split('?')[0]);
+
+/** A read that came back with nothing to map: the mock's seed, not the code. */
+export function isEmptyCollection(body: unknown): boolean {
+  if (Array.isArray(body)) return body.length === 0;
+  if (!body || typeof body !== 'object') return false;
+  const arrays = Object.values(body as object).filter(Array.isArray) as unknown[][];
+  return arrays.length > 0 && arrays.every((a) => a.length === 0);
+}
+
+/**
+ * The mock's credential can point an adaptor one level deeper than the spec's
+ * paths begin (OpenBoxes: spec paths are /api/products, the mock base URL
+ * already ends in /api, so traffic arrives as /products). When an exchange
+ * matches nothing, retry behind the spec's dominant leading path segment
+ * before calling the endpoint unknown.
+ */
+function leadingPrefix(spec: any): string | undefined {
+  const firsts = Object.keys(spec?.paths ?? {}).map((p) => p.split('/')[1]).filter(Boolean);
+  const counts = new Map<string, number>();
+  for (const f of firsts) counts.set(f, (counts.get(f) ?? 0) + 1);
+  const [top, n] = [...counts].sort((a, b) => b[1] - a[1])[0] ?? [];
+  return top && n / firsts.length > 0.5 && !top.includes('{') ? `/${top}` : undefined;
+}
+
 function specFor(adaptor: string): any | undefined {
   const p = join(ROOT, 'specs/adaptors', adaptor, 'openapi.json');
   return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : undefined;
@@ -403,10 +451,12 @@ export interface CheckResult {
   uses_source_adaptor: boolean;
   uses_target_adaptor: boolean;
   run_ok: boolean | null;
+  /** Why this prompt is left out of the rates, when it is: the harness or the mock's data, not the code. */
+  excluded?: 'infra' | 'empty-source';
   checks: { source_endpoint: boolean | null; source_fields: boolean | null; target_body: boolean | null; target_endpoint: boolean | null };
   violations: { system: string; kind: string; operation?: string; exchange: string; pointer?: string; message: string }[];
   misses: { path: string; status: PathStatus }[];
-  exchanges: { system: string; method: string; path: string; status: number }[];
+  exchanges: { system: string; method: string; path: string; status: number; auth?: boolean }[];
   errors: string[];
   note?: string;
 }
@@ -457,6 +507,7 @@ export async function checkOne(m: Mocker, c: PromptCase, g: Generation, workDir:
     const run = await runWorkflow(steps, configs, env, join(workDir, c.id));
     base.run_ok = run.ok;
     base.errors.push(...run.errors);
+    if (run.infra) return { ...base, excluded: 'infra', note: 'run failed before job code ran (adaptor install / environment)' };
     const rawMisses = [...new Set(Object.values(run.misses).flat())];
 
     // Judge each side's traffic against its own spec.
@@ -465,29 +516,48 @@ export async function checkOne(m: Mocker, c: PromptCase, g: Generation, workDir:
       const spec = specFor(adaptor);
       const ex = mock?.exchanges ?? [];
       // Query strings dropped: some carry (mock) client secrets, and the verdict doesn't need them.
-      base.exchanges.push(...ex.map((e) => ({ system: adaptor, method: e.method, path: e.path.split('?')[0], status: e.status })));
-      if (!spec || !ex.length) return { ex, v: [] as Violation[] };
+      base.exchanges.push(...ex.map((e) => ({ system: adaptor, method: e.method, path: e.path.split('?')[0], status: e.status, ...(isAuth(e) ? { auth: true } : {}) })));
+      const own = ex.filter((e) => !isAuth(e));
+      if (!spec || !own.length) return { ex: own, v: [] as Violation[] };
       const conformer = createConformer(spec);
-      const v = ex.flatMap((e) => conformer.check(e));
+      const prefix = leadingPrefix(spec);
+      const v = own.flatMap((e) => {
+        const first = conformer.check(e);
+        if (!prefix || !first.some((x) => x.kind === 'unknown-operation') || e.path.startsWith(prefix + '/')) return first;
+        return conformer.check({ ...e, path: prefix + e.path });
+      });
       base.violations.push(...v.map((x) => ({ system: adaptor, kind: x.kind, operation: x.operation, exchange: x.exchange, pointer: x.pointer, message: x.message })));
-      return { ex, v };
+      return { ex: own, v };
     };
     const A = judge(c.source.adaptor);
     const B = c.target.adaptor === c.source.adaptor ? A : judge(c.target.adaptor);
 
     if (A.ex.length) base.checks.source_endpoint = !A.v.some((v) => v.kind === 'unknown-operation');
+    // The read worked but the mock had nothing to return: whatever the code
+    // does next can't be judged fairly.
+    const lastOk = [...A.ex].reverse().find((e) => e.status < 300 && e.responseBody !== undefined);
+    if (base.checks.source_endpoint && lastOk && isEmptyCollection(lastOk.responseBody)) {
+      return { ...base, excluded: 'empty-source', note: 'source read returned no records (mock seed data)' };
+    }
 
     // Field reads: judge each read of an absent field against the response
     // schema of A's last successful read. Only observable once A's data has
     // flowed into a later step, and only when A's spec gives a schema.
     const aSpec = specFor(c.source.adaptor);
     const lastRead = [...A.ex].reverse().find((e) => e.status < 300 && e.responseBody !== undefined);
-    if (aSpec && lastRead && steps.length > 1 && Object.keys(run.misses).length) {
+    // Measurable once a tracked step (any after the first) actually started.
+    const trackedStarted = steps.length > 1 && /__BLD120_TRACKING__/.test(run.log + run.fullLog);
+    if (aSpec && lastRead && trackedStarted) {
       const parsed = parseSpec(aSpec);
       const op = createConformer(aSpec).match(lastRead.method, lastRead.path);
       if (op?.responseSchema) {
         base.misses = rawMisses.map((path) => ({ path, status: readStatus(op.responseSchema, path, parsed.schemas, lastRead.responseBody) }));
-        base.checks.source_fields = !base.misses.some((x) => x.status === 'undeclared');
+        // Fail on any field the schema rules out; pass only when every missed
+        // read is declared (an optional field this record lacked); otherwise
+        // the schema couldn't say, so the check is not measured.
+        base.checks.source_fields = base.misses.some((x) => x.status === 'undeclared')
+          ? false
+          : base.misses.some((x) => x.status === 'unknown') ? null : true;
       }
     }
     const bWrites = B.ex.filter((e) => WRITE.has(e.method.toUpperCase()));

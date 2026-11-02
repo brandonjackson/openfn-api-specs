@@ -76,6 +76,26 @@ than the spec.
 | Understands peer object B | every body sent to B passes B's request schema |
 | Posts to a valid endpoint on B | B received a write, and every request to B matches B's spec |
 
+Calls the adaptor makes for itself (login, token, session) are left out of
+the verdict, since the job's author didn't choose them. "Understands object
+A" fails only on a field the schema rules out. It passes when every missed
+read is declared, and is "not measured" when the schema can't say (empty or
+free-form). Misses are logged as marker lines, not kept on state, because some
+adaptors rebuild state (LAMISPlus's `http.post` replaces `state.data` with its
+login response).
+
+Two kinds of prompt are left out of every rate, and counted separately:
+
+- **infra:** the run failed before any job code ran (adaptor install, network).
+- **empty-source:** the source read was valid, but the mock had no records to
+  return, so whatever the code did next can't be judged.
+
+`report.ts` also sorts failed runs by root cause: calls a function the adaptor
+doesn't have, wrong arguments, reads a shape the data doesn't have, API
+rejected a request, and so on. Many real failures sit outside the four checks.
+
+`dry-run/` shows all of this on 10 realistic hand-written workflows.
+
 A check is "not measured" when the run never reached it, for example when
 the read failed so B was never called. `report.ts` gives every rate both over
 all prompts (not measured = fail) and over measured prompts only.

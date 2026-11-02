@@ -1,0 +1,10 @@
+{
+  "id": "bld120-0007",
+  "prompt": "Get the latest web user from CommCare, append \" (synced from OpenFn)\" to its last_name, and upload it as a user to SurveyCTO.",
+  "workflow_yaml": "name: dry-run\njobs:\n  fetch:\n    name: Fetch record\n    adaptor: '@openfn/language-commcare@latest'\n    body: |\n      get('/web-user', { limit: 1 });\n  post:\n    name: Post record\n    adaptor: '@openfn/language-surveycto@latest'\n    body: |\n      upsertDataset({ id: 'users', title: 'Users', idColumn: 'username' });\n      uploadCsvRecords('users', state => {\n        const u = state.data.objects[0];\n        return [{ username: u.username, first_name: u.first_name, last_name: `${u.last_name} (synced from OpenFn)`, email: u.email }];\n      });\ntriggers:\n  webhook:\n    type: webhook\nedges:\n  webhook->fetch:\n    source_trigger: webhook\n    target_job: fetch\n  fetch->post:\n    source_job: fetch\n    target_job: post\n    condition_type: on_job_success\n",
+  "response": null,
+  "usage": null,
+  "meta": null,
+  "ms": 0,
+  "at": "dry-run"
+}
