@@ -9,7 +9,7 @@
  * runs each generated job against the mock.
  *
  * Sampling is at the system level (adaptor A x adaptor B x concept), stratified
- * by concept in proportion to how many system-level pairs each concept has, so
+ * by peer type in proportion to how many system-level pairs each type has, so
  * no single family swamps the set. Within a system-level pair the entities are
  * drawn at random from the readable/writable candidates, so per-entity
  * confidence varies and can be used as an explanatory variable later.
@@ -43,6 +43,7 @@ interface Entity {
 export interface PromptCase {
   id: string;
   concept: string;
+  peerType: string;
   prompt: string;
   source: { adaptor: string; system: string; entity: string; native: string; confidence: number | null; origin: string };
   modify: { field: string | null; instruction: string };
@@ -51,8 +52,20 @@ export interface PromptCase {
   confidence: number | null;
 }
 
-/** Concepts that don't read naturally as "get one, modify it, post it as a peer". */
-const EXCLUDED_CONCEPTS = new Set(['OTHER', 'GENERIC_REC', 'CREDENTIAL']);
+/**
+ * Peer judgments (peer-judging/judgments.tsv): for each entity in a kept
+ * concept, whether it is a core record an integration would sync, and its
+ * specific peer type within the concept (invoice vs payment, sms vs email).
+ * Two entities are peers only when both are core and share concept AND type.
+ */
+function loadJudgments(): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const line of readFileSync(join(HERE, 'peer-judging/judgments.tsv'), 'utf8').split('\n')) {
+    const [id, core, peerType] = line.split('\t');
+    if (core === 'yes' && peerType && peerType !== 'none') out.set(id, peerType);
+  }
+  return out;
+}
 
 /** Human names for systems whose spec title doesn't reduce cleanly. */
 const DISPLAY: Record<string, string> = {
@@ -118,22 +131,25 @@ function propsOf(e: Entity, specs: Map<string, any>): Record<string, any> {
  * marks readOnly are skipped.
  */
 function modification(e: Entity, specs: Map<string, any>, r: () => number): { field: string | null; instruction: string } {
-  const props = Object.entries(propsOf(e, specs)).filter(([, s]) => !s?.readOnly);
+  // Skip readOnly fields and localised variants (Stripe's display_name_kana).
+  const props = Object.entries(propsOf(e, specs)).filter(
+    ([k, s]) => !s?.readOnly && !/_(kana|kanji|[a-z]{2}_[A-Z]{2})$/.test(k) && !/^(id|uuid|_)/i.test(k)
+  );
   const dates = props.filter(
     ([k, s]) =>
-      (s?.format === 'date' || s?.format === 'date-time' || /date|birth|dob/i.test(k)) &&
+      (s?.format === 'date' || s?.format === 'date-time' || (s?.type === 'string' && /date|birth|dob/i.test(k))) &&
       !/^(created|updated|modified|last|_)/i.test(k)
   );
   if (dates.length) {
     const [k] = pick(r, dates);
     return { field: k, instruction: `set its ${k} to today's date` };
   }
-  const strings = props.filter(([k, s]) => s?.type === 'string' && /name|title|description|note|comment|label/i.test(k));
+  const strings = props.filter(([k, s]) => s?.type === 'string' && /name|title|description|note|comment|label/i.test(k) && !s?.enum && !/(id|ids|code|unit|status|type)$/i.test(k));
   if (strings.length) {
     const [k] = pick(r, strings);
     return { field: k, instruction: `append " (synced from OpenFn)" to its ${k}` };
   }
-  return { field: null, instruction: `record today's date on it in whichever field fits best` };
+  return { field: null, instruction: `leave the fields unchanged` };
 }
 
 const TEMPLATES = [
@@ -151,26 +167,28 @@ export function samplePrompts(opts: { n: number; seed: number; mockedSystems: st
     readFileSync(join(ROOT, 'experiments/data-mapping-analysis/entities_final.json'), 'utf8')
   );
   const mocked = new Set(opts.mockedSystems);
-  const eligible = entities.filter((e) => mocked.has(e.adaptor) && !EXCLUDED_CONCEPTS.has(e.concept));
+  const peerType = loadJudgments();
+  const eligible = entities.filter((e) => mocked.has(e.adaptor) && peerType.has(e.id));
 
-  // System-level pairs: (A, B, concept) -> candidate source and target entities.
-  const pairs = new Map<string, { concept: string; sources: Entity[]; targets: Entity[] }>();
+  // System-level pairs: (A, B, peer type) -> candidate source and target entities.
+  const pairs = new Map<string, { concept: string; peerType: string; sources: Entity[]; targets: Entity[] }>();
   const readers = eligible.filter((e) => e.R);
   const writers = eligible.filter((e) => e.W);
   for (const s of readers) {
     for (const t of writers) {
-      if (s.concept !== t.concept || s.adaptor === t.adaptor) continue;
-      const key = `${s.adaptor}>${t.adaptor}:${s.concept}`;
-      const p = pairs.get(key) ?? { concept: s.concept, sources: [], targets: [] };
+      const pt = peerType.get(s.id)!;
+      if (s.concept !== t.concept || pt !== peerType.get(t.id) || s.adaptor === t.adaptor) continue;
+      const key = `${s.adaptor}>${t.adaptor}:${pt}`;
+      const p = pairs.get(key) ?? { concept: s.concept, peerType: pt, sources: [], targets: [] };
       if (!p.sources.includes(s)) p.sources.push(s);
       if (!p.targets.includes(t)) p.targets.push(t);
       pairs.set(key, p);
     }
   }
 
-  // Stratify by concept, proportional to system-level pair counts (largest remainder).
+  // Stratify by peer type, proportional to system-level pair counts (largest remainder).
   const byConcept = new Map<string, string[]>();
-  for (const [key, p] of pairs) byConcept.set(p.concept, [...(byConcept.get(p.concept) ?? []), key]);
+  for (const [key, p] of pairs) byConcept.set(p.peerType, [...(byConcept.get(p.peerType) ?? []), key]);
   const total = pairs.size;
   const quotas = [...byConcept].map(([c, keys]) => {
     const exact = (opts.n * keys.length) / total;
@@ -199,6 +217,7 @@ export function samplePrompts(opts: { n: number; seed: number; mockedSystems: st
       out.push({
         id: '',
         concept: p.concept,
+        peerType: p.peerType,
         prompt,
         source: { adaptor: s.adaptor, system: a, entity: s.name, native: s.native, confidence: s.cr, origin: s.origin },
         modify: mod,

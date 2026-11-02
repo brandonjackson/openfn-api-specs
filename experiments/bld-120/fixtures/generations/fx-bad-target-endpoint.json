@@ -1,0 +1,10 @@
+{
+  "id": "fx-bad-target-endpoint",
+  "prompt": "Get the latest patient from a FHIR R4 server, set its birthDate to today's date, and upload it as a patient to OpenMRS.",
+  "workflow_yaml": "name: fhir-to-openmrs\njobs:\n  get-patient:\n    name: Get patient\n    adaptor: '@openfn/language-fhir@latest'\n    body: |\n      get('Patient', { _count: 1, _sort: '-_lastUpdated' });\n  create-patient:\n    name: Create patient\n    adaptor: '@openfn/language-openmrs@latest'\n    body: |\n      fn(state => {\n        const p = state.data.entry[0].resource;\n        state.patient = {\n          identifiers: [{ identifier: p.id, identifierType: '05a29f94-c0ed-11e2-94be-8c13d4e3a5b3', preferred: true }],\n          person: p.gender === 'female' ? p.id : p.id,\n        };\n        return state;\n      });\n      create('patients', state => state.patient);\ntriggers:\n  webhook:\n    type: webhook\n    enabled: true\nedges:\n  webhook->get-patient:\n    source_trigger: webhook\n    target_job: get-patient\n    condition_type: always\n  get-patient->create-patient:\n    source_job: get-patient\n    target_job: create-patient\n    condition_type: on_job_success\n",
+  "response": null,
+  "usage": null,
+  "meta": null,
+  "ms": 0,
+  "at": "fixture"
+}
