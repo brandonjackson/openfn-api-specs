@@ -1,0 +1,10 @@
+{
+  "id": "bld120-0009",
+  "prompt": "I need to move data from OpenBoxes to openIMIS: pull the newest product, set its dateCreated to today's date, and post it to openIMIS as a medication.",
+  "workflow_yaml": "name: dry-run\njobs:\n  fetch:\n    name: Fetch record\n    adaptor: '@openfn/language-openboxes@latest'\n    body: |\n      get('products', { query: { max: 1, sort: 'dateCreated', order: 'desc' } });\n  post:\n    name: Post record\n    adaptor: '@openfn/language-openimis@latest'\n    body: |\n      http.post('/api_fhir_r4/Medication', state => {\n        const p = state.data.data[0];\n        return { resourceType: 'Medication', code: { text: p.name }, identifier: [{ value: p.productCode }] };\n      });\ntriggers:\n  webhook:\n    type: webhook\nedges:\n  webhook->fetch:\n    source_trigger: webhook\n    target_job: fetch\n  fetch->post:\n    source_job: fetch\n    target_job: post\n    condition_type: on_job_success\n",
+  "response": null,
+  "usage": null,
+  "meta": null,
+  "ms": 0,
+  "at": "dry-run"
+}

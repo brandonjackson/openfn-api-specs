@@ -1,0 +1,10 @@
+{
+  "id": "bld120-0004",
+  "prompt": "I need to move data from a FHIR R4 server to openIMIS: pull the newest medicinal product, leave the fields unchanged, and post it to openIMIS as a medication.",
+  "workflow_yaml": "name: dry-run\njobs:\n  fetch:\n    name: Fetch record\n    adaptor: '@openfn/language-fhir@latest'\n    body: |\n      get('MedicinalProduct', { _sort: '-_lastUpdated', _count: 1 });\n  post:\n    name: Post record\n    adaptor: '@openfn/language-openimis@latest'\n    body: |\n      http.post('/api_fhir_r4/Medication', state => {\n        const p = state.data.entry[0].resource;\n        return { resourceType: 'Medication', code: { text: p.name?.[0]?.productName }, identifier: p.identifier };\n      });\ntriggers:\n  webhook:\n    type: webhook\nedges:\n  webhook->fetch:\n    source_trigger: webhook\n    target_job: fetch\n  fetch->post:\n    source_job: fetch\n    target_job: post\n    condition_type: on_job_success\n",
+  "response": null,
+  "usage": null,
+  "meta": null,
+  "ms": 0,
+  "at": "dry-run"
+}
