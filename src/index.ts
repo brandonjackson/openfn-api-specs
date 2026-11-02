@@ -115,6 +115,9 @@ export {
 } from './conform.js';
 export type { Exchange, Violation, ViolationKind, ConformOptions, Conformer, Coverage } from './conform.js';
 export { parseSpec } from './spec-parser.js';
+export { buildEndpointIndex, operationResources, resourceOf, ROOT_GROUP } from './endpoints.js';
+export type { EndpointGroup, EndpointIndex, EndpointLine } from './endpoints.js';
+export { effectiveCompleteness } from './report.js';
 export type { ParsedOperation, ParsedSpec } from './spec-parser.js';
 
 export {

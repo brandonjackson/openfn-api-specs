@@ -1,5 +1,7 @@
 import type { AdaptorInfo } from './adaptors.js';
+import { buildEndpointIndex } from './endpoints.js';
 import { dataSchemasIndexPath, openapiPath, sourcePath } from './paths.js';
+import { effectiveCompleteness } from './report.js';
 import type { Manifest, ManifestEntry, SpecSource } from './types.js';
 import { countOperations, readJsonSafe as readJson } from './util.js';
 
@@ -22,6 +24,7 @@ export function buildEntry(info: AdaptorInfo): ManifestEntry {
   if (openapi) {
     entry.operations = countOperations(openapi);
     entry.schemas = Object.keys(openapi?.components?.schemas ?? {}).length;
+    entry.resourceGroups = buildEndpointIndex(openapi, info.name).groups.length;
   }
   if (index) {
     entry.dataObjects = index.objects?.length ?? 0;
@@ -30,6 +33,10 @@ export function buildEntry(info: AdaptorInfo): ManifestEntry {
   if (source) {
     entry.origin = source.origin;
     entry.upstreamFormat = source.upstreamFormat;
+    const { coverage, completeness } = effectiveCompleteness(source);
+    if (coverage) entry.coverage = coverage;
+    if (completeness) entry.completeness = completeness;
+    if (completeness === 'best-effort' && source.completenessReason) entry.completenessReason = source.completenessReason;
     entry.capturedAt = source.capturedAt;
     entry.lastCheckedAt = source.lastCheckedAt;
   }

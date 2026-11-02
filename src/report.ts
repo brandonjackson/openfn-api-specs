@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AdaptorInfo } from './adaptors.js';
 import { adaptorDir, dataSchemasIndexPath, openapiPath, registryRoot, sourcePath } from './paths.js';
-import type { FeedbackStatus, SpecSource } from './types.js';
+import type { FeedbackStatus, SpecCompleteness, SpecCoverage, SpecSource } from './types.js';
 import { daysBetween, readJsonSafe as readJson } from './util.js';
 
 /**
@@ -46,9 +46,7 @@ export function classify(info: AdaptorInfo, now: Date, staleAfterDays: number): 
   // needs no separate claim. Every other origin must declare completeness;
   // absent a claim it is treated as not-yet-verified (incomplete). Explicit
   // source.json fields always win (and can downgrade found-openapi to subset).
-  const impliedComplete = src.origin === 'found-openapi';
-  const coverage = src.coverage ?? (impliedComplete ? 'full' : undefined);
-  const completeness = src.completeness ?? (impliedComplete ? 'complete' : undefined);
+  const { coverage, completeness } = effectiveCompleteness(src);
 
   if (coverage !== 'full') return row('incomplete', coverage ? `coverage=${coverage}` : 'coverage unverified (no full-coverage claim)');
   if (completeness === 'best-effort') return row('incomplete', `best-effort${src.completenessReason ? ` (${src.completenessReason})` : ''}`);
@@ -80,4 +78,20 @@ export function orphanDirs(adaptors: AdaptorInfo[]): string[] {
     .filter((n) => statSync(join(root, n)).isDirectory() && existsSync(openapiPath(n)))
     .filter((n) => !known.has(n))
     .sort();
+}
+
+/**
+ * Coverage and completeness as the report reads them: explicit source.json
+ * fields win, and a vendor OpenAPI saved verbatim (origin=found-openapi) is
+ * full + complete by definition. Undefined means no claim was made.
+ */
+export function effectiveCompleteness(src: Pick<SpecSource, 'origin' | 'coverage' | 'completeness'>): {
+  coverage?: SpecCoverage;
+  completeness?: SpecCompleteness;
+} {
+  const impliedComplete = src.origin === 'found-openapi';
+  return {
+    coverage: src.coverage ?? (impliedComplete ? 'full' : undefined),
+    completeness: src.completeness ?? (impliedComplete ? 'complete' : undefined),
+  };
 }
