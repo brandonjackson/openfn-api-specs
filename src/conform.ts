@@ -407,14 +407,17 @@ const baseMedia = (ct: string): string => ct.split(';')[0].trim().toLowerCase();
 
 /**
  * Does a response's Content-Type match one the spec documents? Exact base type,
- * a wildcard (`*\/*`, `text/*`), or any two JSON-family types (`application/json`
- * vs `application/problem+json`), which servers use interchangeably.
+ * a wildcard (`*\/*`, `text/*`), `application/octet-stream` (raw bytes, so any
+ * type), or any two JSON-family types (`application/json` vs
+ * `application/problem+json`), which servers use interchangeably.
  */
 function mediaDocumented(content: Record<string, any>, contentType: string): boolean {
   const got = baseMedia(contentType);
   return Object.keys(content).some((k) => {
     const want = baseMedia(k);
-    if (want === got || want === '*/*') return true;
+    // application/octet-stream documents "raw bytes": a download endpoint that
+    // returns the stored file's own type (text/csv, image/png) still matches.
+    if (want === got || want === '*/*' || want === 'application/octet-stream') return true;
     if (want.endsWith('/*') && got.startsWith(want.slice(0, -1))) return true;
     return isJsonMedia(want) && isJsonMedia(got);
   });

@@ -264,6 +264,11 @@ test('content-type: flags a media type the spec does not document; JSON family a
   assert.deepEqual(c.check(ok), [], 'no content type: not judged');
   const text = c.check({ ...ok, contentType: 'text/plain', responseBody: 'hello' });
   assert.deepEqual(text.map((x) => x.kind), ['content-type']);
+  const bytes = createConformer({
+    openapi: '3.0.3',
+    paths: { '/f': { get: { responses: { '200': { content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } } } } } },
+  });
+  assert.deepEqual(bytes.check({ method: 'GET', path: '/f', status: 200, contentType: 'text/csv', responseBody: 'a,b' }), [], 'octet-stream accepts any type');
 });
 
 test('unknown operations are reported once and listed as unmatched', () => {
