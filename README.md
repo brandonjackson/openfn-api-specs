@@ -127,7 +127,8 @@ c.coverage(); // { hit, missed, unmatched, exchanges } — which spec operations
   where the spec says `200` is reported, not waved through.
 - **Content type**: when the spec documents a body for the status and the
   exchange carries a `Content-Type`, a media type the spec does not list is a
-  `content-type` violation (JSON-family types and wildcards match each other).
+  `content-type` violation (JSON-family types, wildcards and
+  `application/octet-stream`, which documents raw bytes of any type, all match).
 - **Tolerance**: extra fields pass unless the spec forbids them
   (`strictAdditional: true` flips that), unknown vendor `format`s pass,
   `ignoreFormats` silences a known one, `checkRequests: false` skips request
