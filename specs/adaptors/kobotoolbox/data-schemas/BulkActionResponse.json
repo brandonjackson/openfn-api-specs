@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "kobotoolbox",
   "x-source": {
     "openapi": "#/components/schemas/BulkActionResponse",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-02"
   },
   "type": "object",
   "properties": {
@@ -36,6 +36,14 @@
     "params": {
       "$ref": "BulkActionParamsResponse.json"
     },
+    "auto_accept": {
+      "type": "boolean"
+    },
+    "progress": {
+      "type": "integer",
+      "maximum": 100,
+      "minimum": 0
+    },
     "created_by": {
       "$ref": "BulkActionUserResponse.json"
     },
@@ -48,19 +56,24 @@
       "format": "date-time"
     },
     "cancelled_by": {
-      "allOf": [
+      "oneOf": [
         {
           "$ref": "BulkActionUserResponse.json"
+        },
+        {
+          "type": "null"
         }
       ]
     }
   },
   "required": [
     "action_id",
+    "auto_accept",
     "created_by",
     "date_created",
     "date_modified",
     "params",
+    "progress",
     "question_xpath",
     "status",
     "submission_statuses",
