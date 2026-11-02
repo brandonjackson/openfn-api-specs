@@ -240,6 +240,32 @@ test('status resolution: exact, then range, then default, else unknown-status', 
   assert.equal(v[0].kind, 'unknown-status');
 });
 
+test('an undocumented success status never falls back to default when the op documents its success', () => {
+  const c = createConformer(doc);
+  // /things/{id} documents 200 + default: a 201 is a wrong success code, not an error.
+  const v = c.check({ method: 'GET', path: '/things/x', status: 201, responseBody: { id: 'x', name: 'n' } });
+  assert.deepEqual(v.map((x) => x.kind), ['unknown-status']);
+  // An op that documents no success status at all still falls back to default.
+  const onlyDefault = createConformer({
+    openapi: '3.0.3',
+    paths: { '/x': { get: { responses: { default: { content: { 'application/json': { schema: { type: 'object' } } } } } } } },
+  });
+  assert.deepEqual(onlyDefault.check({ method: 'GET', path: '/x', status: 200, responseBody: {} }), []);
+});
+
+test('content-type: flags a media type the spec does not document; JSON family and wildcards match', () => {
+  const c = createConformer(doc);
+  const csv = { method: 'GET', path: '/files/1.csv', status: 200, responseBody: 'a,b' };
+  assert.deepEqual(c.check({ ...csv, contentType: 'text/csv; charset=utf-8' }), []);
+  const v = c.check({ ...csv, contentType: 'application/json', responseBody: { a: 1 } });
+  assert.deepEqual(v.map((x) => x.kind), ['content-type']);
+  const ok = { method: 'GET', path: '/things/x', status: 200, responseBody: { id: 'x', name: 'n' } };
+  assert.deepEqual(c.check({ ...ok, contentType: 'application/problem+json' }), [], 'JSON family is interchangeable');
+  assert.deepEqual(c.check(ok), [], 'no content type: not judged');
+  const text = c.check({ ...ok, contentType: 'text/plain', responseBody: 'hello' });
+  assert.deepEqual(text.map((x) => x.kind), ['content-type']);
+});
+
 test('unknown operations are reported once and listed as unmatched', () => {
   const c = createConformer(doc);
   const v = c.check({ method: 'PUT', path: '/things/1', status: 200, responseBody: {} });
@@ -268,7 +294,8 @@ test('non-JSON responses and bodiless exchanges are not schema-checked', () => {
   const c = createConformer(doc);
   assert.deepEqual(c.check({ method: 'GET', path: '/files/x.csv', status: 200, responseBody: 'a,b', contentType: 'text/csv' }), []);
   assert.deepEqual(c.check({ method: 'GET', path: '/things/abc', status: 200 }), []);
-  assert.deepEqual(c.check({ ...ok, contentType: 'application/pdf', responseBody: 'garbage' }), []);
+  // A body of an undocumented media type is a content-type violation, never schema-checked.
+  assert.deepEqual(c.check({ ...ok, contentType: 'application/pdf', responseBody: 'garbage' }).map((v) => v.kind), ['content-type']);
 });
 
 test('JSONL round-trips and rejects malformed lines with a line number', () => {
@@ -295,7 +322,7 @@ test('works against a committed spec (dhis2): matches behind a mount, ignores qu
   assert.match(op?.path ?? '', /^\/api\/organisationUnits\/\{\w+\}$/);
   assert.equal(c.match('GET', '/api/organisationUnits/')?.path.replace(/\/$/, ''), '/api/organisationUnits');
   assert.ok(c.operations().length >= 10);
-  const kinds = new Set(['unknown-operation', 'unknown-status', 'response-schema', 'request-schema', 'schema-error']);
+  const kinds = new Set(['unknown-operation', 'unknown-status', 'content-type', 'response-schema', 'request-schema', 'schema-error']);
   const v = c.check({ method: 'GET', path: '/api/organisationUnits', status: 200, responseBody: { organisationUnits: 'not-an-array' } });
   assert.ok(v.every((x) => kinds.has(x.kind) && x.kind !== 'schema-error'));
 });

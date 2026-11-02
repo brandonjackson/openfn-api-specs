@@ -2,22 +2,27 @@
   "adaptor": "kobotoolbox",
   "npm": "@openfn/language-kobotoolbox",
   "origin": "found-openapi",
-  "upstreamFormat": "openapi-3.0",
+  "upstreamFormat": "openapi-3.1",
   "coverage": "full",
   "derivedFrom": null,
   "completeness": "complete",
   "completenessReason": null,
   "modifications": [],
   "upstream": {
-    "specUrl": "https://kf.kobotoolbox.org/api/v2/schema/?format=json",
-    "format": "openapi-3.0",
-    "contentHash": "sha256:91018fa130c6764c607837725fc1c8ffe82f5a564490e00cc90720b4cf4f9928",
-    "fetchedAt": "2026-07-06"
+    "specUrl": "https://raw.githubusercontent.com/kobotoolbox/kpi/bcb83887a120c7ca85cedfa749bf7e994cc0a9e1/static/openapi/schema_v2.json",
+    "format": "openapi-3.1",
+    "contentHash": "sha256:835fd5d4faac6f6510e7f7b4252c007e2d1b091b1a99ce00d2a7f700b47a7fcb",
+    "fetchedAt": "2026-11-02"
   },
   "attempts": [
     {
       "kind": "openapi",
       "url": "https://kf.kobotoolbox.org/api/v2/schema/?format=json",
+      "result": "used"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/kobotoolbox/kpi/bcb83887a120c7ca85cedfa749bf7e994cc0a9e1/static/openapi/schema_v2.json",
       "result": "used"
     }
   ],
@@ -25,10 +30,11 @@
     "openfn-mocker guide traffic"
   ],
   "sources": [
+    "https://raw.githubusercontent.com/kobotoolbox/kpi/bcb83887a120c7ca85cedfa749bf7e994cc0a9e1/static/openapi/schema_v2.json",
     "https://kf.kobotoolbox.org/api/v2/schema/?format=json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/kobotoolbox"
   ],
-  "capturedAt": "2026-07-06",
-  "lastCheckedAt": "2026-07-06",
-  "notes": "Complete, verbatim copy of the KoboToolbox KPI (/api/v2) OpenAPI schema served at the source URL. Whole published API; no subsetting or renaming. The asset serializer's annotations are hand-written in KPI and lag the code, which conformance runs against real asset payloads surface as false positives: `settings.country` is typed as an array of strings but is an array of {label, value} objects (kpi/models/asset.py derives `country_codes` as [c['value'] for c in settings['country']]); `permissions` is typed as an array of strings but is an array of permission assignments (AssetPermissionAssignmentReadSerializer); `access_types` is a non-nullable array though get_access_types() returns None; and `summary.languages`, `summary.default_translation` and `deployed_versions.next`/`previous` are typed non-nullable though an untranslated form and an unpaginated list really do return null."
+  "capturedAt": "2026-11-02",
+  "lastCheckedAt": "2026-11-02",
+  "notes": "Complete, verbatim copy of the KoboToolbox KPI (/api/v2) OpenAPI 3.1 schema. Whole published API; no subsetting or renaming. Captured from the copy KPI commits at static/openapi/schema_v2.json (regenerated from the code by KPI's own generate_openapi_schema command and CI), pinned to commit bcb83887a1 (2026-11-02); the live endpoint kf.kobotoolbox.org/api/v2/schema/ serves the same generated document. This refresh resolves the annotation lag the 2026-07 capture had (settings.country, permissions, access_types, summary.*, deployed_versions.next/previous typed too narrowly), which openfn-mocker conformance runs had surfaced and verified against KPI's source."
 }

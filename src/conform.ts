@@ -55,8 +55,16 @@ export interface Exchange {
 export type ViolationKind =
   /** No operation in the spec matches this method + path. */
   | 'unknown-operation'
-  /** The operation matched but the spec documents no response for this status (and no default). */
+  /**
+   * The operation matched but the spec documents no response for this status.
+   * A 2xx the spec doesn't list is reported here even when the spec has a
+   * `default`, as long as the operation documents some other success status:
+   * `default` almost always describes errors, so falling back to it would let a
+   * 201-for-200 slip through.
+   */
   | 'unknown-status'
+  /** The response's media type is not one the spec documents for this status. */
+  | 'content-type'
   /** The response body does not satisfy the documented schema for this status. */
   | 'response-schema'
   /** The request body does not satisfy the documented request schema. */
@@ -378,6 +386,8 @@ function pickJsonMedia(content: Record<string, any> | undefined, preferred?: str
   return keys.find((k) => k.split(';')[0].trim() === 'application/json') ?? keys.find(isJsonMedia) ?? keys.find((k) => k.includes('*'));
 }
 
+const isSuccessKey = (k: string): boolean => /^2(\d\d|xx)$/i.test(k);
+
 function statusKey(responses: Record<string, any> | undefined, status: number): string | undefined {
   if (!responses) return undefined;
   const exact = String(status);
@@ -385,8 +395,29 @@ function statusKey(responses: Record<string, any> | undefined, status: number): 
   const range = `${Math.floor(status / 100)}XX`;
   if (responses[range]) return range;
   if (responses[range.toLowerCase()]) return range.toLowerCase();
+  // An undocumented success status does not fall back to `default` when the
+  // operation documents its success status(es): `default` is the error shape in
+  // practice, and using it would accept a 201 where the API returns 200.
+  if (status >= 200 && status < 300 && Object.keys(responses).some(isSuccessKey)) return undefined;
   if (responses.default) return 'default';
   return undefined;
+}
+
+const baseMedia = (ct: string): string => ct.split(';')[0].trim().toLowerCase();
+
+/**
+ * Does a response's Content-Type match one the spec documents? Exact base type,
+ * a wildcard (`*\/*`, `text/*`), or any two JSON-family types (`application/json`
+ * vs `application/problem+json`), which servers use interchangeably.
+ */
+function mediaDocumented(content: Record<string, any>, contentType: string): boolean {
+  const got = baseMedia(contentType);
+  return Object.keys(content).some((k) => {
+    const want = baseMedia(k);
+    if (want === got || want === '*/*') return true;
+    if (want.endsWith('/*') && got.startsWith(want.slice(0, -1))) return true;
+    return isJsonMedia(want) && isJsonMedia(got);
+  });
 }
 
 /* ------------------------------------------------------------------ *
@@ -575,9 +606,20 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
       return violations;
     }
     if (ex.responseBody === undefined) return violations;
-    if (ex.contentType && !isJsonMedia(ex.contentType)) return violations;
     const respNode = responses![sk];
     const resp = parsed.deref(respNode);
+    // Content type: only judged when the spec documents a body for this status
+    // and the exchange says what it sent.
+    if (ex.contentType && resp?.content && Object.keys(resp.content).length && !mediaDocumented(resp.content, ex.contentType)) {
+      violations.push({
+        kind: 'content-type',
+        operation: opKey,
+        exchange: label,
+        message: `response is ${baseMedia(ex.contentType)}; spec documents ${Object.keys(resp.content).join(', ')} for status ${sk}`,
+      });
+      return violations;
+    }
+    if (ex.contentType && !isJsonMedia(ex.contentType)) return violations;
     const media = pickJsonMedia(resp?.content, ex.contentType);
     if (!media || !resp.content[media]?.schema) return violations;
     const segs = respNode.$ref

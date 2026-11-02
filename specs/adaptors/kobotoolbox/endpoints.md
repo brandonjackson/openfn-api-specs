@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index kobotoolbox` — do not edit by hand -->
 
-base: not declared | auth: http/basic, http/bearer, apiKey (header Authorization) | 275 operations in 13 resources
+base: not declared | auth: http/basic, http/bearer, apiKey (header Authorization) | 280 operations in 13 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -88,6 +88,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## Configuration
 - GET /api/v2/environment/ — api_v2_environment_retrieve: Retrieve Kobo server environment configurations.
+- GET /api/v2/social-apps/{provider_id}/ — api_v2_social_apps_retrieve: ## Retrieve a single sign-on provider Resolves the `provider_id` used in single sign-on URLs into the provider's display name, so a client…
 
 ## Form content
 - GET /api/v2/asset_snapshots/ — api_v2_asset_snapshots_list: ## List all snapshots for every asset of a user
@@ -153,7 +154,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /api/v2/project-ownership/invites/{uid_invite}/ — api_v2_project_ownership_invites_destroy: ## Delete invite
 - GET /api/v2/project-ownership/invites/{uid_invite}/transfers/{uid_transfer}/ — api_v2_project_ownership_invites_transfers_retrieve: ## Retrieve transfer details
 - GET /api/v2/tags/ — api_v2_tags_list: ## List current user's assets' tags
-- GET /api/v2/tags/{taguid__uid}/ — api_v2_tags_retrieve: ## Retrieve a tag's data
 
 ## Other
 - GET /api/v2/languages/ — api_v2_languages_list: ## List the languages accessible to requesting (authenticated) user.
@@ -164,6 +164,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /api/v2/stripe/addons/{id}/ — api_v2_stripe_addons_retrieve: Lists the one-time add-ons for the authenticated user's organization.
 - GET /api/v2/stripe/change-plan — api_v2_stripe_change_plan_retrieve: Change an existing subscription to a new price.
 - POST /api/v2/stripe/checkout-link — api_v2_stripe_checkout_link_create
+- GET /api/v2/stripe/customer-portal — api_v2_stripe_customer_portal_retrieve
 - POST /api/v2/stripe/customer-portal — api_v2_stripe_customer_portal_create
 - GET /api/v2/stripe/products/ — api_v2_stripe_products_list: Returns Product and Price Lists, sorted from the product with the lowest price to highest This endpoint is cached for an amount of time det…
 - GET /api/v2/stripe/subscriptions/ — api_v2_stripe_subscriptions_list
@@ -207,11 +208,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /api/v2/assets/{uid_asset}/advanced-features/ — api_v2_assets_advanced_features_create: ## Add an advanced action to an asset Enables a new type of advanced action on a question in the asset.
 - GET /api/v2/assets/{uid_asset}/advanced-features/{uid_advanced_feature}/ — api_v2_assets_advanced_features_retrieve: ## Retrieve advanced feature configuration for a question on an asset Gets the params for one advanced action for one question in an asset
 - PATCH /api/v2/assets/{uid_asset}/advanced-features/{uid_advanced_feature}/ — api_v2_assets_advanced_features_partial_update: ## Update an advanced action on an asset Update the params of an advanced action on a question in the asset.
-- GET /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/ — api_v2_assets_advanced_features_bulk_actions_list: ## List bulk processing jobs on an asset Returns all bulk processing jobs associated with the specified asset.
-- POST /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/ — api_v2_assets_advanced_features_bulk_actions_create: ## Create a bulk processing job Creates a placeholder bulk transcription or bulk translation job for a single question across multiple subm…
-- GET /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/{action_uid}/ — api_v2_assets_advanced_features_bulk_actions_retrieve: ## Retrieve a bulk processing job Returns detailed information about a single bulk processing job, including its current status and process…
+- GET /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/ — api_v2_assets_advanced_features_bulk_actions_list: ## List bulk processing jobs on an asset Returns paginated bulk processing jobs associated with the specified asset.
+- POST /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/ — api_v2_assets_advanced_features_bulk_actions_create: ## Create a bulk processing job Creates and starts a bulk processing job for one question across multiple submissions.
+- GET /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/{action_uid}/ — api_v2_assets_advanced_features_bulk_actions_retrieve: ## Retrieve a bulk processing job Returns detailed information about a single bulk processing job, including its current status, per-submis…
 - PATCH /api/v2/assets/{uid_asset}/advanced-features/bulk-actions/{action_uid}/ — api_v2_assets_advanced_features_bulk_actions_partial_update: ## Update a bulk processing job Cancels a single bulk processing job for an asset.
 - DELETE /api/v2/assets/{uid_asset}/attachments/{id}/ — api_v2_assets_attachments_destroy: ## Delete a specific attachment of an Asset * `id` can only be the uid of attachment to be deleted
+- POST /api/v2/assets/{uid_asset}/attachments/audio-duration/ — api_v2_assets_attachments_audio_duration_create: ## Get total audio duration for a list of attachments ```curl curl -X POST https://kf.kobotoolbox.org/api/v2/assets/aSAvYreNzVEkrWg5Gdcvg/a…
 - DELETE /api/v2/assets/{uid_asset}/attachments/bulk/ — api_v2_assets_attachments_bulk_destroy: ## Delete all attachments from a list of submissions ```curl curl -X DELETE https://kf.kobotoolbox.org/api/v2/assets/aSAvYreNzVEkrWg5Gdcvg/…
 - GET /api/v2/assets/{uid_asset}/data/ — api_v2_assets_data_list: ## List of submissions for a specific asset By default, JSON format is used, but XML and GeoJSON are also available: ```shell curl -X GET h…
 - GET /api/v2/assets/{uid_asset}/data/{id}/ — api_v2_assets_data_retrieve: ## Get a specific submission `{id}` can be: - The primary key of the submission - Its `_uuid` 1 - Its `rootUuid` (without "uuid:" prefix) 1…
@@ -232,6 +234,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /api/v2/assets/{uid_asset}/data/{uid_data}/attachments/{id}/{suffix}/ — attachment_thumbnail: ## Get a specific size of the user's attachment (Only for images) Available formats: - `small` - `medium` - `large` `id` of attachment can…
 - PATCH /api/v2/assets/{uid_asset}/data/bulk/ — api_v2_assets_data_bulk_partial_update: ## Bulk updating of submissions Where `` is a string and should be an existing XML field value of the submissions.
 - DELETE /api/v2/assets/{uid_asset}/data/bulk/ — api_v2_assets_data_bulk_destroy: ## Bulk delete submissions ```curl curl -X DELETE https://kf.kobotoolbox.org/api/v2/assets/aSAvYreNzVEkrWg5Gdcvg/data/bulk/ ``` **Payload**…
+- POST /api/v2/assets/{uid_asset}/data/supplements/bulk/ — api_v2_assets_data_supplements_bulk_create: ## Bulk accept NLP results Accepts transcription or translation results for multiple submissions in a single request.
 - PATCH /api/v2/assets/{uid_asset}/data/validation_statuses/ — api_v2_assets_data_validation_statuses_partial_update: ## Bulk update submissions status * Where: "submissions_ids" (required) is a list of submission root id on the data to delete * Where: "val…
 - DELETE /api/v2/assets/{uid_asset}/data/validation_statuses/ — api_v2_assets_data_validation_statuses_destroy: ## Bulk delete submissions status ```curl curl -X DELETE https://kf.kobotoolbox.org/api/v2/assets/aSAvYreNzVEkrWg5Gdcvg/data/validation_sta…
 - GET /api/v2/assets/{uid_asset}/export-settings/ — api_v2_assets_export_settings_list: ## List of export settings for a specific asset * _Required permissions: `view_submissions` (View submissions)_
@@ -255,6 +258,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PATCH /api/v2/assets/{uid_asset}/paired-data/{uid_paired_data}/ — api_v2_assets_paired_data_partial_update: ## Update a connection between two projects _Notes: `source` cannot be changed_
 - DELETE /api/v2/assets/{uid_asset}/paired-data/{uid_paired_data}/ — api_v2_assets_paired_data_destroy: ## Remove a connection between two projects
 - GET /api/v2/assets/{uid_asset}/paired-data/{uid_paired_data}/external/ — api_v2_assets_paired_data_external_retrieve: ## Return an XML which contains data submitted to paired asset Creates the endpoints - /api/v2/assets//paired-data//external/ - /api/v2/ass…
+- GET /api/v2/assets/{uid_asset}/qual-questions/{uid_qa_question}/tags/ — api_v2_assets_qual_questions_tags_list: ## List available tags for a QA tags question Lists the tag values previously submitted for a `qualTags` question on this asset, sorted alp…
 - GET /api/v2/assets/{uid_asset}/reports/ — api_v2_assets_reports_retrieve: ## Report of a user's asset Returns the submission data for all deployments of a survey.
 
 ## Survey data - Rest Services
@@ -270,10 +274,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## User / team / organization / usage
 - GET /api/v2/asset_usage/ — api_v2_asset_usage_list: ## Get user's asset usage
+- POST /api/v2/email-confirmations/ — api_v2_email_confirmations_create: ## Request another account confirmation email Sends a fresh confirmation link to an email address that is registered but not yet verified.
 - GET /api/v2/organizations/ — api_v2_organizations_list: ## List user's organizations
 - GET /api/v2/organizations/{uid_organization}/ — api_v2_organizations_retrieve: ## Retrieve organization's details
 - PATCH /api/v2/organizations/{uid_organization}/ — api_v2_organizations_partial_update: ## Update organization's details
-- GET /api/v2/organizations/{uid_organization}/asset_usage/ — api_v2_organizations_asset_usage_list: ## Retrieve organization asset usage tracker Tracks the total usage of each asset for the user in the given organization
+- GET /api/v2/organizations/{uid_organization}/asset_usage/ — api_v2_organizations_asset_usage_list: ## Retrieve organization asset usage tracker Tracks the total usage of each asset for the user in the given organization Use the `q` query…
 - GET /api/v2/organizations/{uid_organization}/assets/ — api_v2_organizations_assets_retrieve: ## Retrieve Organization Assets This endpoint returns all assets associated with a specific organization.
 - GET /api/v2/organizations/{uid_organization}/assets/counts/ — api_v2_organizations_assets_counts_retrieve: ## Return counts of deployed, archived, and draft assets owned by the organization
 - GET /api/v2/organizations/{uid_organization}/assets/minimal-list/ — api_v2_organizations_assets_minimal_list_retrieve: ## Return a minimal listing of assets in an organization Returns a paginated list of assets owned by the organization, including only `uid`…
@@ -282,7 +287,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /api/v2/organizations/{uid_organization}/invites/{guid}/ — api_v2_organizations_invites_retrieve: ## Retrieve organization invite
 - PATCH /api/v2/organizations/{uid_organization}/invites/{guid}/ — api_v2_organizations_invites_partial_update: ## Update Organization Invite * Update an organization invite to accept, decline, cancel, expire, or resend.
 - DELETE /api/v2/organizations/{uid_organization}/invites/{guid}/ — api_v2_organizations_invites_destroy: ## Delete Organization Invite * Organization owner or admin can delete an organization invite.
-- GET /api/v2/organizations/{uid_organization}/members/ — api_v2_organizations_members_list: ## List Members Retrieves all members in the specified organization.
+- GET /api/v2/organizations/{uid_organization}/members/ — api_v2_organizations_members_list: ## List Members Retrieves all members and pending invitations in the specified organization.
 - GET /api/v2/organizations/{uid_organization}/members/{username}/ — api_v2_organizations_members_retrieve: ## Retrieve Member Details Retrieves the details of a specific member within an organization by username.
 - PATCH /api/v2/organizations/{uid_organization}/members/{username}/ — api_v2_organizations_members_partial_update: ## Update Member Role Updates the role of a member within the organization to `admin` or `member`.
 - DELETE /api/v2/organizations/{uid_organization}/members/{username}/ — api_v2_organizations_members_destroy: ## Remove Member Delete an organization member.
