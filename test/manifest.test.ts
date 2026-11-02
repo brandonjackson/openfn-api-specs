@@ -67,3 +67,17 @@ test('the committed manifest.json matches a fresh rebuild', async () => {
   const rebuilt = JSON.stringify(buildManifest(await loadAdaptors()), null, 2) + '\n';
   assert.equal(rebuilt, committed, 'manifest.json is stale — run `pnpm specs manifest`');
 });
+
+test('manifest rows carry resource groups and effective completeness', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { buildEndpointIndex } = await import('../src/endpoints.js');
+  const { openapiPath } = await import('../src/paths.js');
+  const m = JSON.parse(readFileSync(manifestPath(), 'utf8'));
+  for (const e of m.adaptors) {
+    if (!e.hasOpenapi) continue;
+    const openapi = JSON.parse(readFileSync(openapiPath(e.adaptor), 'utf8'));
+    assert.equal(e.resourceGroups, buildEndpointIndex(openapi, e.adaptor).groups.length, `${e.adaptor}: resourceGroups`);
+    if (e.origin === 'found-openapi' && !e.coverage) assert.fail(`${e.adaptor}: a verbatim vendor OpenAPI is full by definition`);
+    if (e.completeness) assert.ok(['complete', 'best-effort'].includes(e.completeness));
+  }
+});

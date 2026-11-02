@@ -157,6 +157,20 @@ export function buildEndpointIndex(openapi: any, adaptor: string): EndpointIndex
   };
 }
 
+/**
+ * Every operation's resource group, keyed the way the conformer names an
+ * operation (`'GET /api/trackedEntities/{id}'`). The groups are the same ones
+ * `endpoints.md` lists, so "resources with at least one snippet" and the
+ * endpoint index always agree on what a resource is.
+ */
+export function operationResources(openapi: any): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const g of buildEndpointIndex(openapi, '').groups) {
+    for (const op of g.operations) out[`${op.method} ${op.path}`] = g.name;
+  }
+  return out;
+}
+
 /** Render the index as the committed `endpoints.md`. */
 export function renderEndpointIndex(index: EndpointIndex): string {
   const lines: string[] = [];

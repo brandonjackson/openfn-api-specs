@@ -130,6 +130,15 @@ published as a static dashboard by `pnpm specs site` (a self-contained
 `site/index.html`). The `Deploy status dashboard` GitHub Action rebuilds it on
 every push to `main` and weekly, so the staleness clock re-evaluates over time.
 
+**Coverage across repos.** `manifest.json` also gives each adaptor its
+effective `coverage` and `completeness` (the report's defaulting rule: a
+verbatim vendor OpenAPI is full + complete) and `resourceGroups`, the number of
+resource groups in `endpoints.md`. This spec is the shared denominator for the
+other two repos: openfn-mocker measures mock coverage as spec operations its
+guide exercises, and adaptors-storybook measures snippet coverage as resource
+groups with at least one snippet, using `operationResources()` to map a
+conformer-matched operation to its group. The storybook shows all three.
+
 ## The loop (the agentic process)
 
 1. **Refresh the environment.** `pnpm specs list --refresh`; diff against

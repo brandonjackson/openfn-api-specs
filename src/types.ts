@@ -140,6 +140,19 @@ export interface ManifestEntry {
   dataObjects?: number;
   /** Number of those that are top-level response resources. */
   resources?: number;
+  /**
+   * Number of resource groups in the endpoint index (`endpoints.md`): the
+   * operations grouped by first tag, else by first path segment. The
+   * denominator for "resources with at least one snippet". Not the same as
+   * `resources` above, which counts data objects.
+   */
+  resourceGroups?: number;
+  /** Effective coverage: source.json's claim, or 'full' for a verbatim vendor OpenAPI. */
+  coverage?: SpecCoverage;
+  /** Effective completeness: source.json's claim, or 'complete' for a verbatim vendor OpenAPI. */
+  completeness?: SpecCompleteness;
+  /** Why a best-effort spec is best-effort (docs-only, private-api, ...). */
+  completenessReason?: string;
   capturedAt?: string;
   /** When this spec was last verified against upstream (the staleness clock). */
   lastCheckedAt?: string;

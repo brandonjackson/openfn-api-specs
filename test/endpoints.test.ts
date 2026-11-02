@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildEndpointIndex, renderEndpointIndex, resourceOf, ROOT_GROUP } from '../src/endpoints.js';
+import { buildEndpointIndex, operationResources, renderEndpointIndex, resourceOf, ROOT_GROUP } from '../src/endpoints.js';
 
 /**
  * The endpoint index is the compact view an AI assistant reads instead of the
@@ -103,4 +103,13 @@ test('an empty spec renders a sane header rather than throwing', () => {
   const md = renderEndpointIndex(buildEndpointIndex({ openapi: '3.0.0', info: {} }, 'empty'));
   assert.match(md, /^# empty \(empty\)\n/);
   assert.match(md, /base: not declared \| auth: not declared \| 0 operations in 0 resources/);
+});
+
+test('operationResources maps every operation to its endpoints.md group, keyed like the conformer', () => {
+  const index = buildEndpointIndex(SPEC, 'demo');
+  const map = operationResources(SPEC);
+  assert.equal(Object.keys(map).length, index.operations);
+  for (const g of index.groups) {
+    for (const op of g.operations) assert.equal(map[`${op.method} ${op.path}`], g.name);
+  }
 });
