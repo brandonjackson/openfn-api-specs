@@ -1,0 +1,233 @@
+# format: id|R<n>/W<n> = used as response/request body n times|p=props d=%described t=%typed e=enums r=refs q=required FREE=free-form|example op|first fields
+# mailchimp: Mailchimp Marketing API | origin=converted fmt=swagger-2.0 completeness=complete
+mailchimp#~API Root|R1|p20 d100 t100 e1 r0 q0|GET /|account_id,login_id,account_name,email,first_name,last_name,username,avatar_url,role,member_since
+mailchimp#~chimp-chatter|R1|p3 d100 t100 e0 r0 q0|GET /activity-feed/chimp-chatter|chimp_chatter,total_items,_links
+mailchimp#~account-exports|R3|p6 d100 t100 e0 r0 q0|GET /account-exports|export_id,started,finished,size_in_bytes,download_url,_links
+mailchimp#~Create an account export|W1|p2 d100 t100 e1 r0 q1|POST /account-exports|include_stages,since_timestamp
+mailchimp#~audiences|R2|p4 d75 t100 e0 r0 q0|GET /audiences|id,name,stats,enabled_channels
+mailchimp#~contacts|R4W2|p5 d60 t100 e0 r0 q0|GET /audiences/{audience_id}/contacts|language,email_channel,sms_channel,merge_fields,tags
+mailchimp#~Problem Detail Document|R61|p5 d100 t100 e0 r0 q5|POST /audiences/{audience_id}/contacts/{contact_id}/actions/archive|type,title,status,detail,instance
+mailchimp#~authorized-apps|R2|p5 d100 t100 e0 r0 q0|GET /authorized-apps|id,name,description,users,_links
+mailchimp#~automations|R1|p3 d100 t100 e0 r0 q0|GET /automations|automations,total_items,_links
+mailchimp#~Automation Workflow|R2W1|p11 d100 t100 e1 r0 q0|POST /automations|id,create_time,start_time,status,emails_sent,recipients,settings,tracking,trigger_settings,report_summary
+mailchimp#~Automation Emails|R1|p3 d100 t100 e0 r0 q0|GET /automations/{workflow_id}/emails|emails,total_items,_links
+mailchimp#~Automation Workflow Email|R2|p21 d100 t100 e1 r0 q0|GET /automations/{workflow_id}/emails/{workflow_email_id}|id,web_id,workflow_id,position,delay,create_time,start_time,archive_url,status,emails_sent
+mailchimp#~Update information about a specific workflow email|W1|p2 d100 t100 e0 r0 q0|PATCH /automations/{workflow_id}/emails/{workflow_email_id}|settings,delay
+mailchimp#~queue|R1|p5 d100 t100 e0 r0 q0|GET /automations/{workflow_id}/emails/{workflow_email_id}/queue|workflow_id,email_id,queue,total_items,_links
+mailchimp#~Removed Subscribers|R1|p4 d100 t100 e0 r0 q0|GET /automations/{workflow_id}/removed-subscribers|workflow_id,subscribers,total_items,_links
+mailchimp#~Subscriber Removed from Automation Workflow|R2|p5 d100 t100 e0 r0 q0|POST /automations/{workflow_id}/removed-subscribers|id,workflow_id,list_id,email_address,_links
+mailchimp#~Batch Operations|R1|p3 d100 t100 e0 r0 q0|GET /batches|batches,total_items,_links
+mailchimp#~Batch|R2|p9 d100 t100 e1 r0 q0|POST /batches|id,status,total_operations,finished_operations,errored_operations,submitted_at,completed_at,response_body_url,_links
+mailchimp#~Operations|W1|p6 d100 t100 e1 r0 q2|POST /batches|method,headers,path,params,body,operation_id
+mailchimp#~Batch Webhooks|R1|p3 d100 t100 e0 r0 q0|GET /batch-webhooks|webhooks,total_items,_links
+mailchimp#~Batch Webhook|R3W2|p2 d100 t100 e0 r0 q0|POST /batch-webhooks|url,enabled
+mailchimp#~Template Folders|R1|p3 d100 t100 e0 r0 q0|GET /template-folders|folders,total_items,_links
+mailchimp#~Campaign Folders|R1|p3 d100 t100 e0 r0 q0|GET /campaign-folders|folders,total_items,_links
+mailchimp#~campaigns|R1|p3 d100 t100 e0 r0 q0|GET /campaigns|campaigns,total_items,_links
+mailchimp#~Campaign|R6W2|p23 d100 t100 e2 r0 q1|POST /campaigns|id,web_id,parent_campaign_id,type,create_time,archive_url,long_archive_url,status,emails_sent,send_time
+mailchimp#~schedule|W1|p3 d100 t100 e0 r0 q1|POST /campaigns/{campaign_id}/actions/schedule|schedule_time,timewarp,batch_delivery
+mailchimp#~Campaign Content|R2W1|p6 d100 t100 e0 r0 q0|GET /campaigns/{campaign_id}/content|plain_text,html,url,template,archive,variate_contents
+mailchimp#~Campaign Reports|R2|p3 d100 t100 e0 r0 q0|GET /campaigns/{campaign_id}/feedback|reports,total_items,_links
+mailchimp#~Campaign Feedback|R3W2|p3 d100 t100 e0 r0 q0|POST /campaigns/{campaign_id}/feedback|block_id,message,is_complete
+mailchimp#~send-checklist|R1|p4 d100 t100 e1 r0 q0|GET /campaigns/{campaign_id}/send-checklist|type,id,heading,details
+mailchimp#~Connected Sites|R1|p3 d100 t100 e0 r0 q0|GET /connected-sites|sites,total_items,_links
+mailchimp#~Connected Site|R2W1|p9 d100 t100 e0 r0 q0|POST /connected-sites|foreign_id,store_id,platform,domain,site_script,is_pixel_enabled,created_at,updated_at,_links
+mailchimp#~Tracked Conversations|R1|p3 d100 t100 e0 r0 q0|GET /conversations|conversations,total_items,_links
+mailchimp#~Conversation|R1|p10 d100 t100 e0 r0 q0|GET /conversations/{conversation_id}|id,message_count,campaign_id,list_id,unread_messages,from_label,from_email,subject,last_message,_links
+mailchimp#~Collection of Conversation Messages|R1|p4 d100 t100 e0 r0 q0|GET /conversations/{conversation_id}/messages|conversation_messages,conversation_id,total_items,_links
+mailchimp#~Conversation Message|R1|p10 d100 t100 e0 r0 q0|GET /conversations/{conversation_id}/messages/{message_id}|id,conversation_id,list_id,from_label,from_email,subject,message,read,timestamp,_links
+mailchimp#~File Manager|R2|p4 d100 t100 e0 r0 q0|GET /file-manager/files|files,total_file_size,total_items,_links
+mailchimp#~Gallery File|R3W2|p2 d100 t100 e0 r0 q0|POST /file-manager/files|folder_id,name
+mailchimp#~File Manager Folders|R1|p3 d100 t100 e0 r0 q0|GET /file-manager/folders|folders,total_items,_links
+mailchimp#~Subscriber Lists|R1|p4 d100 t100 e0 r0 q1|GET /lists|lists,total_items,constraints,_links
+mailchimp#~Subscriber List|R3W2|p10 d100 t100 e0 r0 q0|POST /lists|name,contact,permission_reminder,use_archive_bar,campaign_defaults,notify_on_subscribe,notify_on_unsubscribe,email_type_option,double_optin,marketing_permissions
+mailchimp#~Batch update List members|R1|p7 d100 t100 e0 r0 q0|POST /lists/{list_id}|new_members,updated_members,errors,total_created,total_updated,error_count,_links
+mailchimp#~Members to Subscribe/Unsubscribe to/from a List in batch|W1|p3 d100 t100 e0 r0 q1|POST /lists/{list_id}|members,sync_tags,update_existing
+mailchimp#~Abuse Complaints|R2|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/abuse-reports|abuse_reports,campaign_id,total_items,_links
+mailchimp#~Abuse Complaint|R2|p10 d100 t100 e0 r0 q0|GET /lists/{list_id}/abuse-reports/{report_id}|id,campaign_id,list_id,list_is_active,email_id,email_address,merge_fields,vip,date,_links
+mailchimp#~List Activity|R1|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/activity|activity,list_id,total_items,_links
+mailchimp#~Email Clients|R1|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/clients|clients,list_id,total_items,_links
+mailchimp#~Growth History|R2|p13 d100 t100 e0 r0 q0|GET /lists/{list_id}/growth-history|list_id,month,existing,imports,optins,subscribed,unsubscribed,reconfirm,cleaned,pending
+mailchimp#~Interest Groupings|R1|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/interest-categories|list_id,categories,total_items,_links
+mailchimp#~Interest Category|R3W2|p3 d100 t100 e1 r0 q0|POST /lists/{list_id}/interest-categories|title,display_order,type
+mailchimp#~Interests|R1|p5 d100 t100 e0 r0 q0|GET /lists/{list_id}/interest-categories/{interest_category_id}/interests|interests,list_id,category_id,total_items,_links
+mailchimp#~Interest|R3W2|p2 d100 t100 e0 r0 q0|POST /lists/{list_id}/interest-categories/{interest_category_id}/interests|name,display_order
+mailchimp#~Collection of Segments|R1|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/segments|segments,list_id,total_items,_links
+mailchimp#~List|R3W2|p3 d100 t100 e0 r0 q1|POST /lists/{list_id}/segments|name,static_segment,options
+mailchimp#~Batch add/remove List members to/from static segment|R1|p7 d100 t100 e0 r0 q0|POST /lists/{list_id}/segments/{segment_id}|members_added,members_removed,errors,total_added,total_removed,error_count,_links
+mailchimp#~Members to add/remove to/from a static segment|W1|p2 d100 t100 e0 r0 q0|POST /lists/{list_id}/segments/{segment_id}|members_to_add,members_to_remove
+mailchimp#~Segment Members|R1|p3 d100 t100 e0 r0 q0|GET /lists/{list_id}/segments/{segment_id}/members|members,total_items,_links
+mailchimp#~List Members|R6|p33 d100 t100 e2 r0 q0|POST /lists/{list_id}/segments/{segment_id}/members|id,email_address,unique_email_id,contact_id,full_name,web_id,email_type,status,unsubscribe_reason,consents_to_one_to_one_messaging
+mailchimp#~Tag search results|R1|p2 d100 t100 e0 r0 q0|GET /lists/{list_id}/tag-search|tags,total_items
+mailchimp#~Add List Members|W3|p13 d100 t100 e1 r0 q0|POST /lists/{list_id}/members|email_address,email_type,status,merge_fields,interests,language,vip,location,marketing_permissions,ip_signup
+mailchimp#~Member Activity Events|R2|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/members/{subscriber_hash}/activity|activity,email_id,list_id,_links
+mailchimp#~Collection of Tags|R1|p3 d100 t100 e0 r0 q0|GET /lists/{list_id}/members/{subscriber_hash}/tags|tags,total_items,_links
+mailchimp#~Member Tag|W1|p2 d100 t100 e1 r0 q2|POST /lists/{list_id}/members/{subscriber_hash}/tags|name,status
+mailchimp#~Collection of Events|R1|p3 d100 t100 e0 r0 q0|GET /lists/{list_id}/members/{subscriber_hash}/events|events,total_items,_links
+mailchimp#~Events|W1|p4 d100 t100 e0 r0 q1|POST /lists/{list_id}/members/{subscriber_hash}/events|name,properties,is_syncing,occurred_at
+mailchimp#~Collection of Member Activity Events|R1|p5 d100 t100 e0 r0 q0|GET /lists/{list_id}/members/{subscriber_hash}/goals|goals,list_id,email_id,total_items,_links
+mailchimp#~Collection of Notes|R1|p5 d100 t100 e0 r0 q0|GET /lists/{list_id}/members/{subscriber_hash}/notes|notes,email_id,list_id,total_items,_links
+mailchimp#~Collection of Merge Fields|R1|p5 d100 t100 e0 r0 q0|GET /lists/{list_id}/merge-fields|merge_fields,list_id,total_items,merge_field_limit,_links
+mailchimp#~Merge Field|R3W2|p8 d100 t100 e0 r0 q1|POST /lists/{list_id}/merge-fields|tag,name,required,default_value,public,display_order,options,help_text
+mailchimp#~List Webhooks|R4|p8 d100 t100 e0 r0 q0|GET /lists/{list_id}/webhooks|id,url,events,sources,list_id,signing_enabled,signing_secret,_links
+mailchimp#~Add Webhook|W2|p3 d100 t100 e0 r0 q0|POST /lists/{list_id}/webhooks|url,events,sources
+mailchimp#~List Signup Forms|R1|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/signup-forms|signup_forms,list_id,total_items,_links
+mailchimp#~Signup Form|R1W1|p3 d100 t100 e0 r0 q0|POST /lists/{list_id}/signup-forms|header,contents,styles
+mailchimp#~List Locations|R1|p4 d100 t100 e0 r0 q0|GET /lists/{list_id}/locations|locations,list_id,total_items,_links
+mailchimp#~Survey Section Request|W1|p5 d100 t100 e1 r0 q1|POST /lists/{list_id}/surveys|id,type,text,options,question
+mailchimp#~Survey Update Request|W1|p3 d100 t100 e0 r0 q0|PATCH /lists/{list_id}/surveys/{survey_id}|title,is_piped_to_inbox,sections
+mailchimp#~Survey Replicate Request|W1|p2 d100 t100 e0 r0 q0|POST /lists/{list_id}/surveys/{survey_id}/actions/replicate|title,list_id
+mailchimp#~landing-pages|R2|p3 d67 t100 e0 r0 q0|GET /landing-pages|landing_pages,total_items,_links
+mailchimp#~Landing Page|R3W2|p6 d100 t100 e0 r0 q0|POST /landing-pages|name,title,description,store_id,list_id,tracking
+mailchimp#~Landing Page Content|R1|p3 d100 t100 e0 r0 q0|GET /landing-pages/{page_id}/content|html,json,_links
+mailchimp#~Campaign Report|R1|p27 d100 t100 e0 r0 q0|GET /reports/{campaign_id}|id,campaign_title,type,list_id,list_is_active,list_name,subject_line,preview_text,emails_sent,abuse_reports
+mailchimp#~Campaign Advice Report|R1|p4 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/advice|advice,campaign_id,total_items,_links
+mailchimp#~Click Detail Report|R2|p10 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/click-details|id,url,total_clicks,click_percentage,unique_clicks,unique_click_percentage,last_click,ab_split,campaign_id,_links
+mailchimp#~Click Detail Members|R1|p4 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/click-details/{link_id}/members|members,campaign_id,total_items,_links
+mailchimp#~Click Detail Member|R1|p11 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/click-details/{link_id}/members/{subscriber_hash}|email_id,email_address,merge_fields,vip,clicks,campaign_id,url_id,list_id,list_is_active,contact_status
+mailchimp#~Open Detail Report|R1|p6 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/open-details|members,campaign_id,total_opens,total_proxy_excluded_opens,total_items,_links
+mailchimp#~Open Activity|R1|p12 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/open-details/{subscriber_hash}|campaign_id,list_id,list_is_active,contact_status,email_id,email_address,merge_fields,vip,opens_count,proxy_excluded_opens_count
+mailchimp#~Domain Performance|R1|p5 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/domain-performance|domains,total_sent,campaign_id,total_items,_links
+mailchimp#~Eepurl Activity|R1|p7 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/eepurl|twitter,clicks,referrers,eepurl,campaign_id,total_items,_links
+mailchimp#~Email Activity|R2|p7 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/email-activity|campaign_id,list_id,list_is_active,email_id,email_address,activity,_links
+mailchimp#~Open Locations|R1|p4 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/locations|locations,campaign_id,total_items,_links
+mailchimp#~Sent-To|R1|p4 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/sent-to|sent_to,campaign_id,total_items,_links
+mailchimp#~Sent To|R1|p13 d100 t100 e2 r0 q0|GET /reports/{campaign_id}/sent-to/{subscriber_hash}|email_id,email_address,merge_fields,vip,status,open_count,last_open,absplit_group,gmt_offset,campaign_id
+mailchimp#~Campaign Sub-Reports|R1|p4 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/sub-reports|reports,campaign_id,total_items,_links
+mailchimp#~Unsubscribes|R2|p10 d100 t100 e0 r0 q0|GET /reports/{campaign_id}/unsubscribed|email_id,email_address,merge_fields,vip,timestamp,reason,campaign_id,list_id,list_is_active,_links
+mailchimp#~ecommerce-product-activity|R2|p3 d67 t100 e0 r0 q0|GET /reports/{campaign_id}/ecommerce-product-activity|products,total_items,_links
+mailchimp#~Templates|R1|p3 d100 t100 e0 r0 q0|GET /templates|templates,total_items,_links
+mailchimp#~Template Instance|R3W2|p3 d100 t100 e0 r0 q2|POST /templates|name,folder_id,html
+mailchimp#~Resource Link|R3|p5 d100 t100 e1 r0 q0|GET /templates/{template_id}/default-content|rel,href,method,targetSchema,schema
+mailchimp#~Orders|R2|p4 d100 t100 e0 r0 q0|GET /ecommerce/orders|store_id,orders,total_items,_links
+mailchimp#~E-commerce Stores|R1|p3 d100 t100 e0 r0 q0|GET /ecommerce/stores|stores,total_items,_links
+mailchimp#~E-commerce Store|R3W2|p11 d100 t100 e0 r0 q0|POST /ecommerce/stores|name,platform,domain,is_syncing,email_address,currency_code,money_format,primary_locale,timezone,phone
+mailchimp#~Carts|R1|p4 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/carts|store_id,carts,total_items,_links
+mailchimp#~E-commerce Cart|R3W2|p7 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/carts|customer,campaign_id,checkout_url,currency_code,order_total,tax_total,lines
+mailchimp#~Cart Lines|R1|p5 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/carts/{cart_id}/lines|store_id,cart_id,lines,total_items,_links
+mailchimp#~E-commerce Cart Line Item|R3W2|p4 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/carts/{cart_id}/lines|product_id,product_variant_id,quantity,price
+mailchimp#~Customers|R1|p4 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/customers|store_id,customers,total_items,_links
+mailchimp#~E-commerce Customer|R4W3|p5 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/customers|opt_in_status,company,first_name,last_name,address
+mailchimp#~Promo Rules|R1|p4 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/promo-rules|store_id,promo_rules,total_items,_links
+mailchimp#~E-commerce Promo Rule|R3W2|p10 d100 t100 e2 r0 q0|POST /ecommerce/stores/{store_id}/promo-rules|title,description,starts_at,ends_at,amount,type,target,enabled,created_at_foreign,updated_at_foreign
+mailchimp#~Promo Codes|R1|p4 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/promo-rules/{promo_rule_id}/promo-codes|store_id,promo_codes,total_items,_links
+mailchimp#~E-commerce Promo Code|R3W2|p6 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/promo-rules/{promo_rule_id}/promo-codes|code,redemption_url,usage_count,enabled,created_at_foreign,updated_at_foreign
+mailchimp#~E-commerce Order|R4W3|p24 d100 t100 e1 r0 q0|POST /ecommerce/stores/{store_id}/orders|customer,campaign_id,cart_id,landing_site,financial_status,fulfillment_status,currency_code,order_total,order_url,discount_total
+mailchimp#~Order Lines|R1|p5 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/orders/{order_id}/lines|store_id,order_id,lines,total_items,_links
+mailchimp#~E-commerce Order Line Item|R3W2|p5 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/orders/{order_id}/lines|product_id,product_variant_id,quantity,price,discount
+mailchimp#~Products|R1|p4 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/products|store_id,products,total_items,_links
+mailchimp#~E-commerce Product|R4W3|p10 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/products|title,handle,url,description,type,vendor,image_url,variants,images,published_at_foreign
+mailchimp#~Ecommerce Product Variants|R1|p5 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/products/{product_id}/variants|store_id,product_id,variants,total_items,_links
+mailchimp#~E-commerce Product Variant|R4W3|p8 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/products/{product_id}/variants|title,url,sku,price,inventory_quantity,image_url,backorders,visibility
+mailchimp#~Ecommerce Product Images|R1|p5 d100 t100 e0 r0 q0|GET /ecommerce/stores/{store_id}/products/{product_id}/images|store_id,product_id,images,total_items,_links
+mailchimp#~E-commerce Product Image|R3W2|p3 d100 t100 e0 r0 q0|POST /ecommerce/stores/{store_id}/products/{product_id}/images|id,url,variant_ids
+mailchimp#~Campaigns|R1|p3 d100 t100 e0 r0 q0|GET /search-campaigns|results,total_items,_links
+mailchimp#~SMS Campaigns|R1|p3 d100 t100 e0 r0 q0|GET /sms-campaigns|sms_campaigns,total_items,_links
+mailchimp#~SMS Campaign|R3|p16 d100 t100 e0 r0 q0|POST /sms-campaigns|id,web_id,name,status,channel,list_id,recipient_count,create_time,send_time,updated_at
+mailchimp#~Create SMS Campaign|W1|p5 d100 t100 e0 r0 q1|POST /sms-campaigns|name,list_id,folder_id,segments,excluded_segments
+mailchimp#~Update SMS Campaign|W1|p4 d100 t100 e0 r0 q0|PATCH /sms-campaigns/{sms_campaign_id}|name,folder_id,segments,excluded_segments
+mailchimp#~SMS Campaign Content|R2|p7 d100 t100 e0 r0 q0|GET /sms-campaigns/{sms_campaign_id}/content|message_body,estimated_segments,merge_fields,media,source,properties,_links
+mailchimp#~Set SMS Campaign Content|W1|p2 d100 t100 e0 r0 q1|PUT /sms-campaigns/{sms_campaign_id}/content|message_body,media
+mailchimp#~Members|R1|p3 d100 t100 e0 r0 q0|GET /search-members|exact_matches,full_search,_links
+mailchimp#~Landing Page Report|R1|p19 d89 t100 e0 r0 q0|GET /reporting/landing-pages/{outreach_id}|id,name,title,url,published_at,unpublished_at,status,list_id,visits,unique_visits
+mailchimp#~surveys|R1|p3 d100 t100 e0 r0 q0|GET /reporting/surveys|surveys,total_items,_links
+mailchimp#~Survey Report|R1|p11 d100 t100 e1 r0 q0|GET /reporting/surveys/{survey_id}|id,web_id,list_id,list_name,title,url,status,published_at,created_at,updated_at
+mailchimp#~questions|R1|p3 d100 t100 e0 r0 q0|GET /reporting/surveys/{survey_id}/questions|questions,total_items,_links
+mailchimp#~Survey Question Report|R1|p17 d100 t100 e1 r0 q0|GET /reporting/surveys/{survey_id}/questions/{question_id}|id,survey_id,query,type,total_responses,is_required,has_other,other_label,average_rating,range_low_label
+mailchimp#~answers|R1|p3 d100 t100 e0 r0 q0|GET /reporting/surveys/{survey_id}/questions/{question_id}/answers|answers,total_items,_links
+mailchimp#~responses|R1|p3 d100 t100 e0 r0 q0|GET /reporting/surveys/{survey_id}/responses|responses,total_items,_links
+mailchimp#~Response|R1|p4 d100 t100 e1 r0 q0|GET /reporting/surveys/{survey_id}/responses/{response_id}|question_id,question_type,query,answer
+# telerivet: Telerivet API | origin=found-openapi fmt=openapi-3.1 completeness=complete
+telerivet#Organization|R3|p3 d100 t100 e0 r0 q0|GET /v1/organizations|id,name,timezone_id
+telerivet#~billing|R1|p17 d100 t100 e0 r0 q0|GET /v1/organizations/{organization_id}/billing|balance,balance_currency,plan_name,plan_price,plan_currency,plan_rrule,plan_paid,plan_start_time,plan_end_time,plan_suspend_time
+telerivet#~message_stats|R2|p5 d100 t100 e0 r0 q0|GET /v1/organizations/{organization_id}/message_stats|start_time,end_time,start_date,end_date,groups
+telerivet#Project|R5|p12 d100 t100 e0 r0 q0|GET /v1/organizations/{organization_id}/projects|id,name,timezone_id,url_slug,default_route_id,primary_dashboard_id,auto_create_contacts,message_retention_days,short_link_scheme,vars
+telerivet#~projects|W2|p9 d100 t100 e0 r0 q0|POST /v1/organizations/{organization_id}/projects|name,timezone_id,url_slug,default_route_id,primary_dashboard_id,auto_create_contacts,message_retention_days,short_link_scheme,vars
+telerivet#~usage_history|R1|p3 d100 t100 e0 r0 q0|GET /v1/organizations/{organization_id}/usage_history|timezone_id,usage_type,history
+telerivet#~airtime_stats|R1|p5 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/airtime_stats|start_time,end_time,start_date,end_date,groups
+telerivet#AirtimeTransaction|R2|p18 d100 t100 e1 r0 q0|GET /v1/projects/{project_id}/airtime_transactions|id,to_number,operator_name,country,time_created,transaction_time,status,status_text,value,value_currency
+telerivet#Broadcast|R4|p36 d100 t100 e5 r0 q0|GET /v1/projects/{project_id}/broadcasts|id,recipients,title,time_created,last_message_time,last_send_time,status_counts,message_count,estimated_count,num_parts
+telerivet#Campaign|R6|p37 d100 t100 e5 r0 q0|GET /v1/projects/{project_id}/campaigns|id,name,campaign_type,status,group_id,exclude_group_id,route_id,broadcast_id,estimated_count,message_count
+telerivet#~campaigns|W2|p21 d100 t100 e3 r0 q0|POST /v1/projects/{project_id}/campaigns|name,group_id,exclude_group_id,route_id,respondent_group_id,clicked_group_id,label_ids,solution_id,schedule_mode,schedule_time
+telerivet#~contact_fields|R2W1|p9 d100 t100 e0 r0 q1|GET /v1/projects/{project_id}/contact_fields|variable,name,type,order,readonly,lookup_key,show_on_conversation,items,delete
+telerivet#~contact_stats|R1|p5 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/contact_stats|start_time,end_time,start_date,end_date,values
+telerivet#Contact|R5|p19 d100 t100 e1 r0 q0|GET /v1/projects/{project_id}/contacts|id,name,phone_number,time_created,time_updated,send_blocked,conversation_status,last_message_time,last_incoming_message_time,last_outgoing_message_time
+telerivet#~contacts|W2|p6 d100 t100 e1 r0 q0|POST /v1/projects/{project_id}/contacts|name,phone_number,send_blocked,conversation_status,default_route_id,vars
+telerivet#Group|R6|p12 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/contacts/{id}/groups|id,name,dynamic,filters,num_members,time_created,allow_sending,add_time_variable,solution_id,vars
+telerivet#Message|R10|p44 d100 t100 e6 r0 q0|GET /v1/projects/{project_id}/contacts/{id}/messages|id,direction,status,message_type,source,time_created,time_sent,time_updated,from_number,to_number
+telerivet#DataRow|R6|p8 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/contacts/{id}/rows|id,contact_id,from_number,vars,time_created,time_updated,table_id,project_id
+telerivet#ScheduledMessage|R6|p30 d100 t100 e3 r0 q0|GET /v1/projects/{project_id}/contacts/{id}/scheduled|id,content,rrule,timezone_id,recipients,recipients_str,group_id,contact_id,to_number,route_id
+telerivet#ContactServiceState|R5|p7 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/contacts/{id}/states|id,contact_id,service_id,vars,time_created,time_updated,project_id
+telerivet#~create_group|W1|p6 d100 t100 e0 r0 q1|POST /v1/projects/{project_id}/create_group|name,filters,allow_sending,add_time_variable,solution_id,vars
+telerivet#DataTable|R5|p10 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/create_table|id,name,num_rows,show_add_row,show_stats,show_contact_columns,vars,solution_id,project_id,url
+telerivet#~create_table|W1|p6 d100 t100 e0 r0 q1|POST /v1/projects/{project_id}/create_table|name,show_add_row,show_stats,show_contact_columns,solution_id,vars
+telerivet#Dashboard|R4|p9 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/dashboards|id,name,solution_id,cards,vars,time_created,time_updated,project_id,url
+telerivet#~dashboards|W2|p3 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/dashboards|name,solution_id,vars
+telerivet#DashboardCard|R4|p11 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/dashboards/{id}/cards|id,type,title,order,width,height,config,dashboard_id,project_id,time_created
+telerivet#~cards|W2|p5 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/dashboards/{id}/cards|title,order,width,height,config
+telerivet#~data_table_stats|R1|p5 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/data_table_stats|start_time,end_time,start_date,end_date,values
+telerivet#StoredFile|R4|p15 d100 t100 e2 r0 q0|GET /v1/projects/{project_id}/files|id,filename,type,size,description,vars,category,source,message_id,sha256
+telerivet#~files|W2|p3 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/files|filename,description,vars
+telerivet#~groups|W1|p6 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/groups/{id}|name,filters,allow_sending,add_time_variable,solution_id,vars
+telerivet#~import_contacts|W1|p5 d100 t100 e1 r0 q1|POST /v1/projects/{project_id}/import_contacts|contacts,lookup_key,add_group_ids,remove_group_ids,default_route_id
+telerivet#Label|R4|p5 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/labels|id,name,time_created,vars,project_id
+telerivet#~message_fields|R2W1|p7 d100 t100 e0 r0 q1|GET /v1/projects/{project_id}/message_fields|variable,name,type,order,hide_values,items,delete
+telerivet#MessageTemplate|R4|p15 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/message_templates|id,name,content,track_clicks,readonly,short_link_params,media,route_params,waba_id,whatsapp_template
+telerivet#~message_templates|W2|p8 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/message_templates|name,content,track_clicks,short_link_params,media,route_params,vars,solution_id
+telerivet#~receive|W1|p9 d100 t100 e1 r0 q2|POST /v1/projects/{project_id}/messages/receive|content,message_type,from_number,phone_id,to_number,simulated,starred,label_ids,vars
+telerivet#~send|W1|p20 d100 t100 e4 r0 q0|POST /v1/projects/{project_id}/messages/send|message_type,content,to_number,contact_id,route_id,status_url,status_secret,replace_variables,track_clicks,short_link_params
+telerivet#~messages|W1|p3 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/messages/{id}|starred,vars,error_message
+telerivet#Phone|R4|p35 d100 t100 e1 r0 q0|GET /v1/projects/{project_id}/phones|id,name,phone_number,phone_type,country,send_paused,time_created,last_active_time,vars,project_id
+telerivet#~phones|W2|p16 d100 t100 e1 r0 q0|POST /v1/projects/{project_id}/phones|name,phone_number,send_paused,vars,validate_recipient_numbers,allowed_recipient_countries,sent_message_limit,send_delay,timezone_id,quiet_mode
+telerivet#RelativeScheduledMessage|R4|p27 d100 t100 e4 r0 q0|GET /v1/projects/{project_id}/relative_scheduled|id,content,time_of_day,date_variable,offset_scale,offset_count,rrule,end_time,timezone_id,recipients_str
+telerivet#~relative_scheduled|W2|p22 d100 t100 e3 r0 q0|POST /v1/projects/{project_id}/relative_scheduled|content,time_of_day,date_variable,offset_scale,offset_count,rrule,end_time,timezone_id,group_id,contact_id
+telerivet#~route_list|R1|p4 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/route_list|id,name,phone_number,phone_type
+telerivet#Route|R4|p6 d100 t100 e0 r1 q0|GET /v1/projects/{project_id}/routes|id,name,vars,url,project_id,actions
+telerivet#~routes|W2|p3 d100 t100 e0 r1 q0|POST /v1/projects/{project_id}/routes|name,vars,actions
+telerivet#~scheduled|W2|p19 d100 t100 e2 r0 q0|POST /v1/projects/{project_id}/scheduled|content,rrule,timezone_id,group_id,contact_id,to_number,route_id,service_id,audio_url,tts_lang
+telerivet#ScheduledService|R4|p12 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/scheduled_services|id,service_id,rrule,timezone_id,time_created,start_time,end_time,prev_time,next_time,occurrences
+telerivet#~scheduled_services|W2|p5 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/scheduled_services|rrule,timezone_id,start_time,end_time,vars
+telerivet#~send_broadcast|W1|p20 d100 t100 e3 r0 q0|POST /v1/projects/{project_id}/send_broadcast|message_type,content,group_id,to_numbers,route_id,title,status_url,status_secret,label_ids,exclude_contact_id
+telerivet#~send_multi|R1W1|p16 d100 t100 e2 r0 q1|POST /v1/projects/{project_id}/send_multi|messages,message_type,route_id,broadcast_id,broadcast_title,status_url,status_secret,label_ids,replace_variables,track_clicks
+telerivet#~service_logs|R1|p6 d100 t100 e1 r0 q0|GET /v1/projects/{project_id}/service_logs|data,truncated,next_marker,page_size,sort_dir,count
+telerivet#Service|R4|p23 d100 t100 e5 r0 q0|GET /v1/projects/{project_id}/services|id,name,service_type,active,priority,contexts,vars,url,url_edit,project_id
+telerivet#CreateServiceRequest|W1|p12 d100 t100 e4 r0 q2|POST /v1/projects/{project_id}/services|service_type,name,config,active,vars,phone_ids,message_types,direction,table_ids,message_statuses
+telerivet#~services|W1|p15 d100 t100 e5 r0 q0|POST /v1/projects/{project_id}/services/{id}|name,active,priority,vars,response_table_id,phone_ids,message_types,table_ids,message_statuses,tags
+telerivet#~invoke|R1W1|p9 d100 t100 e1 r0 q1|POST /v1/projects/{project_id}/services/{id}/invoke|context,event,message_id,contact_id,phone_number,row_id,variables,route_id,async
+telerivet#Solution|R4|p15 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/solutions|id,name,description,skillbook_slug,services,tables,groups,campaigns,message_templates,dashboards
+telerivet#~solutions|W2|p4 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/solutions|name,description,skillbook_slug,vars
+telerivet#~tables|W1|p6 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/tables/{id}|name,show_add_row,show_stats,show_contact_columns,vars,solution_id
+telerivet#~fields|R2W1|p8 d100 t100 e0 r0 q1|GET /v1/projects/{project_id}/tables/{id}/fields|variable,name,type,order,readonly,lookup_key,items,delete
+telerivet#~import_rows|R1W1|p4 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/tables/{id}/import_rows|vars,contact_id,from_number,id
+telerivet#~rows|W2|p3 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/tables/{id}/rows|contact_id,from_number,vars
+telerivet#DataView|R4|p8 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/tables/{id}/views|id,name,num_rows,filters,vars,table_id,project_id,url
+telerivet#~views|W1|p3 d100 t100 e0 r0 q2|POST /v1/projects/{project_id}/tables/{id}/views|name,filters,vars
+telerivet#Task|R4|p16 d100 t100 e1 r0 q0|GET /v1/projects/{project_id}/tasks|id,task_type,task_params,filter_type,filter_params,time_created,time_active,time_complete,total_rows,current_row
+telerivet#~tasks|W1|p6 d100 t100 e1 r0 q3|POST /v1/projects/{project_id}/tasks|task_type,task_params,filter_type,filter_params,table_id,vars
+telerivet#~users|R1|p3 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/users|id,email,name
+telerivet#Webhook|R4|p6 d100 t100 e0 r0 q0|GET /v1/projects/{project_id}/webhooks|id,url,secret,events,vars,project_id
+telerivet#~webhooks|W2|p4 d100 t100 e0 r0 q0|POST /v1/projects/{project_id}/webhooks|url,secret,events,vars
+# gmail: Gmail API | origin=converted fmt=google-discovery completeness=complete
+gmail#WatchResponse|R1|p2 d100 t100 e0 r0 q0|POST /gmail/v1/users/{userId}/watch|historyId,expiration
+gmail#WatchRequest|W1|p4 d100 t100 e2 r0 q0|POST /gmail/v1/users/{userId}/watch|labelIds,labelFilterBehavior,labelFilterAction,topicName
+gmail#Profile|R1|p4 d100 t100 e0 r0 q0|GET /gmail/v1/users/{userId}/profile|threadsTotal,emailAddress,messagesTotal,historyId
+gmail#ImapSettings|R2W1|p4 d100 t100 e1 r0 q0|GET /gmail/v1/users/{userId}/settings/imap|enabled,expungeBehavior,maxFolderSize,autoExpunge
+gmail#VacationSettings|R2W1|p8 d100 t100 e0 r0 q0|GET /gmail/v1/users/{userId}/settings/vacation|responseBodyPlainText,responseBodyHtml,restrictToDomain,startTime,enableAutoReply,responseSubject,restrictToContacts,endTime
+gmail#PopSettings|R2W1|p2 d100 t100 e2 r0 q0|GET /gmail/v1/users/{userId}/settings/pop|accessWindow,disposition
+gmail#AutoForwarding|R2W1|p3 d100 t100 e1 r0 q0|GET /gmail/v1/users/{userId}/settings/autoForwarding|disposition,enabled,emailAddress
+gmail#Filter|R3W1|p3 d33 t100 e0 r2 q0|GET /gmail/v1/users/{userId}/settings/filters/{id}|criteria,id,action
+gmail#SendAs|R5W3|p9 d89 t100 e1 r1 q0|GET /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}|treatAsAlias,verificationStatus,signature,smtpMsa,isPrimary,displayName,replyToAddress,isDefault,sendAsEmail
+gmail#SmimeInfo|R3W1|p7 d100 t100 e0 r0 q0|GET /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo|expiration,issuerCn,pkcs12,encryptedKeyPassword,id,pem,isDefault
+gmail#CseKeyPair|R5W1|p7 d100 t100 e1 r1 q0|POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:enable|keyPairId,disableTime,pem,pkcs7,enablementState,privateKeyMetadata,subjectEmailAddresses
+gmail#CseIdentity|R4W2|p3 d67 t100 e0 r1 q0|GET /gmail/v1/users/{userId}/settings/cse/identities/{cseEmailAddress}|emailAddress,primaryKeyPairId,signAndEncryptKeyPairs
+gmail#Delegate|R3W1|p2 d100 t100 e1 r0 q0|GET /gmail/v1/users/{userId}/settings/delegates/{delegateEmail}|delegateEmail,verificationStatus
+gmail#ForwardingAddress|R3W1|p2 d100 t100 e1 r0 q0|GET /gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail}|forwardingEmail,verificationStatus
+gmail#Label|R5W3|p10 d90 t100 e3 r1 q0|GET /gmail/v1/users/{userId}/labels|labelListVisibility,messagesTotal,color,messagesUnread,name,id,threadsUnread,messageListVisibility,type,threadsTotal
+gmail#Message|R9W3|p10 d90 t100 e0 r2 q0|GET /gmail/v1/users/{userId}/messages/{id}|threadId,labelIds,historyId,sizeEstimate,payload,internalDate,id,raw,classificationLabelValues,snippet
+gmail#BatchModifyMessagesRequest|W1|p5 d100 t100 e0 r1 q0|POST /gmail/v1/users/{userId}/messages/batchModify|addLabelIds,removeClassificationLabelIds,ids,addClassificationLabels,removeLabelIds
+gmail#ModifyMessageRequest|W1|p4 d100 t100 e0 r1 q0|POST /gmail/v1/users/{userId}/messages/{id}/modify|removeLabelIds,removeClassificationLabelIds,addClassificationLabels,addLabelIds
+gmail#MessagePartBody|R1|p3 d100 t100 e0 r0 q0|GET /gmail/v1/users/{userId}/messages/{messageId}/attachments/{id}|attachmentId,size,data
+gmail#Draft|R4W3|p2 d50 t100 e0 r1 q0|POST /gmail/v1/users/{userId}/drafts/send|message,id
+gmail#Thread|R5|p4 d100 t100 e0 r1 q0|GET /gmail/v1/users/{userId}/threads/{id}|snippet,id,messages,historyId
+gmail#ModifyThreadRequest|W1|p2 d100 t100 e0 r0 q0|POST /gmail/v1/users/{userId}/threads/{id}/modify|addLabelIds,removeLabelIds
+gmail#History|R1|p6 d100 t100 e0 r5 q0|GET /gmail/v1/users/{userId}/history|id,messagesDeleted,labelsAdded,labelsRemoved,messages,messagesAdded

@@ -1,0 +1,100 @@
+# format: id|R<n>/W<n> = used as response/request body n times|p=props d=%described t=%typed e=enums r=refs q=required FREE=free-form|example op|first fields
+# sftp: OpenFn SFTP Adaptor (Synthesized) | origin=synthesized fmt=adaptor-surface completeness=complete
+sftp#FileEntry|R1|p8 d38 t100 e0 r0 q3|POST /list|type,name,size,modifyTime,accessTime,rights,owner,group
+sftp#GetCSVRequest|W1|p2 d50 t100 e0 r1 q1|POST /getCSV|filePath,parsingOptions
+sftp#PutResult|R1|p3 d0 t100 e0 r0 q1|POST /putCSV|remoteFilePath,bytesWritten,message
+sftp#PutCSVRequest|W1|p3 d67 t100 e0 r1 q2|POST /putCSV|localFilePath,remoteFilePath,parsingOptions
+sftp#GetJSONRequest|W1|p2 d100 t100 e0 r0 q1|POST /getJSON|filePath,encoding
+# sunbird-rc: Sunbird RC - Issuance APIs | origin=found-openapi fmt=openapi-3.0 completeness=complete
+sunbird-rc#credentialResponse|R1|p7 d0 t100 e0 r0 q0|POST /credentials/issue|credential,credentialSchemaId,tags,createdAt,updatedAt,createdBy,updatedBy
+sunbird-rc#credentialRequest|W1|p3 d0 t100 e0 r1 q0|POST /credentials/issue|credential,credentialSchemaId,tags
+sunbird-rc#verifiableCredential|R2|p8 d0 t100 e0 r0 q0|GET /credentials/{id}|context,id,type,issuer,issuanceDate,expirationDate,credentialSubject,proof
+sunbird-rc#~search|W1|p3 d0 t100 e1 r0 q0|POST /credentials/search|issuer,subject,type
+sunbird-rc#verifyResponse|R1|p4 d0 t100 e1 r0 q0|GET /credentials/{id}/verify|status,checks,warnings,errors
+# varo: OpenFn Varo Adaptor (synthesized surface) | origin=synthesized fmt=adaptor-surface completeness=undefined
+varo#EmsRecord|R2W1|p5 d100 t100 e0 r0 q0|POST /convertToEms|ASER,ABST,TVC,ALRM,zdescription
+varo#FileContent|R1W1|p2 d50 t100 e0 r0 q0|POST /convertToEms|content,filename
+varo#UtcRange|R1|p4 d100 t100 e0 r0 q0|POST /parseUtcForDataRange|wallClock,startUtc,endUtc,collectionKeys
+varo#~parseUtcForDataRange|W1|p3 d33 t100 e0 r0 q3|POST /parseUtcForDataRange|timeZone,startIso,endIso
+varo#~isKeyInRange|W1|p3 d33 t100 e0 r0 q3|POST /isKeyInRange|key,start,end
+# dagu: Dagu Pharmacy/Dispensing API (synthesized) | origin=synthesized fmt=adaptor-surface completeness=undefined
+dagu#StockOutItem|R1|p5 d0 t100 e0 r0 q0|GET /DispensingUnit/Dashboard/StockOutReport|itemGuid,itemName,unit,onHand,daysOutOfStock
+dagu#Prescription|R2|p7 d0 t100 e1 r0 q0|POST /Patient/CheckPrescription|prescriptionRowGuid,patientName,drugName,dose,quantity,status,prescribedAt
+dagu#DataTableQuery|W1|p4 d0 t100 e0 r0 q0|POST /Patient/Prescription/History|start,length,draw,additionalParameters
+dagu#DispensingRequest|R1|p5 d0 t100 e0 r0 q0|POST /DispensingUnit/Request/History|requestGuid,requestNumber,dispensingUnit,status,requestedAt
+# formsg: FormSG Webhook / Submission API (OpenFn formsg synthesized) | origin=synthesized fmt=adaptor-surface completeness=undefined
+formsg#DecryptedSubmission|R2|p4 d0 t100 e0 r1 q0|POST /decrypt|submissionId,responses,verified,attachments
+formsg#DecryptRequest|W1|p2 d0 t100 e0 r1 q1|POST /decrypt|submissionData,options
+formsg#WebhookVerificationResult|R1|p4 d0 t100 e0 r0 q0|POST /verify|verified,epoch,submissionId,formId
+formsg#EncryptedSubmission|W1|p7 d14 t100 e0 r0 q3|POST /process|formId,submissionId,encryptedContent,verifiedContent,version,created,attachmentDownloadUrls
+# inform: UNICEF Inform API (mock subset) | origin=generated fmt=docs completeness=undefined
+inform#Form|R2|p16 d0 t100 e0 r0 q0|GET /forms|url,formid,uuid,id_string,title,description,downloadable,encrypted,owner,public
+inform#FormStructure|R1|p6 d0 t100 e0 r0 q0|GET /forms/{formId}/form.json|name,title,id_string,type,default_language,children
+inform#Submission|R2|p8 d0 t100 e0 r1 q0 FREE|GET /data/{formId}|_id,_uuid,_submission_time,_xform_id_string,_status,_geolocation,_attachments,formhub/uuid
+inform#Attachment|R1|p7 d0 t100 e0 r0 q0|GET /media/{attachmentId}|id,xform,instance,filename,mimetype,download_url,url
+# magpi: Magpi Outbound & Inbound API | origin=generated fmt=docs completeness=undefined
+magpi#SurveyData|R3|p5 d100 t100 e0 r0 q0|POST /api/surveydata/v3|SubmissionId,SubmissionDate,LastSubmissionDate,surveyId,source
+magpi#SurveyDataRequest|W3|p7 d100 t100 e0 r0 q3|POST /api/surveydata/v3|username,accesstoken,surveyid,startdate,enddate,start,limit
+magpi#UploadResponse|R1|p3 d100 t100 e0 r0 q0|POST /mobileApi/uploadData|status,recordId,message
+magpi#RecordUpload|W1|p2 d100 t100 e0 r0 q0 FREE|POST /mobileApi/uploadData|surveyid,data
+# minio: MinIO S3-Compatible Object Store (synthesized) | origin=synthesized fmt=adaptor-surface completeness=complete
+minio#ObjectList|R1|p3 d0 t100 e0 r1 q0|GET /{bucketName}|bucketName,prefix,objects
+minio#Bucket|R1|p3 d0 t100 e0 r0 q0|PUT /{bucketName}|name,region,creationDate
+minio#StorageObject|R1|p6 d0 t100 e0 r0 q0|GET /{bucketName}/{objectName}|name,bucketName,size,etag,lastModified,contentType
+minio#PutObjectResult|R1|p2 d0 t100 e0 r0 q0|PUT /{bucketName}/{objectName}|etag,versionId
+# odoo: Odoo External API (JSON-RPC model) | origin=synthesized fmt=adaptor-surface completeness=best-effort
+odoo#AuthenticateResponse|R1|p3 d0 t100 e0 r0 q0|POST /web/session/authenticate|jsonrpc,id,result
+odoo#AuthenticateRequest|W1|p4 d0 t100 e0 r0 q3|POST /web/session/authenticate|jsonrpc,method,params,id
+odoo#JsonRpcResponse|R1|p4 d25 t75 e0 r1 q0|POST /jsonrpc|jsonrpc,id,result,error
+odoo#JsonRpcRequest|W1|p4 d0 t100 e0 r0 q3|POST /jsonrpc|jsonrpc,method,params,id
+# ping: Ping (SPING) adaptor surface (synthesized) | origin=synthesized fmt=adaptor-surface completeness=undefined
+ping#TokenResponse|R1|p4 d0 t100 e0 r0 q0|POST /token|access_token,token_type,expires_in,scope
+ping#TokenRequest|W1|p4 d0 t100 e0 r0 q4|POST /token|grant_type,username,password,scope
+ping#PingResult|R1|p2 d0 t100 e0 r0 q0|GET /ping|status,timestamp
+ping#Record|R3W1|p4 d0 t100 e0 r0 q0|GET /records|id,type,attributes,createdAt
+# flutterwave: Flutterwave v4 API (OpenFn flutterwave subset) | origin=generated fmt=docs completeness=undefined
+flutterwave#Customer|R4W2|p7 d14 t100 e0 r0 q0|GET /customers|id,email,name,phone,address,meta,created_datetime
+flutterwave#PaymentMethod|R3W1|p7 d14 t100 e1 r0 q0|GET /payment-methods|id,type,customer_id,card,mobile_money,meta,created_datetime
+flutterwave#Charge|R3W1|p12 d8 t100 e1 r0 q0|GET /charges|id,amount,currency,customer_id,payment_method_id,reference,status,processor_response,next_action,redirect_url
+# hubtel: Hubtel Messaging API (mock subset) | origin=generated fmt=docs completeness=undefined
+hubtel#MessageResponse|R1|p4 d25 t100 e0 r0 q0|POST /messages/send|Status,MessageId,Rate,NetworkId
+hubtel#SendMessageRequest|W1|p4 d100 t100 e0 r0 q3|POST /messages/send|from,to,content,registeredDelivery
+hubtel#MessageStatus|R1|p8 d0 t100 e0 r0 q0|GET /messages/{messageId}|MessageId,Status,From,To,Content,Rate,NetworkId,UpdatedAt
+# mogli: Mogli SMS Apex REST API (generated) | origin=generated fmt=adaptor-surface completeness=undefined
+mogli#SmsResult|R2|p6 d0 t100 e0 r0 q0|POST /services/apexrest/Mogli_SMS/v1/sms|id,success,sender,message,status,receivedAt
+mogli#SmsInput|W1|p3 d0 t100 e0 r0 q0|POST /services/apexrest/Mogli_SMS/v1/sms|sender,receivedAt,message
+mogli#SmsUpdateInput|W1|p2 d0 t100 e0 r0 q0|PUT /services/apexrest/Mogli_SMS/v1/sms|Id,status
+# mojatax: Mojatax VFD API (generated, focused) | origin=generated fmt=docs completeness=undefined
+mojatax#TokenResponse|R1|p3 d0 t100 e0 r0 q0|POST /client/GetToken|access_token,token_type,expires_in
+mojatax#InvoiceItem|R1W1|p4 d0 t100 e0 r0 q0|POST /client/CreateInvoice|description,quantity,unitPrice,taxCode
+mojatax#OperationResult|R1|p2 d0 t100 e0 r0 q0|POST /client/CancelInvoice|success,message
+# mongodb: MongoDB Document Operations (synthesized) | origin=synthesized fmt=adaptor-surface completeness=complete
+mongodb#InsertResult|R1|p3 d0 t100 e0 r0 q0|POST /{database}/{collection}/insert|acknowledged,insertedCount,insertedIds
+mongodb#UpdateResult|R1|p5 d0 t100 e0 r0 q0|POST /{database}/{collection}/update|acknowledged,matchedCount,modifiedCount,upsertedCount,upsertedId
+mongodb#~update|W1|p3 d0 t100 e0 r0 q0|POST /{database}/{collection}/update|filter,changes,options
+# progres: UNHCR proGres v4 interoperability API (DTP) | origin=synthesized fmt=adaptor-surface completeness=best-effort
+progres#InboundReferral|W1|p27 d41 t100 e2 r0 q3 FREE|POST /ReceiveIncomingReferral|request_type,id,service_implementing_agency,owned_by_agency_id,service_type,service_type_other,service_response_day_time,service_referral_notes,primero_user,full_name
+progres#OutgoingReferralDecision|W1|p6 d83 t100 e1 r0 q3 FREE|POST /ReceiveDecisionOutgoingReferral|request_type,case_id,primero_user,progres_interventionnumber,status,closure_reason
+progres#ReferralFeedback|W1|p6 d100 t100 e1 r0 q2 FREE|POST /Feedback|request_type,case_id,primero_user,progres_interventionnumber,status,closure_reason
+# puntosolidario-rd: Punto Solidario RD adaptor surface (synthesized) | origin=synthesized fmt=adaptor-surface completeness=undefined
+puntosolidario-rd#Beneficiary|R3W1|p10 d10 t100 e0 r0 q0|GET /beneficiarios|id,cedula,nombres,apellidos,sexo,fechaNacimiento,provincia,municipio,estado,subsidios
+puntosolidario-rd#Subsidy|R1|p6 d0 t100 e0 r0 q0|GET /subsidios|id,codigo,nombre,monto,moneda,activo
+puntosolidario-rd#Transaction|R2W1|p8 d0 t100 e0 r0 q0|GET /transacciones|id,beneficiarioId,subsidioCodigo,monto,moneda,comercio,fecha,estado
+# http: Generic HTTP API (synthesized) | origin=synthesized fmt=adaptor-surface completeness=undefined
+http#Resource|R5W3|p4 d0 t100 e0 r0 q0 FREE|GET /resources|id,name,createdAt,updatedAt
+http#DeleteResult|R1|p2 d0 t100 e0 r0 q0|DELETE /resources/{id}|id,deleted
+# memento: Memento Database Cloud API (mock subset) | origin=generated fmt=docs completeness=undefined
+memento#Library|R2|p7 d0 t100 e0 r1 q0|GET /v1/libraries|id,name,owner,createdTime,revision,size,fields
+memento#Entry|R4|p5 d0 t100 e0 r1 q0|GET /v1/libraries/{libraryId}/entries|id,author,createdTime,modifiedTime,fields
+# motherduck: MotherDuck (DuckDB Cloud) SQL API (synthesized) | origin=synthesized fmt=adaptor-surface completeness=complete
+motherduck#Row|R2|p3 d0 t100 e0 r0 q0 FREE|POST /query|id,name,age
+motherduck#QueryRequest|W1|p2 d50 t100 e0 r0 q1|POST /query|sqlQuery,writeSql
+# mssql: Microsoft SQL Server API (synthesized) | origin=synthesized fmt=adaptor-surface completeness=complete
+mssql#Row|R9W4|p3 d0 t100 e0 r0 q0 FREE|POST /sql|id,name,email
+mssql#ColumnDefinition|R1W2|p5 d0 t100 e0 r0 q0|GET /tables/{table}/describe|name,type,nullable,identity,default
+# mysql: MySQL API (synthesized) | origin=synthesized fmt=adaptor-surface completeness=complete
+mysql#Row|R1W3|p3 d0 t100 e0 r0 q0 FREE|POST /sql|id,name,email
+mysql#MutationResult|R3|p6 d0 t100 e0 r0 q0|POST /tables/{table}/insert|fieldCount,affectedRows,insertId,serverStatus,warningCount,changedRows
+# nexmo: SMS API | origin=converted fmt=openapi-3.0 completeness=complete
+nexmo#Message|R1|p8 d100 t100 e0 r0 q0|POST /{format}|account-ref,client-ref,message-id,message-price,network,remaining-balance,status,to
+nexmo#NewMessage|W1|p18 d100 t100 e2 r0 q3|POST /{format}|account-ref,api_key,api_secret,body,callback,client-ref,content-id,entity-id,from,message-class
