@@ -122,12 +122,17 @@ c.coverage(); // { hit, missed, unmatched, exchanges } — which spec operations
 - **Status**: the schema for the status that actually came back
   (`responses[status]`, then `2XX`-style ranges, then `default`), never the
   spec's preferred success code. An undocumented status is an `unknown-status`
-  violation.
+  violation. A 2xx never falls back to `default` when the operation documents
+  its success status(es): `default` is the error shape in practice, so a `201`
+  where the spec says `200` is reported, not waved through.
+- **Content type**: when the spec documents a body for the status and the
+  exchange carries a `Content-Type`, a media type the spec does not list is a
+  `content-type` violation (JSON-family types and wildcards match each other).
 - **Tolerance**: extra fields pass unless the spec forbids them
   (`strictAdditional: true` flips that), unknown vendor `format`s pass,
   `ignoreFormats` silences a known one, `checkRequests: false` skips request
   bodies for traffic you don't control. Non-JSON responses are not
-  schema-checked.
+  schema-checked (beyond the content-type check).
 - **Hand-off format**: JSON Lines of `{ method, path, status, requestBody?,
   responseBody?, contentType? }` (`parseExchangesJsonl` / `toExchangesJsonl`).
   A traffic producer writes that file; `pnpm specs conform <adaptor>
