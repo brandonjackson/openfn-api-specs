@@ -5,6 +5,29 @@ OpenFn adaptor can reach**. It is maintained by an agent (or a human) running th
 loop described here. The human-facing overview is in `README.md`; this file is
 the operating manual for keeping the copy correct and current.
 
+## North star
+
+**Every adaptor has a spec that is `complete`, `full` and checked within 90
+days.** `manifest.json` carries the effective `completeness` and `coverage` for
+every adaptor, and `pnpm specs report` buckets them. Both are what you steer by:
+a run that doesn't move an adaptor toward `ok` hasn't moved the north star.
+Today 39 of 104 are complete; 24 are best effort; 41 make no claim at all, and
+"no claim" counts as incomplete, not as fine.
+
+This spec is also **the denominator for the two sibling repos**, which is why
+getting it right matters beyond this repo:
+
+- openfn-mocker's mock coverage = spec operations its guide exercises ÷ all
+  operations in `openapi.json` (its `coverage.json`).
+- adaptors-storybook's snippet coverage = resource groups (the `##` headings
+  in `endpoints.md`) with at least one snippet ÷ all resource groups (each
+  package's `snippet-coverage.json`).
+
+So a missing endpoint shows up downstream as a snippet or mock request that
+"matched no spec operation", and a regrouping in `endpoints.md` moves the
+storybook's percentages. Read those signals as input (step 2 of the loop), and
+expect your changes to move the other repos' numbers.
+
 ## Why full coverage (read this first)
 
 Every adaptor inherits generic builders — `get()`, `post()`, `request()`, etc. —
@@ -143,9 +166,16 @@ conformer-matched operation to its group. The storybook shows all three.
 
 1. **Refresh the environment.** `pnpm specs list --refresh`; diff against
    `_adaptors.json` to find added/removed adaptors.
-2. **Get feedback.** `pnpm specs report` to bucket every adaptor.
+2. **Get feedback.** `pnpm specs report` to bucket every adaptor. Also check
+   the downstream signals: requests in adaptors-storybook's
+   `packages/<a>/snippet-coverage.json` (`offSpec`) or openfn-mocker's
+   ledgers (`unknown-operation`) that match no operation in our spec. Each is a
+   candidate spec gap, though it may equally be a wrong snippet or mock; check
+   the vendor before adding anything.
 3. **Pick work**, in priority order: `wrong` → `at-risk` → `missing`/`new` →
-   `incomplete` → `stale`.
+   `incomplete` → `stale`. Within a bucket, prefer adaptors that openfn-mocker
+   mocks or that have snippets in adaptors-storybook: their specs are the
+   denominator other work is measured against.
 4. **Do the finding step.** `pnpm specs instructions <adaptor>` emits a precise
    work order. Execute it — this is the agentic part, deliberately not a scraper:
    - Prefer a machine spec. `pnpm specs convert <adaptor> --url=<specUrl>` does
@@ -173,7 +203,11 @@ conformer-matched operation to its group. The storybook shows all three.
    Fix and repeat until green.
 7. **Log + commit.** Append maintenance-log entries (below) and commit. Git is
    the primary version/timestamp record; the log is the human-readable narrative.
-8. **Rebuild the index.** `pnpm specs manifest`.
+8. **Rebuild the index.** `pnpm specs manifest`. The PR description says which
+   adaptors moved bucket (e.g. `incomplete → ok`), so the change to the north
+   star is visible in review. The storybook picks the new manifest up on its
+   next daily deploy; openfn-mocker picks new specs up when its lockfile is
+   bumped.
 
 ## Audit log — `specs/adaptors/maintenance-log.jsonl`
 
