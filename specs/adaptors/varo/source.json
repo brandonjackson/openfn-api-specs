@@ -3,12 +3,44 @@
   "npm": "@openfn/language-varo",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-varo/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-varo/types/Adaptor.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-varo/README.md",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/varo"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "attempts": [
+    {
+      "kind": "adaptor-surface",
+      "url": "https://github.com/OpenFn/adaptors/tree/main/packages/varo/src",
+      "result": "used",
+      "note": "No HTTP client in src/ (no fetch/request/undici); every export is a pure transform. All 5 ast.json operations modelled from Adaptor.js, VaroEmsUtils.js, FridgeTagUtils.js, StreamingUtils.js, Utils.js and test fixtures."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://www.postman.com/search?q=varo",
+      "result": "not-found",
+      "note": "No Varo cold-chain API anywhere; the adaptor's I/O is Gmail attachments and OpenFn Collections, which have their own adaptors/specs."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Only unrelated entries (Varo Bank is a different company)."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The Varo adaptor targets NO external HTTP API. Confirmed against ast.json, Adaptor.d.ts, README, and the compiled dist (no fetch/axios/http/request calls; only Map.get usage). It is a pure in-process data-transformation adaptor for vaccine cold-chain data, designed to run alongside the Gmail and Collections adaptors: it converts proprietary Varo/FridgeTag message contents (EMS-like text/JSON pulled from Gmail attachments) into EMS-compliant reports/records, and converts EMS reports back into Varo message components for emailing. EMS here refers to the WHO/PQS-style Electronic Monitoring/Management System temperature-monitoring data format. Because there is no upstream API, this OpenAPI document is a best-effort SYNTHESIS from the adaptor surface: all 5 public operations (convertToEms, convertItemsToReports, convertReportsToMessageContents, parseUtcForDataRange, isKeyInRange) are modeled as local POST transformation endpoints on a placeholder base URL (https://varo.local/transform) purely so the mocker can capture the input/output resource shapes (MessageContent, EmsRecord, EmsReport, ZReport, VaroMessageComponent, UtcRange). CAVEAT: there is no real server to mock; response schemas describe transformation outputs, not API resources."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-tests"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/tree/main/packages/varo",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/varo/src/Adaptor.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/varo/src/StreamingUtils.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/varo/README.md",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-varo/ast.json"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The Varo adaptor (v2.2.3) has no network target: it converts Varo/FridgeTag cold-chain files pulled from Gmail into WHO EMS reports and back into Varo email packages, alongside the gmail and collections adaptors. This synthesized spec models all 5 ast.json operations as local POST placeholders (x-openfn-local-operations) whose body is the arguments and whose 200 body is the state.data result or return value; it is complete because the operation surface is bounded and every function was read. Corrected from the July 2026 stub: convertToEms and convertItemsToReports return arrays of EmsReport (not records/one report), convertReportsToMessageContents takes and returns arrays and includes the plain-text body, isKeyInRange returns a bare boolean, and the EMS report/record schemas now list the adaptor's full field whitelists plus its z-prefixed extensions. parseUtcForDataRange and isKeyInRange are plain functions, not state operations. EMS field meanings come from the adaptor's comments where present; the rest are labelled undocumented rather than guessed."
 }

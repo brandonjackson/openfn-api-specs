@@ -5,33 +5,136 @@
   "x-openfn-adaptor": "varo",
   "x-source": {
     "openapi": "#/components/schemas/EmsRecord",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
-  "description": "An EMS-compliant atomic sensor reading.",
+  "description": "One EMS reading. Field codes follow the WHO EMS data specification; the adaptor's whitelist is listed, with descriptions only where the adaptor source gives them.",
+  "additionalProperties": true,
   "properties": {
-    "ASER": {
-      "type": "string",
-      "description": "Asset/device serial identifier."
-    },
     "ABST": {
-      "type": "string",
-      "description": "Absolute ISO-8601 timestamp of the reading, e.g. \"2024-10-08T08:15:00.000Z\"."
+      "description": "Absolute time UTC, abbreviated ISO (YYYYMMDDTHHMMSSZ) for Varo EMS data; a JS Date for FridgeTag"
     },
-    "TVC": {
-      "type": "number",
-      "description": "Temperature value in degrees Celsius."
+    "ACCD": {
+      "description": "EMS field (type not documented)."
+    },
+    "ACSV": {
+      "description": "EMS field (type not documented)."
     },
     "ALRM": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Optional alarm flag, e.g. \"HEAT\" or \"FRZE\"."
+      "description": "Presence of defined alarm conditions (e.g. HEAT, FRZE, HEATACK)"
     },
-    "zdescription": {
+    "BEMD": {
+      "description": "EMD estimated days of battery life remaining"
+    },
+    "BLOG": {
+      "description": "Logger estimated days of battery life remaining"
+    },
+    "CMPR": {
+      "description": "Compressor operation seconds per 15 minutes"
+    },
+    "CMPR2": {
+      "description": "EMS field (type not documented)."
+    },
+    "CMPS": {
+      "description": "EMS field (type not documented)."
+    },
+    "CMPS2": {
+      "description": "EMS field (type not documented)."
+    },
+    "CSOF": {
+      "description": "EMS field (type not documented)."
+    },
+    "CSOF2": {
+      "description": "EMS field (type not documented)."
+    },
+    "DCCD": {
+      "description": "EMS field (type not documented)."
+    },
+    "DCSV": {
+      "description": "EMS field (type not documented)."
+    },
+    "DORF": {
+      "description": "EMS field (type not documented)."
+    },
+    "DORV": {
+      "description": "Vaccine compartment door-open seconds per 15 minutes"
+    },
+    "DRCF": {
+      "description": "EMS field (type not documented)."
+    },
+    "DRCV": {
+      "description": "EMS field (type not documented)."
+    },
+    "EERR": {
+      "description": "EMD errors"
+    },
+    "FANS": {
+      "description": "EMS field (type not documented)."
+    },
+    "HAMB": {
+      "description": "Relative humidity"
+    },
+    "HCOM": {
+      "description": "EMS field (type not documented)."
+    },
+    "HOLD": {
+      "description": "Days the vaccine compartment stays cold if power is disconnected"
+    },
+    "IDRF": {
+      "description": "EMS field (type not documented)."
+    },
+    "IDRV": {
+      "description": "EMS field (type not documented)."
+    },
+    "LERR": {
+      "description": "Logger errors"
+    },
+    "MSW": {
+      "description": "EMS field (type not documented)."
+    },
+    "SVA": {
+      "description": "Good-voltage seconds per 15 minutes"
+    },
+    "TAMB": {
+      "description": "Ambient temperature (°C)",
+      "type": "number"
+    },
+    "TCON": {
+      "description": "EMS field (type not documented)."
+    },
+    "TCON2": {
+      "description": "EMS field (type not documented)."
+    },
+    "TFRZ": {
+      "description": "EMS field (type not documented)."
+    },
+    "TPCB": {
+      "description": "EMS field (type not documented)."
+    },
+    "TPCB2": {
+      "description": "EMS field (type not documented)."
+    },
+    "TVC": {
+      "description": "Vaccine chamber temperature (°C)",
+      "type": "number"
+    },
+    "zDescription": {
       "type": "string",
-      "description": "Human-readable label for context."
+      "description": "FridgeTag only: '<date> Min T' / '<date> Max T' label."
+    },
+    "zTvcAlrm": {
+      "type": "string",
+      "description": "rtmd merge: alarm taken from a TVC reading."
+    },
+    "zTambAlrm": {
+      "type": "string",
+      "description": "rtmd merge: alarm taken from an ambient reading (not promoted to ALRM)."
     }
+  },
+  "example": {
+    "ABST": "20241205T004440Z",
+    "TVC": 5,
+    "DORV": 900,
+    "BLOG": 1826
   }
 }
