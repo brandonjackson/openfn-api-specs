@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arcgis/NearPointResult",
+  "title": "NearPointResult",
+  "x-openfn-adaptor": "arcgis",
+  "x-source": {
+    "openapi": "#/components/schemas/NearPointResult",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "A result of searching for places using a `places/near-point` request.\n\nThe result object includes a single place that satisfied the search and\nthe distance from the search point, in meters.\n",
+  "required": [
+    "placeId",
+    "location",
+    "name",
+    "categories",
+    "distance"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "placeId": {
+      "description": "The unique Id of this place.\n\nThis place Id can be passed to the `places/{placeId}` endpoint to\nretrieve additional details.\n",
+      "allOf": [
+        {
+          "$ref": "PlaceId.json"
+        }
+      ],
+      "example": "2da082218b6f7538e52250999c8f8ef1"
+    },
+    "location": {
+      "description": "The location of this place as a WGS84 point.\n",
+      "$ref": "Point.json",
+      "example": {
+        "x": -117.194769,
+        "y": 34.057289
+      }
+    },
+    "categories": {
+      "type": "array",
+      "description": "A list of category objects for a place.\n\nCategories are uniquely identified by a `categoryId`. For example,\n`4bf58dd8d48988d115951735` identifies a \"Bicycle Store\" and\n`4bf58dd8d48988d184941735` identifies a \"Stadium\". Note that a\nsingle place can belong to multiple categories (for example, a\npetrol station could also have a supermarket).\n",
+      "items": {
+        "$ref": "Category.json"
+      },
+      "example": [
+        {
+          "categoryId": "63be6904847c3692a84b9b90",
+          "label": "Technology Business"
+        }
+      ]
+    },
+    "name": {
+      "description": "The name of the place, or point of interest.\n\nYou can search for places by name using the `searchText` property in\na `places/near-point` or `places/within-extent` request.\n",
+      "type": "string",
+      "minLength": 1,
+      "example": "Esri International"
+    },
+    "distance": {
+      "description": "The distance, in meters, from the place to the search point of a 'places/near-point` query.\n",
+      "type": "number",
+      "minimum": 0,
+      "example": 50
+    },
+    "icon": {
+      "description": "Details of an icon, suitable for depicting this place.\n\nTo fetch icon details use the `icon` query parameter.\n",
+      "allOf": [
+        {
+          "$ref": "IconDetails.json"
+        }
+      ]
+    }
+  }
+}

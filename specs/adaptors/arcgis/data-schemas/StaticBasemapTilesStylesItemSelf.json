@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arcgis/StaticBasemapTilesStylesItemSelf",
+  "title": "StaticBasemapTilesStylesItemSelf",
+  "x-openfn-adaptor": "arcgis",
+  "x-source": {
+    "openapi": "#/components/schemas/StaticBasemapTilesStylesItemSelf",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "Describes a given style.",
+  "properties": {
+    "name": {
+      "description": "Name of the style.",
+      "type": "string",
+      "example": "ArcGIS Navigation"
+    },
+    "deprecated": {
+      "description": "Details whether the style is deprecated.",
+      "type": "boolean",
+      "default": false
+    },
+    "complete": {
+      "description": "Details whether the style can be used as a complete basemap, or whether it requires additional layers.\n\nTo present a list of static basemap tiles that are ready to be used stand-alone, filter out styles that are not `complete`.\n\nFor example, the `arcgis/streets` style is `complete` because it includes all of the basemap data required to provide the context for a mapping application. It contains a base layer of streets and buildings, with an overlay of place name labels and street names.\n\nBy contrast the `arcgis/imagery/labels` style only provides the place name labels and street names. Without an accompanying satellite imagery base layer this style does not provide a complete basemap.\n",
+      "type": "boolean",
+      "default": true
+    },
+    "path": {
+      "description": "Endpoint path used to access the style.",
+      "type": "string",
+      "example": "/arcgis/navigation"
+    },
+    "provider": {
+      "description": "The style provider.",
+      "type": "string",
+      "enum": [
+        "arcgis"
+      ],
+      "example": "arcgis"
+    },
+    "styleFamily": {
+      "$ref": "StaticBasemapTilesStyleFamily.json"
+    },
+    "group": {
+      "$ref": "StyleGroup.json"
+    },
+    "url": {
+      "description": "Full URL to the style metadata.\n\nThis can be used with mapping clients that read the tiling scheme\netc. from the metadata XML as the entry point for fetching tiles\n(for example, the ArcGIS Maps SDKs).\n\nYou can append the `language` query parameter to this style, using\nthe codes shown in the `supportedLanguageCodes` property for the\nstyle.\n\nAppend the `token` query parameter to this style to authenticate\ntile requests.\n",
+      "type": "string",
+      "format": "URL",
+      "example": "https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/navigation/static"
+    },
+    "templateUrl": {
+      "description": "Template URL for fetching a tile from the style\n\nThis can be used with mapping clients that form tile requests using\nthe `{x}/{y}/{z}` syntax (for example, Cesium JS, OpenLayers, Leaflet\nand MapLibre). Note that the order of arguments for this service is\n`{z}/{y}/{x}` where `z` equates to the `level` path parameter, `y`\nis `row` and `x` is `column`.\n\nYou can append the `language` query parameter to this style, using\nthe codes shown in the `supportedLanguageCodes` property for the\nstyle.\n\nAppend the `token` query parameter to this style to authenticate\ntile requests.\n",
+      "type": "string",
+      "format": "URL",
+      "example": "https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/navigation/static/tile/{z}/{y}/{x}"
+    },
+    "thumbnailUrl": {
+      "description": "Link to a thumbnail JPG for the style.",
+      "type": "string",
+      "format": "URL",
+      "example": "https://www.arcgis.com/sharing/rest/content/items/ea3befe305494bb5b2acd77e1b3135dc/info/thumbnail/thumbnail1607389425104.jpeg"
+    },
+    "supportedLanguageCodes": {
+      "description": "A list of the language codes that are supported for this style.\n\nLanguage codes can be passed to a given style with the `language`\nquery parameter. You can see full details of a given language,\nincluding it's display name in the top-level `languages` property\nfor the service's `self` endpoint.\n\nIf this array is empty for a give style, only the default language\nfor the basemap is supported.\n",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minItems": 0,
+        "example": [
+          "fr",
+          "de"
+        ]
+      }
+    },
+    "supportedWorldviewCodes": {
+      "description": "A list of the worldview codes that are supported for this style.\n\nPass a worldview code to a given style with the `worldview` query\nparameter to get that edition of the basemap. You can see full\ndetails of an edition, including its display name in the top-level\n`worldviews` property for the service's `self` endpoint.\n\nIf this array is empty for a given style, only the default worldview\nfor the basemap is supported.\n\nNote: `worldview` is currently only supported with the default\n`language`. If a `worldview` parameter is provided, any `language`\nquery parameter passed alongside it will be ignored.\n",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minItems": 0,
+        "example": [
+          "unitedStatesOfAmerica"
+        ]
+      }
+    },
+    "description": {
+      "description": "A description of the style.",
+      "type": "string",
+      "example": "This layer provides a detailed basemap for the world featuring a custom navigation map style."
+    }
+  },
+  "required": [
+    "complete",
+    "name",
+    "path",
+    "provider",
+    "thumbnailUrl",
+    "url",
+    "templateUrl",
+    "supportedLanguageCodes",
+    "supportedWorldviewCodes"
+  ]
+}

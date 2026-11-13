@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arcgis/CategoryDetails",
+  "title": "CategoryDetails",
+  "x-openfn-adaptor": "arcgis",
+  "x-source": {
+    "openapi": "#/components/schemas/CategoryDetails",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "required": [
+    "categoryId",
+    "fullLabel"
+  ],
+  "description": "Provides details about a category or type of place.\n\nCategories are hierarchical so that you can filter places based on\nspecific categories such as \"Provençal Restaurant\", or with more generic\ntypes such as \"Restaurant\". A category such as \"Provençal Restaurant\"\nincludes the details of its more generic parent, such as \"French\nRestaurant\".\n",
+  "additionalProperties": false,
+  "properties": {
+    "categoryId": {
+      "description": "A unique identifying string for a category.\n\nThis matches the `categoryId` of a place's `category` property.\n",
+      "allOf": [
+        {
+          "$ref": "CategoryId.json"
+        }
+      ],
+      "example": "4bf58dd8d48988d115951735"
+    },
+    "fullLabel": {
+      "description": "The full list of labels that describe the category, including its more generic parent categories.\n",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "example": [
+          "Retail",
+          "Sporting Goods Retail",
+          "Bicycle Store"
+        ],
+        "minItems": 1
+      }
+    },
+    "parents": {
+      "description": "The list of parent category Ids for this category.\n",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "example": [
+          "4bf58dd8d48988d1f2941735"
+        ],
+        "minItems": 0
+      }
+    },
+    "icon": {
+      "description": "Details of an icon, suitable for depicting this place.\n\nTo fetch icon details use the `icon` query parameter.\n",
+      "allOf": [
+        {
+          "$ref": "IconDetails.json"
+        }
+      ]
+    }
+  }
+}

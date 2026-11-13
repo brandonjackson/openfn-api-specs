@@ -1,19 +1,1548 @@
-# ArcGIS REST API (OpenFn focused subset) (arcgis) v1.0.0
+# ArcGIS REST APIs (services, portal sharing and location services) (arcgis) v12.0
 
 <!-- derived from openapi.json by `pnpm specs index arcgis` — do not edit by hand -->
 
-base: https://services.arcgis.com | auth: not declared | 6 operations in 3 resources
+base: https://www.arcgis.com, https://{urlKey}.maps.arcgis.com, https://{servicesHost}/{orgId}/arcgis, https://{host}/{context}, https://{locationHost}/arcgis | auth: http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>), http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>), http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>), http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>) | 1400 operations in 70 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
+## ArcGIS places service: categories
+- GET /rest/services/places-service/v1/categories — categoriesGet: Return the name and category ID of all categories, or categories which satisfy a filter.
+- GET /rest/services/places-service/v1/categories/{categoryId} — categoriesCategoryIdGet: Get the category details for a category ID.
+
+## ArcGIS places service: places
+- GET /rest/services/places-service/v1/places/near-point — nearPointGet: Search for places near a point or location by radius.
+- GET /rest/services/places-service/v1/places/within-extent — withinExtentGet: Search for places within an extent (bounding box).
+- GET /rest/services/places-service/v1/places/{placeId} — placeIdGet: Get place details including name, address, description, and other attributes.
+
+## ArcGIS static basemap tiles service: arcgis
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/community/static/tile/{level}/{row}/{column} — arcgisCommunityTileGet: Static basemap tiles for the ArcGIS Community style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/dark-gray/static/tile/{level}/{row}/{column} — arcgisDarkGrayTileGet: Static basemap tiles for the ArcGIS Dark Gray Canvas style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/human-geography-dark/static/tile/{level}/{row}/{column} — arcgisHumanGeographyDarkTileGet: Static basemap tiles for the ArcGIS Human Geography Dark style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/human-geography/static/tile/{level}/{row}/{column} — arcgisHumanGeographyTileGet: Static basemap tiles for the ArcGIS Human Geography style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/imagery/labels/static/tile/{level}/{row}/{column} — arcgisImageryLabelsTileGet: Static basemap tiles for the ArcGIS Imagery Labels style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/light-gray/static/tile/{level}/{row}/{column} — arcgisLightGrayTileGet: Static basemap tiles for the ArcGIS Light Gray Canvas style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/midcentury/static/tile/{level}/{row}/{column} — arcgisMidcenturyTileGet: Static basemap tiles for the ArcGIS Midcentury style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/navigation-night/static/tile/{level}/{row}/{column} — arcgisNavigationNightTileGet: Static basemap tiles for the ArcGIS Navigation Night style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/navigation/static/tile/{level}/{row}/{column} — arcgisNavigationTileGet: Static basemap tiles for the ArcGIS Navigation style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/newspaper/static/tile/{level}/{row}/{column} — arcgisNewspaperTileGet: Static basemap tiles for the ArcGIS Newspaper style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/nova/static/tile/{level}/{row}/{column} — arcgisNovaTileGet: Static basemap tiles for the ArcGIS Nova style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/oceans/labels/static/tile/{level}/{row}/{column} — arcgisOceansLabelsTileGet: Static basemap tiles for the ArcGIS Oceans Labels style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/outdoor/static/tile/{level}/{row}/{column} — arcgisOutdoorTileGet: Static basemap tiles for the ArcGIS Outdoor style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/streets-night/static/tile/{level}/{row}/{column} — arcgisStreetsNightTileGet: Static basemap tiles for the ArcGIS Streets Night style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/streets/static/tile/{level}/{row}/{column} — arcgisStreetsTileGet: Static basemap tiles for the ArcGIS Streets style in PNG format.
+
+## ArcGIS static basemap tiles service: arcgis-metadata
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/community/static — arcgisCommunityMetaDataGet: Metadata for ArcGIS Community static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/dark-gray/static — arcgisDarkGrayMetaDataGet: Metadata for ArcGIS Dark Gray Canvas static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/human-geography-dark/static — arcgisHumanGeographyDarkMetaDataGet: Metadata for ArcGIS Human Geography Dark static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/human-geography/static — arcgisHumanGeographyMetaDataGet: Metadata for ArcGIS Human Geography static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/imagery/labels/static — arcgisImageryLabelsMetaDataGet: Metadata for Imagery Labels static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/light-gray/static — arcgisLightGrayMetaDataGet: Metadata for ArcGIS Light Gray Canvas static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/midcentury/static — arcgisMidcenturyMetaDataGet: Metadata for ArcGIS Midcentury static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/navigation-night/static — arcgisNavigationNightMetaDataGet: Metadata for ArcGIS Navigation Night static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/navigation/static — arcgisNavigationMetaDataGet: Metadata for ArcGIS Navigation static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/newspaper/static — arcgisNewspaperMetaDataGet: Metadata for ArcGIS Newspaper static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/nova/static — arcgisNovaMetaDataGet: Metadata for ArcGIS Nova static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/oceans/labels/static — arcgisOceansLabelsMetaDataGet: Metadata for ArcGIS Oceans Labels static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/outdoor/static — arcgisOutdoorMetaDataGet: Metadata for ArcGIS Outdoor static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/streets-night/static — arcgisStreetsNightMetaDataGet: Metadata for ArcGIS Streets Night static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/arcgis/streets/static — arcgisStreetsMetaDataGet: Metadata for ArcGIS Streets static basemap tiles.
+
+## ArcGIS static basemap tiles service: open
+- GET /rest/services/static-basemap-tiles-service/v1/open/dark-gray/static/tile/{level}/{row}/{column} — openDarkGrayTileGet: Static basemap tiles for the Open Dark Gray style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/open/hybrid/detail/static/tile/{level}/{row}/{column} — openHybridDetailTileGet: Static basemap tiles for the Open Hybrid Detail style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/open/light-gray/static/tile/{level}/{row}/{column} — openLightGrayTileGet: Static basemap tiles for the Open Light Gray style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/open/navigation-dark/static/tile/{level}/{row}/{column} — openNavigationDarkTileGet: Static basemap tiles for the Open Navigation Dark style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/open/navigation/static/tile/{level}/{row}/{column} — openNavigationTileGet: Static basemap tiles for the Open Navigation style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/open/osm-style/static/tile/{level}/{row}/{column} — openOsmStyleTileGet: Static basemap tiles for the Open OSM style in PNG format.
+- GET /rest/services/static-basemap-tiles-service/v1/open/streets/static/tile/{level}/{row}/{column} — openStreetsTileGet: Static basemap tiles for the Open Streets style in PNG format.
+
+## ArcGIS static basemap tiles service: open-metadata
+- GET /rest/services/static-basemap-tiles-service/v1/open/dark-gray/static — openDarkGrayMetaDataGet: Metadata for Open Dark Gray static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/open/hybrid/detail/static — openHybridDetailMetaDataGet: Metadata for Open Hybrid Detail static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/open/light-gray/static — openLightGrayMetaDataGet: Metadata for Open Light Gray static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/open/navigation-dark/static — openNavigationDarkMetaDataGet: Metadata for Open Navigation Dark static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/open/navigation/static — openNavigationMetaDataGet: Metadata for Open Navigation static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/open/osm-style/static — openOsmStyleMetaDataGet: Metadata for Open OSM style static basemap tiles.
+- GET /rest/services/static-basemap-tiles-service/v1/open/streets/static — openStreetsMetaDataGet: Metadata for Open Streets style static basemap tiles.
+
+## ArcGIS static basemap tiles service: self-description
+- GET /rest/services/static-basemap-tiles-service/v1/self — staticBasemapTilesServiceSelfGet: Describes the static basemap tiles service.
+
+## Authentication
+- POST /sharing/rest/generateToken — generateTokenPost2: /generateToken: Generate Token
+- GET /sharing/rest/oauth2 — oauth2Root: /oauth2: OAuth2 Root
+- POST /sharing/rest/oauth2/apps/{clientID} — registeredApp: /apps/[clientID]: Registered App
+- POST /sharing/rest/oauth2/apps/{clientID}/unregister — unregisterApp: /unregister: Unregister App
+- GET /sharing/rest/oauth2/authorize — authorize: /authorize: Authorize
+- POST /sharing/rest/oauth2/registerApp — registerApp: /registerApp: Register App
+- POST /sharing/rest/oauth2/revokeToken — revokeToken: /revokeToken: Revoke Token
+- GET /sharing/rest/oauth2/token — token: /token: Token
+
+## Basemap styles service: custom-styles
+- GET /rest/services/styles/v2/styles/items/{item_id} — StylesItemsItemIdGet: A custom basemap style for the supplied portal item.
+
+## Basemap styles service: custom-webmaps
+- GET /rest/services/styles/v2/webmaps/items/{item_id} — WebmapsItemsItemIdGet: A web map representation for a custom basemap style for the supplied portal item.
+
+## Basemap styles service: self description
+- GET /rest/services/styles/v2/self — ServiceSelfGet: Describes the Basemap Styles service.
+
+## Basemap styles service: sessions
+- GET /rest/services/styles/v2/sessions/start — sessionsStartGet: The `/sessions/start` endpoint starts a basemap session and returns the values for the `startTime`, `endTime`, `styleFamily`, and `sessionT…
+
+## Basemap styles service: styles
+- GET /rest/services/styles/v2/styles/arcgis/charted-territory — ArcgisChartedterritoryStyleGet: ArcGIS Charted Territory as a style.
+- GET /rest/services/styles/v2/styles/arcgis/charted-territory/base — ArcgisChartedterritoryBaseStyleGet: ArcGIS Charted Territory Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/colored-pencil — ArcgisColoredpencilStyleGet: ArcGIS Colored Pencil as a style.
+- GET /rest/services/styles/v2/styles/arcgis/community — ArcgisCommunityStyleGet: ArcGIS Community as a style.
+- GET /rest/services/styles/v2/styles/arcgis/dark-gray — ArcgisDarkgrayStyleGet: ArcGIS Dark Gray as a style.
+- GET /rest/services/styles/v2/styles/arcgis/dark-gray/base — ArcgisDarkgrayBaseStyleGet: ArcGIS Dark Gray Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/dark-gray/labels — ArcgisDarkgrayLabelsStyleGet: ArcGIS Dark Gray Labels as a style.
+- GET /rest/services/styles/v2/styles/arcgis/hillshade/dark — ArcgisHillshadeDarkStyleGet: ArcGIS Hillshade Dark as a style.
+- GET /rest/services/styles/v2/styles/arcgis/hillshade/light — ArcgisHillshadeLightStyleGet: ArcGIS Hillshade Light as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography — ArcgisHumangeographyStyleGet: ArcGIS Human Geography as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography-dark — ArcgisHumangeographydarkStyleGet: ArcGIS Human Geography Dark as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography-dark/base — ArcgisHumangeographydarkBaseStyleGet: ArcGIS Human Geography Dark Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography-dark/detail — ArcgisHumangeographydarkDetailStyleGet: ArcGIS Human Geography Dark Detail as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography-dark/labels — ArcgisHumangeographydarkLabelsStyleGet: ArcGIS Human Geography Dark Labels as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography/base — ArcgisHumangeographyBaseStyleGet: ArcGIS Human Geography Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography/detail — ArcgisHumangeographyDetailStyleGet: ArcGIS Human Geography Detail as a style.
+- GET /rest/services/styles/v2/styles/arcgis/human-geography/labels — ArcgisHumangeographyLabelsStyleGet: ArcGIS Human Geography Labels as a style.
+- GET /rest/services/styles/v2/styles/arcgis/imagery — ArcgisImageryStyleGet: ArcGIS Imagery as a style.
+- GET /rest/services/styles/v2/styles/arcgis/imagery/labels — ArcgisImageryLabelsStyleGet: ArcGIS Imagery Labels as a style.
+- GET /rest/services/styles/v2/styles/arcgis/imagery/standard — ArcgisImageryStandardStyleGet: ArcGIS Imagery Standard as a style.
+- GET /rest/services/styles/v2/styles/arcgis/light-gray — ArcgisLightgrayStyleGet: ArcGIS Light Gray as a style.
+- GET /rest/services/styles/v2/styles/arcgis/light-gray/base — ArcgisLightgrayBaseStyleGet: ArcGIS Light Gray Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/light-gray/labels — ArcgisLightgrayLabelsStyleGet: ArcGIS Light Gray Labels as a style.
+- GET /rest/services/styles/v2/styles/arcgis/midcentury — ArcgisMidcenturyStyleGet: ArcGIS Midcentury as a style.
+- GET /rest/services/styles/v2/styles/arcgis/modern-antique — ArcgisModernantiqueStyleGet: ArcGIS Modern Antique as a style.
+- GET /rest/services/styles/v2/styles/arcgis/modern-antique/base — ArcgisModernantiqueBaseStyleGet: ArcGIS Modern Antique Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/navigation — ArcgisNavigationStyleGet: ArcGIS Navigation as a style.
+- GET /rest/services/styles/v2/styles/arcgis/navigation-night — ArcgisNavigationnightStyleGet: ArcGIS Navigation Night as a style.
+- GET /rest/services/styles/v2/styles/arcgis/newspaper — ArcgisNewspaperStyleGet: ArcGIS Newspaper as a style.
+- GET /rest/services/styles/v2/styles/arcgis/nova — ArcgisNovaStyleGet: ArcGIS Nova as a style.
+- GET /rest/services/styles/v2/styles/arcgis/oceans — ArcgisOceansStyleGet: ArcGIS Oceans as a style.
+- GET /rest/services/styles/v2/styles/arcgis/oceans/base — ArcgisOceansBaseStyleGet: ArcGIS Oceans Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/oceans/labels — ArcgisOceansLabelsStyleGet: ArcGIS Oceans Labels as a style.
+- GET /rest/services/styles/v2/styles/arcgis/outdoor — ArcgisOutdoorStyleGet: ArcGIS Outdoor as a style.
+- GET /rest/services/styles/v2/styles/arcgis/streets — ArcgisStreetsStyleGet: ArcGIS Streets as a style.
+- GET /rest/services/styles/v2/styles/arcgis/streets-night — ArcgisStreetsnightStyleGet: ArcGIS Streets Night as a style.
+- GET /rest/services/styles/v2/styles/arcgis/streets-relief — ArcgisStreetsreliefStyleGet: ArcGIS Streets Relief as a style.
+- GET /rest/services/styles/v2/styles/arcgis/streets-relief/base — ArcgisStreetsreliefBaseStyleGet: ArcGIS Streets Relief Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/terrain — ArcgisTerrainStyleGet: ArcGIS Terrain as a style.
+- GET /rest/services/styles/v2/styles/arcgis/terrain/base — ArcgisTerrainBaseStyleGet: ArcGIS Terrain Base as a style.
+- GET /rest/services/styles/v2/styles/arcgis/terrain/detail — ArcgisTerrainDetailStyleGet: ArcGIS Terrain Detail as a style.
+- GET /rest/services/styles/v2/styles/arcgis/topographic — ArcgisTopographicStyleGet: ArcGIS Topographic as a style.
+- GET /rest/services/styles/v2/styles/arcgis/topographic/base — ArcgisTopographicBaseStyleGet: ArcGIS Topographic Base as a style.
+- GET /rest/services/styles/v2/styles/open/blueprint — OpenbasemapBlueprintStyleGet: Open Basemaps Blueprint as a style.
+- GET /rest/services/styles/v2/styles/open/dark-gray — OpenbasemapDarkGrayStyleGet: Open Basemaps Dark Gray as a style.
+- GET /rest/services/styles/v2/styles/open/dark-gray/base — OpenbasemapDarkGrayBaseStyleGet: Open Basemaps Dark Gray Base as a style.
+- GET /rest/services/styles/v2/styles/open/dark-gray/labels — OpenbasemapDarkGrayLabelsStyleGet: Open Basemaps Dark Gray Labels as a style.
+- GET /rest/services/styles/v2/styles/open/hybrid — OpenbasemapHybridStyleGet: Open Basemaps Hybrid as a style.
+- GET /rest/services/styles/v2/styles/open/hybrid/detail — OpenbasemapHybridDetailStyleGet: Open Basemaps Hybrid Detail as a style.
+- GET /rest/services/styles/v2/styles/open/light-gray — OpenbasemapLightGrayStyleGet: Open Basemaps Light Gray as a style.
+- GET /rest/services/styles/v2/styles/open/light-gray/base — OpenbasemapLightGrayBaseStyleGet: Open Basemaps Light Gray Base as a style.
+- GET /rest/services/styles/v2/styles/open/light-gray/labels — OpenbasemapLightGrayLabelsStyleGet: Open Basemaps Light Gray Labels as a style.
+- GET /rest/services/styles/v2/styles/open/navigation — OpenbasemapNavigationStyleGet: Open Basemaps Navigation as a style.
+- GET /rest/services/styles/v2/styles/open/navigation-dark — OpenbasemapNavigationDarkStyleGet: Open Basemaps Navigation Dark as a style.
+- GET /rest/services/styles/v2/styles/open/osm-style — OpenbasemapOsmStyleStyleGet: Open Basemaps Osm Style as a style.
+- GET /rest/services/styles/v2/styles/open/osm-style-relief — OpenbasemapOsmGrayReliefStyleGet: Open Basemaps Osm Style Relief as a style.
+- GET /rest/services/styles/v2/styles/open/osm-style-relief/base — OpenbasemapOsmStyleReliefBaseStyleGet: Open Basemaps Osm Style Relief Base as a style.
+- GET /rest/services/styles/v2/styles/open/streets — OpenbasemapStreetsStyleGet: Open Basemaps Streets as a style.
+- GET /rest/services/styles/v2/styles/open/streets-night — OpenbasemapStreetsGrayGet: Open Basemaps Streets Night as a style.
+- GET /rest/services/styles/v2/styles/open/streets-relief — OpenbasemapStreetsReliefStyleGet: Open Basemaps Streets Relief as a style.
+- GET /rest/services/styles/v2/styles/open/streets-relief/base — OpenbasemapStreetsReliefBaseStyleGet: Open Basemaps Streets Relief Base as a style.
+- GET /rest/services/styles/v2/styles/osm/blueprint — OsmBlueprintStyleGet: OSM Blueprint as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/dark-gray — OsmDarkgrayStyleGet: OSM Dark Gray as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/dark-gray/base — OsmDarkgrayBaseStyleGet: OSM Dark Gray Base as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/dark-gray/labels — OsmDarkgrayLabelsStyleGet: OSM Dark Gray Labels as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/hybrid — OsmHybridStyleGet: OSM Hybrid as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/hybrid/detail — OsmHybridDetailStyleGet: OSM Hybrid Detail as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/light-gray — OsmLightgrayStyleGet: OSM Light Gray as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/light-gray/base — OsmLightgrayBaseStyleGet: OSM Light Gray Base as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/light-gray/labels — OsmLightgrayLabelsStyleGet: OSM Light Gray Labels as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/navigation — OsmNavigationStyleGet: OSM Navigation as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/navigation-dark — OsmNavigationdarkStyleGet: OSM Navigation Dark as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/standard — OsmStandardStyleGet: OSM Standard as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/standard-relief — OsmStandardreliefStyleGet: OSM Standard Relief as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/standard-relief/base — OsmStandardreliefBaseStyleGet: OSM Standard Relief Base as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/streets — OsmStreetsStyleGet: OSM Streets as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/streets-relief — OsmStreetsreliefStyleGet: OSM Streets Relief as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/osm/streets-relief/base — OsmStreetsreliefBaseStyleGet: OSM Streets Relief Base as a style. (deprecated)
+- GET /rest/services/styles/v2/styles/self — StylesSelfGet: Describes service styles.
+
+## Basemap styles service: webmaps
+- GET /rest/services/styles/v2/webmap/open/dark-gray/labels — OpenbasemapDarkGrayLabelsWebmapGet: Open Basemaps Dark Gray Labels as a webmap.
+- GET /rest/services/styles/v2/webmaps/arcgis/charted-territory — ArcgisChartedterritoryWebmapGet: ArcGIS Charted Territory as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/charted-territory/base — ArcgisChartedterritoryBaseWebmapGet: ArcGIS Charted Territory Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/colored-pencil — ArcgisColoredpencilWebmapGet: ArcGIS Colored Pencil as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/community — ArcgisCommunityWebmapGet: ArcGIS Community as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/dark-gray — ArcgisDarkgrayWebmapGet: ArcGIS Dark Gray as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/dark-gray/base — ArcgisDarkgrayBaseWebmapGet: ArcGIS Dark Gray Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/dark-gray/labels — ArcgisDarkgrayLabelsWebmapGet: ArcGIS Dark Gray Labels as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/hillshade/dark — ArcgisHillshadeDarkWebmapGet: ArcGIS Hillshade Dark as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/hillshade/light — ArcgisHillshadeLightWebmapGet: ArcGIS Hillshade Light as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography — ArcgisHumangeographyWebmapGet: ArcGIS Human Geography as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography-dark — ArcgisHumangeographydarkWebmapGet: ArcGIS Human Geography Dark as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography-dark/base — ArcgisHumangeographydarkBaseWebmapGet: ArcGIS Human Geography Dark Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography-dark/detail — ArcgisHumangeographydarkDetailWebmapGet: ArcGIS Human Geography Dark Detail as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography-dark/labels — ArcgisHumangeographydarkLabelsWebmapGet: ArcGIS Human Geography Dark Labels as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography/base — ArcgisHumangeographyBaseWebmapGet: ArcGIS Human Geography Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography/detail — ArcgisHumangeographyDetailWebmapGet: ArcGIS Human Geography Detail as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/human-geography/labels — ArcgisHumangeographyLabelsWebmapGet: ArcGIS Human Geography Labels as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/imagery — ArcgisImageryWebmapGet: ArcGIS Imagery as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/imagery/labels — ArcgisImageryLabelsWebmapGet: ArcGIS Imagery Labels as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/imagery/standard — ArcgisImageryStandardWebmapGet: ArcGIS Imagery Standard as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/light-gray — ArcgisLightgrayWebmapGet: ArcGIS Light Gray as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/light-gray/base — ArcgisLightgrayBaseWebmapGet: ArcGIS Light Gray Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/light-gray/labels — ArcgisLightgrayLabelsWebmapGet: ArcGIS Light Gray Labels as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/midcentury — ArcgisMidcenturyWebmapGet: ArcGIS Midcentury as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/modern-antique — ArcgisModernantiqueWebmapGet: ArcGIS Modern Antique as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/modern-antique/base — ArcgisModernantiqueBaseWebmapGet: ArcGIS Modern Antique Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/navigation — ArcgisNavigationWebmapGet: ArcGIS Navigation as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/navigation-night — ArcgisNavigationnightWebmapGet: ArcGIS Navigation Night as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/newspaper — ArcgisNewspaperWebmapGet: ArcGIS Newspaper as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/nova — ArcgisNovaWebmapGet: ArcGIS Nova as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/oceans — ArcgisOceansWebmapGet: ArcGIS Oceans as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/oceans/base — ArcgisOceansBaseWebmapGet: ArcGIS Oceans Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/oceans/labels — ArcgisOceansLabelsWebmapGet: ArcGIS Oceans Labels as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/outdoor — ArcgisOutdoorWebmapGet: ArcGIS Outdoor as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/streets — ArcgisStreetsWebmapGet: ArcGIS Streets as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/streets-night — ArcgisStreetsnightWebmapGet: ArcGIS Streets Night as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/streets-relief — ArcgisStreetsreliefWebmapGet: ArcGIS Streets Relief as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/streets-relief/base — ArcgisStreetsreliefBaseWebmapGet: ArcGIS Streets Relief Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/terrain — ArcgisTerrainWebmapGet: ArcGIS Terrain as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/terrain/base — ArcgisTerrainBaseWebmapGet: ArcGIS Terrain Base as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/terrain/detail — ArcgisTerrainDetailWebmapGet: ArcGIS Terrain Detail as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/topographic — ArcgisTopographicWebmapGet: ArcGIS Topographic as a web map.
+- GET /rest/services/styles/v2/webmaps/arcgis/topographic/base — ArcgisTopographicBaseWebmapGet: ArcGIS Topographic Base as a web map.
+- GET /rest/services/styles/v2/webmaps/open/blueprint — OpenbasemapBlueprintWebmapGet: Open Basemaps Blueprint as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/dark-gray — OpenbasemapDarkGrayWebmapGet: Open Basemaps Dark Gray as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/dark-gray/base — OpenbasemapDarkGrayBaseWebmapGet: Open Basemaps Dark Gray Base as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/hybrid — OpenbasemapHybridWebmapGet: Open Basemaps Hybrid as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/hybrid/detail — OpenbasemapHybridDetailWebmapGet: Open Basemaps Hybrid Detail as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/light-gray — OpenbasemapLightGrayWebmapGet: Open Basemaps Light Gray as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/light-gray/base — OpenbasemapLightGrayBaseWebmapGet: Open Basemaps Light Gray Base as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/light-gray/labels — OpenbasemapLightGrayLabelsWebmapGet: Open Basemaps Light Gray Labels as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/navigation — OpenbasemapNavigationWebmapGet: Open Basemaps Navigation as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/navigation-dark — OpenbasemapNavigationDarkWebmapGet: Open Basemaps Navigation Dark as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/osm-style — OpenbasemapOsmStyleWebmapGet: Open Basemaps Osm Style as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/osm-style-relief — OpenbasemapOsmStyleReliefWebmapGet: Open Basemaps Osm Style Relief as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/osm-style-relief/base — OpenbasemapOsmStyleReliefBaseWebmapGet: Open Basemaps Osm Style Relief Base as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/streets — OpenbasemapStreetsWebmapGet: Open Basemaps Streets as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/streets-night — OpenbasemapStreetsNightWebmapGet: Open Basemaps Streets Night as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/streets-relief — OpenbasemapStreetsReliefWebmapGet: Open Basemaps Streets Relief as a webmap.
+- GET /rest/services/styles/v2/webmaps/open/streets-relief/base — OpenbasemapStreetsReliefBaseWebmapGet: Open Basemaps Streets Relief Base as a webmap.
+- GET /rest/services/styles/v2/webmaps/osm/blueprint — OsmBlueprintWebmapGet: OSM Blueprint as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/dark-gray — OsmDarkgrayWebmapGet: OSM Dark Gray as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/dark-gray/base — OsmDarkgrayBaseWebmapGet: OSM Dark Gray Base as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/dark-gray/labels — OsmDarkgrayLabelsWebmapGet: OSM Dark Gray Labels as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/hybrid — OsmHybridWebmapGet: OSM Hybrid as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/hybrid/detail — OsmHybridDetailWebmapGet: OSM Hybrid Detail as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/light-gray — OsmLightgrayWebmapGet: OSM Light Gray as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/light-gray/base — OsmLightgrayBaseWebmapGet: OSM Light Gray Base as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/light-gray/labels — OsmLightgrayLabelsWebmapGet: OSM Light Gray Labels as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/navigation — OsmNavigationWebmapGet: OSM Navigation as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/navigation-dark — OsmNavigationdarkWebmapGet: OSM Navigation Dark as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/standard — OsmStandardWebmapGet: OSM Standard as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/standard-relief — OsmStandardreliefWebmapGet: OSM Standard Relief as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/standard-relief/base — OsmStandardreliefBaseWebmapGet: OSM Standard Relief Base as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/streets — OsmStreetsWebmapGet: OSM Streets as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/streets-relief — OsmStreetsreliefWebmapGet: OSM Streets Relief as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/osm/streets-relief/base — OsmStreetsreliefBaseWebmapGet: OSM Streets Relief Base as a web map. (deprecated)
+- GET /rest/services/styles/v2/webmaps/self — WebmapsSelfGet: Describes service webmaps.
+
+## BigDataCatalogServer
+- GET /rest/services/DataStoreCatalogs/{serviceName}/BigDataCatalogServer — bigDataCatalogService: Big Data Catalog Service
+- GET /rest/services/DataStoreCatalogs/{serviceName}/BigDataCatalogServer/manifest — bigDataCatalogServiceManifest: Big Data Catalog Service Manifest
+- GET /rest/services/DataStoreCatalogs/{serviceName}/BigDataCatalogServer/{childResourceName} — bigDataCatalogServiceChild: Big Data Catalog Service Child
+
+## Elevation service: Elevation values
+- POST /rest/services/elevation-service/v1/elevation/at-many-points — ElevationAtManyPointsPost: Returns elevations for up to 100 input coordinates.
+- GET /rest/services/elevation-service/v1/elevation/at-point — ElevationAtPointGet: Returns the elevation from a given input coordinate.
+
 ## FeatureServer
-- GET /rest/services/{serviceName}/FeatureServer/{layerId}/query — queryFeatures: Query features from a feature layer
-- POST /rest/services/{serviceName}/FeatureServer/{layerId}/addFeatures — addFeatures: Add features to a feature layer
-- POST /rest/services/{serviceName}/FeatureServer/{layerId}/updateFeatures — updateFeatures: Update features in a feature layer
-- POST /rest/services/{serviceName}/FeatureServer/{layerId}/deleteFeatures — deleteFeatures: Delete features from a feature layer
+- GET /rest/services/{serviceName}/FeatureServer — featureService: Feature Service
+- POST /rest/services/{serviceName}/FeatureServer/append — appendFeatureService: Append (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/applyEdits — applyEditsFeatureService: Apply Edits (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/createReplica — createReplica: Create Replica
+- POST /rest/services/{serviceName}/FeatureServer/extractChanges — extractChangesFeatureService: Extract Changes (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/getEstimates — getEstimateFeatureService: Get Estimates (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/query — queryFeatureService: Query (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/queryContingentValues — queryContingentValuesFeatureService: Query Contingent Values (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/queryDataElements — queryDataElementsFeatureService: Query Data Elements (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/queryDomains — queryDomainsFeatureService: Query Domains (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/relationships — relationshipsFeatureService: Relationships (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/replicas — replicasFeatureService: Replicas (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/replicas/{replicaID} — replicaInfo: Replica Info
+- POST /rest/services/{serviceName}/FeatureServer/synchronizeReplica — synchronizeReplica: Synchronize Replica
+- POST /rest/services/{serviceName}/FeatureServer/unRegisterReplica — unregisterReplicaFeatureService: Unregister Replica (Feature Service)
 
-## arcgis
-- GET /arcgis/rest/services/World/GeocodeServer/findAddressCandidates — geocode: Find address candidates (geocode)
+## FeatureServer layers
+- GET /rest/services/services/{serviceName}/FeatureServer/{layerId}/queryBins — queryBins: Query Bins (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId} — layerFeatureService: Layer (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/addFeatures — addFeatures: Add Features
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/append — appendFeatureServiceLayer: Append (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/applyEdits — applyEditsFeatureServiceLayer: Apply Edits (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/assets/{assetHash} — fsAssets: Assets (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/calculate — calculateFeatureServiceLayer: Calculate (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/cleanupAssets — fsCleanupAssets: Cleanup Assets (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/contingentValues — fsContingentValues: Contingent Values
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/convert3D — fsConvert3d: Convert 3D (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/deleteFeatures — deleteFeatures: Delete Features
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/fieldGroups — fsFieldGroups: Field Groups
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/generateRenderer — generateRenderer: Generate Renderer (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/getEstimates — getEstimatesFeatureServicelayer: Get Estimates (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/hasAssets — fsHasAssets: Has Assets (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/images/{imageId} — imageFeatureService: Image (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/metadata/update — fsUpdateMetadata: Update Metadata
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/query — queryFeatureServiceLayer: Query (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/query — queryFeatureServiceLayerPost: Query (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/query3D — fsQuery3d: Query 3D (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/queryAnalytic — queryAnalytic: Query Analytic (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/queryAssets — fsQueryAssets: Query Assets (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/queryAttachments — queryAttachmentsFeatureServiceLayer: Query Attachments (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/queryDateBins — queryDateBinsFsl: Query Date Bins (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/queryRelatedRecords — queryRelatedRecordsFeatureService: Query Related Records (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/queryTopFeatures — queryTopFeaturesFeatureServicelayer: Query Top Features (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/relationshipsfor3d — fsRelationshipsFor3d: Relationships for 3D (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/updateFeatures — updateFeatures: Update Features
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/uploadAssets — fsUploadAssets: Upload Assets (Feature Service/Layer)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/validateSQL — validateSqlFeatureServiceLayer: Validate SQL (Feature Service/Layer)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId} — featureFeatureService: Feature (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId}/addAttachment — addAttachment: Add Attachment
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId}/attachments — attachmentInfosFeatureService: Attachment Infos (Feature Service)
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId}/attachments/{attachmentId} — attachmentFeatureService: Attachment (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId}/deleteAttachments — deleteAttachments: Delete Attachments
+- GET /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId}/htmlPopup — htmlPopupFeatureService: HTML Popup (Feature Service)
+- POST /rest/services/{serviceName}/FeatureServer/{layerId}/{featureId}/updateAttachment — updateAttachment: Update Attachment
 
-## sharing
-- POST /sharing/rest/generateToken — generateToken: Generate an access token
+## GPServer
+- GET /rest/services/System/OrthomappingTools/GPServer — orthoMappingServiceTasks: Ortho Mapping service operations
+- GET /rest/services/System/OrthomappingTools/GPServer/AlterProcessingStates — alterProcessingStates: Alter Processing States
+- GET /rest/services/System/OrthomappingTools/GPServer/ComputeColorCorrection — computeColorCorrection: Compute Color Correction
+- GET /rest/services/System/OrthomappingTools/GPServer/ComputeControlPoints — computeControlPoints: Compute Control Points
+- GET /rest/services/System/OrthomappingTools/GPServer/ComputeSeamlines — computeSeamlines: Compute Seamlines
+- GET /rest/services/System/OrthomappingTools/GPServer/ComputeSensorModel — computeSensorModel: Compute Sensor Model
+- GET /rest/services/System/OrthomappingTools/GPServer/EditControlPoints — editControlPoints: Edit Control Points
+- GET /rest/services/System/OrthomappingTools/GPServer/GenerateDEM — generateDem: Generate DEM
+- GET /rest/services/System/OrthomappingTools/GPServer/GenerateOrthomosaic — generateOrthomosaic: Generate Orthomosaic
+- GET /rest/services/System/OrthomappingTools/GPServer/GenerateReport — generateReport: Generate Report
+- GET /rest/services/System/OrthomappingTools/GPServer/GetProcessingStates — getProcessingStates: Get Processing States
+- GET /rest/services/System/OrthomappingTools/GPServer/MatchControlPoints — matchControlPoints: Match Control Points
+- GET /rest/services/System/OrthomappingTools/GPServer/QueryCameraInfo — queryCameraInfo: Query Camera Info
+- GET /rest/services/System/OrthomappingTools/GPServer/QueryControlPoints — queryControlPoints: Query Control Points
+- GET /rest/services/System/OrthomappingTools/GPServer/QueryExifnfo — queryExifInfo: Query Exif Info
+- GET /rest/services/System/OrthomappingTools/GPServer/ResetImageCollection — resetImageCollection: Reset Image Collection
+- GET /rest/services/System/PublishingTools/GPServer/Export%20Service/submitJob — exportService: Export Service
+- POST /rest/services/System/PublishingTools/GPServer/Export%20Service/submitJob — exportServicePost: Export Service
+- GET /rest/services/System/PublishingTools/GPServer/GetServiceDatastoreInfo/submitJob — getServiceDatastoreInfo: GetServiceDatastoreInfo
+- POST /rest/services/System/PublishingTools/GPServer/GetServiceDatastoreInfo/submitJob — getServiceDatastoreInfoPost: GetServiceDatastoreInfo
+- GET /rest/services/System/PublishingTools/GPServer/Is%20Datastore%20Registered/submitJob — isDatastoreRegistered: Is Datastore Registered
+- POST /rest/services/System/PublishingTools/GPServer/Is%20Datastore%20Registered/submitJob — isDatastoreRegisteredPost: Is Datastore Registered
+- GET /rest/services/System/PublishingTools/GPServer/Publish%20Routing%20Services — publishRoutingServices: Publish Routing Services
+- GET /rest/services/System/PublishingTools/GPServer/Publish%20Service%20Definition/submitJob — publishServiceDef: Publish Service Definition
+- POST /rest/services/System/PublishingTools/GPServer/Publish%20Service%20Definition/submitJob — publishServiceDefPost: Publish Service Definition
+- GET /rest/services/System/PublishingTools/GPServer/Refresh%20Service — refreshservice: Refresh Service
+- POST /rest/services/System/PublishingTools/GPServer/Refresh%20Service — refreshservicePost: Refresh Service
+- GET /rest/services/System/RasterAnalysisTools/GPServer — rasterAnalysisTasksOverview: Raster Analysis service tasks
+- GET /rest/services/System/RasterAnalysisTools/GPServer/AddImage — addImage: Add Image
+- GET /rest/services/System/RasterAnalysisTools/GPServer/AggregateMultidimensionalRaster — aggregateMultidimensionalRaster: Aggregate Multidimensional Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/AnalyzeChangesUsingCCDC — analyzeChangeUsingCcdc: Analyze Changes Using CCDC
+- GET /rest/services/System/RasterAnalysisTools/GPServer/AnalyzeChangesUsingLandTrendr — analyzeChangesUsingLandtrendr: Analyze Changes Using LandTrendr
+- GET /rest/services/System/RasterAnalysisTools/GPServer/BatchPublishRaster — batchPublishRaster: Batch Publish Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/BuildFootprints — buildFootprints: Build Footprints
+- POST /rest/services/System/RasterAnalysisTools/GPServer/BuildFootprints — buildFootprintsPost: Build Footprints
+- GET /rest/services/System/RasterAnalysisTools/GPServer/BuildMultidimensionalInfo — buildMultidimensionalInfo: Build Multidimensional Info
+- GET /rest/services/System/RasterAnalysisTools/GPServer/BuildMultidimensionalTranspose — buildMultidimensionalTranspose: Build Multidimensional Transpose
+- GET /rest/services/System/RasterAnalysisTools/GPServer/BuildOverview — buildOverview: Build Overview
+- POST /rest/services/System/RasterAnalysisTools/GPServer/BuildOverview — buildOverviewPost: Build Overview
+- GET /rest/services/System/RasterAnalysisTools/GPServer/CalculateImageServiceField — calculateImageServiceField: Calculate Image Service Field
+- POST /rest/services/System/RasterAnalysisTools/GPServer/CalculateImageServiceField — calculateImageServiceFieldPost: Calculate Image Service Field
+- GET /rest/services/System/RasterAnalysisTools/GPServer/CalculateStatistics — calculateStatistics: Calculate Statistics
+- POST /rest/services/System/RasterAnalysisTools/GPServer/CalculateStatistics — calculateStatisticsPost: Calculate Statistics
+- GET /rest/services/System/RasterAnalysisTools/GPServer/Classify — classify: Classify
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ClassifyObjectsUsingDeepLearning — classifyObjectsUsingDeepLearning: Classify Objects Using Deep Learning
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ClassifyPixelsUsingDeepLearning — classifyPixelsUsingDeepLearning: Classify Pixels Using Deep Learning
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ComputeAccuracyForObjectDetection — computeAccuracyForObjectDetection: Compute Accuracy For Object Detection
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ComputeChangeRaster — computeChangeRaster: Compute Change Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ConvertRasterFunctionTemplate — convertRasterFunctionTemplate: Convert Raster Function Template
+- GET /rest/services/System/RasterAnalysisTools/GPServer/CopyRaster — copyRaster: Copy Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/CreateImageCollection — createImageCollection: Create Image Collection
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DefineNodata — defineNodata: Define Nodata
+- POST /rest/services/System/RasterAnalysisTools/GPServer/DefineNodata — defineNodataPost: Define Nodata
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DeleteImage — deleteImage: Delete Image
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DeleteImageCollection — deleteImageCollection: Delete Image Collection
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DetectChangeUsingChangeAnalysisRaster — detectChangeUsingChangeAnalysisRaster: Detect Change Using Change Analysis Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DetectChangeUsingDeepLearning — detectChangeUsingDeepLearningService: Detect Change Using Deep Learning
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DetectImageAnomalies — detectImageAnomalies: Detect Image Anomalies
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DetectObjectsUsingDeepLearning — detectObjectsUsingDeepLearning: Detect Objects Using Deep Learning
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DetectTargetUsingSpectra — detectTargetUsingSpectra: Detect Target Using Spectra
+- GET /rest/services/System/RasterAnalysisTools/GPServer/DownloadRaster — downloadRaster: Download Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ExportTrainingDataforDeepLearning — exportTrainingDataForDeepLearning: Export Training Data For Deep Learning
+- GET /rest/services/System/RasterAnalysisTools/GPServer/FindArgumentStatistics — findArgumentStatistics: Find Argument Statistics
+- GET /rest/services/System/RasterAnalysisTools/GPServer/GenerateMultidimensionalAnomaly — generateMultidimensionalAnomaly: Generate Multidimensional Anomaly
+- GET /rest/services/System/RasterAnalysisTools/GPServer/GenerateRaster — generateRaster: Generate Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/GenerateRasterCollection — generateRasterCollection: Generate Raster Collection
+- POST /rest/services/System/RasterAnalysisTools/GPServer/GenerateRasterCollection — generateRasterCollectionPost: Generate Raster Collection
+- GET /rest/services/System/RasterAnalysisTools/GPServer/GenerateTrendRaster — generateTrendRaster: Generate Trend Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/InstallDeepLearningModel — installDeepLearningModel: Install Deep Learning Model
+- GET /rest/services/System/RasterAnalysisTools/GPServer/InterpolatePoints — interpolatePoints: Interpolate Points
+- GET /rest/services/System/RasterAnalysisTools/GPServer/LinearSpectralUnmixing — linearSpectralUnmixing: Linear Spectral Unmixing
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ListDatastoreContent — listDatastoreContent: List Datastore Content
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ListDeepLearningModels — listDeepLearningModels: List Deep Learning Models
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ManageMultidimensionalRaster — manageMultidimensionalRaster: Manage Multidimensional Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/MergeMultidimensionalRasters — mergeMultidimensionalRasters: Merge Multidimensional Rasters
+- GET /rest/services/System/RasterAnalysisTools/GPServer/MosaicImage — mosaicImage: Mosaic Image
+- POST /rest/services/System/RasterAnalysisTools/GPServer/MosaicImage — mosaicImagePost: Mosaic Image
+- GET /rest/services/System/RasterAnalysisTools/GPServer/MultidimensionalPrincipalComponents — multidimensionalPrincipalComponents: Multidimensional Principal Components
+- GET /rest/services/System/RasterAnalysisTools/GPServer/PredictUsingRegressionModel — predictUsingRegressionModel: Predict Using Regression Model
+- GET /rest/services/System/RasterAnalysisTools/GPServer/PredictUsingTrendRaster — predictUsingTrendRaster: Predict Using Trend Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/PublishDeepLearningModel — publishDeepLearningModel: Publish Deep Learning Model
+- GET /rest/services/System/RasterAnalysisTools/GPServer/QueryDeepLearningModelInfo — queryDeepLearningModelInfo: Query Deep Learning Model Info
+- GET /rest/services/System/RasterAnalysisTools/GPServer/ResampleLibrarySpectra — resampleLibrarySpectra: Resample Library Spectra
+- GET /rest/services/System/RasterAnalysisTools/GPServer/Sample — sample: Sample
+- GET /rest/services/System/RasterAnalysisTools/GPServer/Segment — segment: Segment
+- GET /rest/services/System/RasterAnalysisTools/GPServer/SubsetMultidimensionalRaster — subsetMultidimensionalRaster: Subset Multidimensional Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/SummarizeCategoricalRaster — summarizeCategoricalRaster: Summarize Categorical Raster
+- GET /rest/services/System/RasterAnalysisTools/GPServer/TrainClassifier — trainClassifier: Train Classifier
+- GET /rest/services/System/RasterAnalysisTools/GPServer/TrainDeepLearningModel — trainDeepLearningModel: Train Deep Learning Model
+- GET /rest/services/System/RasterAnalysisTools/GPServer/TrainRandomTreesRegressionModel — trainRandomTreesRegressionModel: Train Random Trees Regression Model
+- GET /rest/services/System/RasterAnalysisTools/GPServer/UninstallDeepLearningModel — uninstallDeepLearningModel: Uninstall Deep Learning Model
+- GET /rest/services/Utilities/PrintingTools/GPServer/Export%20Web
+Map%20Task — exportWebMapTask: Export Web Map Task
+- GET /rest/services/Utilities/PrintingTools/GPServer/Get%20Layout%20Templates%20Info%20Task — getLayoutTemplatesInfoTask: Get Layout Templates Info Task
+- GET /rest/services/{serviceName}/GPServer — gpService: GPServer
+- POST /rest/services/{serviceName}/GPServer — gpServicePost: GPServer
+- GET /rest/services/{serviceName}/GPServer/FindClosestFacility/submitJob — closestFacilityAsyncServices: Job request
+- POST /rest/services/{serviceName}/GPServer/FindClosestFacility/submitJob — closestFacilityAsyncServicesPost: Job request
+- GET /rest/services/{serviceName}/GPServer/FindRoutes/submitJob — routeAsyncServices: Job request
+- POST /rest/services/{serviceName}/GPServer/FindRoutes/submitJob — routeAsyncServicesPost: Job request
+- GET /rest/services/{serviceName}/GPServer/GenerateOriginDestinationCostMatrix/submitJob — originDestinationCostMatrixService: Job request
+- POST /rest/services/{serviceName}/GPServer/GenerateOriginDestinationCostMatrix/submitJob — originDestinationCostMatrixServicePost: Job request
+- GET /rest/services/{serviceName}/GPServer/GenerateServiceAreas/submitJob — serviceAreaAsync: Job request
+- POST /rest/services/{serviceName}/GPServer/GenerateServiceAreas/submitJob — serviceAreaAsyncPost: Job request
+- GET /rest/services/{serviceName}/GPServer/GetToolInfo/execute — gettoolinfoTool: GetToolInfo tool
+- POST /rest/services/{serviceName}/GPServer/GetToolInfo/execute — gettoolinfoToolPost: GetToolInfo tool
+- GET /rest/services/{serviceName}/GPServer/GetTravelMode/execute — gettravelmodesTool: GetTravelModes tool
+- POST /rest/services/{serviceName}/GPServer/GetTravelMode/execute — gettravelmodesToolPost: GetTravelModes tool
+- GET /rest/services/{serviceName}/GPServer/SolveLocationAllocation/submitJob — locationAllocationService: Job request
+- POST /rest/services/{serviceName}/GPServer/SolveLocationAllocation/submitJob — locationAllocationServicePost: Job request
+- GET /rest/services/{serviceName}/GPServer/SolveVehicleRoutingProblem/submitJob — vehicleRoutingProblemService: Job request
+- POST /rest/services/{serviceName}/GPServer/SolveVehicleRoutingProblem/submitJob — vehicleRoutingProblemServicePost: Job request
+- GET /rest/services/{serviceName}/GPServer/{taskName} — gpTask: Task
+- POST /rest/services/{serviceName}/GPServer/{taskName} — gpTaskPost: Task
+- GET /rest/services/{serviceName}/GPServer/{taskName}/execute — executeGpTask: Execute a task
+- POST /rest/services/{serviceName}/GPServer/{taskName}/execute — executeGpTaskPost: Execute a task
+- GET /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId} — gpJob: Jobs
+- POST /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId} — gpJobPost: Jobs
+- GET /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/cancel — cancelGpJob: Cancel a job
+- POST /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/cancel — cancelGpJobPost: Cancel a job
+- GET /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/inputs — inputs: Inputs
+- POST /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/inputs — inputsPost: Inputs
+- GET /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/inputs/{paramName} — gpInput: Input parameters
+- POST /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/inputs/{paramName} — gpInputPost: Input parameters
+- GET /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/results — results: Results
+- POST /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/results — resultsPost: Results
+- GET /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/results/{paramName} — gpResult: Result parameters
+- POST /rest/services/{serviceName}/GPServer/{taskName}/jobs/{jobId}/results/{paramName} — gpResultPost: Result parameters
+- GET /rest/services/{serviceName}/GPServer/{taskName}/submitJob — submitGpJob: Submit a job
+- POST /rest/services/{serviceName}/GPServer/{taskName}/submitJob — submitGpJobPost: Submit a job
+- GET /rest/services/{serviceName}/GPServer/{taskName}/validate — validateGpTask: Validate a task
+- POST /rest/services/{serviceName}/GPServer/{taskName}/validate — validateGpTaskPost: Validate a task
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/CalculateDensity — calculateDensity: Calculate Density
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/CalculateDistance — calculateDistance: Calculate Distance
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/CalculateTravelCost — calculateTravelCost: Calculate Travel Cost
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/ConvertFeatureToRaster — convertFeatureToRaster: Convert Feature to Raster
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/ConvertRasterToFeature — convertRasterToFeature: Convert Raster to Feature
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/CostPathAsPolyline — costPathAsPolyline: Cost Path As Polyline
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/CreateViewshed — createViewshed: Create Viewshed
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DeriveContinuousFlow — deriveContinuousFlow: Derive Continuous Flow
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DeriveStreamAsLine — deriveStreamAsLine: Derive Stream As Line
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DeriveStreamAsRaster — deriveStreamAsRaster: Derive Stream As Raster
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DetermineOptimumTravelCostNetwork — determineOptimumTravelCostNetwork: Determine Optimum Travel Cost Network
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DetermineTravelCostPathAsPolyline — determineTravelCostPathAsPolyline: Determine Travel Cost Path as Polyline
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DetermineTravelCostPathsToDestinations — determineTravelCostPathsToDestinations: Determine Travel Cost Paths to Destinations
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DistanceAccumulation — distanceAccumulation: Distance Accumulation
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/DistanceAllocation — distanceAllocation: Distance Allocation
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/Fill — fill: Fill
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/FlowAccumulation — flowAccumulation: Flow Accumulation
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/FlowDirection — flowDirection: Flow Direction
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/FlowDistance — flowDistance: Flow Distance
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/GeodesicViewshed — geodesicViewshed: Geodesic Viewshed
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/GeomorphonLandforms — geomorphonLandforms: Geomorphon Landforms
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/LocateRegions — locateregions: Locate Regions
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/Nibble — nibble: Nibble
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/OptimalPathAsLine — optimalPathAsLine: Optimal Path As Line
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/OptimalPathAsRaster — optimalPathAsRaster: Optimal Path As Raster
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/OptimalRegionConnections — optimalRegionConnections: Optimal Region Connections
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/StreamLink — streamLink: Stream Link
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/SummarizeRasterWithin — summarizeRasterWithin: Summarize Raster Within
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/SurfaceParameters — surfaceParameters: Surface Parameters
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/TabulateArea — tabulateArea: Tabulate Area
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/Watershed — watershed: Watershed
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/ZonalGeometryAsTable — zonalGeometryAsTable: Zonal Geometry As Table
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/ZonalStatisticsAsTable — zonalStatisticsAsTable: Zonal Statistics As Table
+- GET /rest/services/{serviceName}/RasterAnalysisTools/GPServer/zonal-statistics — zonalStatistics: Zonal Statistics
+
+## GeoAnalytics tasks
+- GET /rest/services/System/GeoAnalytics — geoanalyticsTasks: GeoAnalytics Tools service tasks
+- GET /rest/services/System/GeoAnalytics/AggregatePoints — aggregatePoints: Aggregate Points
+- GET /rest/services/System/GeoAnalytics/AppendData — appendData: Append Data
+- GET /rest/services/System/GeoAnalytics/BuildMultiVariableGrid — buildMultiVariableGrid: Build Multi-Variable Grid
+- GET /rest/services/System/GeoAnalytics/CalculateDensity — calculateDensityGeoanalytics: Calculate Density
+- GET /rest/services/System/GeoAnalytics/CalculateField — calculateField: Calculate Field
+- GET /rest/services/System/GeoAnalytics/CalculateMotionStatistics — calculateMotionStatistics: Calculate Motion Statistics
+- GET /rest/services/System/GeoAnalytics/ClipLayer — clipLayer: Clip Layer
+- GET /rest/services/System/GeoAnalytics/CopyToDataStore — copyToDataStore: Copy To Data Store
+- GET /rest/services/System/GeoAnalytics/CreateBuffers — createBuffers: Create Buffers
+- GET /rest/services/System/GeoAnalytics/CreateSpaceTimeCube — createSpaceTimeCube: Create Space Time Cube
+- GET /rest/services/System/GeoAnalytics/DescribeDataset — describeDataset: Describe Dataset
+- GET /rest/services/System/GeoAnalytics/DetectIncidents — detectIncidents: Detect Incidents
+- GET /rest/services/System/GeoAnalytics/DissolveBoundaries — dissolveBoundaries: Dissolve Boundaries
+- GET /rest/services/System/GeoAnalytics/EnrichFromMultiVariableGrid — enrichFromMultiVariableGrid: Enrich From Multi-Variable Grid
+- GET /rest/services/System/GeoAnalytics/FindDwellLocations — findDwellLocations: Find Dwell Locations
+- GET /rest/services/System/GeoAnalytics/FindHotSpots — findHotSpots: Find Hot Spots
+- GET /rest/services/System/GeoAnalytics/FindPointClusters — findPointClusters: Find Point Clusters
+- GET /rest/services/System/GeoAnalytics/FindSimilarLocations — findSimilarLocations: Find Similar Locations
+- GET /rest/services/System/GeoAnalytics/ForestBasedClassificationAndRegression — forestBasedClassificationAndRegression: Forest-based Classification And Regression
+- GET /rest/services/System/GeoAnalytics/GeneralizedLinearRegression — generalizedLinearRegression: Generalized Linear Regression
+- GET /rest/services/System/GeoAnalytics/GeocodeLocations — geocodeLocations: Geocode Locations
+- GET /rest/services/System/GeoAnalytics/GeographicallyWeightedRegression — geographicallyWeighedRegression: Geographically Weighted Regression
+- GET /rest/services/System/GeoAnalytics/GroupByProximity — groupByProximity: Group By Proximity
+- GET /rest/services/System/GeoAnalytics/JoinFeatures — joinFeatures: Join Features
+- GET /rest/services/System/GeoAnalytics/MergeLayers — mergeLayers: Merge Layers
+- GET /rest/services/System/GeoAnalytics/OverlayLayers — overlayLayers: Overlay Layers
+- GET /rest/services/System/GeoAnalytics/ReconstructTracks — reconstructTracks: Reconstruct Tracks
+- GET /rest/services/System/GeoAnalytics/RunPythonScript — runPythonScript: Run Python Script
+- GET /rest/services/System/GeoAnalytics/SnapTracks — snapTracks: Snap Tracks
+- GET /rest/services/System/GeoAnalytics/SummarizeAttributes — summarizeAttributes: Summarize Attributes
+- GET /rest/services/System/GeoAnalytics/SummarizeCenterAndDispersion — summarizeCenterAndDispersion: Summarize Center And Dispersion
+- GET /rest/services/System/GeoAnalytics/SummarizeWithin — summarizeWithin: Summarize Within
+- GET /rest/services/System/GeoAnalytics/TraceProximityEvents — traceProximityEvents: Trace Proximity Events
+
+## GeoDataServer
+- GET /rest/services/{serviceName}/GeoDataServer — geodataService: GeoData Service
+- GET /rest/services/{serviceName}/GeoDataServer/replicas — replicasGeodataService: Replicas (Geodata Service)
+- GET /rest/services/{serviceName}/GeoDataServer/replicas/{replicaName} — geodataReplica: Replica
+- POST /rest/services/{serviceName}/GeoDataServer/unRegisterReplica — unregisterReplicaGeodataService: Unregister Replica (Geodata Service)
+- GET /rest/services/{serviceName}/GeoDataServer/versions/{versionName} — geodataVersion: Version
+
+## GeocodeServer
+- GET /rest/services/{serviceName}/GeocodeServer — geocodeService: Geocode Service
+- GET /rest/services/{serviceName}/GeocodeServer/analyze-geocode-input — analyzeGeocodeInput: Analyze Geocode Input
+- GET /rest/services/{serviceName}/GeocodeServer/batch-geocode — batchGeocode: Batch Geocode
+- GET /rest/services/{serviceName}/GeocodeServer/findAddressCandidates — findAddressCandidates: Find Address Candidates
+- POST /rest/services/{serviceName}/GeocodeServer/findAddressCandidates — findAddressCandidatesPost: Find Address Candidates
+- GET /rest/services/{serviceName}/GeocodeServer/geocode-enterprise-table — geocodeEnterpriseTable: Geocode Enterprise Table
+- GET /rest/services/{serviceName}/GeocodeServer/geocode-file — geocodeFile: Geocode File
+- GET /rest/services/{serviceName}/GeocodeServer/geocodeAddresses — geocodeAddresses: Geocode Addresses
+- GET /rest/services/{serviceName}/GeocodeServer/reverseGeocode — reverseGeocode: Reverse Geocode
+- GET /rest/services/{serviceName}/GeocodeServer/suggest — suggest: Suggest
+
+## GeometryServer
+- GET /rest/services/Utilities/Geometry/GeometryServer — geometryService: Geometry Service
+- GET /rest/services/Utilities/Geometry/GeometryServer/areasAndLengths — areasAndLengths: Areas and Lengths
+- GET /rest/services/Utilities/Geometry/GeometryServer/autoComplete — autoComplete: Auto Complete
+- GET /rest/services/Utilities/Geometry/GeometryServer/buffer — buffer: Buffer
+- GET /rest/services/Utilities/Geometry/GeometryServer/convexHull — convexHull: Convex Hull
+- GET /rest/services/Utilities/Geometry/GeometryServer/cut — cut: Cut
+- GET /rest/services/Utilities/Geometry/GeometryServer/densify — densify: Densify
+- GET /rest/services/Utilities/Geometry/GeometryServer/difference — difference: Difference
+- GET /rest/services/Utilities/Geometry/GeometryServer/distance — distance: Distance
+- GET /rest/services/Utilities/Geometry/GeometryServer/findTransformations — findtransformations: Find Transformations
+- GET /rest/services/Utilities/Geometry/GeometryServer/fromGeoCoordinateString — fromGeocoordinatestring: From GeoCoordinateString
+- GET /rest/services/Utilities/Geometry/GeometryServer/generalize — generalize: Generalize
+- GET /rest/services/Utilities/Geometry/GeometryServer/intersect — intersect: Intersect
+- GET /rest/services/Utilities/Geometry/GeometryServer/labelPoints — labelPoints: Label Points
+- GET /rest/services/Utilities/Geometry/GeometryServer/lengths — lengths: Lengths
+- GET /rest/services/Utilities/Geometry/GeometryServer/offset — offset: Offset
+- GET /rest/services/Utilities/Geometry/GeometryServer/project — project: Project
+- GET /rest/services/Utilities/Geometry/GeometryServer/relation — relation: Relation
+- GET /rest/services/Utilities/Geometry/GeometryServer/reshape — reshape: Reshape
+- GET /rest/services/Utilities/Geometry/GeometryServer/simplify — simplify: Simplify
+- GET /rest/services/Utilities/Geometry/GeometryServer/toGeoCoordinateString — toGeocoordinatestring: To GeoCoordinateString
+- POST /rest/services/Utilities/Geometry/GeometryServer/trimExtend — trimExtend: Trim/Extend
+- GET /rest/services/Utilities/Geometry/GeometryServer/union — union: Union
+
+## GlobeServer
+- GET /rest/services/{serviceName}/GlobeServer — globeService: Globe Service
+- GET /rest/services/{serviceName}/GlobeServer/{layerId} — globeLayer: Globe Layer
+- GET /rest/services/{serviceName}/GlobeServer/{layerId}/tile/{face}/{level}/{row}/{column} — globeTile: Globe Tile
+
+## Hosted service administration (ArcGIS Online)
+- POST /rest/admin/WebHooks/webhookSettings — webHooksSettingsFeatureService: Settings (Webhooks)
+- GET /rest/admin/services/{serviceName}/FeatureServer — hostedFeatureService: Hosted Feature Service
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks — webHooksFeatureService: Web Hooks (Feature Service)
+- GET /rest/admin/services/{serviceName}/FeatureServer/WebHooks/Webhooks — webHooksSecurityFeatureService: Security (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/Webhooks — webHooksPayloadsFeatureService: Payloads (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/activateAll — webHooksActivateAllFeatureService: Activate All (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/create — webHooksCreateFeatureService: Create (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/deactivateAll — webHooksDeactivateAllFeatureService: Deactivate All (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/deleteAll — webHooksDeleteAllFeatureService: Delete All (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/reassignOwner — webHooksReassignOwnerFeatureService: Reassign Owner (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/{webhookID}/edit — webHooksEditFeatureService: Edit (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/{webhookId}/delete — webHooksDeleteFeatureService: Delete (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/{webhookId}/notificationStatus — webHooksNotificationStatusFeatureService: Notification Status (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/WebHooks/{webhookId}/status — webHooksStatusFeatureService: Status (Webhooks)
+- POST /rest/admin/services/{serviceName}/FeatureServer/addToDefinition — addToDefinitionFeatureService: Add to Definition (Feature Service)
+- POST /rest/admin/services/{serviceName}/FeatureServer/cleanupChangeTracking — cleanupChangeTracking: Cleanup Change Tracking
+- POST /rest/admin/services/{serviceName}/FeatureServer/deleteFromDefinition — deleteFromDefinitionFeatureService: Delete From Definition (Feature Service)
+- POST /rest/admin/services/{serviceName}/FeatureServer/refresh — refreshFeatureService: Refresh (Feature Service)
+- GET /rest/admin/services/{serviceName}/FeatureServer/status — statusFeatureService: Status (Feature Service)
+- POST /rest/admin/services/{serviceName}/FeatureServer/updateDefinition — updateDefinitionFeatureService: Update Definition (Feature Service)
+- GET /rest/admin/services/{serviceName}/FeatureServer/{layerId} — featureLayerOnline: Feature Layer
+- POST /rest/admin/services/{serviceName}/FeatureServer/{layerId}/addToDefinition — addToDefinitionFeatureLayer: Add To Definition (Feature Layer)
+- POST /rest/admin/services/{serviceName}/FeatureServer/{layerId}/deleteFromDefinition — deleteFromDefinitionFeatureLayer: Delete From Definition (Feature Layer)
+- POST /rest/admin/services/{serviceName}/FeatureServer/{layerId}/refresh — refreshFeatureLayer: Refresh (Feature Layer)
+- POST /rest/admin/services/{serviceName}/FeatureServer/{layerId}/truncate — truncateFeatureLayer: Truncate (Feature Layer)
+- POST /rest/admin/services/{serviceName}/FeatureServer/{layerId}/updateDefinition — updateDefinitionFeatureLayerOnline: Update Definition (Feature Layer)
+- GET /rest/admin/services/{serviceName}/MapServer — hostedMapService: Hosted Map Service
+- POST /rest/admin/services/{serviceName}/MapServer/deleteAllTiles — deleteAllTiles: Delete All Tiles
+- POST /rest/admin/services/{serviceName}/MapServer/deleteTiles — deleteTiles: Delete Tiles
+- POST /rest/admin/services/{serviceName}/MapServer/edit — editService: Edit Service
+- POST /rest/admin/services/{serviceName}/MapServer/importTiles — importTiles: Import Tiles
+- GET /rest/admin/services/{serviceName}/MapServer/jobs — tileServiceJobSummary: Tile Service Job Summary
+- GET /rest/admin/services/{serviceName}/MapServer/jobs/{jobid} — jobStatistics: Job Statistics
+- POST /rest/admin/services/{serviceName}/MapServer/jobs/{jobid}/cancel — cancelJob: Cancel Job
+- POST /rest/admin/services/{serviceName}/MapServer/jobs/{jobid}/rerun — rerunJob: Rerun Job
+- POST /rest/admin/services/{serviceName}/MapServer/refresh — refreshMapService: Refresh (Map Service)
+- GET /rest/admin/services/{serviceName}/MapServer/status — statusMapService: Status (Map Service)
+- POST /rest/admin/services/{serviceName}/MapServer/updateTiles — updateTiles: Update Tiles
+- POST /rest/admin/services/{serviceName}/VectorTileServer/edit — vectorTileEditServiceFeatureService: Edit Service (Feature Service)
+- GET /rest/admin/services/{serviceName}/VectorTileServer/jobs — vectorTileJobsSummaryFeatureService: Tile Service Jobs Summary (Feature Service)
+- POST /rest/admin/services/{serviceName}/VectorTileServer/rebuildCache — vectorTileRebuildCacheFeatureService: Rebuild Cache (Feature Service)
+- POST /rest/admin/services/{serviceName}/VectorTileServer/refresh — vectorTileRefreshFeatureService: Refresh (Feature Service)
+- GET /rest/admin/services/{serviceName}/VectorTileServer/status — vectorTileStatusFeatureService: Status (Feature Service)
+- POST /rest/admin/services/{serviceName}/VectorTileServer/updateTiles — vectorTileUpdateTilesFeatureService: Update Tiles (Feature Service)
+- GET /rest/admin/{serviceName}/FeatureServer/{layerId} — featureLayer: Feature Layer
+- POST /rest/admin/{serviceName}/FeatureServer/{layerId}/truncate — fsTruncate: Truncate
+- POST /rest/admin/{serviceName}/FeatureServer/{layerId}/updateDefinition — updateDefinitionFeatureLayer: Update Definition (Feature Layer)
+
+## ImageServer
+- GET /rest/services/{serviceName}/ImageServer — imageService: Image Service
+- GET /rest/services/{serviceName}/ImageServer/WMTS — wmtsImageService: WMTS (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/WMTS/tile/{wmtsVersion}/{layer}/{style}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}.{format} — wmtsTileImageService: WMTS Tile (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/WMTS/{version}/WMTSCapabilities.xml — wmtsCapabilitiesImageService: WMTS Capabilities (Image Service)
+- POST /rest/services/{serviceName}/ImageServer/add — addRasters: Add Rasters
+- POST /rest/services/{serviceName}/ImageServer/calculateVolume — calculateVolume: Calculate Volume
+- GET /rest/services/{serviceName}/ImageServer/colormap — colormap: Colormap
+- GET /rest/services/{serviceName}/ImageServer/computeAngles — computeAngles: Compute Angles
+- GET /rest/services/{serviceName}/ImageServer/computeCacheInfo — computeCacheInfo: Compute Cache Info
+- GET /rest/services/{serviceName}/ImageServer/computeClassStatistics — computeClassStatistics: Compute Class Statistics
+- GET /rest/services/{serviceName}/ImageServer/computeHistograms — computeHistograms: Compute Histograms
+- GET /rest/services/{serviceName}/ImageServer/computeMultidimensionalInfo — computeMultidimensionalInfo: Compute Multidimensional Info
+- GET /rest/services/{serviceName}/ImageServer/computePixelLocation — computePixelLocation: Compute Pixel Location
+- GET /rest/services/{serviceName}/ImageServer/computeStatisticsHistograms — computeStatisticsAndHistograms: Compute Statistics and Histograms
+- GET /rest/services/{serviceName}/ImageServer/computeTiePoints — computeTiePoints: Compute Tie Points
+- POST /rest/services/{serviceName}/ImageServer/delete — deleteRasters: Delete Rasters
+- GET /rest/services/{serviceName}/ImageServer/download — downloadRasters: Download Rasters
+- GET /rest/services/{serviceName}/ImageServer/estimateExportTilesSize — estimateExportTileSizeImageService: Estimate Export Tile Size
+- POST /rest/services/{serviceName}/ImageServer/exportImage — exportImage: Export Image
+- POST /rest/services/{serviceName}/ImageServer/exportTiles — exportTilesImageService: Export Tiles
+- GET /rest/services/{serviceName}/ImageServer/file — rasterFile: Raster File
+- GET /rest/services/{serviceName}/ImageServer/find — findImageService: Find (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/getImageUrl — getImageUrl: Get Image URL
+- GET /rest/services/{serviceName}/ImageServer/getSamples — getSamples: Get Samples
+- GET /rest/services/{serviceName}/ImageServer/histograms — histograms: Histograms
+- GET /rest/services/{serviceName}/ImageServer/icsToPixel — rasterIcsToPixel: Raster ICS To Pixel
+- GET /rest/services/{serviceName}/ImageServer/identify — identifyImageService: Identify (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/imageToMap — imageToMap: Image To Map
+- GET /rest/services/{serviceName}/ImageServer/imageToMapMultiray — imageToMapMultiray: Image To Map Multiray
+- GET /rest/services/{serviceName}/ImageServer/jobs/{jobId} — imageServiceJob: Image Service Job
+- GET /rest/services/{serviceName}/ImageServer/jobs/{jobId}/inputs/{paramName} — imageServiceInput: Image Service Input
+- GET /rest/services/{serviceName}/ImageServer/jobs/{jobId}/results/{paramName} — imageServiceResult: Image Service Result
+- GET /rest/services/{serviceName}/ImageServer/keyProperties — keyProperties: Key Properties
+- GET /rest/services/{serviceName}/ImageServer/kml/image.kmz — kmlImageImageService: KML Image (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/legend — legendImageService: Legend (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/mapToImage — mapToImage: Map To Image
+- GET /rest/services/{serviceName}/ImageServer/measure — measure: Measure
+- GET /rest/services/{serviceName}/ImageServer/measureFromImage — measureFromImage: Measure From Image
+- GET /rest/services/{serviceName}/ImageServer/multidimensionalInfo — multidimensionalInfo: Multidimensional Info
+- GET /rest/services/{serviceName}/ImageServer/project — projectImageService: Project (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/query — queryImageService: Query (Image Service)
+- GET /rest/services/{serviceName}/ImageServer/queryBoundary — queryBoundary: Query Boundary
+- GET /rest/services/{serviceName}/ImageServer/queryGPSInfo — queryGps: Query (GPS)
+- GET /rest/services/{serviceName}/ImageServer/rasterAttributeTable — rasterAttributeTable: Raster Attribute Table
+- GET /rest/services/{serviceName}/ImageServer/rasterFunctionInfos — rasterFunctionInfos: Raster Function Infos
+- GET /rest/services/{serviceName}/ImageServer/slices — slices: Slices
+- GET /rest/services/{serviceName}/ImageServer/statistics — statistics: Statistics
+- GET /rest/services/{serviceName}/ImageServer/tile/{level}/{row}/{column} — imageTile: Image Tile
+- POST /rest/services/{serviceName}/ImageServer/update — updateRaster: Update Raster
+- POST /rest/services/{serviceName}/ImageServer/validate — validate: Validate
+- GET /rest/services/{serviceName}/ImageServer/{rasterId} — rasterCatalogItem: Raster Catalog Item
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/image — rasterImage: Raster Image
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info — rasterInfo: Raster Info
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info/histograms — rasterHistograms: Raster Histograms
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info/ics — rasterIcs: Raster ICS (image coordinate system)
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info/imageSupportData — imageSupportData: Image Support Data
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info/keyProperties — rasterKeyProperties: Raster Key Properties
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info/metadata — rasterMetadata: Raster Metadata
+- GET /rest/services/{serviceName}/ImageServer/{rasterId}/info/thumbnail — rasterThumbnail: Raster Thumbnail
+
+## KnowledgeGraphServer
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer — kgsHostedServer: Hosted Knowledge Graph Service
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer — kgsHostedServerAdmin: Hosted Knowledge Graph Service
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel — kgsDatamodel: Data Model
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel — kgsDatamodelPost: Data Model
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/constraintRules — kgsDatamodelConstraintRulesAdmin: Constraint Rules (Data Model)
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/domains — kgsDatamodelDomains: Domains
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/domains — kgsDatamodelDomainsPost: Domains
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/domains/add — kgsDatamodelDomainsAdd: Add (Domains)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/domains/{domainName} — kgsDatamodelDomainsDomain: Domain
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/domains/{domainName}/delete — kgsDatamodelDomainsDomainDelete: Delete (Domain)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/domains/{domainName}/update — kgsDatamodelDomainsDomainUpdate: Update (Domain)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit — kgsDatamodelEdit: Edit (Data Model)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes — kgsDatamodelEditNamedtypes: Named Types
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/add — kgsDatamodelEditNamedtypesAdd: Add (Named Types)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName} — kgsDatamodelEditNamedtypesType: Type
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/delete — kgsDatamodelEditNamedtypesTypeDelete: Delete (Type)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/fields — kgsDatamodelEditNamedtypesTypeFields: Fields
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/fields/add — kgsDatamodelEditNamedtypesTypeFieldsAdd: Add (Fields)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/fields/delete — kgsDatamodelEditNamedtypesTypeFieldsDelete: Delete (Fields)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/fields/update — kgsDatamodelEditNamedtypesTypeFieldsUpdate: Update (Fields)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/indexes — kgsDatamodelEditNamedtypesTypeIndexes: Indexes
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/indexes/add — kgsDatamodelEditNamedtypesTypeIndexesAdd: Add (Indexes)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/indexes/delete — kgsDatamodelEditNamedtypesTypeIndexesDelete: Delete (Indexes)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/namedTypes/{typeName}/update — kgsDatamodelEditNamedtypesTypeUpdate: Update (Type)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/edit/update — kgsDatamodelEditUpdateAdmin: Update (Edit Data Model)
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/queryDataModel — kgsDatamodelQuery: Query Data Model
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/dataModel/queryDataModel — kgsDatamodelQueryPost: Query Data Model
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/graph — kgsGraph: Graph
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/graph/applyedits — kgsGraphApplyedits: Apply Edits (Graph)
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/graph/query — kgsGraphQuery: Query (Graph)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/graph/query — kgsGraphQueryPost: Query (Graph)
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/graph/search — kgsGraphSearch: Search (Graph)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/graph/search — kgsGraphSearchPost: Search (Graph)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/refresh — kgsRefreshAdmin: Refresh
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/replicas — kgsReplicas: Replicas (Knowledge Graph Service)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/replicas/create — kgsReplicaCreate: Create Replica (Knowledge Graph Service)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/replicas/trimChangeLog — kgsReplicaTrimChangeLogAdmin: Trim Change Log
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/replicas/unregister — kgsReplicaUnregister: Unregister Replica (Knowledge Graph Service)
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/replicas/{replicaId} — kgsReplicaInfo: Replica info (Knowledge Graph Service)
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/replicas/{replicaId}/synchronize — kgsReplicaSynchronize: Synchronize Replica (Knowledge Graph Service)
+- GET /rest/services/services/{serviceName}/KnowledgeGraphServer/status — kgsStatusAdmin: Status
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/status — kgsStatusAdminPost: Status
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/updateDefinition — kgsUpdatedefinitionAdmin: Update Definition
+- POST /rest/services/services/{serviceName}/KnowledgeGraphServer/updateFeature — kgsUpdateFeatureAdmin: Update Feature
+
+## MapServer
+- GET /rest/services/{serviceName}/MapServer — mapService: Map Service
+- GET /rest/services/{serviceName}/MapServer/WMTS — wmtsMapService: WMTS (Map Service)
+- GET /rest/services/{serviceName}/MapServer/WMTS/tile/{wmtsVersion}/{layer}/{style}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}.{format} — wmtsTileMapService: WMTS Tile (Map Service)
+- GET /rest/services/{serviceName}/MapServer/WMTS/{version}/WMTSCapabilities.xml — wmtsCapabilitiesMapService: WMTS Capabilities (Map Service)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer — dynamicLayerTable: Dynamic Layer / Table
+- POST /rest/services/{serviceName}/MapServer/dynamicLayer/generateRenderer — generateRendererMapServiceDynamicLayer: Generate Renderer (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer/query — queryMapServiceDynamicLayer: Query (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer/queryRelatedRecords — queryRelatedRecordsMapServiceDynamicLayer: Query Related Records (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer/{featureId} — featureMapServiceDynamicLayer: Feature (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer/{featureId}/attachments — attachmentInfosMapServiceDynamicLayer: Attachment Infos (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer/{featureId}/attachments/{attachmentId} — attachmentMapServiceDynamicLayer: Attachment (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/dynamicLayer/{featureId}/htmlPopup — htmlPopupMapServiceDynamicLayer: HTML Popup (Map Service/Dynamic Layer)
+- GET /rest/services/{serviceName}/MapServer/estimateExportTilesSize — estimateExportTileSizeMapService: Estimate Export Tile Size
+- POST /rest/services/{serviceName}/MapServer/export — exportMap: Export Map
+- POST /rest/services/{serviceName}/MapServer/exportTiles — exportTilesMapService: Export Tiles
+- GET /rest/services/{serviceName}/MapServer/find — find: Find
+- POST /rest/services/{serviceName}/MapServer/generateKml — generateKml: Generate KML
+- GET /rest/services/{serviceName}/MapServer/identify — identifyMapService: Identify (Map Service)
+- GET /rest/services/{serviceName}/MapServer/info — info: Info
+- GET /rest/services/{serviceName}/MapServer/info/iteminfo — itemInformation: Item Information
+- GET /rest/services/{serviceName}/MapServer/info/metadata — metadata: Metadata
+- GET /rest/services/{serviceName}/MapServer/info/thumbnail — thumbnail: Thumbnail
+- GET /rest/services/{serviceName}/MapServer/jobs/{jobId} — mapServiceJob: Map Service Job
+- GET /rest/services/{serviceName}/MapServer/jobs/{jobId}/inputs/{paramName} — mapServiceInput: Map Service Input
+- GET /rest/services/{serviceName}/MapServer/jobs/{jobId}/results/{paramName} — mapServiceResult: Map Service Result
+- GET /rest/services/{serviceName}/MapServer/kml/mapImage.kmz — kmlImageMapService: KML Image (Map Service)
+- GET /rest/services/{serviceName}/MapServer/layers — allLayersAndTables: All Layers and Tables
+- GET /rest/services/{serviceName}/MapServer/legend — legendMapService: Legend (Map Service)
+- GET /rest/services/{serviceName}/MapServer/queryLegends — queryLegendsMapService: Query Legends
+- GET /rest/services/{serviceName}/MapServer/tile/{level}/{row}/{column} — mapTile: Map Tile
+- GET /rest/services/{serviceName}/MapServer/tilemap/{level}/{row}/{column}/{width}/{height} — tileMap1: Tile Map
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId} — layerTable: Layer / Table
+- POST /rest/services/{serviceName}/MapServer/{layerOrTableId}/generateRenderer — generateRendererMapServiceLayer: Generate Renderer (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/images/{imageId} — imageMapService: Image (Map Service)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/query — queryMapServiceLayer: Query (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/queryAnalytic — msQueryAnalytic: Query Analytic (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/queryAttachments — queryAttachmentsMapServiceLayer: Query Attachments (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/queryRelatedRecords — queryRelatedRecordsFeatureServiceLayer: Query Related Records (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/{featureId} — featureMapServiceLayer: Feature (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/{featureId}/attachments — attachmentInfosMapServiceLayer: Attachment Infos (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/{featureId}/attachments/{attachmentId} — attachmentMapServiceLayer: Attachment (Map Service/Layer)
+- GET /rest/services/{serviceName}/MapServer/{layerOrTableId}/{featureId}/htmlPopup — htmlPopupMapServiceLayer: HTML Popup (Map Service/Layer)
+
+## MapServer extension: DataReviewerServer
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer — restDataReviewerMapService: Data Reviewer Map Service
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Batch%20Validation/adhocJob — restAdhocJob: Adhoc Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation — restBatchValidation: Batch Validation
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/cancelJob — restCancelJob: Cancel Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/executeJob — restExecuteJob: Execute Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/getJobDetails — restGetJobDetails: Get Job Details
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/getJobExecutionDetails — restGetJobExecutionDetails: Get Job Execution Details
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/scheduleNewJob — restScheduleNewJob: Schedule New Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/scheduledJobs — restScheduledJobs: Scheduled Jobs
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/scheduledJobs/{jobId}/deleteJob — restDeleteJob: Delete Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/scheduledJobs/{jobId}/disableJob — restDisableJob: Disable Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/scheduledJobs/{jobId}/editJob — restEditJob: Edit Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/BatchValidation/scheduledJobs/{jobId}/enableJob — restEnableJob: Enable Job
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Dashboard — restDashboard: Dashboard
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Dashboard/reviewerResultsBy:{FieldName}/filter — restFilter: Filter
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults — restReviewerResults: Reviewer Results
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults/getBatchRunDetails — restGetBatchRunDetails: Get Batch Run Details
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults/getLayerDefinition — restGetLayerDefinition: Get Layer Definition
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults/getResults — restGetResults: Get Results
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults/updateLifecycleStatus — restUpdateLifecycleStatus: Update Lifecycle Status
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults/writeFeatureAsResult — restWriteFeatureAsResult: Write Feature As Result
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/ReviewerResults/writeResult — restWriteResult: Write Result
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Utilities — restUtilities: Utilities
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Utilities/getLifecyclePhaseStrings — restGetLifecyclePhaseStrings: Get Lifecycle Phase Strings
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Utilities/getLifecycleStatusStrings — restGetLifecycleStatusStrings: Get Lifecycle Status Strings
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/Utilities/getReviewerSessions — restGetReviewerSessions: Get Reviewer Sessions
+- GET /rest/services/{serviceName}/MapServer/exts/DataReviewerServer/createReviewerSession — restCreateReviewerSession: Create Reviewer Session
+
+## MapServer extension: LRServer
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer — linearReferencingService: Linear Referencing Service
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/CenterlineSequenceTables/{layerId} — lrCenterlineSequenceTable: Centerline Sequence Table
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/addressLayers/{layerId} — lrAddressLayers: Address Layers
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/applyEdits — applyEdits: Apply Edits
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/calibrationPointLayers/{layerId} — lrCalibrationPointLayer: Calibration Point Layer
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/calibrationPointLayers/{layerId}/generateCalibrationPoints — lrGenerateCalibrationPoints: Generate Calibration Points
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/centerlineLayers/{layerId} — lrCenterlineLayer: Centerline Layer
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/centerlineLayers/{layerId}/queryRouteAssociations — lrQueryRouteAssociations: Query Route Associations
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/centerlineLayers/{layerId}/removeOverlappingCenterlines — lrRemoveOverlappingCenterlines: Remove Overlapping Centerlines
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/createVersion — createVersion: Create Version
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/deleteVersion — deleteVersion: Delete Version
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/eventLayers/{layerId} — eventLayer: Event Layer
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/eventLayers/{layerId}/appendEvents — lrAppendEvents: Append Events
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/eventLayers/{layerId}/generateEvents — lrGenerateEvents: Generate Events
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/eventLayers/{layerId}/geometryToStation — lrGeometryToStation: Geometry To Station
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/eventLayers/{layerId}/stationToGeometry — lrStationToGeometry: Station To Geometry
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/getCalibrationConfiguration — lrGetCalibrationConfiguration: Get Calibration Configuration
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/getCartoRealignConfiguration — lrGetCartographicRealignmentConfiguration: Get Cartographic Realignment Configuration
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/intersectionLayers/{layerId} — lrIntersectionLayer: Intersection Layer
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/intersectionLayers/{layerId}/generateIntersections — lrGenerateIntersections: Generate Intersections
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/layers — allLayers: All Layers
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/locks — lrLocks: Locks
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/locks/acquire — lrAcquireLocks: Acquire Locks
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/locks/query — lrQueryLocks: Query Locks
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/locks/release — lrReleaseLocks: Release Locks
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID} — lrNetworkLayer: Network Layer
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/appendRoutes — lrAppendRoutes: Append Routes
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/applyEventBehaviors — lrApplyEventBehaviors: Apply Event Behaviors
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/checkEvents — checkEvents: Check Events
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/concurrencies — concurrencies: Concurrencies
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/deriveEventMeasures — lrDeriveEventMeasures: Derive Event Measures
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/exportNetwork — lrExportNetwork: Export Network
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/generateroutes — lrGenerateRoutes: Generate Routes
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/geometryToMeasure — geometryToMeasure: Geometry To Measure
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/geometryToReferent — lrGeometryToReferent: Geometry To Referent
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/measureToGeometry — measureToGeometry: Measure To Geometry
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/overlayEvents — lrOverlayEvents: Overlay Events
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/queryAttributeSet — queryAttributeSet: Query Attribute Set
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/queryLookupTable — lrQueryLookupTable: Query Lookup Table
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/referentToGeometry — lrReferentToGeometry: Referent To Geometry
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/relocateEvent — lrRelocateEvent: Relocate Event
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/translate — translate: Translate
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/networkLayers/{layerID}/updateMeasuresFromLRS — lrUpdateMeasuresFromLrs: Update Measures From LRS
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/nonLRSLayers/{layerId} — lrNonLrsLayer: Non-LRS Layer
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/queryEditLog — lrQueryEditLog: Query Edit Log
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/reconcileVersion — reconcileVersion: Reconcile Version
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/redlineLayers/{layerId} — lrRedlineLayer: Redline Layer
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/setCalibrationConfiguration — lrSetCalibrationConfiguration: Set Calibration Configuration
+- POST /rest/services/{serviceName}/MapServer/exts/LRServer/setCartoRealignConfiguration — lrSetCartographicRealignmentConfiguration: Set Cartographic Realignment Configuration
+- GET /rest/services/{serviceName}/MapServer/exts/LRServer/utilityNetworkLayers/{layerId} — lrUtilityNetworkLayer: Utility Network Layer
+
+## MapServer extension: MaritimeChartService
+- GET /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer — maritimeChartServiceApi: Maritime Chart Service
+- POST /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer — maritimeChartServiceApiPost: Maritime Chart Service
+- GET /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/find — findMcs: Find
+- POST /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/find — findMcsPost: Find
+- GET /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/identifyDatasets — identifydatasets: Identify Datasets
+- POST /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/identifyDatasets — identifydatasetsPost: Identify Datasets
+- GET /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/mcsServiceStatus — mcsServiceStatus: MCS Service Status
+- POST /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/mcsServiceStatus — mcsServiceStatusPost: MCS Service Status
+- GET /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/notes — notesMcs: Notes
+- POST /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/notes — notesMcsPost: Notes
+- GET /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/queryDatasets — querydatasets: Query Datasets
+- POST /rest/services/{serviceName}/MapServer/exts/MaritimeChartService/MapServer/queryDatasets — querydatasetsPost: Query Datasets
+
+## MapServer extension: SchematicServer
+- GET /rest/services/{serviceName}/MapServer/exts/SchematicServer — schematicService: Schematic Service
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer — schematicServicePost: Schematic Service
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/diagrams — schematicDiagrams: Schematic Diagrams
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/diagrams/{diagID}/map — schematicDiagramMap: Schematic Diagram Map
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/diagrams/{diagID}/map/export — schematicExport: Schematic Export
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/diagrams/{diagID}/map/identify — schematicIdentify: Schematic Identify
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/diagrams/{diagId} — schematicDiagram: Schematic Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/folders — schematicFolders: Schematic Folders
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/schematicLayers — schematicLayers: Schematic Layers
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/schematicLayers/{schLayerId} — schematicLayer: Schematic Layer
+- GET /rest/services/{serviceName}/MapServer/exts/SchematicServer/searchDiagrams — schematicSearchDiagrams: Schematic Search Diagrams
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates — schematicDiagramTemplates: Schematic Diagram Templates
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/algorithms — schematicAlgorithms: Schematic Algorithms
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/algorithms/{algoID} — schematicAlgorithm: Schematic Algorithm
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/algorithms/{algoID}/apply — apply: Apply
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/deleteDiagram — deleteDiagram: Delete Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/generateDiagram — generateDiagram: Generate Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/loadDiagram — loadDiagram: Load Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/lockDiagram — lockDiagram: Lock Diagram
+- GET /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/queryAssociatedObjects — queryAssociatedObjects: Query Associated Objects
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/queryAssociatedSchematicFeatures — queryAssociatedSchematicFeatures: Query Associated Schematic Features
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/saveDiagram — saveDiagram: Save Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/unlockDiagram — unlockDiagram: Unlock Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempID}/updateDiagram — updateDiagram: Update Diagram
+- POST /rest/services/{serviceName}/MapServer/exts/SchematicServer/templates/{tempId} — schematicDiagramTemplate: Schematic Diagram Template
+
+## MapServer extension: {extensionName}
+- GET /rest/services/{serviceName}/MapServer/exts/{extensionName} — serviceExtension: Service extension
+
+## MobileServer
+- GET /rest/services/{serviceName}/MobileServer — mobileService: Mobile Service
+- GET /rest/services/{serviceName}/MobileServer/{layerId} — mobileLayer: Mobile Layer
+
+## NAServer
+- GET /rest/services/{serviceName}/NAServer — networkService: Network Service
+- GET /rest/services/{serviceName}/NAServer/{layerName} — networkDatasetLayer: Network Dataset Layer
+- GET /rest/services/{serviceName}/NAServer/{layerName}/EditVehicleRoutingProblem — vehicleRoutingProblemServiceDirectrequest: Direct request
+- POST /rest/services/{serviceName}/NAServer/{layerName}/EditVehicleRoutingProblem — vehicleRoutingProblemServiceDirectrequestPost: Direct request
+- GET /rest/services/{serviceName}/NAServer/{layerName}/solve — routeSyncServices: Direct request
+- POST /rest/services/{serviceName}/NAServer/{layerName}/solve — routeSyncServicesPost: Direct request
+- GET /rest/services/{serviceName}/NAServer/{layerName}/solveClosestFacility — closestFacilitySyncServices: Direct request
+- POST /rest/services/{serviceName}/NAServer/{layerName}/solveClosestFacility — closestFacilitySyncServicesPost: Direct request
+- GET /rest/services/{serviceName}/NAServer/{layerName}/solveODCostMatrix — odCostMatrixSyncServices: Direct request
+- POST /rest/services/{serviceName}/NAServer/{layerName}/solveODCostMatrix — odCostMatrixSyncServicesPost: Direct request
+- GET /rest/services/{serviceName}/NAServer/{layerName}/solveServiceArea — serviceAreaSync: Direct request
+- POST /rest/services/{serviceName}/NAServer/{layerName}/solveServiceArea — serviceAreaSyncPost: Direct request
+
+## NetworkDiagramServer
+- GET /rest/services/{serviceName}/NetworkDiagramServer — networkDiagramService: Network Diagram Service
+- POST /rest/services/{serviceName}/NetworkDiagramServer — networkDiagramServicePost: Network Diagram Service
+- POST /rest/services/{serviceName}/NetworkDiagramServer/createDiagramFromCircuitName — createDiagramFromCircuitNameNetworkDiagramService: Create Diagram From Circuit Name
+- POST /rest/services/{serviceName}/NetworkDiagramServer/createDiagramFromFeatures — createDiagramFromFeaturesNetworkDiagramService: Create Diagram From Features
+- POST /rest/services/{serviceName}/NetworkDiagramServer/createDiagramFromTraceLocations — createDiagramFromTraceLocationsNetworkDiagramService: Create Diagram From Trace Locations
+- POST /rest/services/{serviceName}/NetworkDiagramServer/deleteDiagram — deleteDiagramNetworkDiagramService: Delete Diagram (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagramDataset — diagramDatasetNetworkDiagramService: Diagram Dataset
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams — networkDiagrams: Network Diagrams
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName} — diagramNetworkDiagramService: Diagram
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/appendFeatures — appendFeaturesNetworkDiagramService: Append Features (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/applyLayout — applyLayoutNetworkDiagramService: Apply Layout
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/applyTemplateLayouts — applyTemplateLayoutsNetworkDiagramService: Apply Template Layouts
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/clearDiagramElementInfo — clearDiagramElementInfoNetworkDiagramService: Clear Diagram Element Info
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/clearFlags — clearFlagsNetworkDiagramService: Clear Flags
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/dynamicLayers — dynamicLayersNetworkDiagramService: Dynamic Layers (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/extend — extendNetworkDiagramService: Extend (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/findDiagramFeatures — findDiagramFeaturesNetworkDiagamService: Find Diagram Features
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/findInitialNetworkObjects — findInitialNetworkObjectsNetworkDiagramService: Find Initial Network Objects
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/findNetworkFeatures — findNetworkFeaturesNetworkDiagramService: Find Network Features
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/findNetworkFeaturesFromOIDs — findNetworkFeaturesFromOidsNetworkDiagramService: Find Network Features from OIDs
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/getAggregations — getAggregationsNetworkDiagramService: Get Aggregations
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/getDiagramElementInfo — getDiagramElementInfoNetworkDiagramService: Get Diagram Element Info
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/getFlags — getFlagsNetworkDiagramService: Get Flags
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/layerDefinitions — layerDefinitionsNetworkDiagramService: Layer Definitions
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/manageFlag — manageFlagNetworkDiagramService: Manage Flag
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/map — diagramMapNetworkDiagramService: Diagram Map
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/map/export — exportNetworkDiagramService: Export (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/map/identify — identifyNetworkDiagramService: Identify (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/overwriteFromFeatures — overwriteFromFeaturesNetworkDiagrams: Overwrite From Features
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/queryAttributesBySource — queryAttributesBySource: Query Attributes By Source
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/queryDiagramContent — queryDiagramContent: Query Diagram Content
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/queryDiagramElementsByExtent — queryDiagramElementsByExtentNetworkDiagrams: Query Diagram Elements By Extent
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/queryDiagramElementsByObjectIDs — queryDiagramElementsByObjectidsNetworkDiagrams: Query Diagram Elements By ObjectIDs
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/queryFeatureAttributes — queryFeatureAttributesNetworkDiagramService: Query Feature Attributes (Network Diagrams)
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/saveLayout — saveLayoutNetworkDiagrams: Save Layout
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/setDiagramElementInfo — setDiagramElementInfoNetworkDiagramService: Set Diagram Element Info
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/store — storeNetworkDiagrams: Store
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/update — updateNetworkDiagrams: Update
+- POST /rest/services/{serviceName}/NetworkDiagramServer/diagrams/{diagramName}/webLayerDefinitions — webLayerDefinitionsNetworkDiagramService: Web Layer Definitions
+- POST /rest/services/{serviceName}/NetworkDiagramServer/findDiagramInfos — findDiagramInfosNetworkDiagramService: Find Diagram Infos
+- POST /rest/services/{serviceName}/NetworkDiagramServer/findDiagramNames — findDiagramNamesNetworkDiagramService: Find Diagram Names
+- POST /rest/services/{serviceName}/NetworkDiagramServer/queryConsistencyState — queryConsistencyStateNetworkDiagrams: Query Consistency State
+- POST /rest/services/{serviceName}/NetworkDiagramServer/templates — diagramTemplatesNetworkDiagramService: Diagram Templates
+- POST /rest/services/{serviceName}/NetworkDiagramServer/templates/{templateName} — templateNetworkDiagramService: Template
+
+## ParcelFabricServer
+- POST /rest/services/<serviceName/ParcelFabricServer/copyLinesToParcelType — copylinestoParcelFabricServer: Copy lines to parcel type
+- POST /rest/services/<serviceName/ParcelFabricServer/deleteParcels — deleteparcelsParcelFabricServer: Delete parcels
+- POST /rest/services/<serviceName/ParcelFabricServer/divide — divideParcelFabricServer: Divide
+- POST /rest/services/<serviceName/ParcelFabricServer/duplicateParcels — duplicateparcelsParcelFabricService: Duplicate parcels
+- POST /rest/services/<serviceName/ParcelFabricServer/reconstructFromSeeds — reconstructfromseedsParcelFabricService: Reconstruct from seeds
+- POST /rest/services/<serviceName/ParcelFabricServer/transferParcel — transferaparcelParcelFabricService: Transfer parcel
+- POST /rest/services/{serviceName}/ParcelFabricServer — parcelFabricService: Parcel Fabric service
+- POST /rest/services/{serviceName}/ParcelFabricServer/applyLeastSquaresAdjustment — applylsaParcelFabricService: Apply least squares adjustment
+- POST /rest/services/{serviceName}/ParcelFabricServer/assignFeaturesToRecord — assigntorecordParcelFabricServer: Assign features to record
+- POST /rest/services/{serviceName}/ParcelFabricServer/build — buildParcelFabricServer: Build
+- POST /rest/services/{serviceName}/ParcelFabricServer/changeParcelType — changeparceltypeParceFabricServer: Change Parcel Type
+- POST /rest/services/{serviceName}/ParcelFabricServer/clip — clipParcelFabricService: Clip
+- POST /rest/services/{serviceName}/ParcelFabricServer/createSeeds — createseedsParcelFabricServer: Create seeds
+- POST /rest/services/{serviceName}/ParcelFabricServer/merge — mergeParcelFabricServer: Merge
+- POST /rest/services/{serviceName}/ParcelFabricServer/mergeParcelPoints — pfMergeParcelPoints: Merge Parcel Points
+- POST /rest/services/{serviceName}/ParcelFabricServer/reassignFeaturesToRecord — reassigntorecordParcelFabricServer: Reassign Features To Record
+- POST /rest/services/{serviceName}/ParcelFabricServer/setParcelLineLabelPosition — pfSetParcelLineLabel: Set Parcel Line Label Position
+- POST /rest/services/{serviceName}/ParcelFabricServer/shrinkToSeed — pfShrinkToSeed: Shrink To Seeds
+- POST /rest/services/{serviceName}/ParcelFabricServer/updateParcelHistory — updateparcelhistoryParcelFabricServer: Update parcel history
+
+## Portal
+- GET /sharing/rest — root: sharing/rest: Root
+- GET /sharing/rest/portal/{portalID}/certificates — certificates: certificates: Certificates
+- GET /sharing/rest/portals — portalsRoot: portals: Portals Root
+
+## Portal: Living Atlas
+- GET /sharing/rest/portals/{portalID}/livingatlascatalog — livingAtlasCatalog: livingatlascatalog: Living Atlas Catalog
+- POST /sharing/rest/portals/{portalID}/livingatlascatalog/cancelScheduledInstall — cancelledScheduledInstall: /cancelScheduledInstall: Cancel Scheduled Download and Install Package
+- GET /sharing/rest/portals/{portalID}/livingatlascatalog/checkForUpdates — checkForUpdates: /checkForUpdates: Check for Updates
+- GET /sharing/rest/portals/{portalID}/livingatlascatalog/deeplearning — deepLearning: /deeplearning: Deep Learning
+- GET /sharing/rest/portals/{portalID}/livingatlascatalog/deeplearning/checkForUpdates — deepLearningCheckUpdates: /deeplearning/checkForUpdates: Check For Updates
+- POST /sharing/rest/portals/{portalID}/livingatlascatalog/deeplearning/import — importDeepLearning: /deeplearning/import: Import Deep Learning Package
+- GET /sharing/rest/portals/{portalID}/livingatlascatalog/deeplearning/installStatus — deepLearningInstallStatus: /deeplearning/installStatus: Install Status
+- POST /sharing/rest/portals/{portalID}/livingatlascatalog/deeplearning/{itemID}/update — deepLearningDelete: /deeplearning/[itemID]/delete: Delete
+- POST /sharing/rest/portals/{portalID}/livingatlascatalog/downloadAndInstallUpdates — downloadAndInstall: /downloadAndInstallUpdates: Download and Install Package
+- GET /sharing/rest/portals/{portalID}/livingatlascatalog/packageDirectory — packageDirectory: /packageDirectory: Export Package Directory
+
+## Portal: collaborations
+- GET /sharing/rest/portals/{portalID}/collaborations — collaborations: collaborations: Collaborations
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID} — collaboration: [collaborationID]: Collaboration
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/addWorkspace — addCollaborationWorkspace: /addWorkspace: Add Workspace
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/delete — deleteCollaboration: /delete: Delete Collaboration
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/exportInvitationResponse — exportCollaborationInvitationResponse: /exportInvitationResponse: Export Invitation Response
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/importInvitationResponse — importCollaborationInvitationResponse: /importInvitationResponse: Import Invitation Response
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/invitations — collaborationInvitations: invitations: Collaboration Invitations
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/invitations/{invitationID} — collaborationInvitation: /[invitationID]: Collaboration Invitation
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/invitations/{invitationID}/invalidate — invalidateCollaborationInvitation: /[invitationID]/invalidate: Invalidate Collaboration Invitation
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/invitations/{nvitationID}/refresh — refreshCollaborationInvitation: /[invitationID]/refresh: Refresh Collaboration Invitation
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/inviteParticipant — inviteCollaborationParticipant: /inviteParticipant: Invite Participant
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants — collaborationParticipants: participants: Collaboration Participants
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants/participants/{portalID}/updateInfo — updateParticipantInfo: /[portalID]/updateInfo: Update Participant Info
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants/{portalID} — collaborationParticipant: /[portalID]: Collaboration Participant
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants/{portalID}/remove — removeParticipant: /[portalID]/remove: Remove Participant
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants/{portalID}/updateItemDeletePolicy — updateItemDeletePolicy: /[portalID]/updateItemDeletePolicy: Update Item Delete Policy
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants/{portalID}/updateParticipantAccessModes — updateParticipantAccessMode: /[portalID]/updateParticipantAccessModes: Update Participant Access Modes
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/participants/{portalID}/updateWebAuthConfig — updateWebTierAuthenticationConfiguration: /[portalID]/updateWebAuthConfig: Update Web-tier Authentication Configuration
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/removeParticipation — removeCollaborationParticipation: /removeParticipation: Remove Participation
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/updateInfo — updateCollaborationInfo: /updateInfo: Update Collaboration Info
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/validateInvitationResponse — validateCollaborationInvitationResponse: /validateInvitationResponse: Validate Invitation Response
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces — collaborationWorkspaces: /workspaces: Workspaces
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID} — collaborationWorkspace: /[workspaceID]: Workspace
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/delete — deleteCollaborationWorkspace: /[workspaceID]/delete: Delete Workspace
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/removePortalGroupLink — removePortalGroupLink: /[workspaceID]/removePortalGroupLink: Remove Portal Group Link
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/schedule — schedule: /[workspaceID]/schedule: Schedule
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/schedule/delete — deleteSchedule: [workspaceID]/schedule/delete: Delete Schedule
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/schedule/pause — pause: [workspaceID]/schedule/pause: Pause Schedule
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/schedule/resume — resume: /[workspaceID]/schedule/resume: Resume Schedule
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/schedule/update — updateSchedule: /[workspaceID]/schedule/update: Update Schedule
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/sync — sync: /[workspaceID]/sync: Sync
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/syncStatus — syncStatus: /[workspaceID]/syncStatus: Sync Status
+- GET /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/syncStatus/{statusID} — syncStatusDetails: /[workspaceID]/syncStatus/[statusID]: Sync Status Details
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/updateInfo — updateCollaborationWorkspace: /[workspaceID]/updateInfo: Update Workspace Info
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/updatePortalGroupLink — updatePortalGroupLink: [workspaceID]/updatePortalGroupLink: Update Portal Group Link
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}/workspaces/{workspaceID}/updateServiceProxyConfig — updateServiceProxyConfiguration: /[workspaceID]/updateServiceProxyConfig: Update Service Proxy Config
+- POST /sharing/rest/portals/{portalID}/collaborations/{collaborationID}>/workspaces/{workspaceID}/deleteServiceProxyConfig — deleteServiceProxyConfiguration: /[workspaceID]/deleteServiceProxyConfig: Delete Service Proxy Configuration
+
+## Portal: community
+- GET /sharing/rest/community — communityRoot: community: Community Root
+- POST /sharing/rest/community/createGroup — createGroup: /createGroup: Create Group
+- GET /sharing/rest/community/self — self: /self: User Self
+
+## Portal: content
+- GET /sharing/rest/content — contentRoot: content: Content Root
+- GET /sharing/rest/content/features — featureContentRoot: features: Feature Content Root
+- GET /sharing/rest/content/features/analyze — analyze: /analyze: Analyze
+- POST /sharing/rest/content/features/generate — generate: /generate: Generate
+- GET /sharing/rest/content/listings — listingsSearch: listings: Listings Search
+- GET /sharing/rest/content/listings/{itemID} — listing: listings/[itemID]: Listing
+- POST /sharing/rest/content/listings/{itemID}/deleteProvision — deleteProvision: /deleteProvision: Delete Provision
+- POST /sharing/rest/content/listings/{itemID}/interest — expressInterest: /interest: Express Interest
+- POST /sharing/rest/content/listings/{itemID}/provisionOrgEntitlements — provisionOrganizationEntitlements: /provisionOrgEntitlements: Provision Organization Entitlements
+- POST /sharing/rest/content/listings/{itemID}/provisionUserEntitlements — provisionUserEntitlements: /provisionUserEntitlements: Provision User Entitlements
+- POST /sharing/rest/content/listings/{itemID}/purchase — purchaseListing: /purchase: Purchase Listing
+- POST /sharing/rest/content/listings/{itemID}/trial — startTrial: /trial: Start Trial
+- GET /sharing/rest/content/listings/{itemID}/userEntitlements — userEntitlements: /userEntitlements: User Entitlements
+- GET /sharing/rest/content/listings/{itemID}/userEntitlements/{userName} — userEntitlementsUsername: /userEntitlements/[userName]: User Entitlements (username)
+- POST /sharing/rest/content/updateItems — updateItemsWithContentCategories: /updateItems: Update Items
+
+## Portal: data stores
+- GET /sharing/rest/portals/{portalID}/datastores — datastore: /datastores: Data stores
+- POST /sharing/rest/portals/{portalID}/datastores/addToServer — addToServer: /addToServer: Add To Server
+- GET /sharing/rest/portals/{portalID}/datastores/allDatasets — allDatasets: /allDatasets: All Datasets
+- POST /sharing/rest/portals/{portalID}/datastores/allDatasets/deleteLayers — deleteLayers: /allDatasets/deleteLayers: Delete Layers
+- GET /sharing/rest/portals/{portalID}/datastores/allDatasets/getLayers — getLayers: /allDatasets/getLayers: Get Layers
+- POST /sharing/rest/portals/{portalID}/datastores/allDatasets/publishLayers — publishLayers: /allDatasets/publishLayers: Publish Layers
+- POST /sharing/rest/portals/{portalID}/datastores/describe — describeDatastore: /describe: Describe Data Store
+- GET /sharing/rest/portals/{portalID}/datastores/getServers — getServersForDataStore: /getServers: Get Servers for Data Store
+- POST /sharing/rest/portals/{portalID}/datastores/publish — publishDatasetsToDatastore: /publish: Publish datasets in data stores
+- POST /sharing/rest/portals/{portalID}/datastores/refreshServer — refreshServer: /refreshServer: Refresh server
+- POST /sharing/rest/portals/{portalID}/datastores/removeFromServer — removeFromServer: /removeFromServer: Remove from Server
+- POST /sharing/rest/portals/{portalID}/datastores/validate — validateDatastore: /validate: Validate Data Store
+
+## Portal: group content
+- GET /sharing/rest/content/groups/{groupID} — groupContent: [groupID]: Group Content
+- GET /sharing/rest/content/groups/{groupID}/search — groupContentSearch: /search: Group Content Search
+- POST /sharing/rest/content/groups/{groupID}/updateCategories — updateGroupItemsWithContentCategories: /updateCategories: Update Group Items with Content Categories
+
+## Portal: groups
+- GET /sharing/rest/community/groups — groupSearch: groups: Group Search
+- GET /sharing/rest/community/groups/{groupID} — group: [groupID]: Group
+- POST /sharing/rest/community/groups/{groupID}/addUsers — addUsersToGroup: /addUsers: Add Users to Group
+- GET /sharing/rest/community/groups/{groupID}/applications — groupApplications: applications: Group Applications
+- GET /sharing/rest/community/groups/{groupID}/applications/{applicationUsername} — groupApplication: /[applicationUsername]: Group Application
+- POST /sharing/rest/community/groups/{groupID}/applications/{applicationUsername}/accept — acceptGroupApplication: /[applicationUsername]/accept: Accept Group Application
+- POST /sharing/rest/community/groups/{groupID}/applications/{applicationUsername}/decline — declineGroupApplication: /[applicationUsername]/decline: Decline Group Application
+- POST /sharing/rest/community/groups/{groupID}/assignCategorySchema — assignGroupCategorySchema: /assignCategorySchema: Assign Group Category Schema
+- GET /sharing/rest/community/groups/{groupID}/categorySchema — groupCategorySchema: /categorySchema: Group Category Schema
+- POST /sharing/rest/community/groups/{groupID}/delete — deleteGroup: /delete: Delete Group
+- POST /sharing/rest/community/groups/{groupID}/deleteCategorySchema — deleteGroupCategorySchema: /deleteCategorySchema: Delete Group Category Schema
+- POST /sharing/rest/community/groups/{groupID}/deleteThumbnail — deleteGroupThumbnail: /deleteThumbnail: Delete Group Thumbnail
+- POST /sharing/rest/community/groups/{groupID}/export — exportGroupContent: /export: Export Group Content
+- POST /sharing/rest/community/groups/{groupID}/import — importGroup: /import: Import Group Content
+- POST /sharing/rest/community/groups/{groupID}/invite — inviteToGroup: /invite: Invite to Group
+- POST /sharing/rest/community/groups/{groupID}/join — joinGroup: /join: Join Group
+- POST /sharing/rest/community/groups/{groupID}/leave — leaveGroup: /leave: Leave Group
+- POST /sharing/rest/community/groups/{groupID}/protect — protectGroup: /protect: Protect Group
+- POST /sharing/rest/community/groups/{groupID}/reassign — reassignGroup: /reassign: Reassign Group
+- POST /sharing/rest/community/groups/{groupID}/removeUsers — removeUsersFromGroup: /removeUsers: Remove Users From Group
+- POST /sharing/rest/community/groups/{groupID}/unprotect — unprotectGroup: /unprotect: Unprotect Group
+- POST /sharing/rest/community/groups/{groupID}/update — updateGroup: /update: Update Group
+- GET /sharing/rest/community/groups/{groupID}/userList — groupUsersList: /userList: Group Users List
+- GET /sharing/rest/community/groups/{groupID}/users — groupUsers: /users: Group Users
+
+## Portal: identity providers
+- POST /sharing/rest/portals/{portalID}/certificates/register — registerCertificate: /register: Register SSL Certificate
+- GET /sharing/rest/portals/{portalID}/certificates/{certificateID} — certificate: /[certificateID]: Certificate
+- POST /sharing/rest/portals/{portalID}/certificates/{certificateID}/unregister — unregisterCertificate: /[certificateID]/unregister: Unregister Certificate
+- POST /sharing/rest/portals/{portalID}/certificates/{certificateID}/update — updateCertificate: /[certificateID]/update: Update SSL Certificate
+- POST /sharing/rest/portals/{portalID}/idp/register — registerIdp: /register: Register IDP
+- GET /sharing/rest/portals/{portalID}/idp/{idpID} — idp: /[idpID]: IDP
+- POST /sharing/rest/portals/{portalID}/idp/{idpID}/unregister — unregisterIdp: /[idpID]/unregister: Unregister IDP
+- POST /sharing/rest/portals/{portalID}/idp/{idpID}/update — updateIdp: /[idpID]/update: Update IDP
+
+## Portal: items
+- GET /sharing/rest/content/items/{itemID} — itemGet2: items/[itemID]: Item
+- POST /sharing/rest/content/items/{itemID}/addComment — addComment: /addComment: Add Comment
+- POST /sharing/rest/content/items/{itemID}/addRating — addRating: /addRating: Add Rating
+- GET /sharing/rest/content/items/{itemID}/comments — itemComments: comments: Item Comments
+- GET /sharing/rest/content/items/{itemID}/comments/{commentID} — itemComment: /[commentID]: Item Comment
+- POST /sharing/rest/content/items/{itemID}/comments/{commentID}/delete — deleteComment: /[commentID]/delete: Delete Comment
+- POST /sharing/rest/content/items/{itemID}/comments/{commentID}/update — updateComment: /[commentID]/update: Update Comment
+- GET /sharing/rest/content/items/{itemID}/data — itemData: /data: Item Data
+- POST /sharing/rest/content/items/{itemID}/deleteRating — deleteRating: /deleteRating: Delete Rating
+- GET /sharing/rest/content/items/{itemID}/groups — groups: /groups (item): Groups
+- GET /sharing/rest/content/items/{itemID}/info/iteminfo.xml — itemInfoFile: /info/iteminfo.xml: Item Info File
+- GET /sharing/rest/content/items/{itemID}/item.pkinfo — packageInfoFile: /item.pkinfo: Package Info File
+- GET /sharing/rest/content/items/{itemID}/rating — itemRating: /rating: Item Rating
+- GET /sharing/rest/content/items/{itemID}/relatedItems — relatedItems: /relatedItems: Related Items
+- GET /sharing/rest/content/items/{itemID}/resources — itemResources: resources: Item Resources
+- POST /sharing/rest/content/items/{itemID}/resources/export — exportItemResources: /export: Export Item Resources
+- GET /sharing/rest/content/items/{itemID}/resources/{resourceName} — itemResource: /[resourceName]: Item Resource
+- POST /sharing/rest/content/items/{itemID}/setContentStatus — setContentStatus: /setContentStatus: Set Content Status
+- POST /sharing/rest/content/items/{itemID}/share — shareItemAsGroupAdmin: /share: Share Item (as group admin)
+- POST /sharing/rest/content/items/{itemID}/unshare — unshareItemAsGroupAdmin: /unshare: Unshare Item (as group admin)
+
+## Portal: marketplace
+- GET /sharing/rest/portals/{portalID}/purchases — purchases: /purchases: Purchases
+
+## Portal: organization
+- GET /sharing/rest/content/portals/{portalID} — portalContent: /portals/[portalID]: Portal Content
+- GET /sharing/rest/portals/languages — languages: /languages: Languages
+- GET /sharing/rest/portals/regions — regions: /regions: Regions
+- GET /sharing/rest/portals/self — portalSelf: /self: Portal Self (Organization)
+- GET /sharing/rest/portals/{portalID} — portal: [portalID]: Portal
+- POST /sharing/rest/portals/{portalID}/acceptCollaborationInvitation — acceptCollaborationInvitation: /acceptCollaborationInvitation: Accept Invitation
+- POST /sharing/rest/portals/{portalID}/addResource — addResource: /addResource: Add Organization Resource
+- POST /sharing/rest/portals/{portalID}/allScheduledTasks — allScheduledTasks: /allScheduledTasks: All Scheduled Tasks (Organization)
+- POST /sharing/rest/portals/{portalID}/assignCategorySchema — assignCategorySchema: /assignCategorySchema: Assign Category Schema (Organization)
+- POST /sharing/rest/portals/{portalID}/assignMemberCategorySchema — assignMemberCategorySchema: /assignMemberCategorySchema: Assign Member Category Schema
+- POST /sharing/rest/portals/{portalID}/assignUserCredits — assignUserCredits: /assignUserCredits: Assign User Credits
+- GET /sharing/rest/portals/{portalID}/categorySchema — categorySchema: /categorySchema: Organization Category Schema
+- GET /sharing/rest/portals/{portalID}/classifcation — classification: classification: Classification
+- POST /sharing/rest/portals/{portalID}/classifcation/assignClassificationSchema — assignClassificationSchema: /assignClassificationSchema: Assign Classification Schema
+- GET /sharing/rest/portals/{portalID}/classifcation/classificationSchema — classificationSchema: /classificationSchema: Classification Schema
+- POST /sharing/rest/portals/{portalID}/classifcation/deleteClassificationSchema — deleteClassificationSchema: /deleteClassificationSchema: Delete Classification Schema
+- POST /sharing/rest/portals/{portalID}/classifcation/validateClassification — validateSchema: /validateClassification: Validate Classification
+- POST /sharing/rest/portals/{portalID}/classifcation/validateClassificationSchema — validateClassificationSchema: /validateClassificationSchema: Validate Classification Schema
+- POST /sharing/rest/portals/{portalID}/createCollaboration — createCollaboration: /createCollaboration: Create Collaboration
+- POST /sharing/rest/portals/{portalID}/createRole — createRole: /createRole: Create Role
+- GET /sharing/rest/portals/{portalID}/customersList — customersList: /customersList: Customers List
+- POST /sharing/rest/portals/{portalID}/deleteCategorySchema — deleteCategorySchema: /deleteCategorySchema: Delete Organization Category Schema
+- POST /sharing/rest/portals/{portalID}/deleteMemberCategorySchema — deleteMemberCategorySchema: /deleteMemberCategorySchema: Delete Member Category Schema
+- GET /sharing/rest/portals/{portalID}/history — portalHistory: /history: Portal History
+- GET /sharing/rest/portals/{portalID}/isServiceNameAvailable — checkServiceName: /isServiceNameAvailable: Check Service Name
+- GET /sharing/rest/portals/{portalID}/memberCategorySchema — memberCategorySchema: /memberCategorySchema: Member Category Schema
+- POST /sharing/rest/portals/{portalID}/removeResource — removeResource: /removeResource: Remove Organization Resource
+- POST /sharing/rest/portals/{portalID}/removeusers — removeUsersPortal: /removeUsers: Remove Organization Users
+- GET /sharing/rest/portals/{portalID}/resources — resourcesPortal: /resources: Resources
+- GET /sharing/rest/portals/{portalID}/securityPolicy — securityPolicy: /securityPolicy: Security Policy
+- POST /sharing/rest/portals/{portalID}/securityPolicy/update — updateSecurityPolicy: /securityPolicy/update: Update Security Policy
+- POST /sharing/rest/portals/{portalID}/setUserDefaultSettings — setUserDefaultSettings: /setUserDefaultSettings: Set User Default Settings
+- GET /sharing/rest/portals/{portalID}/settings — organizationSettings: /settings: Organization Settings
+- POST /sharing/rest/portals/{portalID}/settings/update — updateOrganizationSettings: /settings/update: Update Organization Settings
+- POST /sharing/rest/portals/{portalID}/socialProviders — socialProviders: /socialProviders: Social Providers
+- POST /sharing/rest/portals/{portalID}/socialProviders/configure — configureSocialProviders: /socialProviders/configure: Configure Social Providers
+- POST /sharing/rest/portals/{portalID}/socialProviders/remove — removeSocialProviders: /socialProviders/remove: Remove Social Providers
+- POST /sharing/rest/portals/{portalID}/unassignUserCredits — unassignUserCredits: /unassignUserCredits: Unassign User Credits
+- POST /sharing/rest/portals/{portalID}/update — update: /update: Update Organization Information
+- POST /sharing/rest/portals/{portalID}/updateUserLevel — updateUserLevel: /updateUserLevel: Update User Level
+- POST /sharing/rest/portals/{portalID}/updateUserRole — updateUserRole: /updateUserRole: Update User Role
+- GET /sharing/rest/portals/{portalID}/urls — urls: urls: URLs
+- POST /sharing/rest/portals/{portalID}/urls/generateOrgUrlMap — generateOrganizationUrlMap: /generateOrgUrlMap: Generate Organization URL Map
+- POST /sharing/rest/portals/{portalID}/urls/generateUrlReport — generateUrlReport: /generateUrlReport: Generate URL Report
+- POST /sharing/rest/portals/{portalID}/urls/updateFederatedServerUrl — updateFederatedServerUrl: /updateFederatedServerUrl: Update Federated Server URL
+- POST /sharing/rest/portals/{portalID}/urls/updatePortalUrl — updatePortalUrl: /updatePortalUrl: Update Portal URL
+- GET /sharing/rest/portals/{portalID}/userDefaultSettings — userDefaultSettings: /userDefaultSettings: User Default Settings
+- POST /sharing/rest/portals/{portalID}/userDefaultSettings/delete — deleteUserDefaultSettings: /userDefaultSettings/delete: Delete User Default Settings
+- POST /sharing/rest/portals/{portalID}/validateCollaborationInvitation — validateCollaborationInvitation: /validateCollaborationInvitation: Validate Collaboration Invitation
+
+## Portal: organization settings
+- GET /sharing/rest/portals/{portalID}/aiServices — aiServices: aiServices: AI Services
+- POST /sharing/rest/portals/{portalID}/aiServices/disable — aiServicesDisable: /disable: Disable AI Services
+- POST /sharing/rest/portals/{portalID}/aiServices/enable — aiServicesEnable: /enable: Enable AI Services
+- GET /sharing/rest/portals/{portalID}/aiServices/status — aiServicesStatus: /status: AI Services Status
+
+## Portal: organization users
+- GET /sharing/rest/portals/{portalID}/users — users: /users: Organization Users
+
+## Portal: roles
+- GET /sharing/rest/portals/{portalID}/roles — roles: roles: Roles
+- GET /sharing/rest/portals/{portalID}/roles/{roleID} — role: /[roleID]: Role
+- POST /sharing/rest/portals/{portalID}/roles/{roleID}/delete — deleteRole: /[roleID]/delete: Delete Role
+- GET /sharing/rest/portals/{portalID}/roles/{roleID}/privileges — privileges: /[roleID]/privileges: Privileges
+- POST /sharing/rest/portals/{portalID}/roles/{roleID}/setPrivileges — setRolePrivileges: /[roleID]/setPrivileges: Set Role Privileges
+- POST /sharing/rest/portals/{portalID}/roles/{roleID}/update — updateRole: /[roleID]/update: Update Role
+
+## Portal: search
+- GET /sharing/rest/portal/{portalID}/users/search — userSearchOrg: users: User Search (Organization)
+- GET /sharing/rest/search — search: search: Search
+- GET /sharing/rest/search/suggest — suggestGet2: /suggest: Suggest
+
+## Portal: servers & federation
+- GET /sharing/rest/portals/{portalID}/idp/federation — federation: federation: Federation
+- POST /sharing/rest/portals/{portalID}/idp/federation/register — registerFederation: /register: Register Federation
+- POST /sharing/rest/portals/{portalID}/idp/federation/{federationID}/unregister — unregisterFederation: /[federationID]/unregister: Unregister Federation
+- POST /sharing/rest/portals/{portalID}/idp/federation/{federationID}/update — updateFederation: /[federationID]/update: Update Federation
+- GET /sharing/rest/portals/{portalID}/servers — servers: servers: Servers
+- POST /sharing/rest/portals/{portalID}/servers/register — registerServer: /register: Register Server
+- GET /sharing/rest/portals/{portalID}/servers/{serverID} — server: /[serverID]: Server
+- POST /sharing/rest/portals/{portalID}/servers/{serverID}/unregister — unregisterServer: /[serverID]/unregister: Unregister Server
+- POST /sharing/rest/portals/{portalID}/servers/{serverID}/update — updateServer: /[serverID]/update: Update Server
+
+## Portal: user content
+- POST /sharing/rest/content/users/{userName}/addItem — addItem: /addItem: Add Item
+- POST /sharing/rest/content/users/{userName}/addRelationship — addRelationship: /addRelationship: Add Relationship
+- POST /sharing/rest/content/users/{userName}/canReassignItems — canReassignItems: /canReassignItems: Can Reassign Items
+- POST /sharing/rest/content/users/{userName}/createFolder — createFolder: /createFolder: Create Folder
+- POST /sharing/rest/content/users/{userName}/createService — createService: /createService: Create Service
+- POST /sharing/rest/content/users/{userName}/deleteItems — deleteItems: /deleteItems: Delete Items
+- POST /sharing/rest/content/users/{userName}/deleteRelationship — deleteRelationship: /deleteRelationship: Delete Relationship
+- POST /sharing/rest/content/users/{userName}/export — exportItem: /export: Export Item
+- GET /sharing/rest/content/users/{userName}/items/{itemID} — userItemLink: [itemID]: User Item (Link)
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/addPart — addItemPart: /addPart: Add Item Part
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/addResources — addResources: /addResources: Add Resources
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/canDelete — canDeleteItem: /canDelete: Can Delete Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/canReassign — canReassignItem: /canReassign: Can Reassign Item
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/canRecycle — canRecycleItem: /canRecycle: Can Recycle Item
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/canRestore — canRestore: /canRestore: Can Restore
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/cancel — cancel: /cancel: Cancel
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/commit — commitPost2: /commit: Commit
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/copy — copyItem: /copy: Copy Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/createProxies — createProxies: /createProxies: Create Proxies
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/delete — deleteItem: /delete: Delete Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/deleteInfo — deleteInfo: /deleteInfo: Delete Info
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/deleteProxies — deleteProxies: /deleteProxies: Delete Proxies
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/deleteThumbnail — deleteItemThumbnail: /deleteThumbnail: Delete Item Thumbnail
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/list — listItem: /list: List Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/move — moveItem: /move: Move Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/parts — partsPost2: /parts: Parts
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/protect — protect: /protect (item): Protect
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/proxies — proxies: /proxies: Proxies
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/proxies/{proxyID} — proxy: /[proxyID]: Proxy
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/proxies/{proxyID}/delete — deleteProxy: /delete: Delete Proxy
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/proxies/{proxyID}/update — updateProxy: /update: Update Proxy
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/reassign — reassignItem: /reassign: Reassign Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/registeredAppInfo — registeredAppInfo: /registeredAppInfo: Registered App Info
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/removeResources — removeResources: /removeResources: Remove Resources
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/resources — userItemResources: /resources: User Item Resources
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/resources/export — exportUserItemResources: /export: Export User Item Resources
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/resources/{resourceName} — userItemResource: /[resourceName]: User Item Resource
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/restore — restore: /restore: Restore
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/share — shareItemAsItemOwner: /share: Share Item (as item owner)
+- GET /sharing/rest/content/users/{userName}/items/{itemID}/status — status: /status: Status
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/unlist — unlistItem: /unlist: Unlist Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/unprotect — unprotect: /unprotect: Unprotect
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/unshare — unshareItemAsItemOwner: /unshare: Unshare Item (as item owner)
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/update — updateItem: /update: Update Item
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/updateInfo — updateInfo: /updateInfo: Update Info
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/updateResources — updateResources: /updateResources: Update Resources
+- POST /sharing/rest/content/users/{userName}/items/{itemID}/updateThumbnail — updateThumbnail: /updateThumbnail: Update Thumbnail
+- POST /sharing/rest/content/users/{userName}/moveItems — moveItems: /moveItems: Move Items
+- POST /sharing/rest/content/users/{userName}/publish — publishItem: /publish: Publish Item
+- POST /sharing/rest/content/users/{userName}/reassignItems — reassignItems: /reassignItems: Reassign Items
+- POST /sharing/rest/content/users/{userName}/replaceService — replaceService: /replaceService: Replace Service
+- POST /sharing/rest/content/users/{userName}/shareItems — shareItems: /shareItems: Share Items
+- POST /sharing/rest/content/users/{userName}/unshareItems — unshareItems: /unshareItems: Unshare Items
+- POST /sharing/rest/content/users/{userName}/{folderID}/delete — deleteFolder: /[folderID]/delete: Delete Folder
+- GET /sharing/rest/content/users/{userName}/{folderID}/items/{itemID} — folderItem: /[folderID]/items/[itemID]: folder item (link)
+- POST /sharing/rest/content/users/{userName}/{folderID}/items/{itemID}/delete — deleteFolderItem: /[folderID]/items/[itemID]/delete: Delete Folder Item
+- POST /sharing/rest/content/users/{userName}/{folderID}/updateFolder — updateFolder: /[folderID]/updateFolder: Update Folder
+- GET /sharing/rest/content/users/{username} — userContent: [username]: User Content
+- GET /sharing/rest/content/users/{username}/{folderID} — folder: [folderID]: Folder content
+
+## Portal: users
+- GET /sharing/rest/community/users — userSearch: users: User Search (Community)
+- GET /sharing/rest/community/users/{userName} — user: [userName]: User
+- POST /sharing/rest/community/users/{userName}/addResource — addUserResource: /addResource: Add User Resource
+- GET /sharing/rest/community/users/{userName}/appBundles — userAppBundles: /appBundles: User App Bundles
+- POST /sharing/rest/community/users/{userName}/delete — deleteUser: /delete: Delete User
+- POST /sharing/rest/community/users/{userName}/deleteThumbnail — deleteUserThumbnail: /deleteThumbnail: Delete User Thumbnail
+- POST /sharing/rest/community/users/{userName}/disable — disable: /disable: Disable
+- POST /sharing/rest/community/users/{userName}/enable — enable: /enable: Enable
+- GET /sharing/rest/community/users/{userName}/invitations — userInvitations: invitations: User Invitations
+- GET /sharing/rest/community/users/{userName}/invitations/{invitationID} — userInvitation: /[invitationID]: User Invitation
+- POST /sharing/rest/community/users/{userName}/invitations/{invitationID}/accept — acceptInvitation: /[invitationID]/accept: Accept Invitation
+- POST /sharing/rest/community/users/{userName}/invitations/{invitationID}/decline — declineInvitation: /[invitationID]/decline: Decline Invitation
+- GET /sharing/rest/community/users/{userName}/notifications — notifications: notifications
+- GET /sharing/rest/community/users/{userName}/notifications/{notificationID} — notification: /[notificationID]: Notification
+- POST /sharing/rest/community/users/{userName}/notifications/{notificationID}/delete — deleteNotification: /[notificationID]/delete: Delete Notification
+- GET /sharing/rest/community/users/{userName}/provisionedListings — provisionedListings: /provisionedListings: Provisioned Listings
+- POST /sharing/rest/community/users/{userName}/removeResource — removeUserResource: /removeResource: Remove User Resource
+- GET /sharing/rest/community/users/{userName}/report — reports: /report: Reports
+- GET /sharing/rest/community/users/{userName}/resources — userAppResources: /resources: User App Resources
+- GET /sharing/rest/community/users/{userName}/tags — userTags: /tags: User Tags
+- GET /sharing/rest/community/users/{userName}/tasks — allUserScheduledTasks: tasks: All User Scheduled Tasks
+- POST /sharing/rest/community/users/{userName}/tasks/createTask — createNewScheduledTask: /createTask: Create Task
+- GET /sharing/rest/community/users/{userName}/tasks/{taskID} — getSpecificTask: /[taskID]: Get Specific Task
+- POST /sharing/rest/community/users/{userName}/tasks/{taskID}/delete — deleteTask: /[taskID]/delete: Delete Task
+- POST /sharing/rest/community/users/{userName}/tasks/{taskID}/disable — disableTask: /[taskID]/disable: Disable Task
+- POST /sharing/rest/community/users/{userName}/tasks/{taskID}/enable — enableTask: /[taskID]/enable: Enable Task
+- GET /sharing/rest/community/users/{userName}/tasks/{taskID}/runs — runsForTask: /[taskID]/runs: Runs for Task
+- POST /sharing/rest/community/users/{userName}/tasks/{taskID}/runs/{runID}/delete — deleteRun: /[runID]/delete: Delete Run
+- POST /sharing/rest/community/users/{userName}/tasks/{taskID}/runs/{runID}/update — editRun: /[runID]/update: Edit Run
+- POST /sharing/rest/community/users/{userName}/tasks/{taskID}/update — editExistingTask: /update: Update Task
+- POST /sharing/rest/community/users/{userName}/update — updateUser: /update: Update User
+- GET /sharing/rest/community/users/{userName}/userLicenseType — userLicenseTypes: /userLicenseType: User License Type
+
+## Portal: webhooks
+- GET /sharing/rest/portals/{portalID}/webhooks — webhooks: webhooks: Webhooks
+- POST /sharing/rest/portals/{portalID}/webhooks/createWebhook — createWebhooks: /createWebhook: Create Webhook
+- POST /sharing/rest/portals/{portalID}/webhooks/listServiceWebhooks — listServiceWebhooks: /listServiceWebhooks: List Service Webhooks
+- POST /sharing/rest/portals/{portalID}/webhooks/settings — settings: /settings: Webhook Settings
+- POST /sharing/rest/portals/{portalID}/webhooks/settings/update — updateSettings: /settings/update: Update Webhook Settings
+- GET /sharing/rest/portals/{portalID}/webhooks/{webhookID} — listSpecificWebhook: /[webhookID]: Webhook
+- POST /sharing/rest/portals/{portalID}/webhooks/{webhookID}/activate — activateWebhook: /[webhookID]/activate: Activate Webhook
+- POST /sharing/rest/portals/{portalID}/webhooks/{webhookID}/deactivate — deactivateWebhook: /[webhookID]/deactivate: Deactivate Webhook
+- POST /sharing/rest/portals/{portalID}/webhooks/{webhookID}/delete — deleteWebhook: /[webhookID]/delete: Delete Webhook
+- GET /sharing/rest/portals/{portalID}/webhooks/{webhookID}/notificationStatus — notificationStatus: /[webhookID]/notificationStatus: Notification Status
+- POST /sharing/rest/portals/{portalID}/webhooks/{webhookID}/update — updateWebhook: /[webhookID]/update: Update Webhook
+
+## RelationalCatalogServer
+- GET /rest/services/serviceName/RelationalCatalogServer — relationalCatalogService: Relational Catalog Service
+- GET /rest/services/{serviceName}/RelationalCatalogServer/entities — entities: Entities
+- GET /rest/services/{serviceName}/RelationalCatalogServer/entities/{entityCatalogId} — entity: Entity
+- GET /rest/services/{serviceName}/RelationalCatalogServer/entities/{entityCatalogId}/fields — fields: Fields
+- GET /rest/services/{serviceName}/RelationalCatalogServer/entities/{entityCatalogId}/relatedEntities — relatedEntities: Related Entities
+
+## SceneServer
+- GET /rest/services/{serviceName}/SceneServer — sceneService: Scene Service
+- GET /rest/services/{serviceName}/SceneServer/layers/{layerID} — layerSceneService: Layer (Scene Service)
+- GET /rest/services/{serviceName}/SceneServer/layers/{layerID}/nodes/{nodeID} — nodeSceneService: Node (Scene Service)
+- GET /rest/services/{serviceName}/SceneServer/layers/{layerID}/nodes/{nodeID}/features/{featuredatabundleID} — featureSceneService: Feature (Scene Service)
+- GET /rest/services/{serviceName}/SceneServer/layers/{layerID}/nodes/{nodeID}/geometries/{geometrydatabundleID} — geometrySceneService: Geometry (Scene Service)
+- POST /rest/services/{serviceName}/SceneServer/layers/{layerID}/nodes/{nodeID}/shared — sharedSceneService: Shared (Scene Service)
+- GET /rest/services/{serviceName}/SceneServer/layers/{layerID}/nodes/{nodeID}/textures/{texturedatabundleID} — textureSceneService: Texture (Scene Service)
+- GET /rest/services/{serviceName}/SceneServer/symbols — symbolSceneService: Symbol (Scene Service)
+
+## Server info & tokens
+- GET /rest/info — serverInfo: Server Info
+- GET /rest/info/healthcheck — healthCheck: Health Check
+- POST /tokens/generateToken — generateToken: Generate Token
+
+## Services directory
+- GET /rest/services — catalog: ArcGIS Server Services Directory root
+- POST /rest/services/export — kgsExport: Export (Knowledge Graph Service)
+- GET /rest/services/services/{serviceName}/sharedTemplates — sharedTemplates: Shared Templates
+- POST /rest/services/services/{serviceName}/sharedTemplates/add — addSharedTemplate: Add (Feature Service/Shared Templates)
+- POST /rest/services/services/{serviceName}/sharedTemplates/delete — deleteSharedTemplate: Delete (Feature Service/Shared Templates)
+- GET /rest/services/services/{serviceName}/sharedTemplates/query — querySharedTemplates: Query (Feature Service/Shared Templates)
+- GET /rest/services/services/{serviceName}/sharedTemplates/templates — fsTemplate: Templates
+- POST /rest/services/services/{serviceName}/sharedTemplates/update — updateSharedTemplate: Update (Feature Service/Shared Templates)
+- GET /rest/services/{ndlayerUrl}/locate — locateService: Locate service
+- POST /rest/services/{ndlayerUrl}/locate — locateServicePost: Locate service
+- GET /rest/services/{ndlayerUrl}/retrieveTravelModes — retrieveTravelModes: Retrieve travel modes
+- POST /rest/services/{ndlayerUrl}/retrieveTravelModes — retrieveTravelModesPost: Retrieve travel modes
+- POST /rest/services/{serviceName}/{serviceType}/uploads — uploads: Uploads
+- GET /rest/services/{serviceName}/{serviceType}/uploads/info — infoUploads: Info
+- POST /rest/services/{serviceName}/{serviceType}/uploads/register — register: Register
+- POST /rest/services/{serviceName}/{serviceType}/uploads/upload — upload: Upload
+- POST /rest/services/{serviceName}/{serviceType}/uploads/{itemID}/commit — commit: Commit
+- POST /rest/services/{serviceName}/{serviceType}/uploads/{itemID}/delete — deleteUpload: Delete
+- GET /rest/services/{serviceName}/{serviceType}/uploads/{itemID}/parts — parts: Parts
+- POST /rest/services/{serviceName}/{serviceType}/uploads/{itemID}/uploadPart — uploadPart: Upload Part
+- GET /rest/services/{serviceName}/{serviceType}/uploads/{itemId} — item: Item
+
+## StreamServer
+- GET /rest/services/{serviceName}/StreamServer — streamService: Stream Services
+- GET /rest/services/{serviceName}/StreamServer/broadcast — broadcast: Broadcast
+- GET /rest/services/{serviceName}/StreamServer/subscribe — subscribe: Subscribe
+
+## SymbolServer
+- GET /rest/services/Utilities/Symbols/SymbolServer — symbolServer: Symbol Server
+- POST /rest/services/Utilities/Symbols/SymbolServer/generateImage — generateImage: Generate Image
+- POST /rest/services/Utilities/Symbols/SymbolServer/generateSymbol — generateSymbol: Generate Symbol
+
+## TopographicProductionServer
+- GET /rest/services/{serviceName}/TopographicProductionServer — topographicProductionService: Topographic Production Service
+- POST /rest/services/{serviceName}/TopographicProductionServer/addProduct — tpsAddProduct: Add Product
+- GET /rest/services/{serviceName}/TopographicProductionServer/calculateExtent — tpsCalculateExtent: Calculate Extent
+- GET /rest/services/{serviceName}/TopographicProductionServer/generateProduct — tpsGenerateProduct: Generate Product
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs — tpsJobs: Jobs
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/cancel — tpsCancel: Cancel
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/delete — tpsDelete: Delete
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/job/{requestParameters} — tpsJob: Job
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/pause — tpsPause: Pause
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/products — tpsProducts: Products
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/products/{productName} — tpsProduct: Product
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/query — tpsQuery: Query
+- GET /rest/services/{serviceName}/TopographicProductionServer/jobs/resume — tpsResume: Resume
+- GET /rest/services/{serviceName}/TopographicProductionServer/removeProduct — tpsRemoveProduct: Remove Product
+- GET /rest/services/{serviceName}/TopographicProductionServer/updateProduct — tpsUpdateProduct: Update Product
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows — tpsWorkflows: Workflows
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/projects — tpsProjects: Projects
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/addProject — tpsAddProject: Add Project
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/addProject — tpsAddProjectPost: Add Project
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/queryProject — tpsQueryProject: Query Project
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/queryProject — tpsQueryProjectPost: Query Project
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/removeProject — tpsRemoveProject: Remove Project
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/removeProject — tpsRemoveProjectPost: Remove Project
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/updateProject — tpsUpdateProject: Update Project
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/projects/updateProject — tpsUpdateProjectPost: Update Project
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskGroups — tpsTaskGroups: Task Groups
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/addTaskGroup — tpsAddTaskGroup: Add Task Group
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/addTaskGroup — tpsAddTaskGroupPost: Add Task Group
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/createTaskGroupJob — tpsCreateTaskGroupJob: Create Task Group Job
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/createTaskGroupJob — tpsCreateTaskGroupJobPost: Create Task Group Job
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/getTaskGroups — tpsGetTaskGroups: Get Task Groups
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/getTaskGroups — tpsGetTaskGroupsPost: Get Task Groups
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/hasNextTask — tpsHasNextTask: Has Next Task
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/hasNextTask — tpsHasNextTaskPost: Has Next Task
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/insertTasks — tpsInsertTasks: Insert Tasks
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/insertTasks — tpsInsertTasksPost: Insert Tasks
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/removeTaskGroup — tpsRemoveTaskGroup: Remove Task Group
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/removeTaskGroup — tpsRemoveTaskGroupPost: Remove Task Group
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/updateTaskGroup — tpsUpdateTaskGroup: Update Task Group
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/taskgroups/updateTaskGroup — tpsUpdateTaskGroupPost: Update Task Group
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/tasks — tpsTasks: Tasks
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/tasks/executeTaskJob — tpsExecuteTaskJob: Execute Task Job
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/tasks/executeTaskJob — tpsExecuteTaskJobPost: Execute Task Job
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/tasks/getTask — tpsGetTask: Get Task
+- GET /rest/services/{serviceName}/TopographicProductionServer/workflows/tasks/updateTask — tpsUpdateTask: Update Task
+- POST /rest/services/{serviceName}/TopographicProductionServer/workflows/tasks/updateTask — tpsUpdateTaskPost: Update Task
+
+## TraceNetworkServer
+- GET /rest/services/{serviceName}/TraceNetworkServer — traceNetworkService: Trace Network service
+- POST /rest/services/{serviceName}/TraceNetworkServer — traceNetworkServicePost: Trace Network service
+- POST /rest/services/{serviceName}/TraceNetworkServer/trace — traceTraceNetworkServer: Trace
+- GET /rest/services/{serviceName}/TraceNetworkServer/traceConfigurations — traceconfigurationsTraceNetworkServer: Trace Configurations
+- POST /rest/services/{serviceName}/TraceNetworkServer/traceConfigurations — traceconfigurationsTraceNetworkServerPost: Trace Configurations
+- POST /rest/services/{serviceName}/TraceNetworkServer/traceConfigurations/alter — alterTraceConfigurationTraceNetworkServer: Alter (Trace Configurations)
+- POST /rest/services/{serviceName}/TraceNetworkServer/traceConfigurations/create — createTraceconfigurationTraceNetworkServer: Create (Trace Configurations)
+- POST /rest/services/{serviceName}/TraceNetworkServer/traceConfigurations/delete — deleteTraceConfigurationTraceNetworkServer: Delete (Trace Configurations)
+- GET /rest/services/{serviceName}/TraceNetworkServer/traceConfigurations/query — queryTraceconfigurationsTraceNetworkServer: Query (Trace Configurations)
+- POST /rest/services/{serviceName}/TraceNetworkServer/validateNetworkTopology — validatenetworktopologyTraceNetworkServer: Validate Network Topology
+
+## UtilityNetworkServer
+- GET /rest/services/{serviceName}/UtilityNetworkServer — utilityNetworkService: Utility Network service
+- POST /rest/services/{serviceName}/UtilityNetworkServer — utilityNetworkServicePost: Utility Network service
+- GET /rest/services/{serviceName}/UtilityNetworkServer/associations — associationsUtilityNetworkServer: Associations
+- POST /rest/services/{serviceName}/UtilityNetworkServer/associations — associationsUtilityNetworkServerPost: Associations
+- GET /rest/services/{serviceName}/UtilityNetworkServer/associations/query — queryAssociationsUtilityNetworkServer: Query (Associations)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/associations/query — queryAssociationsUtilityNetworkServerPost: Query (Associations)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/associations/traverse — traverseAssociationsUtilityNetworkServer: Traverse (Associations)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits — circuitsUtilityNetworkServer: Circuits
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits — circuitsUtilityNetworkServerPost: Circuits
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits/alter — alterCircuitsUtilityNetworkServer: Alter (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits/alter — alterCircuitsUtilityNetworkServerPost: Alter (Circuits)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits/create — createCircuitsUtilityNetworkServer: Create (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits/create — createCircuitsUtilityNetworkServerPost: Create (Circuits)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits/delete — deleteCircuitsUtilityNetworkServer: Delete (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits/delete — deleteCircuitsUtilityNetworkServerPost: Delete (Circuits)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits/export — exportCircuitsUtilityNetworkServer: Export (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits/export — exportCircuitsUtilityNetworkServerPost: Export (Circuits)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits/query — queryCircuitsUtilityNetworkServer: Query (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits/query — queryCircuitsUtilityNetworkServerPost: Query (Circuits)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/circuits/verify — verifyCircuitsUtilityNetworkServer: Verify (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/circuits/verify — verifyCircuitsUtilityNetworkServerPost: Verify (Circuits)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/disableSubnetworkController — disablesubnetworkcontrollerUtilityNetworkServer: Disable Subnetwork Controller
+- POST /rest/services/{serviceName}/UtilityNetworkServer/disableTopology — disabletopologyUtilityNetworkServer: Disable Topology
+- POST /rest/services/{serviceName}/UtilityNetworkServer/enableSubnetworkController — enablesubnetworkcontrollerUtilityNetworkServer: Enable Subnetwork Controller
+- POST /rest/services/{serviceName}/UtilityNetworkServer/enableTopology — enabletopologyUtilityNetworkServer: Enable Topology
+- POST /rest/services/{serviceName}/UtilityNetworkServer/exportSubnetwork — exportsubnetworkUtilityNetworkServer: Export Subnetwork
+- GET /rest/services/{serviceName}/UtilityNetworkServer/locations — locationsUtilityNetworkServer: Locations
+- POST /rest/services/{serviceName}/UtilityNetworkServer/locations — locationsUtilityNetworkServerPost: Locations
+- GET /rest/services/{serviceName}/UtilityNetworkServer/locations/query — queryLocationsUtilitynetworkServer: Query (Locations)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/locations/query — queryLocationsUtilitynetworkServerPost: Query (Locations)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/queryNetworkMoments — querynetworkmomentsUtilityNetworkServer: Query Network Moments
+- POST /rest/services/{serviceName}/UtilityNetworkServer/queryNetworkMoments — querynetworkmomentsUtilityNetworkServerPost: Query Network Moments
+- POST /rest/services/{serviceName}/UtilityNetworkServer/synthesizeAssociationGeometries — synthesizeassociationgeometriesUtilityNetworkServer: Synthesize Association Geometries
+- POST /rest/services/{serviceName}/UtilityNetworkServer/trace — traceUtilityNetworkServer: Trace
+- GET /rest/services/{serviceName}/UtilityNetworkServer/traceConfigurations — traceconfigurationsUtilityNetworkServer: Trace Configurations
+- POST /rest/services/{serviceName}/UtilityNetworkServer/traceConfigurations — traceconfigurationsUtilityNetworkServerPost: Trace Configurations
+- POST /rest/services/{serviceName}/UtilityNetworkServer/traceConfigurations/alter — alterTraceconfigurationUtilityNetworkServer: Alter (Trace Configurations)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/traceConfigurations/create — createTraceconfigurationUtilityNetworkServer: Create (Trace Configurations)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/traceConfigurations/delete — deleteTraceconfigurationUtilityNetworkServer: Delete (Trace Configurations)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/traceConfigurations/query — queryTraceconfigurationUtilityNetworkServer: Query (Trace Configurations)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers — unitidentifiersUtilityNetworkServer: Unit Identifiers
+- POST /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers — unitidentifiersUtilityNetworkServerPost: Unit Identifiers
+- GET /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/query — queryUnitIdentifiersUtilityNetworkServer: Query (Unit Identifiers)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/query — queryUnitIdentifiersUtilityNetworkServerPost: Query (Unit Identifiers)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/reserve — reserveUnitIdentifiersUtilityNetworkServer: Reserve (Unit Identifiers)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/reserve — reserveUnitIdentifiersUtilityNetworkServerPost: Reserve (Unit Identifiers)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/reset — resetUnitIdentifiersUtilityNetworkServer: Reset (Unit Identifiers)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/reset — resetUnitIdentifiersUtilityNetworkServerPost: Reset (Unit Identifiers)
+- GET /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/resize — resizeUnitIdentifiersUtilityNetworkServer: Resize (Unit Identifiers)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/unitIdentifiers/resize — resizeUnitIdentifiersUtilityNetworkServerPost: Resize (Unit Identifiers)
+- POST /rest/services/{serviceName}/UtilityNetworkServer/updateIsConnected — updateisconnectedUtilityNetworkServer: Update Is Connected
+- POST /rest/services/{serviceName}/UtilityNetworkServer/updateSubnetwork — updatesubnetworkUtilityNetworkServer: Update Subnetwork
+- POST /rest/services/{serviceName}/UtilityNetworkServer/validateNetworkTopology — validatenetworktopologyUtiilityNetworkServer: Validate Network Topology
+
+## ValidationServer
+- GET /rest/services/{serviceName}/ValidationServer — validationServer: Validation Service
+- POST /rest/services/{serviceName}/ValidationServer/evaluate — evaluate: Evaluate
+- POST /rest/services/{serviceName}/ValidationServer/updateErrors — updateErrors: Update Errors
+- POST /rest/services/{serviceName}/ValidationServer/writeErrors — writeErrors: Write Errors
+
+## VectorTileServer
+- GET /rest/services/{serviceName}/VectorTileServer — vectorTileService: Vector Tile Service
+- POST /rest/services/{serviceName}/VectorTileServer/exportTiles — exportTilesVectorTileService: Export Tiles
+- GET /rest/services/{serviceName}/VectorTileServer/resources/fonts/{fontstack}/{range}.pbf — vectorTileFont: Vector Tile Font
+- GET /rest/services/{serviceName}/VectorTileServer/resources/info — vectorTileResourceInfo: Vector Tile Resource Info
+- GET /rest/services/{serviceName}/VectorTileServer/resources/sprites/sprite.json — vectorTileSprite: Vector Tile Sprite
+- GET /rest/services/{serviceName}/VectorTileServer/resources/style — vectorTileStyle: Vector Tile Style
+- GET /rest/services/{serviceName}/VectorTileServer/tile/{level}/{row}/{column}.pbf — vectorTile: Vector Tile
+- GET /rest/services/{serviceName}/VectorTileServer/tilemap — vectorTilemap: Vector Tilemap
+- GET /rest/services/{serviceName}/VectorTileServer/tilemap/{level}/{row}/{column}/{width}/{height} — tileMap: Tile Map
+
+## VersionManagementServer
+- GET /rest/services/{serviceName}/VersionManagementServer — versionManagementService: Version Management Service
+- POST /rest/services/{serviceName}/VersionManagementServer/create — create: Create
+- POST /rest/services/{serviceName}/VersionManagementServer/delete — delete: Delete
+- POST /rest/services/{serviceName}/VersionManagementServer/lockInfos — lockInfos: Lock Infos
+- GET /rest/services/{serviceName}/VersionManagementServer/locks — locks: Locks
+- POST /rest/services/{serviceName}/VersionManagementServer/purgeLock — purgeLock: Purge Lock
+- POST /rest/services/{serviceName}/VersionManagementServer/versionInfos — versionInfos: Version Infos
+- GET /rest/services/{serviceName}/VersionManagementServer/versions — versions: Versions
+- GET /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid} — version: Version
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/alter — alter: Alter
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/conflicts — conflicts: Conflicts
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/deleteForwardEdits — deleteForwardEdits: Delete Forward Edits
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/differences — differences: Differences
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/inspectConflicts — inspectConflicts: Inspect Conflicts
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/partialPost — partialPost: Partial Post
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/post — post: Post
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/reconcile — reconcile: Reconcile
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/restoreRows — restoreRows: Restore Rows
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/startEditing — startEditing: Start Editing
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/startReading — startReading: Start Reading
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/stopEditing — stopEditing: Stop Editing
+- POST /rest/services/{serviceName}/VersionManagementServer/versions/{versionGuid}/stopReading — stopReading: Stop Reading
+
+## traceNetworkServer
+- GET /rest/services/{serviceName}/traceNetworkServer/queryNetworkMoments — querynetworkmomentsTraceNetworkServer: Query Network Moments
+- POST /rest/services/{serviceName}/traceNetworkServer/queryNetworkMoments — querynetworkmomentsTraceNetworkServerPost: Query Network Moments
