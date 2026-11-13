@@ -3,13 +3,95 @@
   "npm": "@openfn/language-arcgis",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/",
-    "https://developers.arcgis.com/rest/services-reference/enterprise/add-features/",
-    "https://developers.arcgis.com/rest/services-reference/enterprise/generate-token/",
-    "https://developers.arcgis.com/rest/geocode/api-reference/geocoding-find-address-candidates.htm",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-arcgis/ast.json"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "attempts": [
+    {
+      "kind": "docs",
+      "url": "https://developers.arcgis.com/sitemap-index.xml",
+      "result": "used",
+      "note": "Esri's REST reference is a Gatsby site whose per-page page-data.json carries machine-readable restInfoMetadata (URL segments + HTTP methods + required capability + version introduced). All 2566 reference pages of the rest/* sitemaps were fetched; 1125 in scope (services-reference/enterprise + online, users-groups-and-items, routing, packaging, spatial/raster/geoanalytics tasks) had REST metadata, 1120 resolved to a concrete path, and each page's HTML 'Request parameters' table was parsed for parameter names and descriptions. This inventory is the backbone of openapi.json."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://places-api.arcgis.com/arcgis/rest/services/places-service/v1/specification/open-api-v3-0",
+      "result": "used",
+      "note": "Esri-published OpenAPI 3.0.3 for the places service (5 ops, 24 schemas), committed verbatim as upstream-places.yaml, sha256:4d0c0e862c839683027268fe631dbb101618faabd69086eb4107e793d43a4f38."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://elevation-api.arcgis.com/arcgis/rest/services/elevation-service/v1/specification/open-api-v3-0",
+      "result": "used",
+      "note": "Esri-published OpenAPI 3.0.3 for the elevation service (2 ops), committed verbatim as upstream-elevation.yaml, sha256:d1571e7c4fda212b1c11e1471b7cbd52cbb52a6d56fbcd8e969b1c4478d2cc49."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/specification/open-api-v3-0",
+      "result": "used",
+      "note": "Esri-published OpenAPI 3.0.3 for basemap styles v2 (162 ops), committed verbatim as upstream-basemap-styles.yaml, sha256:e2b383b19143167b6e074faae962ba5251ed398c4afe33706053f8689dd7c5f1."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/specification/open-api-v3-0",
+      "result": "used",
+      "note": "Esri-published OpenAPI 3.0.3 for static basemap tiles (45 ops), committed verbatim as upstream-static-basemap-tiles.yaml, sha256:8517cd06136545b9fa6f43863fe77aa1e560b01d0b3008cf01f3763bd5682f76."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer/specification/open-api-v3-0",
+      "result": "not-found",
+      "note": "The same specification/open-api-v3-0 route on the geocoding and routing hosts (and basemaps-api) returns 403 'Services Directory disabled' / 499 'Token Required': only the four location services above publish OpenAPI. The core ArcGIS Server/Enterprise and Online REST API has no machine spec; an Esri Community idea asking for Swagger on ArcGIS Server REST endpoints is still open, and the OGCFeatureServer /api document only covers OGC API - Features."
+    },
+    {
+      "kind": "github-org",
+      "url": "https://github.com/Esri",
+      "result": "not-found",
+      "note": "Esri's GitHub org (arcgis-rest-js, arcgis-python-api, etc.) carries SDKs, not a REST spec; @esri/arcgis-rest-places ships generated types from the places spec only."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://apis.io/apis/esri-arcgis/",
+      "result": "rejected",
+      "note": "Third-party OpenAPI renderings of Esri's Portal and Geocoding APIs (apis.io / API Evangelist) are not vendor-published and disagree with Esri's own base paths; not used."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No Esri/ArcGIS entry among 2529 apis.guru APIs."
+    },
+    {
+      "kind": "postman",
+      "result": "not-found",
+      "note": "No Esri-owned Postman workspace or SwaggerHub API for the ArcGIS REST APIs."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The arcgis adaptor's public surface is empty (it re-exports only language-common helpers plus http/util), so there are no adaptor-specific operations to mirror. This spec documents the Esri ArcGIS REST API that arcgis jobs target via generic HTTP: generateToken, Feature Service layer query, addFeatures/updateFeatures/deleteFeatures, and geocoding findAddressCandidates. Server URL is a representative base; real deployments use per-org services*.arcgis.com hosts (and www.arcgis.com/sharing/rest for tokens). Authored from Esri's public REST API reference."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://developers.arcgis.com/rest/",
+    "https://developers.arcgis.com/rest/services-reference/enterprise/sitemap-0.xml",
+    "https://developers.arcgis.com/rest/services-reference/online/sitemap-0.xml",
+    "https://developers.arcgis.com/rest/users-groups-and-items/sitemap-0.xml",
+    "https://developers.arcgis.com/rest/services-reference/enterprise/page-data/query-feature-service-layer/page-data.json",
+    "https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/",
+    "https://developers.arcgis.com/rest/services-reference/enterprise/apply-edits-feature-service-layer/",
+    "https://developers.arcgis.com/rest/users-groups-and-items/search/",
+    "https://developers.arcgis.com/rest/users-groups-and-items/item/",
+    "https://developers.arcgis.com/rest/users-groups-and-items/generate-token/",
+    "https://places-api.arcgis.com/arcgis/rest/services/places-service/v1/specification/open-api-v3-0",
+    "https://elevation-api.arcgis.com/arcgis/rest/services/elevation-service/v1/specification/open-api-v3-0",
+    "https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/specification/open-api-v3-0",
+    "https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/specification/open-api-v3-0",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-arcgis/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/arcgis"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The arcgis adaptor (v1.1.3) is still the adaptor template: Adaptor.js only re-exports language-common helpers (fn, each, util, …), ast.json lists no operations, the configuration schema is empty, and the unused Utils.js request helper would send Basic auth to a configuration.baseUrl. So 'the API it reaches' is whatever ArcGIS REST endpoint a job calls with util.request: this spec covers Esri's ArcGIS REST APIs as documented at developers.arcgis.com/rest, replacing a 6-operation hand-written subset. 1400 operations / 1309 paths: 868 Services Directory operations (/rest/services for every service type, /rest/admin for ArcGIS Online hosted-service admin, /rest/info, /tokens) and 318 portal Sharing API operations (/sharing/rest), generated mechanically from the restInfoMetadata and Request-parameters tables of 1120 Esri reference pages, plus 214 operations from Esri's own OpenAPI documents for the places, elevation, basemap-styles and static-basemap-tiles services (committed verbatim as upstream-*.yaml; paths mounted under /rest/services/<service>/<version>, clashing component names prefixed with the area). Each generated operation links its reference page via externalDocs; parameters are typed as strings (form-encoded for POST) because the reference tables give names and prose, not types. Response bodies are modelled from the reference pages' example JSON only for the core objects a data workflow touches (FeatureSet/Feature/Field, EditResults, Layer, FeatureService, ServiceCatalog, AddressCandidates, Token/OAuthToken, Item, User, Group, search results, UserContent, Portal); every other operation returns a generic ArcGISResponse rather than invented fields. Best-effort/partial-docs because: (1) 521 reference pages state no HTTP method, so GET (resources) or POST (verb-named operations) is assumed and flagged in the description; (2) five pages could not be resolved to a path; (3) the ArcGIS Enterprise administration APIs (Server /admin, Portal /portaladmin, Enterprise, Notebook Server and Mission Server admin: ~930 more reference pages) are deliberately not modelled, as installation-administration surfaces outside the data APIs."
 }

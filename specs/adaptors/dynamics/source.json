@@ -3,12 +3,60 @@
   "npm": "@openfn/language-dynamics",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "csdl",
+      "url": "https://{org}.crm.dynamics.com/api/data/v9.2/$metadata",
+      "result": "not-found",
+      "note": "Dataverse's machine spec is each environment's own $metadata CSDL, served only to an authenticated client of that tenant; there is no public instance to capture from, and a tenant's CSDL would include that tenant's custom tables."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/MicrosoftDocs/powerapps-docs-web-api-ref-pr",
+      "result": "not-found",
+      "note": "The Web API reference pages are generated from per-type YAML in this repo (linked from each page's edit button), but the repo is private; no public mirror. No Microsoft-published OpenAPI or CSDL for Dataverse found in the microsoft / MicrosoftDocs GitHub orgs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "rejected",
+      "note": "Only azure.com:dynamicstelemetry, an Azure Resource Manager API unrelated to the Dataverse Web API."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/openapi.yaml",
+      "result": "rejected",
+      "note": "Microsoft Graph's OpenAPI (used for msgraph) does not include Dataverse; Dataverse is a separate OData service per environment."
+    },
+    {
+      "kind": "docs",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/toc.json",
+      "result": "used",
+      "note": "The Learn table of contents for the Web API reference (itself generated from the Dataverse CSDL) enumerates 635 EntityTypes, 317 Actions, 127 Functions, 70 Query Functions, 401 ComplexTypes, 52 EnumTypes and 32 Metadata EntityTypes; all 1,634 pages were fetched and parsed mechanically (entity set path, primary key, supported operations, property tables, bindings, parameters, return types)."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
   "sources": [
+    "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/about",
+    "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/toc.json",
+    "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/account",
+    "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/whoami",
+    "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/winopportunity",
+    "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-metadata-web-api",
     "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/overview",
     "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/perform-operations-web-api",
     "https://cdn.jsdelivr.net/npm/@openfn/language-dynamics/ast.json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/dynamics"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Dynamics adaptor uses the Dataverse OData v4 Web API (base /api/data/v9.2). Adaptor operations createEntity/query/updateEntity/deleteEntity confirmed from the compiled bundle (ast.json exposes no named operations). Modelled with the common accounts and contacts entity sets; other Dataverse entity sets follow the same CRUD pattern. Server URL is a placeholder org host."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Microsoft Dataverse (Dynamics 365) Web API v9.2, an OData v4 service per environment. The dynamics adaptor (v0.6.3; ast.json lists no named operations) builds {resource}/api/data/v{apiVersion}/{entityName}[({id})] and issues POST (createEntity), GET with an OData query string (query), PATCH (updateEntity) and DELETE (deleteEntity), so any entity set is reachable. Microsoft's machine spec is the per-tenant $metadata CSDL, which needs an authenticated environment, so this spec is generated from Microsoft's Web API reference, which is itself rendered from the standard CSDL: every one of its 1,634 pages was parsed mechanically. Result: 3,304 operations over 1,676 paths and 1,757 schemas (was a 10-operation accounts/contacts stub): list/create/retrieve/update/delete on all 632 standard entity sets, as each page's 'Operations supported' allows; all 317 actions and 127 functions, bound ones once per bound entity set (POST/GET {set}({id})/Microsoft.Dynamics.CRM.<Name>, functions with OData parameter aliases); the EntityDefinitions/RelationshipDefinitions/GlobalOptionSetDefinitions metadata sets; $batch and $metadata. Entity schemas carry every documented column and lookup (_x_value) property; navigation properties are listed in each schema's description rather than modelled, to keep the closure bounded. Best-effort because the source is documentation: per-environment custom tables/columns, option-set values and the 70 query functions (usable only inside $filter, not endpoints) are not modelled, and the metadata entity sets come from the table-definitions guide rather than an entity-set path."
 }
