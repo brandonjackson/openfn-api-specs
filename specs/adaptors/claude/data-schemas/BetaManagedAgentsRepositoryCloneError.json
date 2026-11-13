@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsRepositoryCloneError",
+  "title": "BetaManagedAgentsRepositoryCloneError",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsRepositoryCloneError",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "The repository could not be cloned.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "message",
+    "retry_status",
+    "repository_url"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "repository_clone_error",
+      "examples": [
+        "repository_clone_error"
+      ]
+    },
+    "message": {
+      "description": "Human-readable error description.",
+      "type": "string",
+      "examples": [
+        "The repository could not be cloned."
+      ]
+    },
+    "retry_status": {
+      "description": "What the client should do next. Always `retrying`: the session keeps running without the repository.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsRetryStatus.json"
+        }
+      ],
+      "examples": [
+        {
+          "type": "retrying"
+        }
+      ]
+    },
+    "repository_url": {
+      "description": "URL of the repository that could not be cloned. Null when it could not be identified.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "https://github.com/example-org/example-repo"
+      ]
+    }
+  },
+  "example": {
+    "type": "repository_clone_error",
+    "message": "The repository could not be cloned.",
+    "retry_status": {
+      "type": "retrying"
+    },
+    "repository_url": "https://github.com/example-org/example-repo"
+  }
+}

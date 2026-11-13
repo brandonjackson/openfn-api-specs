@@ -11,8 +11,9 @@ the operating manual for keeping the copy correct and current.
 days.** `manifest.json` carries the effective `completeness` and `coverage` for
 every adaptor, and `pnpm specs report` buckets them. Both are what you steer by:
 a run that doesn't move an adaptor toward `ok` hasn't moved the north star.
-Today 39 of 104 are complete; 24 are best effort; 41 make no claim at all, and
-"no claim" counts as incomplete, not as fine.
+As of 2026-11-13, 55 of 104 are `ok`; 47 are best effort with a stated reason
+(docs-only, private API, defunct vendor); 2 are declared subsets; none make no
+claim. "No claim" counts as incomplete, not as fine.
 
 This spec is also **the denominator for the two sibling repos**, which is why
 getting it right matters beyond this repo:

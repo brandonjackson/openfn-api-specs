@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionThread",
+  "title": "BetaManagedAgentsSessionThread",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionThread",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An execution thread within a `session`. Each session has one primary thread plus zero or more child threads.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "session_id",
+    "workflow_run_id",
+    "status",
+    "agent",
+    "parent_thread_id",
+    "created_at",
+    "updated_at",
+    "archived_at",
+    "usage",
+    "stats"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "session_thread",
+      "examples": [
+        "session_thread"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for this thread.",
+      "type": "string",
+      "examples": [
+        "sthr_011CZkZVWa6oJjw1rgXZpnBt"
+      ]
+    },
+    "session_id": {
+      "description": "The session this thread belongs to.",
+      "type": "string",
+      "examples": [
+        "sesn_011CZkZAtmR3yMPDzynEDxu7"
+      ]
+    },
+    "workflow_run_id": {
+      "description": "Identifier of the workflow run that created the thread, or `null` for any other thread.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "status": {
+      "description": "Current execution status of the thread.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionThreadStatus.json"
+        }
+      ],
+      "examples": [
+        "idle"
+      ]
+    },
+    "agent": {
+      "description": "Resolved agent definition for this thread. Snapshot of the agent at thread creation time.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionThreadAgentEntry.json"
+        }
+      ],
+      "examples": [
+        {
+          "type": "agent",
+          "id": "agent_011CZkYqphY8vELVzwCUpqiQ",
+          "version": 1,
+          "name": "Researcher",
+          "description": "A focused research subagent.",
+          "model": {
+            "id": "claude-opus-5-5",
+            "speed": "standard"
+          },
+          "system": "You are a research subagent that gathers and summarises sources for the coordinating agent.",
+          "tools": [
+            {
+              "type": "agent_toolset_20260401",
+              "default_config": {
+                "enabled": true,
+                "permission_policy": {
+                  "type": "always_ask"
+                }
+              },
+              "configs": []
+            }
+          ],
+          "mcp_servers": [],
+          "skills": [],
+          "execution_identity": {
+            "type": "service_account"
+          }
+        }
+      ]
+    },
+    "parent_thread_id": {
+      "description": "Parent thread that spawned this thread. Null for the primary thread.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "created_at": {
+      "description": "When the thread was created.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    },
+    "updated_at": {
+      "description": "When the thread was last updated.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    },
+    "archived_at": {
+      "description": "When the thread was archived. Null if not archived.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "usage": {
+      "description": "Cumulative token usage for this thread. Null until the thread's first idle transition.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionThreadUsage.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        {
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          }
+        }
+      ]
+    },
+    "stats": {
+      "description": "Timing statistics for this thread. Null until the thread's first status transition.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionThreadStats.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        {
+          "duration_seconds": 0,
+          "startup_seconds": 0,
+          "active_seconds": 0
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "session_thread",
+    "id": "sthr_011CZkZVWa6oJjw1rgXZpnBt",
+    "session_id": "sesn_011CZkZAtmR3yMPDzynEDxu7",
+    "workflow_run_id": null,
+    "status": "idle",
+    "agent": {
+      "type": "agent",
+      "id": "agent_011CZkYqphY8vELVzwCUpqiQ",
+      "version": 1,
+      "name": "Researcher",
+      "description": "A focused research subagent.",
+      "model": {
+        "id": "claude-opus-5-5",
+        "speed": "standard"
+      },
+      "system": "You are a research subagent that gathers and summarises sources for the coordinating agent.",
+      "tools": [
+        {
+          "type": "agent_toolset_20260401",
+          "default_config": {
+            "enabled": true,
+            "permission_policy": {
+              "type": "always_ask"
+            }
+          },
+          "configs": []
+        }
+      ],
+      "mcp_servers": [],
+      "skills": [],
+      "execution_identity": {
+        "type": "service_account"
+      }
+    },
+    "parent_thread_id": null,
+    "created_at": "2026-03-15T10:00:00Z",
+    "updated_at": "2026-03-15T10:00:00Z",
+    "archived_at": null,
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      }
+    },
+    "stats": {
+      "duration_seconds": 0,
+      "startup_seconds": 0,
+      "active_seconds": 0
+    }
+  }
+}

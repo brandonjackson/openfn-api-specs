@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaClaudeTagSlackChannel",
+  "title": "BetaClaudeTagSlackChannel",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaClaudeTagSlackChannel",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A Slack channel set up for Claude Tag, with the settings it stores or, with `include_inherited`, the settings that apply in it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "slack",
+    "settings",
+    "sources",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "slack_channel"
+    },
+    "id": {
+      "description": "The channel's identifier. Starts with `slch_`. It does not change for as long as the channel is set up, with one exception: a channel that is not configured can get a new one. A channel that is removed and set up again also has a new one. The old one keeps returning 404; look the channel up by its Slack identifiers for the new one.",
+      "type": "string"
+    },
+    "slack": {
+      "description": "Slack's own identifiers for the channel.",
+      "allOf": [
+        {
+          "$ref": "BetaClaudeTagSlackChannelIdentifiers.json"
+        }
+      ]
+    },
+    "settings": {
+      "description": "What the channel itself stores or, with `include_inherited`, what applies in it. `sources` says which.",
+      "allOf": [
+        {
+          "$ref": "BetaClaudeTagSettings.json"
+        }
+      ]
+    },
+    "sources": {
+      "description": "For each setting, the settings level its value in `settings` comes from.",
+      "allOf": [
+        {
+          "$ref": "BetaClaudeTagSettingSources.json"
+        }
+      ]
+    },
+    "created_at": {
+      "description": "Time the channel was set up, by whichever route. It does not change for as long as `id` does not.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "updated_at": {
+      "description": "Time Claude Tag's record of the channel last changed. It moves on every change to a setting, and can also move when something no response holds changes, so a later value says to read the channel again, not that a setting changed. Attaching or detaching a Bundle does not by itself move it.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    }
+  }
+}

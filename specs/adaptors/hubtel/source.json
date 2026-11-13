@@ -3,11 +3,61 @@
   "npm": "@openfn/language-hubtel",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://businessdocs-developers.hubtel.com/docs/api-reference-messaging-1",
-    "https://help.hubtel.com/hubtel-for-developers/sms-api/send-sms-messages-with-quick-send-api",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-hubtel/ast.json"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "docs-site",
+      "url": "https://developers.hubtel.com/api/_content/query",
+      "result": "used",
+      "note": "developers.hubtel.com is a Nuxt Content site; its content API returns each docs page as a JSON AST including code samples. The search index (/api/_content/search-*) lists 32 pages; the messaging pages (business notification_apis/sms, identical lending_apis/sms, personal messaging/sms and messaging/otp) and the authentication pages were read in full."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://sms.hubtel.com/swagger/v1/swagger.json",
+      "result": "not-found",
+      "note": "403 Forbidden (also /swagger/index.html) on sms.hubtel.com, smsc.hubtel.com and api-otp.hubtel.com, so a Swagger document may exist but is not public; /openapi.json, /v1/swagger.json and /api-docs are 404."
+    },
+    {
+      "kind": "docs-site",
+      "url": "https://businessdocs-developers.hubtel.com/docs/api-reference-messaging-1",
+      "result": "rejected",
+      "note": "the docs host the July stub was written from no longer resolves (proxy CONNECT 502); its content now lives on developers.hubtel.com."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/hubtel",
+      "result": "not-found",
+      "note": "Hubtel's org has checkout/USSD SDKs and old hand-written SMS SDKs (hubtel-sms-java, hubtel-sms-csharp, for the retired api.hubtel.com/v1 messages API); no OpenAPI/Swagger file."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no hubtel entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=hubtel",
+      "result": "not-found",
+      "note": "no Hubtel-owned public workspace linked from the docs; the docs pages embed curl/PHP/Python/JS snippets instead."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Hubtel has no public OpenAPI document. Authored a focused OpenAPI 3.0.3 from Hubtel's Quick Send SMS docs. The adaptor's sendSMS posts to /messages/send (confirmed in dist/index.cjs); request() is a generic passthrough not modeled as a distinct path. Success response shape {Status, MessageId, Rate, NetworkId} taken from Hubtel docs. getMessageStatus added as a plausible companion read endpoint to give a reusable resource shape for seeding."
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "modifications": [],
+  "sources": [
+    "https://developers.hubtel.com/docs/business/api_documentation/notification_apis/sms",
+    "https://developers.hubtel.com/docs/personal/api_documentation/messaging/sms",
+    "https://developers.hubtel.com/docs/personal/api_documentation/messaging/otp",
+    "https://developers.hubtel.com/docs/business/getting_started/authentication",
+    "https://developers.hubtel.com/api/_content/search-1791802963918",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-hubtel/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-hubtel/dist/index.cjs",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/hubtel"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Hubtel's messaging API authored from developers.hubtel.com (docs only; Hubtel's Swagger endpoints answer 403). The adaptor is an SMS adaptor: sendSMS() POSTs {From, To, Content} to {baseUrl}/messages/send with Basic auth (clientId:clientSecret), and request() reaches any path under that baseUrl, so 'full' here means the whole documented messaging surface: 6 SMS operations (GET quick send with URL credentials, POST send, batch simple, batch personalised, message status, batch status) on sms.hubtel.com/v1 (business; smsc.hubtel.com/v1 serves the personal-account subset with the same paths), plus the 3 OTP operations on api-otp.hubtel.com, modelled with a path-level server. Hubtel's payment, lending, verification and other product APIs are separate services on other hosts and are not reachable through this adaptor's configuration; they are out of scope. The July stub's getMessageStatus path and Status/MessageId/Rate/NetworkId response were not what the docs show (the real fields are camelCase rate/messageId/status/networkId/clientReference/statusDescription) and have been replaced. Error bodies are not sampled in the docs; SmsError is the documented status/statusDescription pair. OTP verify returns no body. Phone numbers, sender names and personal names in samples are replaced with placeholders."
 }

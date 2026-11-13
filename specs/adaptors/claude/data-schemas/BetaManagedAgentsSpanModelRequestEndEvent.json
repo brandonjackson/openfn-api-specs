@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSpanModelRequestEndEvent",
+  "title": "BetaManagedAgentsSpanModelRequestEndEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSpanModelRequestEndEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Emitted when a model request completes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "is_error",
+    "model_usage",
+    "model_request_start_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "span.model_request_end"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "processed_at": {
+      "description": "Timestamp when the model request completed.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "is_error": {
+      "description": "Whether the model request resulted in an error.",
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "model_usage": {
+      "description": "Token usage for this model request.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsSpanModelUsage.json"
+        }
+      ]
+    },
+    "model_request_start_id": {
+      "description": "The id of the corresponding `span.model_request_start` event.",
+      "type": "string"
+    }
+  }
+}

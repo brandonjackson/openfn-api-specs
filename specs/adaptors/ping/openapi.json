@@ -1,147 +1,364 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Ping (SPING) adaptor surface (synthesized)",
-    "version": "1.0",
-    "description": "The OpenFn ping adaptor is a thin HTTP client (generic get/post/request helpers) that authenticates against an Azure AD B2C token endpoint and calls an Azure API Management-fronted 'SPING' API (scope apimurls/API.Read). It exposes no documented public operations and has no public vendor spec, so this OpenAPI 3.0 document is synthesized from the adaptor surface: a token endpoint, a connectivity/health probe, and generic resource read/write paths reflecting the get/post/request helpers.",
+    "title": "UNHCR PRIMES Interoperability Gateway (PING) API",
+    "version": "v2/v3 (as called by the adaptor)",
+    "description": "PING is UNHCR's data-sharing gateway between PRIMES (proGres) and partners that hold a Data Sharing Arrangement, fronted by Azure API Management and secured with Azure AD B2C. The ping adaptor gets a B2C token (password grant), then calls the APIM host with Authorization: Bearer plus the Ocp-Apim-Subscription-Key header through http.post/http.request. PING's API reference is private to partners; this document covers the token endpoint and the two PING endpoints the adaptor source and tests name (ingestion v2, paged retrieval v3).",
     "x-openfn-adaptor": "ping"
   },
   "servers": [
-    { "url": "https://sping.example.azure-api.net", "description": "Azure APIM-fronted SPING API (instance-specific)" }
+    {
+      "url": "{baseUrl}",
+      "description": "PING APIM host (configuration.baseUrl).",
+      "variables": {
+        "baseUrl": {
+          "default": "https://msawe-primes-ping-bau-uat-apimgmt.azure-api.net",
+          "description": "UAT host from the adaptor's configuration-schema example; production hosts are issued per partner."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": [],
+      "subscriptionKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Ingestion",
+      "description": "Writing data into PRIMES."
+    },
+    {
+      "name": "Retrieval",
+      "description": "Reading shared data from PRIMES."
+    }
   ],
   "paths": {
-    "/token": {
+    "/primespingb2cuat.onmicrosoft.com/b2c_1_msawe-primes-ping-test-apim-rpocuf/oauth2/v2.0/token": {
+      "servers": [
+        {
+          "url": "https://primespingb2cuat.b2clogin.com",
+          "description": "Azure AD B2C tenant (configuration.tokenUrl default)."
+        }
+      ],
       "post": {
         "operationId": "requestToken",
-        "summary": "Obtain an OAuth2 bearer token from the Azure AD B2C token endpoint",
+        "summary": "Get an access token (Azure AD B2C, resource-owner password grant)",
+        "tags": [
+          "Auth"
+        ],
+        "description": "Called by execute() before any operation unless configuration.access_token is already set. The adaptor also sends Cookie: x-ms-cpim-geo=EU. The user flow name in the path is hard-coded in the adaptor (UAT tenant).",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/x-www-form-urlencoded": {
-              "schema": { "$ref": "#/components/schemas/TokenRequest" }
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password",
+                  "grant_type",
+                  "scope",
+                  "client_id"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "password"
+                    ]
+                  },
+                  "scope": {
+                    "type": "string",
+                    "example": "https://primespingb2cuat.onmicrosoft.com/apimurls/API.Read"
+                  },
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "response_type": {
+                    "type": "string",
+                    "enum": [
+                      "token"
+                    ]
+                  }
+                }
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Access token",
+            "description": "Token issued. Only the fields the adaptor reads are modelled.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PingToken"
+                }
+              }
             }
           }
         }
       }
     },
-    "/ping": {
-      "get": {
-        "operationId": "ping",
-        "summary": "Connectivity/health probe",
-        "responses": {
-          "200": {
-            "description": "Service is reachable",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/PingResult" } }
-            }
-          }
-        }
-      }
-    },
-    "/records": {
-      "get": {
-        "operationId": "getRecords",
-        "summary": "Generic GET read (get helper)",
-        "parameters": [
-          { "name": "query", "in": "query", "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of records",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/RecordList" } }
-            }
-          }
-        }
-      },
+    "/api/ingestion/v2/{partnerId}/data": {
       "post": {
-        "operationId": "postRecord",
-        "summary": "Generic POST write (post helper)",
+        "operationId": "ingestData",
+        "summary": "Ingest records into PRIMES (e.g. update intervention records)",
+        "tags": [
+          "Ingestion"
+        ],
+        "description": "From the adaptor JSDoc example (http.post) and test. Each record carries an ExternalId and name/value Fields.",
+        "parameters": [
+          {
+            "name": "partnerId",
+            "in": "path",
+            "required": true,
+            "description": "Partner id, e.g. PNR-1363.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Record" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestionRequest"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The created record",
+            "description": "Ingestion result (shape from the adaptor test fixture, not vendor docs).",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Record" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestionResult"
+                }
+              }
             }
+          },
+          "default": {
+            "description": "APIM/PING error."
           }
         }
       }
     },
-    "/records/{id}": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-      ],
-      "get": {
-        "operationId": "getRecord",
-        "summary": "Fetch a single record by id",
+    "/primes/fetch/paging/v3/retrievedatawithpaging": {
+      "post": {
+        "operationId": "retrieveDataWithPaging",
+        "summary": "Retrieve shared PRIMES data, paged (v3)",
+        "tags": [
+          "Retrieval"
+        ],
+        "description": "From the adaptor test (http.request(\"POST\", ...)).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetrievalRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "A record",
+            "description": "A page of records (shape from the adaptor test fixture, not vendor docs).",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Record" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalPage"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "default": {
+            "description": "APIM/PING error."
+          }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Azure AD B2C access token (or configuration.access_token)."
+      },
+      "subscriptionKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Ocp-Apim-Subscription-Key",
+        "description": "APIM subscription key (configuration.subscriptionKey)."
+      }
+    },
     "schemas": {
-      "TokenRequest": {
+      "PingToken": {
         "type": "object",
-        "required": ["grant_type", "username", "password", "scope"],
+        "required": [
+          "access_token"
+        ],
         "properties": {
-          "grant_type": { "type": "string", "example": "password" },
-          "username": { "type": "string" },
-          "password": { "type": "string" },
-          "scope": { "type": "string", "example": "apimurls/API.Read" }
+          "access_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer"
+          }
         }
       },
-      "TokenResponse": {
+      "IngestionField": {
         "type": "object",
+        "required": [
+          "Name",
+          "Value"
+        ],
         "properties": {
-          "access_token": { "type": "string" },
-          "token_type": { "type": "string", "example": "Bearer" },
-          "expires_in": { "type": "integer", "example": 3600 },
-          "scope": { "type": "string" }
+          "Name": {
+            "type": "string",
+            "example": "progres_lpinterventionid"
+          },
+          "Value": {
+            "type": "string"
+          }
         }
       },
-      "PingResult": {
+      "IngestionRecord": {
         "type": "object",
+        "required": [
+          "ExternalId",
+          "Fields"
+        ],
         "properties": {
-          "status": { "type": "string", "example": "ok" },
-          "timestamp": { "type": "string", "format": "date-time" }
+          "ExternalId": {
+            "type": "string"
+          },
+          "Attachments": {
+            "type": "array",
+            "items": {},
+            "description": "Element shape not documented (empty in every example)."
+          },
+          "Fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IngestionField"
+            }
+          }
         }
       },
-      "Record": {
+      "IngestionRequest": {
         "type": "object",
+        "required": [
+          "Data"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "type": { "type": "string" },
-          "attributes": { "type": "object", "additionalProperties": true },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "ShippingProcessId": {
+            "type": "string",
+            "example": "SHP-0001"
+          },
+          "InteropId": {
+            "type": "string",
+            "example": "INT-0001"
+          },
+          "Data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IngestionRecord"
+            }
+          }
         }
       },
-      "RecordList": {
+      "IngestionResult": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "recordsProcessed": {
+            "type": "integer"
+          }
+        }
+      },
+      "RetrievalRequest": {
         "type": "object",
         "properties": {
-          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Record" } },
-          "count": { "type": "integer" }
+          "ShippingProcessId": {
+            "type": "string"
+          },
+          "PartnerId": {
+            "type": "string"
+          },
+          "InteropID": {
+            "type": "string"
+          },
+          "APIVersion": {
+            "type": "string",
+            "example": "V3"
+          },
+          "QueryParameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QueryParameter"
+            }
+          }
+        }
+      },
+      "QueryParameter": {
+        "type": "object",
+        "properties": {
+          "ParameterName": {
+            "type": "string",
+            "example": "{record_ids}"
+          },
+          "Value": {
+            "type": "string"
+          }
+        }
+      },
+      "RetrievedRecord": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "A shared PRIMES record; fields depend on the Data Sharing Arrangement (the fixture shows id and interventionId).",
+        "properties": {
+          "id": {},
+          "interventionId": {
+            "type": "string"
+          }
+        }
+      },
+      "RetrievalPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RetrievedRecord"
+            }
+          },
+          "totalRecords": {
+            "type": "integer"
+          }
         }
       }
     }

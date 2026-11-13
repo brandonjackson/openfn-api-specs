@@ -1,69 +1,88 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Dagu Pharmacy/Dispensing API (synthesized)",
-    "version": "1.0.0",
-    "description": "Synthesized OpenAPI surface for the OpenFn dagu adaptor. Dagu exposes no public machine-readable spec; the adaptor is a thin HTTP client (get/post/request) against a Dagu dispensing-unit backend. This document models the concrete endpoints exercised in the adaptor examples (stock-out reporting, prescription checks and history, dispensing requests) plus a generic passthrough request.",
+    "title": "Dagu pharmacy / dispensing API",
+    "version": "unknown",
+    "description": "Dagu is Ethiopia's facility-level pharmaceutical management system (store inventory plus the dispensing-unit patient service module), deployed per facility/region with EPSS. The dagu adaptor logs in with POST /account/login and then calls {baseUrl}/{path} with a Bearer token via get/post/request (JSON or multipart form bodies). Dagu's API reference is not public; this document covers the login endpoint and the four paths named in the adaptor's examples and tests.",
     "x-openfn-adaptor": "dagu"
   },
-  "servers": [{ "url": "http://localhost:4010" }],
+  "servers": [
+    {
+      "url": "{baseUrl}",
+      "description": "Dagu instance (configuration.baseUrl).",
+      "variables": {
+        "baseUrl": {
+          "default": "https://dagu.example.org",
+          "description": "Placeholder; instance-specific."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account"
+    },
+    {
+      "name": "Dispensing Unit"
+    },
+    {
+      "name": "Patient"
+    }
+  ],
   "paths": {
+    "/account/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "Log in and get an access token",
+        "tags": [
+          "Account"
+        ],
+        "security": [],
+        "description": "Called once per process by the adaptor (the token is cached).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/DispensingUnit/Dashboard/StockOutReport": {
       "get": {
         "operationId": "getStockOutReport",
-        "summary": "Stock-out report for a dispensing unit",
+        "summary": "Get the dispensing unit stock-out report",
+        "tags": [
+          "Dispensing Unit"
+        ],
         "responses": {
           "200": {
-            "description": "Stock-out report",
+            "description": "Report.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/StockOutReport" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/Patient/CheckPrescription": {
-      "post": {
-        "operationId": "checkPrescription",
-        "summary": "Check a patient prescription by row GUID",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/PrescriptionCheckRequest" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Prescription check result",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Prescription" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/Patient/Prescription/History": {
-      "post": {
-        "operationId": "getPrescriptionHistory",
-        "summary": "Paged prescription history",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/DataTableQuery" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Prescription history page",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/PrescriptionHistoryPage" }
+                "schema": {
+                  "$ref": "#/components/schemas/StockOutReport"
+                }
               }
             }
           }
@@ -73,20 +92,105 @@
     "/DispensingUnit/Request/History": {
       "post": {
         "operationId": "getRequestHistory",
-        "summary": "Dispensing-unit request history",
+        "summary": "Search dispensing-unit request history",
+        "tags": [
+          "Dispensing Unit"
+        ],
         "requestBody": {
+          "required": false,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RequestHistoryQuery" }
+              "schema": {
+                "$ref": "#/components/schemas/DataTablesRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Request history",
+            "description": "A page of history.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DispensingRequestList" }
+                "schema": {
+                  "$ref": "#/components/schemas/RequestHistory"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Patient/CheckPrescription": {
+      "post": {
+        "operationId": "checkPrescription",
+        "summary": "Check a prescription",
+        "tags": [
+          "Patient"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prescriptionRowGuid"
+                ],
+                "properties": {
+                  "prescriptionRowGuid": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionCheck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Patient/Prescription/History": {
+      "post": {
+        "operationId": "getPrescriptionHistory",
+        "summary": "Page through patient prescription history",
+        "tags": [
+          "Patient"
+        ],
+        "description": "The adaptor example sends this as multipart form data (options.contentType = \"form\").",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/DataTablesRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataTablesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionHistory"
+                }
               }
             }
           }
@@ -95,95 +199,198 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "token.access_token from POST /account/login."
+      }
+    },
     "schemas": {
-      "StockOutReport": {
+      "LoginRequest": {
         "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
         "properties": {
-          "generatedAt": { "type": "string", "format": "date-time" },
-          "items": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/StockOutItem" }
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "object",
+            "required": [
+              "access_token"
+            ],
+            "additionalProperties": true,
+            "properties": {
+              "access_token": {
+                "type": "string"
+              }
+            }
           }
         }
       },
       "StockOutItem": {
         "type": "object",
         "properties": {
-          "itemGuid": { "type": "string" },
-          "itemName": { "type": "string" },
-          "unit": { "type": "string" },
-          "onHand": { "type": "integer" },
-          "daysOutOfStock": { "type": "integer" }
+          "itemName": {
+            "type": "string"
+          },
+          "unitName": {
+            "type": "string"
+          },
+          "itemAmc": {
+            "type": "number",
+            "description": "Average monthly consumption."
+          }
         }
       },
-      "PrescriptionCheckRequest": {
+      "DataTablesPage": {
         "type": "object",
-        "required": ["prescriptionRowGuid"],
+        "description": "DataTables-style server-side paging block.",
         "properties": {
-          "prescriptionRowGuid": { "type": "string", "format": "uuid" }
-        }
-      },
-      "Prescription": {
-        "type": "object",
-        "properties": {
-          "prescriptionRowGuid": { "type": "string", "format": "uuid" },
-          "patientName": { "type": "string" },
-          "drugName": { "type": "string" },
-          "dose": { "type": "string" },
-          "quantity": { "type": "integer" },
-          "status": { "type": "string", "enum": ["Pending", "Dispensed", "Rejected"] },
-          "prescribedAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "DataTableQuery": {
-        "type": "object",
-        "properties": {
-          "start": { "type": "integer" },
-          "length": { "type": "integer" },
-          "draw": { "type": "integer" },
+          "draw": {
+            "type": "integer"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalRecords": {
+            "type": "integer"
+          },
+          "totalRecordsFiltered": {
+            "type": "integer"
+          },
+          "recordsTotal": {
+            "type": "integer"
+          },
+          "recordsFiltered": {
+            "type": "integer"
+          },
+          "data": {
+            "description": "Rows. The vendor Swagger example (copied into the adaptor fixtures) shows a string; the element type is not documented."
+          },
           "additionalParameters": {
             "type": "object",
+            "additionalProperties": true
+          },
+          "additionalResponse": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DataTablesRequest": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "integer"
+          },
+          "length": {
+            "type": "integer"
+          },
+          "draw": {
+            "type": "integer"
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "additionalParameters": {
+            "type": "object",
+            "additionalProperties": true,
             "properties": {
-              "filter": { "type": "array", "items": { "type": "object" } }
+              "filter": {
+                "type": "array",
+                "items": {}
+              }
             }
           }
         }
       },
-      "PrescriptionHistoryPage": {
+      "StockOutReport": {
         "type": "object",
+        "description": "Stock-out report for the dispensing unit.",
         "properties": {
-          "draw": { "type": "integer" },
-          "recordsTotal": { "type": "integer" },
-          "recordsFiltered": { "type": "integer" },
-          "data": {
+          "result": {
+            "type": "integer",
+            "description": "Status code from the Dagu API envelope."
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "model": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Prescription" }
+            "items": {
+              "$ref": "#/components/schemas/StockOutItem"
+            }
           }
         }
       },
-      "RequestHistoryQuery": {
+      "PrescriptionHistory": {
         "type": "object",
+        "description": "A page of patient prescription history.",
         "properties": {
-          "search": { "type": "object" }
-        }
-      },
-      "DispensingRequestList": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/DispensingRequest" }
+          "result": {
+            "type": "integer",
+            "description": "Status code from the Dagu API envelope."
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "model": {
+            "$ref": "#/components/schemas/DataTablesPage"
           }
         }
       },
-      "DispensingRequest": {
+      "RequestHistory": {
         "type": "object",
+        "description": "A page of dispensing-unit request (requisition) history.",
         "properties": {
-          "requestGuid": { "type": "string", "format": "uuid" },
-          "requestNumber": { "type": "string" },
-          "dispensingUnit": { "type": "string" },
-          "status": { "type": "string" },
-          "requestedAt": { "type": "string", "format": "date-time" }
+          "result": {
+            "type": "integer",
+            "description": "Status code from the Dagu API envelope."
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "model": {
+            "$ref": "#/components/schemas/DataTablesPage"
+          }
+        }
+      },
+      "PrescriptionCheck": {
+        "type": "object",
+        "description": "Result of checking a prescription.",
+        "properties": {
+          "result": {
+            "type": "integer",
+            "description": "Status code from the Dagu API envelope."
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "model": {
+            "description": "Not documented; no example in the adaptor."
+          }
         }
       }
     }

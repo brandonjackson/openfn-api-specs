@@ -5,16 +5,35 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/MlStatistics",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Job statistics specific to a BigQuery ML training job.",
   "properties": {
-    "maxIterations": {
+    "iterationResults": {
+      "type": "array",
+      "description": "Results for all completed iterations. Empty for [hyperparameter tuning jobs](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-hp-tuning-overview).",
+      "items": {
+        "$ref": "IterationResult.json"
+      }
+    },
+    "trainingType": {
       "type": "string",
-      "format": "int64",
-      "description": "Output only. Maximum number of iterations specified as max_iterations in the 'CREATE MODEL' query. The actual number of iterations may be less than this number due to early stop.",
+      "description": "Output only. Training type of the job.",
+      "enum": [
+        "TRAINING_TYPE_UNSPECIFIED",
+        "SINGLE_TRAINING",
+        "HPARAM_TUNING"
+      ],
       "readOnly": true
+    },
+    "hparamTrials": {
+      "type": "array",
+      "description": "Output only. Trials of a [hyperparameter tuning job](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-hp-tuning-overview) sorted by trial_id.",
+      "readOnly": true,
+      "items": {
+        "$ref": "HparamTuningTrial.json"
+      }
     },
     "modelType": {
       "type": "string",
@@ -49,30 +68,11 @@
       ],
       "readOnly": true
     },
-    "hparamTrials": {
-      "type": "array",
-      "description": "Output only. Trials of a [hyperparameter tuning job](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-hp-tuning-overview) sorted by trial_id.",
-      "readOnly": true,
-      "items": {
-        "$ref": "HparamTuningTrial.json"
-      }
-    },
-    "trainingType": {
+    "maxIterations": {
       "type": "string",
-      "description": "Output only. Training type of the job.",
-      "enum": [
-        "TRAINING_TYPE_UNSPECIFIED",
-        "SINGLE_TRAINING",
-        "HPARAM_TUNING"
-      ],
+      "format": "int64",
+      "description": "Output only. Maximum number of iterations specified as max_iterations in the 'CREATE MODEL' query. The actual number of iterations may be less than this number due to early stop.",
       "readOnly": true
-    },
-    "iterationResults": {
-      "type": "array",
-      "description": "Results for all completed iterations. Empty for [hyperparameter tuning jobs](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-hp-tuning-overview).",
-      "items": {
-        "$ref": "IterationResult.json"
-      }
     }
   }
 }

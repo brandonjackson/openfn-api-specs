@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intuit/CreditChargeResponse",
+  "title": "CreditChargeResponse",
+  "x-openfn-adaptor": "intuit",
+  "x-source": {
+    "openapi": "#/components/schemas/CreditChargeResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "CCProcessor": {
+      "type": "string",
+      "description": "Product: Not used now Description: Credit Card Processor Name for recording the payment processor"
+    },
+    "CCTransId": {
+      "type": "string",
+      "description": "Product: ALL Description: Unique identifier of the payment transaction. It can be used to track the status of transactions, or to search transactions."
+    },
+    "Status": {
+      "allOf": [
+        {
+          "$ref": "CCPaymentStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Indicates the status of the payment transaction. Possible values include Completed, Unknown.[br /]"
+    },
+    "ResultCode": {
+      "type": "integer",
+      "description": "Product: ALL Description: Numeric code specifying the result of the transaction."
+    },
+    "ResultMsg": {
+      "type": "string",
+      "description": "Product: ALL Description: Text specifying the result of the transaction."
+    },
+    "MerchantAcctNum": {
+      "type": "string",
+      "description": "Product: ALL Description: Merchant account number associated with the credit card transaction."
+    },
+    "CardSecurityCodeMatch": {
+      "allOf": [
+        {
+          "$ref": "CCSecurityCodeMatchEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Result of comparing the security code supplied in the credit card transaction request with the code on file with the card issuer. Possible values are Pass, Fail, and NotAvailable.[br /]"
+    },
+    "AuthCode": {
+      "type": "string",
+      "description": "Product: ALL Description: Code returned from the credit card processor to indicate that the charge will be paid by the card issuer."
+    },
+    "AvsStreet": {
+      "allOf": [
+        {
+          "$ref": "CCAVSMatchEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: The AVS (Address Verification Service) result for the street address supplied in the transaction. Possible values are Pass, if the information matches the information on file with the cardholder's account, Fail, or NotAvailable.[br /]"
+    },
+    "AvsZip": {
+      "allOf": [
+        {
+          "$ref": "CCAVSMatchEnum.json"
+        }
+      ],
+      "description": "The AVS (Address Verification Service) result for the zip code supplied in the transaction. Possible values are Pass, if the information matches the information on file with the cardholder's account, Fail, or NotAvailable."
+    },
+    "SecurityCode": {
+      "type": "string",
+      "description": "Product: ALL Description: CardCode or Card Id field that can be optionally provided to use additional security features of credit card authorization. It is typically a 3 digit number located on the back of most credit cards. For American Express, it is a 4 digit number on the front."
+    },
+    "ReconBatchId": {
+      "type": "string",
+      "description": "Product: ALL Description: Indicates which deposit batch the transaction belongs to. Allows for integration with Intuit MAS Service and QBFS: enables reconciliation between what is charged on credit card and what is already deposited into bank."
+    },
+    "PaymentGroupingCode": {
+      "type": "integer",
+      "description": "Product: ALL Description: Code that indicates membership in a group of card types that are normally deposited together."
+    },
+    "TxnAuthorizationTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Product: ALL Description: Timestamp indicating the time in which the card processor authorized the transaction."
+    },
+    "TxnAuthorizationStamp": {
+      "type": "integer",
+      "description": "Product: ALL Description: This value is used to support the credit card transaction reconciliation."
+    },
+    "ClientTransID": {
+      "type": "string",
+      "description": "Product: ALL Description: An identifier returned in settlement data used to support the credit card transaction reconciliation."
+    },
+    "CreditChargeResponseEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Internal use only: extension place holder for CreditChargeResponse"
+    }
+  },
+  "description": "Product: ALL Description: Holds credit-card transaction response information from a merchant account service, but not any credit card or payment request information - see CreditChargeInfo."
+}

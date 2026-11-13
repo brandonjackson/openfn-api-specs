@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intuit/TxnTaxDetail",
+  "title": "TxnTaxDetail",
+  "x-openfn-adaptor": "intuit",
+  "x-source": {
+    "openapi": "#/components/schemas/TxnTaxDetail",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "DefaultTaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the default tax code that applies to the transaction as a whole. In Quickbooks desktop, this maps to CustomerTaxCode in Invoice and VendorTaxCode in Bill. [span style=\"display: none\"] I18n: US [/span]"
+    },
+    "TxnTaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: All Description: Reference to the transaction tax code. For US editions only. Note that the US tax model can have just a single tax code for the entire transaction."
+    },
+    "TotalTax": {
+      "type": "number",
+      "description": "Product: ALL Description: Total tax calculated for the transaction, excluding any embedded tax lines."
+    },
+    "TaxReviewStatus": {
+      "allOf": [
+        {
+          "$ref": "TaxReviewStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Enumerated reasons to review Taxes on the Transaction."
+    },
+    "TaxLine": {
+      "type": "array",
+      "items": {
+        "$ref": "Line.json"
+      },
+      "description": "Product: ALL Description: This must be a Line whose LineDetailType is TaxLineDetail."
+    },
+    "UseAutomatedSalesTax": {
+      "type": "boolean",
+      "description": "Product: All Description: This is a boolean which defines if developer intends to use Automated Sales Tax or tax code that they have provided in the payload. If the v3 developer sets this to true, then txn going in QBO will always have AST rates. In case this flag is set to false, then it will depend on the QBO user pref - AllowPartnerTaxOverride, which tells if QBO user wants to allow v3 app t..."
+    }
+  },
+  "description": "Product: ALL Description: Details of taxes charged on the transaction as a whole. For US versions of QuickBooks, tax rates used in the detail section must not be used in any tax line appearing in the main transaction body. For international versions of QuickBooks, the TxnTaxDetail should provide the details of all taxes (sales or purchase) calculated for the transaction based on the tax codes r..."
+}

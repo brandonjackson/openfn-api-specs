@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaAdvisorTool_20260301",
+  "title": "AdvisorTool_20260301",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAdvisorTool_20260301",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowed_callers": {
+      "items": {
+        "$ref": "BetaAllowedCaller.json"
+      },
+      "title": "Allowed Callers",
+      "type": "array"
+    },
+    "cache_control": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Create a cache control breakpoint at this content block.",
+      "title": "Cache Control"
+    },
+    "caching": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Caching for the advisor's own prompt. When set, each advisor call writes a cache entry at the given TTL so subsequent calls in the same conversation read the stable prefix. When omitted, the advisor prompt is not cached.",
+      "title": "Caching"
+    },
+    "defer_loading": {
+      "description": "If true, tool will not be included in initial system prompt. Only loaded when returned via tool_reference from tool search.",
+      "title": "Defer Loading",
+      "type": "boolean"
+    },
+    "max_tokens": {
+      "anyOf": [
+        {
+          "minimum": 1024,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Bounds the advisor's total output (thinking + text) per call. When the advisor hits this cap, the returned advisor_result or advisor_redacted_result block carries stop_reason='max_tokens', and a truncation note is appended to the advice text the worker model sees (inside the encrypted blob in redacted mode). When set, the API also passes the advisor its remaining-token budget, so the advisor shapes its output toward the cap. When omitted, the advisor model's default output cap applies and the API doesn't pass a budget.",
+      "title": "Max Tokens"
+    },
+    "max_uses": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Maximum number of times the tool can be used in the API request.",
+      "title": "Max Uses"
+    },
+    "model": {
+      "$ref": "Model.json"
+    },
+    "name": {
+      "const": "advisor",
+      "description": "Name of the tool.\n\nThis is how the tool will be called by the model and in `tool_use` blocks.",
+      "title": "Name",
+      "type": "string"
+    },
+    "strict": {
+      "description": "When true, guarantees schema validation on tool names and inputs",
+      "title": "Strict",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "advisor_20260301",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "model",
+    "name",
+    "type"
+  ],
+  "type": "object"
+}

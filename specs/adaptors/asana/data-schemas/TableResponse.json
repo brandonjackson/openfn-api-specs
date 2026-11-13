@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/TableResponse",
+  "title": "TableResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/TableResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "allOf": [
+    {
+      "$ref": "TableBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "modified_at": {
+          "description": "The time at which this table was last modified.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "created_at": {
+          "description": "The time at which this resource was created.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "workspace": {
+          "allOf": [
+            {
+              "$ref": "WorkspaceCompact.json"
+            },
+            {
+              "type": "object",
+              "readOnly": true,
+              "description": "*Create-only*. The workspace or organization this table is associated with. Once created, tables cannot be moved to a different workspace. This attribute can only be specified at creation time."
+            }
+          ]
+        },
+        "custom_field_settings": {
+          "description": "Array of custom field definitions that are enabled for the table. These represent which custom fields are available to records in the table, but do not include any values.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "CustomFieldTableSettingResponse.json"
+          }
+        },
+        "default_access_level": {
+          "description": "The default access level for users who join or are added as members of the table.",
+          "type": "string",
+          "enum": [
+            "admin",
+            "editor",
+            "commenter",
+            "viewer"
+          ],
+          "example": "viewer"
+        }
+      }
+    }
+  ]
+}

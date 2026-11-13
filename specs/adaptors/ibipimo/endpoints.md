@@ -1,19 +1,19 @@
-# IBIPIMO Viral Load API (mock subset) (ibipimo) vv1
+# IBIPIMO Laboratory API (ibipimo) vv1
 
 <!-- derived from openapi.json by `pnpm specs index ibipimo` — do not edit by hand -->
 
-base: https://demo.ibipimo.org | auth: not declared | 4 operations in 4 resources
+base: https://demo.ibipimo.org | auth: http/bearer | 4 operations in 4 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## ask-for-vl-results
-- POST /api/v1/ask-for-vl-results — getViralLoadResults: Request viral load results for a set of samples
+## Samples
+- GET /api/v1/samples/status — getSamplesStatus: Sample status (from adaptor JSDoc example; unverified)
 
-## post-viral-load-requests
-- POST /api/v1/post-viral-load-requests — postViralLoadRequest: Submit viral load test requests
+## Sites
+- GET /api/v1/sites — listSites: List sites (from adaptor examples; unverified)
 
-## samples
-- GET /api/v1/samples/status — getSamplesStatus: Get sample processing statuses
+## Viral load requests
+- POST /api/v1/post-viral-load-requests — postViralLoadRequests: Submit viral load test requests
 
-## sites
-- GET /api/v1/sites — getSites: List sites
+## Viral load results
+- POST /api/v1/ask-for-vl-results — askForViralLoadResults: Ask for viral load results by sample UID

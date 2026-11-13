@@ -3,14 +3,73 @@
   "npm": "@openfn/language-collections",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-collections/types/collections.d.ts",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/collections",
-    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/collections/src/collections.js",
-    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/collections/src/mock.js",
-    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/collections/README.md",
-    "https://docs.openfn.org/adaptors/packages/collections-docs"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "source",
+      "url": "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/router.ex",
+      "result": "used",
+      "note": "scope \"/collections\" in the Lightning router has exactly six routes (GET/POST/DELETE /:name, GET/PUT/DELETE /:name/:key) plus a NoRoute catch-all; all six are modelled. Shapes read from collections_controller.ex, Lightning.Collections.Item's Jason encoder and LightningWeb.API.Filters.collection_items/1."
+    },
+    {
+      "kind": "docs",
+      "url": "https://raw.githubusercontent.com/OpenFn/lightning/main/API.md",
+      "result": "used",
+      "note": "Vendor API.md covers the error format shared with /collections; it lists only the collection-management routes under /api, not the item routes."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://app.openfn.org/workflow-api.yaml",
+      "result": "rejected",
+      "note": "The only OpenAPI Lightning ships covers workflows, not collections."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://app.openfn.org/collections/openapi.json",
+      "result": "not-found",
+      "note": "401: the path matches GET /:name (a collection called openapi.json) and asks for a token; it is not a spec route. No openapi/swagger file in OpenFn/lightning or OpenFn/adaptors packages/collections."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.openfn.org/adaptors/collections",
+      "result": "used",
+      "note": "Prose usage docs for the adaptor (keys, wildcards, limits); no HTTP reference."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No OpenFn entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/_api/ws/proxy (search-all: \"OpenFn Lightning\")",
+      "result": "not-found",
+      "note": "Only a community \"OpenFn Lightning API\" workspace, not vendor-published, no collections routes."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Synthesized from adaptor surface; internal OpenFn Lightning collections key-value API. The adaptor's ast.json is empty and there is no published OpenAPI spec for Lightning collections, so endpoints/response shapes were reverse-engineered from the adaptor source (get/set/remove/each in collections.js) and its bundled mock Lightning server (mock.js). Confirmed shapes: GET /{name}/{key} -> {key,value} (204 if missing); GET /{name}?key&limit&cursor -> {items:[{key,value}],cursor}; POST /{name} {items:[{key,value}]} -> {upserted,errors}; DELETE /{name} or /{name}/{key} -> {deleted,keys}. Values are stored as strings (typically JSON-encoded). Auth is a Personal Access Token via Authorization: Bearer (collections_token); base path is the Lightning /collections endpoint (WORKER_COLLECTIONS_URL). Caveats: listCollections (GET /) and setCollectionItem (PUT /{name}/{key}) are synthesized conveniences not present verbatim in the adaptor; createdBefore/createdAfter query filters come from the adaptor QueryOptions typedef but are only partially honored by the reference mock; exact production Lightning response envelopes may differ."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "lightning-router"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/router.ex",
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/controllers/collections_controller.ex",
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning/collections/item.ex",
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/api/filters.ex",
+    "https://raw.githubusercontent.com/OpenFn/lightning/main/API.md",
+    "https://docs.openfn.org/adaptors/collections",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-collections/ast.json",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/collections/src/collections.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/collections/src/mock.js"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Lightning's Collections API: the six item routes under /collections on an OpenFn Lightning instance, which is everything the collections adaptor (0.9.4) can reach - it builds paths only under configuration.collections_endpoint. Synthesized from the vendor source (router.ex scope \"/collections\", CollectionsController, Item encoder, Filters) and cross-checked against the adaptor's get/set/remove/each and its bundled mock; ast.json is empty because the operations live in the collections namespace. Complete: the route set is finite and every route is modelled, including PUT /{name}/{key} which Lightning serves but the adaptor never calls. Corrections over the July stub: removed the invented GET / listCollections (the router has no such route; it 404s), added the updated_after/updated_before filters and the created/updated item timestamps the server returns, and documented that the server ignores date filters on DELETE /{name}. Errors are RFC 9457 problem documents on Lightning main; v2.20.1 answers some failures with {upserted: 0, error: \"...\"} instead. Collection creation/renaming is in the openfn spec (/api/projects/{project_id}/collections/{id})."
 }

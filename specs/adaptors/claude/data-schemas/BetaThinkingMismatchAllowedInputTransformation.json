@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaThinkingMismatchAllowedInputTransformation",
+  "title": "ThinkingMismatchAllowedInputTransformation",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaThinkingMismatchAllowedInputTransformation",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "path": {
+      "description": "Where the block is in your request, as `messages.{i}.content.{j}`:\n`i` indexes the `messages` array you sent and `j` that message's `content`\narray — the same form error messages use.",
+      "title": "Path",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Which binding check the block failed; the block was shown to the model all\nthe same. Always `prefix_binding_mismatch` today — the conversation before\nthe block differs from the conversation it was created in, or the block\ncarries no record of one on a model that requires it. Were the check\nenforced for this request, the block would have been removed or the request\nrejected (`thinking.block_binding.prefix_mismatch_behavior`). A removal also\ntakes the rest of that turn's consecutive thinking blocks, whereas here each\nblock is checked on its own, so `thinking_mismatch_allowed` entries are a\nlower bound on what enforcement would remove.",
+      "enum": [
+        "model_binding_mismatch",
+        "prefix_binding_mismatch",
+        "organization_binding_mismatch",
+        "end_user_binding_mismatch"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "type": {
+      "const": "thinking_mismatch_allowed",
+      "default": "thinking_mismatch_allowed",
+      "description": "Always `thinking_mismatch_allowed` for this entry type.",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "reason",
+    "type"
+  ],
+  "type": "object"
+}

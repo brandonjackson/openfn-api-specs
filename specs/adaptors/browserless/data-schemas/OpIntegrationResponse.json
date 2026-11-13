@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "browserless/OpIntegrationResponse",
+  "title": "OpIntegrationResponse",
+  "x-openfn-adaptor": "browserless",
+  "x-source": {
+    "openapi": "#/components/schemas/OpIntegrationResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Public-facing integration response returned by HTTP routes.\nOmits internal fields — never includes token_hash or any token material.",
+  "type": "object",
+  "properties": {
+    "vaults": {
+      "description": "Live vault titles, only with includeVaults=true; null when unavailable.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "id": {
+      "description": "Unique integration identifier.",
+      "type": "string"
+    },
+    "label": {
+      "description": "User-supplied label. Unique per token.",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "OpIntegrationKind.json",
+      "description": "Integration kind: `service_account` (default) or `connect`."
+    },
+    "allowedDomains": {
+      "description": "Origins this integration is allowed to fill into.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "connectUrl": {
+      "description": "Connect server URL when kind is `connect`, otherwise null.",
+      "type": "string"
+    },
+    "expiresAt": {
+      "description": "ISO timestamp after which the integration is treated as expired, or null.",
+      "type": "string"
+    },
+    "lastResolvedAt": {
+      "description": "ISO timestamp of the last successful secret resolve, or null if never used.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO timestamp of when the integration was created.",
+      "type": "string"
+    },
+    "updatedAt": {
+      "description": "ISO timestamp of the last metadata change.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "allowedDomains",
+    "connectUrl",
+    "createdAt",
+    "expiresAt",
+    "id",
+    "kind",
+    "label",
+    "lastResolvedAt",
+    "updatedAt"
+  ]
+}

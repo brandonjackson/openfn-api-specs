@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionAgent",
+  "title": "BetaManagedAgentsSessionAgent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionAgent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Resolved `agent` definition for a `session`. Snapshot of the `agent` at `session` creation time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "version",
+    "name",
+    "description",
+    "model",
+    "system",
+    "tools",
+    "mcp_servers",
+    "skills",
+    "multiagent",
+    "execution_identity"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "agent",
+      "examples": [
+        "agent"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "examples": [
+        "agent_011CZkYpogX7uDKUyvBTophP"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "format": "int32",
+      "examples": [
+        1
+      ]
+    },
+    "name": {
+      "type": "string",
+      "examples": [
+        "My First Agent"
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "A general-purpose starter agent."
+      ]
+    },
+    "model": {
+      "$ref": "BetaManagedAgentsModelConfig.json",
+      "examples": [
+        {
+          "id": "claude-opus-5-5",
+          "speed": "standard"
+        }
+      ]
+    },
+    "system": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "You are a general-purpose agent that can research, write code, run commands, and use connected tools to complete the user's task end to end."
+      ]
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsAgentTool.json"
+      },
+      "examples": [
+        [
+          {
+            "type": "agent_toolset_20260401",
+            "default_config": {
+              "enabled": true,
+              "permission_policy": {
+                "type": "always_ask"
+              }
+            },
+            "configs": []
+          }
+        ]
+      ]
+    },
+    "mcp_servers": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsMCPServer.json"
+      },
+      "examples": [
+        [
+          {
+            "type": "url",
+            "name": "example-mcp",
+            "url": "https://example-server.modelcontextprotocol.io/sse"
+          }
+        ]
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsSkill.json"
+      },
+      "examples": [
+        [
+          {
+            "type": "anthropic",
+            "skill_id": "xlsx",
+            "version": "1"
+          },
+          {
+            "type": "custom",
+            "skill_id": "skill_011CZkZFNu9hAbo3jZPRgTmx",
+            "version": "2"
+          }
+        ]
+      ]
+    },
+    "multiagent": {
+      "description": "Resolved multiagent orchestration configuration. Null when the agent is single-threaded.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionMultiagent.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "execution_identity": {
+      "description": "Execution principal snapshotted from the agent at session creation. Always present; `{\"type\": \"service_account\"}` when runs carry no customer-named principal.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsExecutionIdentity.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        {
+          "type": "service_account"
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "agent",
+    "id": "agent_011CZkYpogX7uDKUyvBTophP",
+    "version": 1,
+    "name": "My First Agent",
+    "description": "A general-purpose starter agent.",
+    "model": {
+      "id": "claude-opus-5-5",
+      "speed": "standard"
+    },
+    "system": "You are a general-purpose agent that can research, write code, run commands, and use connected tools to complete the user's task end to end.",
+    "tools": [
+      {
+        "type": "agent_toolset_20260401",
+        "default_config": {
+          "enabled": true,
+          "permission_policy": {
+            "type": "always_ask"
+          }
+        },
+        "configs": []
+      }
+    ],
+    "mcp_servers": [
+      {
+        "type": "url",
+        "name": "example-mcp",
+        "url": "https://example-server.modelcontextprotocol.io/sse"
+      }
+    ],
+    "skills": [
+      {
+        "type": "anthropic",
+        "skill_id": "xlsx",
+        "version": "1"
+      },
+      {
+        "type": "custom",
+        "skill_id": "skill_011CZkZFNu9hAbo3jZPRgTmx",
+        "version": "2"
+      }
+    ],
+    "multiagent": null,
+    "execution_identity": {
+      "type": "service_account"
+    }
+  }
+}

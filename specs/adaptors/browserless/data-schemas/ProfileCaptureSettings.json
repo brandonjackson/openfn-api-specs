@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "browserless/ProfileCaptureSettings",
+  "title": "ProfileCaptureSettings",
+  "x-openfn-adaptor": "browserless",
+  "x-source": {
+    "openapi": "#/components/schemas/ProfileCaptureSettings",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Capture inputs the CLI ran with, so a later `profile refresh` can replay them\nwithout flags. Null for the CDP saveProfile path and any future non-CLI creator.\nNever holds the token, and omits server/region because a stale stored region\nis a guaranteed 404.",
+  "type": "object",
+  "properties": {
+    "browser": {
+      "description": "Raw `--browser` value.",
+      "type": "string"
+    },
+    "profile": {
+      "description": "Raw `--profile` value (source profile directory or display name).",
+      "type": "string"
+    },
+    "excludeDomains": {
+      "description": "Effective merged exclusion list. `[]` is meaningful — \"captured with no\nexclusions\" — and distinct from absent, which means \"unknown\".",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "onlyDomains": {
+      "description": "Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keepDomains": {
+      "description": "Normalized `--keep-domain` hostnames, same normalization, no merge.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "autoFit": {
+      "description": "Whether `--auto-fit` was used.",
+      "type": "boolean"
+    },
+    "passwordStore": {
+      "description": "Raw `--password-store` value. Linux only.",
+      "type": "string"
+    },
+    "cliVersion": {
+      "description": "CLI version that produced these settings, for drift diagnosis.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

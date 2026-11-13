@@ -1,0 +1,688 @@
+openapi: 3.0.3
+info:
+  title: Elevation service
+  description: The elevation service is a location service which returns TopoBathy elevation values that combine topography (land elevation) and bathymetry (water depths).
+  version: 1.2.5
+  termsOfService: https://developers.arcgis.com/documentation/mapping-and-location-services/terms-of-use/
+servers:
+- url: https://elevation-api.arcgis.com/arcgis/rest/services/elevation-service/{apiVersion}
+  description: Production service endpoint.
+  variables:
+    apiVersion:
+      description: Version of the elevation service.
+      enum:
+      - v1
+      default: v1
+tags:
+- name: Elevation values
+  description: Endpoints which provide elevation values for either a single coordinate, or an array of coordinates.
+paths:
+  /elevation/at-point:
+    get:
+      security:
+      - ArcGISAuthorizationHeader: []
+      - ArcGISXEsriAuthorizationHeader: []
+      - ArcGISTokenParameter: []
+      tags:
+      - Elevation values
+      parameters:
+      - $ref: '#/components/parameters/LongitudeParam'
+      - $ref: '#/components/parameters/LatitudeParam'
+      - $ref: '#/components/parameters/RelativeToParam'
+      - $ref: '#/components/parameters/TokenParam'
+      - $ref: '#/components/parameters/FormatParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ElevationResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ResourcePermissionErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+      operationId: ElevationAtPointGet
+      x-arcgis-frontmatter:
+        keywords:
+        - elevation
+      summary: Returns the elevation from a given input coordinate.
+      description: |
+        Returns the elevation in meters at a given longitude and latitude within the WGS84 coordinate system.
+
+        By default the elevation is measured with respect to the Earth's mean
+        sea level. It takes into account the local variations in gravity and
+        provides a consistent vertical reference.
+
+        If the `relativeTo` query parameter is set to `ellipsoid`, the
+        elevation will be measured with respect to the ellipsoid. This is a
+        mathematical model that approximates the shape of the Earth. It does not
+        consider local variations in gravity and is commonly used in GPS
+        positioning.
+
+        Note: You cannot permanently store elevation values. Please see the [Terms of use](https://developers.arcgis.com/documentation/terms-of-use/).
+  /elevation/at-many-points:
+    post:
+      security:
+      - ArcGISAuthorizationHeader: []
+      - ArcGISXEsriAuthorizationHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: |
+                The input parameters for fetching elevations at multiple coordinates.
+              required:
+              - coordinates
+              properties:
+                token:
+                  $ref: '#/components/schemas/TokenProperty'
+                relativeTo:
+                  $ref: '#/components/schemas/RelativeToProperty'
+                f:
+                  $ref: '#/components/schemas/Format'
+                coordinates:
+                  $ref: '#/components/schemas/CoordinatesProperty'
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              description: |
+                The input parameters for fetching elevations at multiple coordinates.
+              required:
+              - coordinates
+              properties:
+                token:
+                  $ref: '#/components/schemas/TokenProperty'
+                relativeTo:
+                  $ref: '#/components/schemas/RelativeToProperty'
+                f:
+                  $ref: '#/components/schemas/Format'
+                coordinates:
+                  $ref: '#/components/schemas/CoordinatesProperty'
+      tags:
+      - Elevation values
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleElevationsResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ResourcePermissionErrorResponse'
+        '413':
+          $ref: '#/components/responses/ContentTooLargeErrorResponse'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+      operationId: ElevationAtManyPointsPost
+      x-arcgis-frontmatter:
+        keywords:
+        - elevation
+      summary: Returns elevations for up to 100 input coordinates.
+      description: |
+        Returns elevations in meters at given longitudes and latitudes within the WGS84 coordinate system.
+
+        The following parameters are used to fetch elevations for multiple coordinates:
+
+        - `coordinates`
+        - `relativeTo`
+        - `f`
+
+        The order of the points returned by this request will be the same as the
+        order of the points passed in the `coordinates` parameter.
+
+        If the distance between the furthest West and furthest East coordinate
+        exceeds 50km, the service will return a `400` HTTP response as the
+        distance between these points is too large.
+
+        If the distance between the furthest North and furthest South coordinate
+        exceeds 50km, the service will return a `400` HTTP response as the
+        distance between these points is too large.
+
+        If any of the points are otherwise invalid, a `400` HTTP response will
+        be returned.
+
+        By default the elevation is measured with respect to the Earth's mean
+        sea level. It takes into account the local variations in gravity and
+        provides a consistent vertical reference.
+
+        If the `relativeTo` parameter in the body is set to `ellipsoid`, the
+        elevation will be measured with respect to the ellipsoid. This is a
+        mathematical model that approximates the shape of the Earth. It does not
+        consider local variations in gravity and is commonly used in GPS
+        positioning.
+
+        Note: You cannot permanently store elevation values. Please see the [Terms of use](https://developers.arcgis.com/documentation/terms-of-use/).
+
+        The Post Body content type must be either:
+
+        - JSON with content type of `application/json`, or
+        - form URL encoded key-value pairs with content type `application/x-www-form-urlencoded`.
+components:
+  schemas:
+    Point:
+      description: A geometry point referring to a location on a map.
+      type: object
+      required:
+      - x
+      - y
+      - z
+      - spatialReference
+      properties:
+        spatialReference:
+          description: The spatial reference system the point is relative to.
+          type: object
+          required:
+          - wkid
+          - vcsWkid
+          properties:
+            wkid:
+              description: The Well-Known ID (WKID) value of the horizontal coordinate system, such as WGS 1984 with WKID 4326.
+              type: number
+              example: 4326
+            vcsWkid:
+              description: The Well-Known ID (WKID) value of the vertical coordinate system, such as WGS_1984_Geoid with WKID 105700.
+              type: number
+              example: 105700
+        x:
+          description: The X coordinate which is measured along the east/west axis.
+          type: number
+          example: 86.925278
+        y:
+          description: The Y coordinate which is measured along the north/south axis.
+          type: number
+          example: 27.988333
+        z:
+          description: The Z coordinate represents the vertical position of a point above or below a reference level, such as sea level (in meters, rounded to the nearest 10cm).
+          type: number
+          example: 8743.9
+    ElevationInfo:
+      description: A structure containing human readable metadata about the specified point.
+      type: object
+      required:
+      - relativeTo
+      properties:
+        relativeTo:
+          description: |
+            The reference position (datum) from which to measure elevation.
+
+            The valid values are:
+            - meanSeaLevel: The elevation above or below the WGS84 geoid reference surface, which is approximately the mean sea level.
+                            This reference surface takes into account the local variations in gravity and provides a consistent vertical reference.
+            - ellipsoid: Ellipsoidal height is measured with respect to an ellipsoid, which is a mathematical model that approximates the shape of the Earth.
+                         This ellipsoid does not consider local variations in gravity and is commonly used in GPS positioning.
+          type: string
+          enum:
+          - meanSeaLevel
+          - ellipsoid
+          example: meanSeaLevel
+          default: meanSeaLevel
+    Elevation:
+      description: A structure containing a point including an elevation value (defined as Z).
+      type: object
+      required:
+      - point
+      properties:
+        point:
+          $ref: '#/components/schemas/Point'
+    Elevations:
+      description: |
+        A structure containing a collection of points which contain elevation values (defined as Z).
+
+        When returned from a request to the `/elevation/at-many-points`
+        endpoint, the order of the points will match the order of the points in
+        the request.
+      type: object
+      required:
+      - points
+      properties:
+        points:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          description: Error information
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              description: A code identifying the type of error, either an HTTP error code, `498` (signifying invalid or expired token), or `499` (signifying missing token).
+              type: integer
+              example: 400
+              enum:
+              - 400
+              - 401
+              - 403
+              - 404
+              - 405
+              - 413
+              - 415
+              - 498
+              - 499
+              - 500
+            message:
+              description: A message describing the error.
+              type: string
+              minLength: 1
+            details:
+              description: List of details about the error.
+              type: array
+              items:
+                type: string
+            restInfoUrl:
+              description: URL that provides the elevation service information.
+              type: string
+              example: https://elevation-api.arcgis.com/arcgis/rest/info
+    Format:
+      description: Optional, case-sensitive parameter to specify the format in which responses are given. Can either be `json` or `pjson`.
+      type: string
+      enum:
+      - json
+      - pjson
+    TokenProperty:
+      deprecated: true
+      description: |
+        Deprecated: The token parameter in the POST body has been deprecated. Use the `authorization` header with the `Bearer` scheme. For more information see [HTTP authorization headers](https://developers.arcgis.com/documentation/security-and-authentication/reference/http-authorization-headers/).
+
+        The authentication token, used to access the elevation service.
+
+        The `token` parameter can be either an API Key or short-lived token.
+
+        This parameter is required _unless_ you supply an access token in the
+        request header with one of the following keys using the "Bearer" scheme:
+
+        - `Authorization: Bearer <YOUR_TOKEN>`
+        - `X-Esri-Authorization: Bearer <YOUR_TOKEN>`
+
+        The provided `token` must be created from an ArcGIS Location Platform account and have the necessary `premium:user:elevation` privilege to use the elevation service.
+
+        **Developer guide**: To learn more, go to [Security and authentication](https://developers.arcgis.com/documentation/security-and-authentication/).
+      type: string
+      example: MyToken
+    RelativeToProperty:
+      description: |
+        The reference position (datum) from which to measure elevation.
+
+        The valid values are:
+        - meanSeaLevel: The elevation above or below the WGS84 geoid reference surface, which is approximately the mean sea level.
+                        This reference surface takes into account the local variations in gravity and provides a consistent vertical reference.
+        - ellipsoid: Ellipsoidal height is measured with respect to an ellipsoid, which is a mathematical model that approximates the shape of the Earth.
+                     This ellipsoid does not consider local variations in gravity and is commonly used in GPS positioning.
+      type: string
+      enum:
+      - meanSeaLevel
+      - ellipsoid
+      example: meanSeaLevel
+      default: meanSeaLevel
+    CoordinatesProperty:
+      type: array
+      description: |
+        Array of (longitude, latitude) pairs in the WGS84 spatial reference. Maximum size of 100 coordinates.
+
+        The order of each pair must be:
+        - longitude in the range `-179.99` to `179.99` representing the east/west or x-axis
+        - latitude in the range `-85.05` to `85.05` representing the north/south or y-axis
+
+        For example: `[[31.134167, 29.979167], [31.130833, 29.976111], [31.128333, 29.9725]]`
+      minItems: 1
+      maxItems: 100
+      items:
+        type: array
+        description: |
+          Longitude and latitude pair in the WGS84 spatial reference.
+
+          - longitude in the range `-179.99` to `179.99` representing the east/west or x-axis
+          - latitude in the range `-85.05` to `85.05` representing the north/south or y-axis
+        minItems: 2
+        maxItems: 2
+        items:
+          type: number
+          format: float
+      example:
+      - - 31.134167
+        - 29.979167
+      - - 31.130833
+        - 29.976111
+      - - 31.128333
+        - 29.9725
+  responses:
+    ElevationResponse:
+      description: Response to a request for the elevation at a specified point.
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            type: object
+            required:
+            - result
+            - elevationInfo
+            properties:
+              elevationInfo:
+                $ref: '#/components/schemas/ElevationInfo'
+              result:
+                $ref: '#/components/schemas/Elevation'
+          examples:
+            esriRelativeToMeanSeaLevel:
+              $ref: '#/components/examples/esriRelativeToMeanSeaLevelAtPoint'
+            mountEverestRelativeToMeanSeaLevel:
+              $ref: '#/components/examples/mountEverestRelativeToMeanSeaLevelAtPoint'
+            cardiffCastleRelativeToEllipsoid:
+              $ref: '#/components/examples/cardiffCastleRelativeToEllipsoidAtPoint'
+            bozemanMontantaRelativeToEllipsoid:
+              $ref: '#/components/examples/bozemanMontanaRelativeToEllipsoidAtPoint'
+    MultipleElevationsResponse:
+      description: |
+        Response to a request for the elevations at specified points.
+
+        There will be one response point for each point in the request. The
+        order of these points will match the order of the points in the request.
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            type: object
+            required:
+            - result
+            - elevationInfo
+            properties:
+              elevationInfo:
+                $ref: '#/components/schemas/ElevationInfo'
+              result:
+                $ref: '#/components/schemas/Elevations'
+          examples:
+            pyramidsOfGizaRelativeToMeanSeaLevel:
+              $ref: '#/components/examples/pyramidsOfGizaRelativeToMeanSeaLevelAtManyPoints'
+            greatWallOfChinaRelativeToEllipsoid:
+              $ref: '#/components/examples/greatWallOfChinaRelativeToEllipsoidAtManyPoints'
+    UnauthorizedErrorResponse:
+      description: Authentication Error. The API key or token is missing, invalid or expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerErrorResponse:
+      description: An error occurred on the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InvalidQueryErrorResponse:
+      description: Invalid query parameters / Incorrect portal item type.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PermissionMissingErrorResponse:
+      description: |
+        The supplied authentication information is valid but does not have permission to access the service.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ResourcePermissionErrorResponse:
+      description: The requested resource cannot be accessed because of incorrect sharing permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ContentTooLargeErrorResponse:
+      description: The request body was larger than limits defined by the service.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnsupportedMediaTypeErrorResponse:
+      description: The request's message content is of a media-type that the service does not support.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  parameters:
+    FormatParam:
+      name: f
+      in: query
+      required: false
+      description: Optional, case-sensitive parameter to specify the format in which responses are given. Can either be `json` or `pjson`.
+      schema:
+        $ref: '#/components/schemas/Format'
+    TokenParam:
+      name: token
+      in: query
+      required: false
+      description: |
+        The authentication token, used to access the elevation service.
+
+        The `token` parameter can be either an API Key or short-lived token.
+
+        This parameter is required _unless_ you supply an access token in the
+        request header with one of the following keys using the "Bearer" scheme:
+
+        - `Authorization: Bearer <YOUR_TOKEN>`
+        - `X-Esri-Authorization: Bearer <YOUR_TOKEN>`
+
+        The provided `token` must be created from an ArcGIS Location Platform account and have the necessary `premium:user:elevation` privilege to use the elevation service.
+
+        **Developer guide**: To learn more, go to [Security and authentication](https://developers.arcgis.com/documentation/security-and-authentication/).
+      schema:
+        type: string
+    LongitudeParam:
+      name: lon
+      in: query
+      schema:
+        type: number
+        minimum: -179.99
+        maximum: 179.99
+      required: true
+      description: The longitude of the specified point.
+    LatitudeParam:
+      name: lat
+      in: query
+      schema:
+        type: number
+        minimum: -85.05
+        maximum: 85.05
+      required: true
+      description: The latitude of the specified point.
+    RelativeToParam:
+      name: relativeTo
+      in: query
+      schema:
+        type: string
+        enum:
+        - meanSeaLevel
+        - ellipsoid
+        example: ellipsoid
+        default: meanSeaLevel
+      required: false
+      description: |
+        The reference position (datum) from which to measure elevation.
+
+        The valid values are:
+        - meanSeaLevel: The elevation above or below the WGS84 geoid reference surface, which is approximately the mean sea level.
+                        This reference surface takes into account the local variations in gravity and provides a consistent vertical reference.
+        - ellipsoid: Ellipsoidal height is measured with respect to an ellipsoid, which is a mathematical model that approximates the shape of the Earth.
+                     This ellipsoid does not consider local variations in gravity and is commonly used in GPS positioning.
+  examples:
+    esriRelativeToMeanSeaLevelAtPoint:
+      summary: Esri Campus relative to mean sea level
+      value:
+        elevationInfo:
+          relativeTo: meanSeaLevel
+        result:
+          point:
+            spatialReference:
+              wkid: 4326
+              vcsWkid: 105700
+            x: -117.194769
+            y: 34.057289
+            z: 395.8
+    mountEverestRelativeToMeanSeaLevelAtPoint:
+      summary: Mount Everest relative to mean sea level
+      value:
+        elevationInfo:
+          relativeTo: meanSeaLevel
+        result:
+          point:
+            spatialReference:
+              wkid: 4326
+              vcsWkid: 105700
+            x: 86.925278
+            y: 27.988333
+            z: 8743.9
+    cardiffCastleRelativeToEllipsoidAtPoint:
+      summary: Cardiff Castle relative to ellipsoid
+      value:
+        elevationInfo:
+          relativeTo: ellipsoid
+        result:
+          point:
+            spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: -3.1837516
+            y: 51.4822346
+            z: 58.5
+    bozemanMontanaRelativeToEllipsoidAtPoint:
+      summary: Bozeman Montana relative to ellipsoid
+      value:
+        elevationInfo:
+          relativeTo: ellipsoid
+        result:
+          point:
+            spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: -111.093244
+            y: 45.6830173
+            z: 1462.6
+    pyramidsOfGizaRelativeToMeanSeaLevelAtManyPoints:
+      summary: Pyramids of Giza relative to mean sea level
+      value:
+        elevationInfo:
+          relativeTo: meanSeaLevel
+        result:
+          points:
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 105700
+            x: 31.134167
+            y: 29.979167
+            z: 82.2
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 105700
+            x: 31.130833
+            y: 29.976111
+            z: 89.6
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 105700
+            x: 31.128333
+            y: 29.9725
+            z: 74.0
+    greatWallOfChinaRelativeToEllipsoidAtManyPoints:
+      summary: Great Wall of China relative to ellipsoid
+      value:
+        elevationInfo:
+          relativeTo: ellipsoid
+        result:
+          points:
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: 116.5655434
+            y: 40.4334671
+            z: 483.5
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: 116.5642703
+            y: 40.4331226
+            z: 502.2
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: 116.5646503
+            y: 40.4378045
+            z: 452.3
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: 116.5650703
+            y: 40.4404094
+            z: 481.9
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: 116.5642957
+            y: 40.4408222
+            z: 494.6
+          - spatialReference:
+              wkid: 4326
+              vcsWkid: 115700
+            x: 116.5697131
+            y: 40.4324535
+            z: 436.5
+  securitySchemes:
+    ArcGISTokenParameter:
+      type: apiKey
+      in: query
+      name: token
+      description: |
+        The authentication token, used to access the elevation service.
+
+        The `token` parameter can be either an API Key or short-lived token.
+
+        This parameter is required _unless_ you supply an access token in the
+        request header with one of the following keys using the "Bearer" scheme:
+
+        - `Authorization: Bearer <YOUR_TOKEN>`
+        - `X-Esri-Authorization: Bearer <YOUR_TOKEN>`
+
+        The provided `token` must be created from an ArcGIS Location Platform account and have the necessary `premium:user:elevation` privilege to use the elevation service.
+
+        **Developer guide**: To learn more, go to [Security and authentication](https://developers.arcgis.com/documentation/security-and-authentication/).
+    ArcGISXEsriAuthorizationHeader:
+      type: http
+      scheme: bearer
+      bearerFormat: 'X-Esri-Authorization: Bearer <YOUR_TOKEN>'
+      description: |
+        The authentication token, used to access the elevation service.
+
+        The token can be either an API Key or short-lived token.
+
+        Supply the token in the request header using the "Bearer" scheme:
+        `X-Esri-Authorization: Bearer <YOUR_TOKEN>`
+
+        The token must be created from an ArcGIS Location Platform account and have the necessary `premium:user:elevation` privilege to use the elevation service.
+
+        **Developer guide**: To learn more, go to [Security and authentication](https://developers.arcgis.com/documentation/security-and-authentication/).
+    ArcGISAuthorizationHeader:
+      type: http
+      scheme: bearer
+      bearerFormat: 'Authorization: Bearer <YOUR_TOKEN>'
+      description: |-
+        The authentication token, used to access the elevation service.
+
+        The token can be either an API Key or short-lived token.
+
+        Supply the token in the request header using the "Bearer" scheme:
+        `Authorization: Bearer <YOUR_TOKEN>`
+
+        The token must be created from an ArcGIS Location Platform account and have the necessary `premium:user:elevation` privilege to use the elevation service.
+
+        **Developer guide**: To learn more, go to [Security and authentication](https://developers.arcgis.com/documentation/security-and-authentication/).

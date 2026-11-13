@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionThreadCreatedEvent",
+  "title": "BetaManagedAgentsSessionThreadCreatedEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionThreadCreatedEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Emitted when a child thread is created. Written to the parent thread's output stream so clients observing the session see child creation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "agent_name",
+    "session_thread_id",
+    "workflow_run_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "session.thread_created",
+      "examples": [
+        "session.thread_created"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string",
+      "examples": [
+        "sevt_011CZkZWXb7pJkx1shYaqoCu"
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when the thread was created.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    },
+    "agent_name": {
+      "description": "Name of the callable agent the thread runs.",
+      "type": "string",
+      "examples": [
+        "Researcher"
+      ]
+    },
+    "session_thread_id": {
+      "description": "Public `sthr_` ID of the newly created thread.",
+      "type": "string",
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        "sthr_011CZkZVWa6oJjw1rgXZpnBt"
+      ]
+    },
+    "workflow_run_id": {
+      "description": "Identifier of the workflow run that created the thread, or `null` for any other thread.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        null
+      ]
+    }
+  },
+  "example": {
+    "type": "session.thread_created",
+    "id": "sevt_011CZkZWXb7pJkx1shYaqoCu",
+    "session_thread_id": "sthr_011CZkZVWa6oJjw1rgXZpnBt",
+    "processed_at": "2026-03-15T10:00:00Z",
+    "agent_name": "Researcher",
+    "workflow_run_id": null
+  }
+}

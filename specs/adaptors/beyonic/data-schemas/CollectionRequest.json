@@ -5,82 +5,150 @@
   "x-openfn-adaptor": "beyonic",
   "x-source": {
     "openapi": "#/components/schemas/CollectionRequest",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
+  "description": "A request asking a mobile subscriber to send funds to you.",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": "integer",
+      "description": "Unique object identifier."
     },
     "organization": {
-      "type": "integer"
+      "type": "integer",
+      "description": "ID of the organization that owns the request."
     },
     "amount": {
-      "type": "string"
+      "type": "string",
+      "description": "The collection request amount. Decimal serialised as a string, e.g. \"3000.0000\"."
     },
     "currency": {
-      "type": "string"
-    },
-    "phonenumber": {
-      "type": "string"
-    },
-    "contact": {
-      "$ref": "Contact.json"
-    },
-    "reason": {
-      "type": "string"
-    },
-    "status": {
       "type": "string",
-      "example": "pending"
-    },
-    "collection": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "description": "3-letter currency code (BXC is the Beyonic test currency)."
     },
     "account": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "description": "ID of the account the collection will be sent to."
+    },
+    "phonenumber": {
+      "type": "string",
+      "description": "Phone number the request is for, international format."
+    },
+    "contact": {
+      "$ref": "Contact.json"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Internal description or reason."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom key/value metadata (up to 10 string attributes)."
+    },
+    "collection": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "ID of the collection that fulfilled the request, if any."
     },
     "success_message": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Confirmation SMS sent on successful payment."
+    },
+    "send_instructions": {
+      "type": "boolean",
+      "description": "Whether payment instructions are sent to the subscriber (defaults to false)."
     },
     "instructions": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "description": "Override for the default instructions; \"skip\" sends none."
     },
-    "send_instructions": {
-      "type": "boolean"
+    "status": {
+      "type": "string",
+      "description": "pending, pending_dispatched, processing_started, successful, failed, expired or reversed (filters also accept instructions_sent)."
     },
     "error_message": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "description": "Error description, if any."
     },
-    "metadata": {
-      "type": "object",
-      "additionalProperties": true
+    "error_details": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Additional error details."
+    },
+    "expiry_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "When the request expires (default 24 hours)."
+    },
+    "start_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Scheduled start for future-dated requests."
+    },
+    "max_attempts": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Configurable retry attempts (max 3, 0 disables)."
+    },
+    "retry_interval_minutes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Minutes between retries (minimum 10)."
+    },
+    "subscription_settings": {
+      "$ref": "SubscriptionSettings.json"
     },
     "created": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When the object was created (UTC)."
     },
     "author": {
-      "type": "integer"
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "ID of the user who created the object."
     },
     "modified": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When the object was last modified (UTC)."
     },
     "updated_by": {
-      "type": "integer"
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "ID of the user who last updated the object."
     }
   }
 }

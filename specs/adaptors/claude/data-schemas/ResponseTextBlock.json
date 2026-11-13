@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/ResponseTextBlock",
+  "title": "ResponseTextBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/ResponseTextBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "citations": {
+      "anyOf": [
+        {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "char_location": "#/components/schemas/ResponseCharLocationCitation",
+                "content_block_location": "#/components/schemas/ResponseContentBlockLocationCitation",
+                "page_location": "#/components/schemas/ResponsePageLocationCitation",
+                "search_result_location": "#/components/schemas/ResponseSearchResultLocationCitation",
+                "web_search_result_location": "#/components/schemas/ResponseWebSearchResultLocationCitation"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "ResponseCharLocationCitation.json"
+              },
+              {
+                "$ref": "ResponsePageLocationCitation.json"
+              },
+              {
+                "$ref": "ResponseContentBlockLocationCitation.json"
+              },
+              {
+                "$ref": "ResponseWebSearchResultLocationCitation.json"
+              },
+              {
+                "$ref": "ResponseSearchResultLocationCitation.json"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Citations supporting the text block.\n\nThe type of citation returned will depend on the type of document being cited. Citing a PDF results in `page_location`, plain text results in `char_location`, and content document results in `content_block_location`.",
+      "title": "Citations"
+    },
+    "text": {
+      "minLength": 0,
+      "title": "Text",
+      "type": "string"
+    },
+    "type": {
+      "const": "text",
+      "default": "text",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "citations",
+    "text",
+    "type"
+  ],
+  "type": "object"
+}

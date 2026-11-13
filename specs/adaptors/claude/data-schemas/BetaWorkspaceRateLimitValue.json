@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaWorkspaceRateLimitValue",
+  "title": "WorkspaceRateLimitValue",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaWorkspaceRateLimitValue",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "org_limit": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Org Limit",
+      "description": "The organization-level value for the same limiter type, for reference. `null` when the organization has no limit configured for this limiter type."
+    },
+    "source": {
+      "oneOf": [
+        {
+          "$ref": "BetaWorkspaceRateLimitWorkspaceSource.json"
+        },
+        {
+          "$ref": "BetaWorkspaceRateLimitOrganizationSource.json"
+        }
+      ],
+      "title": "Source",
+      "description": "Where `value` comes from. `organization` values are listed only when `include_inherited` is `true`, and then `value` equals `org_limit`.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/BetaWorkspaceRateLimitOrganizationSource",
+          "workspace": "#/components/schemas/BetaWorkspaceRateLimitWorkspaceSource"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "title": "Type",
+      "description": "The limiter type (for example, `requests_per_minute` or `input_tokens_per_minute`)."
+    },
+    "value": {
+      "type": "integer",
+      "title": "Value",
+      "description": "The workspace's value for this limiter type: the workspace-level override when `source.type` is `workspace`, otherwise the organization's value."
+    }
+  },
+  "type": "object",
+  "required": [
+    "org_limit",
+    "source",
+    "type",
+    "value"
+  ]
+}

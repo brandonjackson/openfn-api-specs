@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsUserInterruptEvent",
+  "title": "BetaManagedAgentsUserInterruptEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsUserInterruptEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An interrupt event that pauses agent execution and returns control to the user.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "user.interrupt"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "processed_at": {
+      "description": "Timestamp when the interrupt was processed.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "session_thread_id": {
+      "description": "If absent, interrupts every non-archived thread in a multiagent session (or the primary alone in a single-agent session). If present, interrupts only the named thread.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

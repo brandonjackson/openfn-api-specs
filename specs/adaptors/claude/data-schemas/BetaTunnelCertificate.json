@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaTunnelCertificate",
+  "title": "BetaTunnelCertificate",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaTunnelCertificate",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A CA certificate attached to a tunnel.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "tunnel_id",
+    "fingerprint",
+    "expires_at",
+    "created_at",
+    "archived_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "tunnel_certificate"
+    },
+    "id": {
+      "description": "Unique identifier for the certificate, prefixed with `tcrt_`.",
+      "type": "string"
+    },
+    "tunnel_id": {
+      "description": "ID of the tunnel the certificate is registered against.",
+      "type": "string"
+    },
+    "fingerprint": {
+      "description": "Lowercase hex SHA-256 fingerprint of the certificate's DER encoding.",
+      "type": "string"
+    },
+    "expires_at": {
+      "description": "RFC 3339 datetime string indicating when the certificate expires, or `null` if it does not expire.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "description": "RFC 3339 datetime string indicating when the certificate was registered.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "archived_at": {
+      "description": "RFC 3339 datetime string indicating when the certificate was archived. Null if it is still in the trusted set.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

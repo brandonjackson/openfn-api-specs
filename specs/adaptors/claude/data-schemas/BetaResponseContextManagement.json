@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseContextManagement",
+  "title": "ResponseContextManagement",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseContextManagement",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "applied_edits": {
+      "description": "List of context management edits that were applied.",
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "clear_thinking_20251015": "#/components/schemas/BetaResponseClearThinking20251015Edit",
+            "clear_tool_uses_20250919": "#/components/schemas/BetaResponseClearToolUses20250919Edit"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "BetaResponseClearToolUses20250919Edit.json"
+          },
+          {
+            "$ref": "BetaResponseClearThinking20251015Edit.json",
+            "x-anthropic-beta-required": [
+              "context-management-2025-06-27"
+            ]
+          }
+        ]
+      },
+      "title": "Applied Edits",
+      "type": "array"
+    }
+  },
+  "required": [
+    "applied_edits"
+  ],
+  "type": "object"
+}

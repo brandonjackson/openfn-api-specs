@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaPluginMarketplaceValidationReport",
+  "title": "PluginMarketplaceValidationReport",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaPluginMarketplaceValidationReport",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "commit_sha": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Commit Sha",
+      "description": "The full SHA of the commit that was validated: for a repository, the commit that was read; for an uploaded archive, the commit recorded in the archive's comment (as a Git host's download writes it; not verified), else null.",
+      "examples": [
+        "9fceb02d0ae598e95dc970b74767f19372d61af8"
+      ]
+    },
+    "manifest_error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Manifest Error",
+      "description": "Set when nothing could be validated: the repository or archive could not be read, or marketplace.json is missing, malformed or over a limit. Null otherwise."
+    },
+    "manifest_error_code": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Manifest Error Code",
+      "description": "A stable identifier for `manifest_error`; null when that is.",
+      "examples": [
+        "marketplace_sync_manifest_not_found"
+      ]
+    },
+    "plugin_errors": {
+      "items": {
+        "$ref": "BetaPluginMarketplaceValidationPluginError.json"
+      },
+      "type": "array",
+      "title": "Plugin Errors",
+      "description": "One entry per plugin a synchronization would skip entirely, keyed by the plugin's name in marketplace.json."
+    },
+    "plugin_warnings": {
+      "items": {
+        "$ref": "BetaPluginMarketplaceValidationPluginWarnings.json"
+      },
+      "type": "array",
+      "title": "Plugin Warnings",
+      "description": "One entry per plugin that would synchronize with some of its contents left out, keyed by the plugin's name in marketplace.json."
+    },
+    "ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Ref",
+      "description": "For a repository, the branch that was read by name: the one requested, or else the branch a synchronization of this repository is set to read. Null when no branch is named or set and the repository's default branch was read, for a request by commit SHA, and for an uploaded archive.",
+      "examples": [
+        "main"
+      ]
+    },
+    "total_plugin_count": {
+      "type": "integer",
+      "title": "Total Plugin Count",
+      "description": "How many plugins marketplace.json declares; 0 when it could not be read."
+    },
+    "type": {
+      "type": "string",
+      "const": "plugin_marketplace_validation_report",
+      "title": "Type",
+      "description": "Always `plugin_marketplace_validation_report`.",
+      "default": "plugin_marketplace_validation_report"
+    },
+    "valid": {
+      "type": "boolean",
+      "title": "Valid",
+      "description": "True when marketplace.json is well-formed and no plugin would be skipped; warnings never make it false.",
+      "examples": [
+        false
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "commit_sha",
+    "manifest_error",
+    "manifest_error_code",
+    "plugin_errors",
+    "plugin_warnings",
+    "ref",
+    "total_plugin_count",
+    "type",
+    "valid"
+  ],
+  "description": "The outcome of validating plugin marketplace content: a report, not a\nstored object, so nothing in it can be retrieved afterwards."
+}

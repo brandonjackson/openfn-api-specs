@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaPluginInstallationSettingDeleted",
+  "title": "PluginInstallationSettingDeleted",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaPluginInstallationSettingDeleted",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "plugin_id": {
+      "type": "string",
+      "title": "Plugin Id",
+      "description": "The Plugin's ID.",
+      "examples": [
+        "plugin_01JyHfbRkZvD1gW7oTqXc3Ne"
+      ]
+    },
+    "target": {
+      "oneOf": [
+        {
+          "$ref": "BetaPluginTargetOrganization.json"
+        },
+        {
+          "$ref": "BetaPluginTargetRbacGroup.json"
+        },
+        {
+          "$ref": "BetaPluginTargetOrganizationMember.json"
+        }
+      ],
+      "title": "Target",
+      "description": "Whose setting was removed.",
+      "examples": [
+        {
+          "rbac_group_id": "rbac_group_012rppKaSVsmTo6NqRDXQXNF",
+          "type": "rbac_group"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/BetaPluginTargetOrganization",
+          "organization_member": "#/components/schemas/BetaPluginTargetOrganizationMember",
+          "rbac_group": "#/components/schemas/BetaPluginTargetRbacGroup"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "const": "plugin_installation_setting_deleted",
+      "title": "Type",
+      "description": "Always `plugin_installation_setting_deleted`.",
+      "default": "plugin_installation_setting_deleted"
+    }
+  },
+  "type": "object",
+  "required": [
+    "plugin_id",
+    "target",
+    "type"
+  ],
+  "description": "Confirmation that one target's installation setting was removed, naming\nthe Plugin and the target in place of an ID."
+}

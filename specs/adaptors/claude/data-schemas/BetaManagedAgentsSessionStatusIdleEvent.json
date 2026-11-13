@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionStatusIdleEvent",
+  "title": "BetaManagedAgentsSessionStatusIdleEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionStatusIdleEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Indicates the agent has paused and is awaiting user input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "stop_details",
+    "stop_reason"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "session.status_idle"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "processed_at": {
+      "description": "Timestamp of status change.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "stop_details": {
+      "description": "Structured information about why the session stopped. `null` when there is nothing more to report.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionStopDetails.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stop_reason": {
+      "type": "object",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "end_turn": "#/components/schemas/BetaManagedAgentsSessionEndTurn",
+          "requires_action": "#/components/schemas/BetaManagedAgentsSessionRequiresAction",
+          "retries_exhausted": "#/components/schemas/BetaManagedAgentsSessionRetriesExhausted",
+          "budget_reached": "#/components/schemas/BetaManagedAgentsSessionBudgetReached",
+          "refusal": "#/components/schemas/BetaManagedAgentsSessionRefusal"
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionEndTurn.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionRequiresAction.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionRetriesExhausted.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionBudgetReached.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionRefusal.json"
+        }
+      ]
+    }
+  }
+}

@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "asana",
   "x-source": {
     "openapi": "#/components/schemas/TaskBase",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "allOf": [
     {
@@ -133,7 +133,7 @@
           }
         },
         "html_notes": {
-          "description": "[Opt In](/docs/inputoutput-options). The notes of the text with formatting as HTML.",
+          "description": "[Opt In](/docs/inputoutput-options). The notes of the text with formatting as HTML. See [rich text](/docs/rich-text).",
           "type": "string",
           "example": "<body>Mittens <em>really</em> likes the stuff from Humboldt.</body>"
         },
@@ -149,6 +149,12 @@
           "items": {
             "$ref": "Like.json"
           },
+          "readOnly": true
+        },
+        "has_subtasks_date_mismatch": {
+          "description": "[Opt In](/docs/inputoutput-options). True when one or more descendant subtasks have dates outside the task's own date range. This field reflects the latest computed rollup state and returns false when no rollup has been computed.",
+          "type": "boolean",
+          "example": true,
           "readOnly": true
         },
         "is_rendered_as_separator": {
@@ -175,15 +181,7 @@
           "type": "array",
           "readOnly": true,
           "items": {
-            "type": "object",
-            "properties": {
-              "project": {
-                "$ref": "ProjectCompact.json"
-              },
-              "section": {
-                "$ref": "SectionCompact.json"
-              }
-            }
+            "$ref": "TaskMembership.json"
           }
         },
         "modified_at": {

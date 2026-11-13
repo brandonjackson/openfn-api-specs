@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaRuleMatch",
+  "title": "RuleMatch",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaRuleMatch",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "audience": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 1024
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Audience",
+      "description": "Exact match against the `aud` claim (any element if array). When omitted, the JWT's `aud` must still equal Anthropic's expected audience for the issuer; setting this field overrides that default."
+    },
+    "claims": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Claims",
+      "description": "Exact-match `{claim: value}` pairs against top-level claims. Only string-valued claims can be matched; use `condition` for non-string claims."
+    },
+    "condition": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 4096
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Condition",
+      "description": "CEL expression over claims for logic the structural fields can't express. Must evaluate to a boolean and may reference only the `claims` variable; a constant-true expression (such as `true`) is rejected with 400."
+    },
+    "subject_prefix": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 1024
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Subject Prefix",
+      "description": "Match the verified JWT `sub` claim. Exact match unless the value ends with `*`, in which case it is a prefix match. Example: `repo:my-org/my-repo:ref:refs/heads/main`."
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "description": "Does the incoming JWT qualify?\n\nAll populated fields must pass; omitted fields are skipped. At least one\nof `subject_prefix` (other than a wildcard-only value like `*`), `claims`,\nor `condition` is required; `audience` alone is not sufficient."
+}

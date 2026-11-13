@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaUsage",
+  "title": "Usage",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaUsage",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "cache_creation": {
+      "anyOf": [
+        {
+          "$ref": "BetaCacheCreation.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Breakdown of cached tokens by TTL"
+    },
+    "cache_creation_input_tokens": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The number of input tokens used to create the cache entry.",
+      "examples": [
+        2051
+      ],
+      "title": "Cache Creation Input Tokens"
+    },
+    "cache_read_input_tokens": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The number of input tokens read from the cache.",
+      "examples": [
+        2051
+      ],
+      "title": "Cache Read Input Tokens"
+    },
+    "fallback_credit": {
+      "anyOf": [
+        {
+          "$ref": "BetaFallbackCreditUsage.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Outcome of the `fallback_credit_token` presented on this request.\n\nPresent on every response to a non-batch request that carried a\n`fallback_credit_token`, in either redemption mode; absent otherwise (batch\nitems accept and ignore the token and carry no outcome object).",
+      "x-anthropic-beta-required": [
+        "fallback-credit-2026-07-01"
+      ]
+    },
+    "inference_geo": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The geographic region where inference was performed for this request.",
+      "examples": [
+        "global"
+      ],
+      "title": "Inference Geo"
+    },
+    "input_tokens": {
+      "description": "The number of input tokens which were used.",
+      "examples": [
+        2095
+      ],
+      "minimum": 0,
+      "title": "Input Tokens",
+      "type": "integer"
+    },
+    "iterations": {
+      "$ref": "BetaIterationsUsage.json",
+      "x-anthropic-beta-required": [
+        "compact-2026-01-12",
+        "compact-2026-09-04",
+        "advisor-tool-2026-03-01",
+        "task-budgets-2026-03-13",
+        "server-side-fallback-2026-06-01",
+        "server-side-fallback-2026-07-01"
+      ]
+    },
+    "output_tokens": {
+      "description": "The number of output tokens which were used.",
+      "examples": [
+        503
+      ],
+      "minimum": 0,
+      "title": "Output Tokens",
+      "type": "integer"
+    },
+    "output_tokens_details": {
+      "anyOf": [
+        {
+          "$ref": "BetaOutputTokensDetails.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Breakdown of output tokens by category.\n\n`output_tokens` remains the inclusive, authoritative total used for billing.\nThis object provides a read-only decomposition for observability — for example,\nhow many of the billed output tokens were spent on internal reasoning that may\nhave been summarized before being returned to you."
+    },
+    "server_tool_use": {
+      "anyOf": [
+        {
+          "$ref": "BetaServerToolUsage.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The number of server tool requests."
+    },
+    "service_tier": {
+      "anyOf": [
+        {
+          "enum": [
+            "standard",
+            "priority",
+            "batch"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "If the request used the priority, standard, or batch tier.",
+      "title": "Service Tier"
+    },
+    "speed": {
+      "anyOf": [
+        {
+          "$ref": "BetaSpeed.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The inference speed mode used for this request."
+    }
+  },
+  "required": [
+    "cache_creation",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+    "fallback_credit",
+    "inference_geo",
+    "input_tokens",
+    "iterations",
+    "output_tokens",
+    "output_tokens_details",
+    "server_tool_use",
+    "service_tier",
+    "speed"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaBashTool_20241022",
+  "title": "BashTool_20241022",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaBashTool_20241022",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowed_callers": {
+      "items": {
+        "$ref": "BetaAllowedCaller.json"
+      },
+      "title": "Allowed Callers",
+      "type": "array"
+    },
+    "cache_control": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Create a cache control breakpoint at this content block.",
+      "title": "Cache Control"
+    },
+    "defer_loading": {
+      "description": "If true, tool will not be included in initial system prompt. Only loaded when returned via tool_reference from tool search.",
+      "title": "Defer Loading",
+      "type": "boolean"
+    },
+    "input_examples": {
+      "items": {
+        "additionalProperties": {
+          "$ref": "BetaJsonValue.json"
+        },
+        "type": "object"
+      },
+      "title": "Input Examples",
+      "type": "array"
+    },
+    "name": {
+      "const": "bash",
+      "description": "Name of the tool.\n\nThis is how the tool will be called by the model and in `tool_use` blocks.",
+      "title": "Name",
+      "type": "string"
+    },
+    "strict": {
+      "description": "When true, guarantees schema validation on tool names and inputs",
+      "title": "Strict",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "bash_20241022",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "type"
+  ],
+  "type": "object"
+}

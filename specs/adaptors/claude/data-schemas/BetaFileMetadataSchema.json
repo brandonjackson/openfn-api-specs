@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaFileMetadataSchema",
+  "title": "FileMetadataSchema",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaFileMetadataSchema",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "created_at": {
+      "description": "RFC 3339 datetime string representing when the file was created.",
+      "examples": [
+        "2025-04-15T18:37:24.100435Z"
+      ],
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "downloadable": {
+      "default": false,
+      "description": "Whether the file can be downloaded.",
+      "examples": [
+        false
+      ],
+      "title": "Downloadable",
+      "type": "boolean"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "RFC 3339 datetime string representing when the file will expire and become unavailable for download. Null if the file does not expire. For files uploaded with `expires_in_seconds`, this is the upload time plus that value.",
+      "examples": [
+        "2025-05-15T18:37:24.100435Z"
+      ],
+      "title": "Expires At"
+    },
+    "filename": {
+      "description": "Original filename of the uploaded file.",
+      "examples": [
+        "document.pdf"
+      ],
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Filename",
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique object identifier.\n\nThe format and length of IDs may change over time.",
+      "examples": [
+        "file_011CNha8iCJcU1wXNR6q4V8w"
+      ],
+      "title": "Id",
+      "type": "string"
+    },
+    "mime_type": {
+      "description": "MIME type of the file.",
+      "examples": [
+        "application/pdf"
+      ],
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Mime Type",
+      "type": "string"
+    },
+    "scope": {
+      "anyOf": [
+        {
+          "$ref": "BetaFileScope.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The scope of this file, indicating the context in which it was created (e.g., a session)."
+    },
+    "size_bytes": {
+      "description": "Size of the file in bytes.",
+      "examples": [
+        102400
+      ],
+      "minimum": 0,
+      "title": "Size Bytes",
+      "type": "integer"
+    },
+    "type": {
+      "const": "file",
+      "description": "Object type.\n\nFor files, this is always `\"file\"`.",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "created_at",
+    "filename",
+    "id",
+    "mime_type",
+    "size_bytes",
+    "type"
+  ],
+  "type": "object"
+}

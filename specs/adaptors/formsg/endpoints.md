@@ -1,16 +1,12 @@
-# FormSG Webhook / Submission API (OpenFn formsg synthesized) (formsg) v1.0.0
+# FormSG webhook submissions (OpenFn formsg adaptor operations) (formsg) vformsg-sdk 0.15
 
 <!-- derived from openapi.json by `pnpm specs index formsg` — do not edit by hand -->
 
-base: http://localhost:4010 | auth: not declared | 3 operations in 3 resources
+base: http://localhost:4010 | auth: not declared | 3 operations in 1 resource
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## decrypt
-- POST /decrypt — decryptSubmission: Decrypt a FormSG submission (local SDK operation, modelled as an endpoint)
-
-## process
-- POST /process — processWebhook: Verify and decrypt a FormSG webhook in one step
-
-## verify
-- POST /verify — verifyWebhook: Verify a FormSG webhook signature header
+## Submissions
+- POST /decryptSubmission — decryptSubmission: Decrypt a submission (optionally verifying the signature first)
+- POST /verifyWebhook — verifyWebhook: Verify an X-FormSG-Signature header
+- POST /processWebhook — processWebhook: Verify and decrypt in one step

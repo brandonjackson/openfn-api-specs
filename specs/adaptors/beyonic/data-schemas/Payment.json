@@ -5,77 +5,156 @@
   "x-openfn-adaptor": "beyonic",
   "x-source": {
     "openapi": "#/components/schemas/Payment",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
+  "description": "A mobile money, airtime or bank payment sent from your account.",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": "integer",
+      "description": "Unique object identifier."
     },
     "organization": {
-      "type": "integer"
-    },
-    "amount": {
-      "type": "string"
-    },
-    "currency": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
+      "type": "integer",
+      "description": "ID of the organization the payment belongs to."
     },
     "payment_type": {
-      "type": "string"
-    },
-    "state": {
       "type": "string",
-      "example": "processed"
+      "description": "money (default) or airtime.",
+      "enum": [
+        "money",
+        "airtime"
+      ]
+    },
+    "amount": {
+      "type": "string",
+      "description": "The payment amount. Decimal serialised as a string, e.g. \"3000.0000\"."
+    },
+    "currency": {
+      "type": "string",
+      "description": "3-letter currency code."
+    },
+    "account": {
+      "type": "integer",
+      "description": "ID of the account the payment is made from."
+    },
+    "description": {
+      "type": "string",
+      "description": "Payment description sent to the recipient."
+    },
+    "phone_nos": {
+      "type": "array",
+      "description": "Recipients and amounts (v5+; before v5 a list of phone-number strings).",
+      "items": {
+        "$ref": "PaymentRecipient.json"
+      }
     },
     "start_date": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When the payment is scheduled to be delivered (UTC)."
     },
-    "account": {
-      "type": [
-        "integer",
-        "null"
-      ]
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Custom key/value metadata (up to 10 string attributes)."
     },
-    "charged_fee": {
-      "type": "number"
+    "state": {
+      "type": "string",
+      "description": "new, validated, approval_needed, approval_requested, approved, rejected, scheduled, processed, processed_with_errors or cancelled."
     },
     "last_error": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "description": "Latest error, if any."
+    },
+    "rejected_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Why the payment was rejected."
+    },
+    "rejected_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "When the payment was rejected."
+    },
+    "rejected_by": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "User who rejected the payment."
+    },
+    "cancelled_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Why the payment was cancelled."
+    },
+    "cancelled_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "When the payment was cancelled."
+    },
+    "cancelled_by": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "User who cancelled the payment."
     },
     "remote_transaction_id": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "description": "Network transaction ID once completed."
     },
     "send_sms_message": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the description is also sent as an SMS."
     },
-    "metadata": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "additionalProperties": true
+    "charged_fee": {
+      "type": "number",
+      "description": "Fee charged (completed payments only)."
     },
-    "author": {
-      "type": "integer"
+    "transactions": {
+      "type": "array",
+      "description": "Related transactions.",
+      "items": {}
     },
     "created": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When the object was created (UTC)."
+    },
+    "author": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "ID of the user who created the object."
     },
     "modified": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When the object was last modified (UTC)."
+    },
+    "updated_by": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "ID of the user who last updated the object."
     }
   }
 }

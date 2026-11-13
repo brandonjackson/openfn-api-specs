@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "asana",
   "x-source": {
     "openapi": "#/components/schemas/TaskResponse",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "allOf": [
     {
@@ -37,7 +37,7 @@
           ]
         },
         "custom_fields": {
-          "description": "Array of custom field values applied to the task. These represent the custom field values recorded on this project for a particular custom field. For example, these custom field values will contain an `enum_value` property for custom fields of type `enum`, a `text_value` property for custom fields of type `text`, and so on. Please note that the `gid` returned on each custom field value *is identical* to the `gid` of the custom field, which allows referencing the custom field metadata through the `/custom_fields/custom_field_gid` endpoint.",
+          "description": "Array of custom field values applied to the task. These represent the custom field values recorded on this project for a particular custom field. For example, these custom field values will contain an `enum_value` property for custom fields of type `enum`, a `text_value` property for custom fields of type `text`, and so on. Please note that the `gid` returned on each custom field value *is identical* to the `gid` of the custom field, which allows referencing the custom field metadata through the `/custom_fields/custom_field_gid` endpoint. The array includes custom fields from projects the task belongs to directly and from projects inherited from its full ancestor chain.",
           "type": "array",
           "items": {
             "$ref": "CustomFieldResponse.json"
@@ -84,11 +84,19 @@
           ]
         },
         "projects": {
-          "description": "*Create-only.* Array of projects this task is associated with. At task creation time, this array can be used to add the task to many projects at once. After task creation, these associations can be modified using the addProject and removeProject endpoints.",
+          "description": "*Create-only.* Array of projects this task is directly associated with. At task creation time, this array can be used to add the task to many projects at once. After task creation, these associations can be modified using the addProject and removeProject endpoints.",
           "type": "array",
           "readOnly": true,
           "items": {
             "$ref": "ProjectCompact.json"
+          }
+        },
+        "effective_memberships": {
+          "description": "<p><strong style={{ color: \"#4573D2\" }}>Full object requires scope: </strong><code>projects:read</code>, <code>project_sections:read</code></p>\n\nOpt-in, read-only. The union of direct and inherited memberships for this task. If the task is both directly associated with and inherits the same project, the direct membership takes precedence.",
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "EffectiveTaskMembership.json"
           }
         },
         "tags": {

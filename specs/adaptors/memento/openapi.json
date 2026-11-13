@@ -1,64 +1,174 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Memento Database Cloud API (mock subset)",
+    "title": "Memento Cloud API Beta",
     "version": "v1",
-    "description": "Focused subset of the Memento Database Cloud REST API used by the OpenFn memento adaptor: listing libraries, reading a library and its fields, and listing/reading/creating/updating entries.",
+    "description": "The Memento Cloud API (beta) reads and writes Memento Database cloud libraries and their entries. Every request carries the user's permanent Memento Cloud auth token as the `token` query parameter; the API allows 10 requests per minute. Converted by hand from the vendor's API Blueprint on Apiary. The OpenFn memento adaptor calls https://api.mementodatabase.com/v1/... with `token` in the query and paginates listEntries via nextPageToken, backing off on 403 rate-limit errors.",
     "x-openfn-adaptor": "memento"
   },
-  "servers": [{ "url": "https://api.mementodatabase.com" }],
+  "servers": [
+    {
+      "url": "https://api.mementodatabase.com/v1",
+      "description": "Memento Cloud API (blueprint HOST)"
+    }
+  ],
+  "security": [
+    {
+      "token": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Libraries",
+      "description": "Libraries and their field definitions."
+    },
+    {
+      "name": "Entries",
+      "description": "Entries (records) in a library."
+    },
+    {
+      "name": "Search",
+      "description": "Full-text entry search."
+    },
+    {
+      "name": "Files",
+      "description": "Image/file field uploads."
+    }
+  ],
   "paths": {
-    "/v1/libraries": {
+    "/libraries": {
       "get": {
         "operationId": "listLibraries",
-        "summary": "List all libraries",
+        "tags": [
+          "Libraries"
+        ],
+        "summary": "List libraries",
         "responses": {
           "200": {
-            "description": "A list of libraries",
+            "description": "The user's libraries, wrapped as { libraries: [...] } (no pagination). List items carry id, name, owner, createdTime and modifiedTime only.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/LibraryList" }
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "libraries": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Library"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/v1/libraries/{libraryId}": {
+    "/libraries/{libraryId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/libraryId"
+        }
+      ],
       "get": {
         "operationId": "getLibrary",
-        "summary": "Get a library and its fields",
-        "parameters": [
-          { "name": "libraryId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Libraries"
         ],
+        "summary": "Get a library",
+        "description": "Returns the library with its revision, size and field definitions (the adaptor's getFields).",
         "responses": {
           "200": {
-            "description": "A single library including its field definitions",
+            "description": "The library, including its fields.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Library" }
+                "schema": {
+                  "$ref": "#/components/schemas/Library"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/v1/libraries/{libraryId}/entries": {
+    "/libraries/{libraryId}/entries": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/libraryId"
+        }
+      ],
       "get": {
         "operationId": "listEntries",
-        "summary": "List entries in a library",
+        "tags": [
+          "Entries"
+        ],
+        "summary": "List entries on a library",
         "parameters": [
-          { "name": "libraryId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 100 } },
-          { "name": "fields", "in": "query", "schema": { "type": "string", "default": "all" } },
-          { "name": "startRevision", "in": "query", "schema": { "type": "integer" } }
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "example": 50,
+            "description": "The maximum number of entries to return per page."
+          },
+          {
+            "$ref": "#/components/parameters/pageToken"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "name": "startRevision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Only entries updated/created at or after this revision are returned."
+          }
         ],
         "responses": {
           "200": {
-            "description": "A page of entries",
+            "description": "A page of entries.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/EntryList" }
+                "schema": {
+                  "$ref": "#/components/schemas/EntryList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -66,64 +176,261 @@
       },
       "post": {
         "operationId": "createEntry",
-        "summary": "Create an entry",
-        "parameters": [
-          { "name": "libraryId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Entries"
         ],
+        "summary": "Create a new entry",
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/EntryInput" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryInput"
+              }
+            }
           }
         },
         "responses": {
           "201": {
-            "description": "The created entry",
+            "description": "The created entry.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Entry" }
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/v1/libraries/{libraryId}/entries/{entryId}": {
+    "/libraries/{libraryId}/entries/{entryId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/libraryId"
+        },
+        {
+          "$ref": "#/components/parameters/entryId"
+        }
+      ],
       "get": {
         "operationId": "getEntry",
-        "summary": "Get a single entry",
-        "parameters": [
-          { "name": "libraryId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "entryId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "tags": [
+          "Entries"
         ],
+        "summary": "Get a single entry",
         "responses": {
           "200": {
-            "description": "A single entry",
+            "description": "The entry.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Entry" }
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       },
       "patch": {
-        "operationId": "updateEntry",
-        "summary": "Update an entry",
-        "parameters": [
-          { "name": "libraryId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "entryId", "in": "path", "required": true, "schema": { "type": "string" } }
+        "operationId": "editEntry",
+        "tags": [
+          "Entries"
         ],
+        "summary": "Edit an entry",
+        "description": "Documented as PATCH. Note: the adaptor's updateEntry sends PUT to this path, which the blueprint does not document.",
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/EntryInput" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryInput"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The updated entry",
+            "description": "The updated entry.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Entry" }
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteEntry",
+        "tags": [
+          "Entries"
+        ],
+        "summary": "Delete an entry",
+        "responses": {
+          "204": {
+            "description": "Entry deleted."
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/libraries/{libraryId}/search": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/libraryId"
+        }
+      ],
+      "get": {
+        "operationId": "searchEntries",
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search entries",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "URL-encoded search query."
+          },
+          {
+            "$ref": "#/components/parameters/pageToken"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntrySearchResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/libraries/{libraryId}/entries/{entryId}/files/{fieldId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/libraryId"
+        },
+        {
+          "$ref": "#/components/parameters/entryId"
+        },
+        {
+          "name": "fieldId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "number"
+          },
+          "example": 10,
+          "description": "Image/File field id."
+        }
+      ],
+      "post": {
+        "operationId": "uploadEntryFiles",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Upload one or more files",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image[file]": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File content (the blueprint's example part name)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The uploaded files.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/File"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error. Body shape observed from the live API (401) and the adaptor's rate-limit handling (403 'API rate limit exceeded'); not in the blueprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -132,70 +439,319 @@
     }
   },
   "components": {
-    "schemas": {
-      "LibraryList": {
-        "type": "object",
-        "properties": {
-          "libraries": { "type": "array", "items": { "$ref": "#/components/schemas/Library" } }
-        }
+    "securitySchemes": {
+      "token": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "token",
+        "description": "Memento Cloud User Auth Token: user-specific and permanent; keep it confidential."
+      }
+    },
+    "parameters": {
+      "libraryId": {
+        "name": "libraryId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "example": "ht5dj7hqtey87",
+        "description": "Internal id of the library."
       },
+      "entryId": {
+        "name": "entryId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "example": "ht5dj7hq44ey87",
+        "description": "Internal id of the entry."
+      },
+      "pageToken": {
+        "name": "pageToken",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "The token for continuing a previous list request on the next page."
+      },
+      "fields": {
+        "name": "fields",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "1,2",
+        "description": "Comma-separated list of field ids to include in the response; `all` includes all fields."
+      }
+    },
+    "schemas": {
       "Library": {
         "type": "object",
+        "description": "A library. GET /libraries returns id, name, owner, createdTime and modifiedTime; GET /libraries/{libraryId} adds revision, size and fields.",
         "properties": {
-          "id": { "type": "string", "example": "HyZV7AYk0" },
-          "name": { "type": "string", "example": "Patients" },
-          "owner": { "type": "string" },
-          "createdTime": { "type": "string", "format": "date-time" },
-          "revision": { "type": "integer" },
-          "size": { "type": "integer" },
-          "fields": { "type": "array", "items": { "$ref": "#/components/schemas/Field" } }
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "createdTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revision": {
+            "type": "integer",
+            "description": "Current library revision."
+          },
+          "size": {
+            "type": "integer"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LibraryField"
+            }
+          }
+        },
+        "example": {
+          "id": "ht5dj7hqtey87",
+          "name": "Library1",
+          "owner": "author",
+          "createdTime": "2015-08-05T08:40:51.620Z",
+          "modifiedTime": "2016-08-05T08:40:51.620Z",
+          "revision": 10,
+          "size": 1200,
+          "fields": [
+            {
+              "id": 1,
+              "type": "text",
+              "name": "Title",
+              "role": "name",
+              "order": 0
+            },
+            {
+              "id": 2,
+              "type": "int",
+              "name": "Count",
+              "role": "desc",
+              "order": 1
+            }
+          ]
         }
       },
-      "Field": {
+      "LibraryField": {
         "type": "object",
+        "description": "A field definition of a library.",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Name" },
-          "type": { "type": "string", "example": "text" }
+          "id": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string",
+            "description": "Field type, e.g. text, int."
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "description": "Field role, e.g. name, desc."
+          },
+          "order": {
+            "type": "integer"
+          }
         }
       },
-      "EntryList": {
+      "FieldValue": {
         "type": "object",
+        "description": "A value of one library field on an entry.",
         "properties": {
-          "entries": { "type": "array", "items": { "$ref": "#/components/schemas/Entry" } }
+          "id": {
+            "type": "integer",
+            "description": "Field id (see Library.fields)."
+          },
+          "value": {
+            "description": "Field value; type depends on the field type (string, number, ...)."
+          }
         }
       },
       "Entry": {
         "type": "object",
+        "description": "An entry (record) in a library.",
         "properties": {
-          "id": { "type": "string", "example": "T0xIYmE-V2QoMmRTWF1sVVJUKnU" },
-          "author": { "type": "string" },
-          "createdTime": { "type": "string", "format": "date-time" },
-          "modifiedTime": { "type": "string", "format": "date-time" },
-          "fields": { "type": "array", "items": { "$ref": "#/components/schemas/EntryFieldValue" } }
+          "id": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "createdTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldValue"
+            }
+          }
+        },
+        "example": {
+          "id": "feoijr485498ere",
+          "createdTime": "2015-08-05T08:40:51.620Z",
+          "modifiedTime": "2016-08-05T08:40:51.620Z",
+          "status": "active",
+          "author": "author",
+          "revision": 100,
+          "size": 20,
+          "fields": [
+            {
+              "id": 1,
+              "value": "Record 1"
+            },
+            {
+              "id": 2,
+              "value": 1000
+            }
+          ]
         }
       },
-      "EntryFieldValue": {
+      "EntryList": {
         "type": "object",
+        "description": "A page of entries. Pass nextPageToken as pageToken for the next page; it is absent on the last page.",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Name" },
-          "type": { "type": "string", "example": "text" },
-          "value": { "example": "Record 1" }
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            }
+          },
+          "nextPageToken": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "description": "Library revision at the time of the request."
+          }
+        }
+      },
+      "EntrySearchResult": {
+        "type": "object",
+        "description": "Search results.",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            }
+          },
+          "nextPageToken": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer"
+          }
         }
       },
       "EntryInput": {
         "type": "object",
+        "description": "Body for creating or editing an entry.",
+        "required": [
+          "fields"
+        ],
         "properties": {
           "fields": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "integer" },
-                "value": {}
-              }
+              "$ref": "#/components/schemas/FieldValue"
             }
+          }
+        },
+        "example": {
+          "fields": [
+            {
+              "id": 1,
+              "value": "Record 1"
+            },
+            {
+              "id": 2,
+              "value": 1000
+            }
+          ]
+        }
+      },
+      "File": {
+        "type": "object",
+        "description": "An uploaded file.",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "File name."
+          },
+          "url": {
+            "type": "string"
+          },
+          "original_url": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          }
+        },
+        "example": {
+          "file": "image.jpg",
+          "url": "http://api.mementodatabase.com/",
+          "original_url": "http://api.mementodatabase.com/",
+          "size": 12312
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error body (observed, not in the blueprint).",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "reasonPhrase": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "e.g. 'API rate limit exceeded' with code 403."
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "homeRef": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string"
           }
         }
       }

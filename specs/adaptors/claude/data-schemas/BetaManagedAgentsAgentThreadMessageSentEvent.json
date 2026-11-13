@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsAgentThreadMessageSentEvent",
+  "title": "BetaManagedAgentsAgentThreadMessageSentEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsAgentThreadMessageSentEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Observability event emitted to the sender's output stream when an agent-to-agent message is sent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "content",
+    "to_session_thread_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "agent.thread_message_sent"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "processed_at": {
+      "description": "Timestamp when the message was sent.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "to_agent_name": {
+      "description": "Name of the callable agent this message was sent to. Absent when sent to the primary agent.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "content": {
+      "description": "Message content blocks.",
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsUserContentBlock.json"
+      }
+    },
+    "to_session_thread_id": {
+      "description": "Public `sthr_` ID of the thread the message was sent to.",
+      "type": "string",
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

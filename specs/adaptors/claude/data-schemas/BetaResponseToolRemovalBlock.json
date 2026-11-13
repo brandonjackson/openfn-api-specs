@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseToolRemovalBlock",
+  "title": "ResponseToolRemovalBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseToolRemovalBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An entry of a `compaction` block's `tool_changes`: a tool of the\nrequest's `tools` (or an MCP tool or toolset) that the compacted range\nwithdrew. Send it back unchanged.",
+  "properties": {
+    "tool": {
+      "description": "A reference to the withdrawn `tools` entry, MCP tool or MCP toolset.",
+      "discriminator": {
+        "mapping": {
+          "mcp_tool_reference": "#/components/schemas/BetaResponseToolChangeMCPToolReference",
+          "mcp_toolset_reference": "#/components/schemas/BetaResponseToolChangeMCPToolsetReference",
+          "tool_reference": "#/components/schemas/BetaResponseToolChangeToolReference"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaResponseToolChangeToolReference.json"
+        },
+        {
+          "$ref": "BetaResponseToolChangeMCPToolReference.json"
+        },
+        {
+          "$ref": "BetaResponseToolChangeMCPToolsetReference.json"
+        }
+      ],
+      "title": "Tool"
+    },
+    "type": {
+      "const": "tool_removal",
+      "default": "tool_removal",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tool",
+    "type"
+  ],
+  "type": "object"
+}

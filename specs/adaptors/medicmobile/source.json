@@ -3,12 +3,98 @@
   "npm": "@openfn/language-medicmobile",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/medicmobile/src/Adaptor.js",
+      "result": "used",
+      "note": "The adaptor's only vendor call is changesApi(): POST `${server}/${db}/_changes?${qs}` (plus `filter=_doc_ids` and a `{doc_ids}` JSON body when doc_ids is given), HTTP Basic auth, query from params with the state cursor sent as `last-event-id`; fetchSubmissions() wraps it and POSTs each submission to a caller-supplied postUrl (not a vendor endpoint); pickFormData() is local. No generic get/post/request builders. configuration-schema: server ('Medic's CouchDB api URL', e.g. https://standard.app.medicmobile.org), db (e.g. medic), username, password. So the API is CouchDB's database API on a Medic/CHT instance, not the CHT API."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.communityhealthtoolkit.org/cht-datasource/openapi.json",
+      "result": "rejected",
+      "note": "Medic's CHT API spec (already committed verbatim as specs/adaptors/cht/upstream.json, 65 paths) describes only the CHT API server's /api/v1-v3, /api/info and /api/sms routes; it has no /{db}/_changes or any other CouchDB route (the cht spec's notes record the same gap). Reusing it would cover none of what medicmobile calls."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://docs.couchdb.org/en/stable/openapi.json",
+      "result": "not-found",
+      "note": "404, as are /openapi.json and /en/stable/swagger.json on docs.couchdb.org; the reference is a Sphinx (sphinxcontrib-httpdomain) site with no machine spec behind it."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/apache/couchdb/blob/main/extra/nouveau/src/main/resources/openapi.yaml",
+      "result": "rejected",
+      "note": "GitHub code search of apache/couchdb for openapi/swagger finds only this file: the spec of Nouveau's internal Java search service, not the CouchDB HTTP API. apache/couchdb-docs and apache/couchdb-nano (the official Node client) carry none."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No CouchDB, Cloudant, Medic or CHT entry among 2529 APIs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.swaggerhub.com/specs?specType=API&query=couchdb",
+      "result": "not-found",
+      "note": "79 hits, none published by Apache (unrelated APIs mentioning CouchDB)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/laveresteban/couchdb-openapi",
+      "result": "rejected",
+      "note": "Third-party OpenAPI 3.0 of CouchDB 3.x (64 KB, HEAD 29ea36f, 2026-10-13) maintained for a personal SDK project; not vendor-published, and its own README lists gaps (_node/config, search, eventsource _changes, multipart _bulk_get, open_revs). Used only as a lead; digitalnodecom/couchdb-swagger (a docs scraper) likewise."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.couchdb.org/en/stable/http-routingtable.html",
+      "result": "used",
+      "note": "The CouchDB 3.5 documentation's HTTP routing table: 135 method+path entries across 22 reference pages. Used as the inventory; every entry was scraped from its sphinxcontrib-httpdomain block (path/query parameters with types, request headers, request/response JSON fields, status codes, example responses)."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "configuration-schema.json",
+    "vendor-docs"
+  ],
+  "modifications": [],
   "sources": [
+    "https://docs.couchdb.org/en/stable/http-routingtable.html",
+    "https://docs.couchdb.org/en/stable/api/server/common.html",
+    "https://docs.couchdb.org/en/stable/api/server/authn.html",
+    "https://docs.couchdb.org/en/stable/api/server/configuration.html",
+    "https://docs.couchdb.org/en/stable/api/database/common.html",
+    "https://docs.couchdb.org/en/stable/api/database/bulk-api.html",
+    "https://docs.couchdb.org/en/stable/api/database/changes.html",
+    "https://docs.couchdb.org/en/stable/api/database/compact.html",
+    "https://docs.couchdb.org/en/stable/api/database/cleanup.html",
+    "https://docs.couchdb.org/en/stable/api/database/find.html",
+    "https://docs.couchdb.org/en/stable/api/database/misc.html",
+    "https://docs.couchdb.org/en/stable/api/database/security.html",
+    "https://docs.couchdb.org/en/stable/api/database/shard.html",
+    "https://docs.couchdb.org/en/stable/api/document/common.html",
+    "https://docs.couchdb.org/en/stable/api/document/attachments.html",
+    "https://docs.couchdb.org/en/stable/api/ddoc/common.html",
+    "https://docs.couchdb.org/en/stable/api/ddoc/views.html",
+    "https://docs.couchdb.org/en/stable/api/ddoc/search.html",
+    "https://docs.couchdb.org/en/stable/api/ddoc/nouveau.html",
+    "https://docs.couchdb.org/en/stable/api/ddoc/render.html",
+    "https://docs.couchdb.org/en/stable/api/ddoc/rewrites.html",
+    "https://docs.couchdb.org/en/stable/api/local.html",
+    "https://docs.couchdb.org/en/stable/api/partitioned-dbs.html",
+    "https://docs.communityhealthtoolkit.org/cht-datasource/openapi.json",
+    "https://docs.communityhealthtoolkit.org/technical-overview/data/db-schema/",
     "https://cdn.jsdelivr.net/npm/@openfn/language-medicmobile/ast.json",
     "https://github.com/OpenFn/adaptors/blob/main/packages/medicmobile/src/Adaptor.js",
-    "https://github.com/medic/medic-docs/blob/master/development/db-schema.md",
-    "https://docs.couchdb.org/en/stable/api/database/changes.html"
+    "https://github.com/OpenFn/adaptors/blob/main/packages/medicmobile/configuration-schema.json"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Medic Mobile / Community Health Toolkit is backed by CouchDB; there is no single vendor OpenAPI spec. Authored a focused OpenAPI 3.0.3 from the CouchDB changes-feed docs, the Medic DB schema, and the adaptor source. Covers the operations the adaptor actually performs: GET /{db}/_changes (confirmed base pattern `${server}/${db}/_changes` in src/Adaptor.js), fetching a document, and POSTing extracted submissions to an inbox endpoint (postUrl). Report/doc shape is a representative Medic data_record. Server URL is a CouchDB default placeholder."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Apache CouchDB 3.5 HTTP API, as reached through a Medic Mobile / Community Health Toolkit instance. The medicmobile adaptor (the pre-cht Medic adaptor) calls CouchDB directly — POST {server}/{db}/_changes on the instance's `medic` database — not the CHT API that specs/adaptors/cht describes (Medic's spec has no CouchDB routes), so the CHT vendor spec could not be reused; the previous file here was a 4-operation stub. Apache publishes no machine spec for CouchDB, so this is authored from the CouchDB documentation: 'full' means every one of the 135 entries in its HTTP routing table, with parameters, headers, status codes and descriptions scraped from each entry's structured field list, and response/request schemas (83, named after the documented JSON objects, with the documented example responses attached to 13 of them) written from the documented fields and examples. POST variants and design/local-document endpoints that the docs describe as 'the same as' a GET or document endpoint inherit that endpoint's query parameters. Known gaps: the three COPY endpoints cannot be expressed in OpenAPI 3.0 and are only named in info.description; `_rewrite` (any method) is modelled as GET/POST/PUT/DELETE; continuous/eventsource `_changes` streams and multipart (`_bulk_get`, attachments with `multipart/related`) bodies are described only as their JSON forms; show/list/update/rewrite responses are untyped because the design document decides them; and CouchDB documents are open objects — the CHT `data_record`/contact shapes the adaptor reads (`form`, `fields`, `reported_date`, `contact`) are not encoded. Adaptor surface verified against ast.json (fetchSubmissions, changesApi, pickFormData) and src/Adaptor.js: changesApi's POST /{db}/_changes with include_docs, last-event-id, filter=_doc_ids and the doc_ids body is modelled (postChanges); fetchSubmissions' POST to postUrl targets an OpenFn inbox, not CouchDB, and is not modelled."
 }

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/IssuerPollStatus",
+  "title": "IssuerPollStatus",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/IssuerPollStatus",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "consecutive_failures": {
+      "type": "integer",
+      "title": "Consecutive Failures",
+      "description": "Consecutive fetch failures since the last success."
+    },
+    "last_fetched_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Fetched At",
+      "description": "When the last successful fetch completed."
+    },
+    "next_poll_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Next Poll At",
+      "description": "When the next fetch is scheduled. Null if paused."
+    }
+  },
+  "type": "object",
+  "required": [
+    "consecutive_failures",
+    "last_fetched_at",
+    "next_poll_at"
+  ],
+  "description": "Status of automatic JWKS polling for a federation issuer.\n\nAnthropic periodically fetches the issuer's signing keys in the\nbackground. These fields summarize the most recent fetches so the\nhealth of the JWKS endpoint can be monitored."
+}

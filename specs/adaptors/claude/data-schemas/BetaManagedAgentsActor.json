@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsActor",
+  "title": "BetaManagedAgentsActor",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsActor",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Identifies who performed an operation. Recorded when the operation happens and not updated afterwards, so the ID may refer to a user, service account, API key, or session that has since been deleted.",
+  "type": "object",
+  "discriminator": {
+    "propertyName": "type",
+    "mapping": {
+      "session_actor": "#/components/schemas/BetaManagedAgentsSessionActor",
+      "api_actor": "#/components/schemas/BetaManagedAgentsApiActor",
+      "user_actor": "#/components/schemas/BetaManagedAgentsUserActor",
+      "service_account_actor": "#/components/schemas/BetaManagedAgentsServiceAccountActor"
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "BetaManagedAgentsSessionActor.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsApiActor.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsUserActor.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsServiceAccountActor.json"
+    }
+  ]
+}

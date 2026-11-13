@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaUserProfile",
+  "title": "BetaUserProfile",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaUserProfile",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A record of an entity that the platform serves through the API, such as an end-user of the platform's product or a company that the platform resells Claude access to.\n\nA Messages, Message Batches or token counting request can send a profile's `id` in the `anthropic-user-profile-id` header to attribute the request to that entity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "name",
+    "trust_grants",
+    "created_at",
+    "metadata",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for this user profile, prefixed `uprof_`.",
+      "type": "string",
+      "examples": [
+        "uprof_011CZkZCu8hGbp5mYRQgUmz9"
+      ]
+    },
+    "type": {
+      "description": "Object type. Always `user_profile`.",
+      "type": "string",
+      "const": "user_profile",
+      "examples": [
+        "user_profile"
+      ]
+    },
+    "external_id": {
+      "description": "Platform's own identifier for this user. Not enforced unique. Legacy field, present only under the `user-profiles-2026-03-24` and `user-profiles-2026-08-18` beta headers; without one of them, the value is `external_user_details.reference_id`.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "user-profiles-2026-03-24",
+        "user-profiles-2026-08-18"
+      ],
+      "examples": [
+        "user_12345"
+      ]
+    },
+    "name": {
+      "description": "Real-world name of the entity this profile represents (company or individual). For a company the platform resells Claude access to (`access_type` `passthrough`) this is that company's name. `null` until the platform supplies one.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "Example User"
+      ]
+    },
+    "access_type": {
+      "description": "How the platform uses the API for this entity: `application` (default) or `passthrough`. Absent under the legacy `user-profiles-2026-03-24` beta header.",
+      "allOf": [
+        {
+          "$ref": "BetaUserProfileAccessType.json"
+        }
+      ],
+      "examples": [
+        "application"
+      ]
+    },
+    "external_user_onboarded_at": {
+      "description": "When the entity this profile represents opened its account with the platform, as stated by the platform, in RFC 3339 format (UTC). `null` until the platform supplies one. Legacy field, present only under the `user-profiles-2026-08-18` beta header; without a legacy header, the value is `external_user_details.onboarded_at`.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "user-profiles-2026-08-18"
+      ],
+      "examples": [
+        "2024-11-02T08:15:00Z"
+      ]
+    },
+    "external_user_details": {
+      "description": "Details about the entity this profile represents, as the platform states them; not verified by Anthropic. Every field is present, `null` until the platform supplies a value. Absent under the legacy `user-profiles-2026-03-24` and `user-profiles-2026-08-18` beta headers, which serve `reference_id` as the top-level `external_id` and, under `user-profiles-2026-08-18`, `onboarded_at` as `external_user_onboarded_at`.",
+      "allOf": [
+        {
+          "$ref": "BetaUserProfileExternalUserDetails.json"
+        }
+      ],
+      "examples": [
+        {
+          "reference_id": "user_12345",
+          "onboarded_at": "2024-11-02T08:15:00Z",
+          "account_status": "active",
+          "entity_type": "business",
+          "country": "US",
+          "name_hash": null,
+          "email_hash": null
+        }
+      ]
+    },
+    "trust_grants": {
+      "description": "Trust grants for this profile, keyed by grant name. Key omitted when no grant is active or in flight.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "BetaUserProfileTrustGrant.json"
+      },
+      "x-anthropic-beta-required": [
+        "user-profiles-2026-03-24",
+        "user-profiles-2026-08-18",
+        "user-profiles-2026-09-04"
+      ],
+      "examples": [
+        {
+          "cyber": {
+            "status": "active"
+          }
+        }
+      ]
+    },
+    "created_at": {
+      "description": "When this user profile was created, in RFC 3339 format.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    },
+    "metadata": {
+      "description": "Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up to 512 chars.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "examples": [
+        {}
+      ]
+    },
+    "updated_at": {
+      "description": "When this user profile was last modified, in RFC 3339 format. It normally also updates shortly after Anthropic gives the profile an approval or withdraws one. Other changes to the statuses that Anthropic reports do not always update it, so read the status itself rather than watching this timestamp.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    }
+  },
+  "example": {
+    "id": "uprof_011CZkZCu8hGbp5mYRQgUmz9",
+    "type": "user_profile",
+    "external_id": "user_12345",
+    "name": "Example User",
+    "access_type": "application",
+    "trust_grants": {
+      "cyber": {
+        "status": "active"
+      }
+    },
+    "external_user_onboarded_at": "2024-11-02T08:15:00Z",
+    "external_user_details": {
+      "reference_id": "user_12345",
+      "onboarded_at": "2024-11-02T08:15:00Z",
+      "account_status": "active",
+      "entity_type": "business",
+      "country": "US",
+      "name_hash": null,
+      "email_hash": null
+    },
+    "metadata": {},
+    "created_at": "2026-03-15T10:00:00Z",
+    "updated_at": "2026-03-15T10:00:00Z"
+  }
+}

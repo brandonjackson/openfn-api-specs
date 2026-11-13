@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "browserless/AgentActionView",
+  "title": "AgentActionView",
+  "x-openfn-adaptor": "browserless",
+  "x-source": {
+    "openapi": "#/components/schemas/AgentActionView",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "seq": {
+      "description": "1-based tool-call order within the turn, continuing across human handoffs.",
+      "type": "number"
+    },
+    "startedAt": {
+      "description": "ISO 8601 time the tool call started.",
+      "type": "string"
+    },
+    "durationMs": {
+      "description": "Milliseconds until the result, or null when incomplete.",
+      "type": "number"
+    },
+    "tool": {
+      "description": "Tool the agent called.",
+      "type": "string"
+    },
+    "commands": {
+      "description": "Browser commands in this call.",
+      "type": "array",
+      "items": {
+        "$ref": "AgentActionCommandView.json"
+      }
+    },
+    "status": {
+      "description": "Outcome.",
+      "enum": [
+        "error",
+        "incomplete",
+        "ok"
+      ],
+      "type": "string"
+    },
+    "errorCode": {
+      "description": "Bounded MCP error category, when available; never the error message.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "commands",
+    "durationMs",
+    "seq",
+    "startedAt",
+    "status",
+    "tool"
+  ]
+}

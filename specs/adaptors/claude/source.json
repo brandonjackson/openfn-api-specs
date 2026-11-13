@@ -1,15 +1,58 @@
 {
   "adaptor": "claude",
   "npm": "@openfn/language-claude",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-claude/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-claude/types/index.d.ts",
-    "https://platform.claude.com/docs/en/api/messages",
-    "https://platform.claude.com/docs/en/api/models-list",
-    "https://platform.claude.com/docs/en/api/creating-message-batches"
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.1",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://raw.githubusercontent.com/anthropics/anthropic-sdk-typescript/main/scripts/mock-spec.json.gz",
+    "format": "openapi-3.1",
+    "contentHash": "sha256:690622377a5eedc0e9f2265ed755ee34dc0c52d35b47327f425777a550f45e1e",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/anthropics/anthropic-sdk-typescript/main/.stats.yml",
+      "result": "not-found",
+      "note": "Stainless SDK stats file no longer carries openapi_spec_url (only configured_endpoints: 373) since September 2026; the last URL it named (storage.googleapis.com/stainless-sdk-openapi-specs/anthropic/anthropic-465bff21....yml) now returns NoSuchBucket. Same in anthropic-sdk-python/-go/-java/-ruby."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://platform.claude.com/docs/llms.txt",
+      "result": "not-found",
+      "note": "Docs site index lists ~590 API reference pages but links no machine spec; /openapi.json and /docs/openapi.json on platform.claude.com, docs.anthropic.com and api.anthropic.com all 404 (or return the SPA shell)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No anthropic.com / claude entry on apis.guru."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/anthropics/anthropic-sdk-typescript/main/scripts/mock-spec.json.gz",
+      "result": "used",
+      "note": "Stainless-generated OpenAPI 3.1 spec that Anthropic commits to its official TypeScript SDK (scripts/mock-spec.json.gz, the spec the SDK's own mock server runs on; captured at SDK commit 590783078cd9). Served gzip-compressed; upstream.json is the gunzipped bytes, unaltered. 385 operations / 253 paths / 2235 schemas, covering the 373 configured_endpoints."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The claude adaptor (v1.1.2) exposes a single public operation, `prompt`, which calls the Anthropic Messages API (POST /v1/messages) through the @anthropic-ai/sdk (client.messages.create). The spec centers on POST /messages and its Message response shape, and adds companion endpoints from the same API surface (count_tokens, Models API, Message Batches API) so the mocker has useful seed collections. Response schemas are simplified: content blocks, tools, tool_choice, thinking, and detailed usage sub-objects are modeled loosely (additionalProperties/oneOf) rather than exhaustively. Auth is via x-api-key + anthropic-version headers. Streaming (SSE) responses are not modeled."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://raw.githubusercontent.com/anthropics/anthropic-sdk-typescript/main/scripts/mock-spec.json.gz",
+    "https://github.com/anthropics/anthropic-sdk-typescript/blob/main/scripts/mock",
+    "https://platform.claude.com/docs/llms.txt",
+    "https://platform.claude.com/docs/en/api/messages",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-claude/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/claude"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The whole Anthropic API (api.anthropic.com) as Anthropic's own Stainless-generated OpenAPI 3.1 document, committed verbatim. Stainless stopped publishing the hosted spec URL in the SDKs' .stats.yml and the old GCS bucket is gone, but every Anthropic SDK still ships the same spec gzip-compressed as scripts/mock-spec.json.gz; upstream.json is that file gunzipped (contentHash is of the decompressed bytes, reproducible with curl | gunzip | sha256sum), and openapi.json is it plus the x-openfn-adaptor stamp. 385 operations over 253 paths and 2235 component schemas: Messages (create, count_tokens, batches), Models, Files, Skills, the Admin/organization API (users, workspaces, API keys, invites, usage/cost reports, analytics, RBAC, spend limits), and the beta Managed Agents surface (agents, sessions, environments, deployments, memory stores, vaults, tunnels, dreams, user profiles). Stainless models beta variants as separate path keys with a literal '?beta=true' suffix, so endpoints.md shows paired '<resource>' and '<resource>?beta=true' groups; that is upstream's shape and is kept unedited. The spec declares no securitySchemes (auth is x-api-key plus the anthropic-version header, per the docs). The claude adaptor (v1.2.1) exposes one operation, prompt, which calls client.messages.create in @anthropic-ai/sdk, i.e. POST /v1/messages, present as messages_post. Replaces a hand-authored 8-operation stub."
 }

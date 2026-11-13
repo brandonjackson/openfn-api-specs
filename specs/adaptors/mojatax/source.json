@@ -2,13 +2,69 @@
   "adaptor": "mojatax",
   "npm": "@openfn/language-mojatax",
   "origin": "generated",
-  "upstreamFormat": "docs",
+  "upstreamFormat": "adaptor-surface",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+  "attempts": [
+    {
+      "kind": "postman",
+      "url": "https://openfn-services.postman.co/workspace/OpenFn-Training~06c8a870-0b02-45c7-8c1f-be415ecd807c/request/5500539-6c9a9f5c-d6e2-479c-9584-d8cb5ff2362e",
+      "result": "not-found",
+      "note": "The only API docs (linked from OpenFn/adaptors#773) are in a private Postman workspace: 401/403 without a team login."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=mojatax",
+      "result": "not-found",
+      "note": "No public Mojatax workspace or collection; only stray requests to engage.mojatax.com (a different SMS product)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://vfd-staging.mojatax.com/swagger",
+      "result": "not-found",
+      "note": "vfd-staging, vfd and vfd-sandbox.mojatax.com time out or do not resolve publicly; /swagger, /api-docs, /api/docs, /docs-json, /v3/api-docs, /openapi.json untested beyond connection failure."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.mojatax.com/api/docs",
+      "result": "not-found",
+      "note": "api.mojatax.com is a NestJS app (GET /api returns a timestamp); /api/docs, /api-json, /api/docs-json, /swagger, /docs-json, /api-docs all 404, and POST /api/v1/auth/clientLogin is not routed there (it is a different service from the VFD API)."
+    },
+    {
+      "kind": "docs",
+      "url": "https://mojatax.com/",
+      "result": "not-found",
+      "note": "Marketing WordPress site; sitemap has no developer or API pages."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=mojatax&type=code",
+      "result": "not-found",
+      "note": "No vendor org or SDK; the only non-OpenFn hit (Mideny21/mojatax) is a UI-only Flutter mock with no API calls."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Not listed."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-tests"
+  ],
+  "modifications": [],
   "sources": [
+    "https://github.com/OpenFn/adaptors/tree/main/packages/mojatax",
+    "https://github.com/OpenFn/adaptors/issues/773",
     "https://cdn.jsdelivr.net/npm/@openfn/language-mojatax/ast.json",
-    "https://github.com/OpenFn/adaptors/blob/main/packages/mojatax/src/Adaptor.js",
     "https://docs.openfn.org/adaptors/packages/mojatax-docs",
     "https://mojatax.com/"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No published machine-readable spec for the Mojatax VFD API. The adaptor exposes only generic post()/request() helpers; post() prefixes paths with /client/ (confirmed in src/Adaptor.js). Authored a best-effort focused OpenAPI 3.0.3 from the vendor site and adaptor docs. CreateInvoice (POST /client/CreateInvoice) is the only endpoint shown in the examples; GetToken (auth: client_id/password -> access_token) and CancelInvoice are plausible companions derived from the documented VFD/TRA flow and are marked best-effort. Server URL and receipt field details are placeholders and should be verified against Mojatax's private docs."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Mojatax is a Tanzanian VFD (virtual fiscal device) service that registers invoices with TRA; its API is private and documented only in a non-public Postman workspace, and its VFD hosts are not reachable from outside. The adaptor logs in with POST /api/v1/auth/clientLogin {client_id,password} -> {access_token} and exposes generic post(path) (prefixed /api/v1/client/) and request(method, path) (prefixed /api/v1); the only documented business route is POST /api/v1/client/CreateInvoice. 'Full' therefore means every route evidenced by the adaptor source, tests, README and request issue: 2 operations. The July 2026 stub had the wrong paths (/client/GetToken, /client/CreateInvoice without the /api/v1 prefix) and an invented CancelInvoice route; both are fixed or removed. Invoice item and receipt fields are not public, so the schemas carry only the fields OpenFn's examples show and allow additional properties."
 }

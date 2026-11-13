@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsInlineAgent",
+  "title": "BetaManagedAgentsInlineAgent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsInlineAgent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An agent that has no Agent resource, and so no `id` or `version`. It is defined inline, in a workflow run's plan or when a session thread is spawned, and is not saved.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "name",
+    "description",
+    "model",
+    "system",
+    "tools",
+    "mcp_servers",
+    "skills",
+    "execution_identity"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "inline",
+      "examples": [
+        "inline"
+      ]
+    },
+    "name": {
+      "description": "The name that the agent's definition gave, or one that the server assigned.",
+      "type": "string",
+      "examples": [
+        "pdf-reader-3"
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "model": {
+      "$ref": "BetaManagedAgentsModelConfig.json",
+      "examples": [
+        {
+          "id": "claude-opus-5-5",
+          "speed": "standard"
+        }
+      ]
+    },
+    "system": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "You extract tables precisely. Output CSV only."
+      ]
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsAgentTool.json"
+      },
+      "examples": [
+        [
+          {
+            "type": "agent_toolset_20260401",
+            "default_config": {
+              "enabled": true,
+              "permission_policy": {
+                "type": "always_allow"
+              }
+            },
+            "configs": []
+          }
+        ]
+      ]
+    },
+    "mcp_servers": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsMCPServer.json"
+      },
+      "examples": [
+        []
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsSkill.json"
+      },
+      "examples": [
+        []
+      ]
+    },
+    "execution_identity": {
+      "description": "The session's execution principal.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsExecutionIdentity.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        {
+          "type": "service_account"
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "inline",
+    "name": "pdf-reader-3",
+    "description": null,
+    "model": {
+      "id": "claude-opus-5-5",
+      "speed": "standard"
+    },
+    "system": "You extract tables precisely. Output CSV only.",
+    "tools": [
+      {
+        "type": "agent_toolset_20260401",
+        "default_config": {
+          "enabled": true,
+          "permission_policy": {
+            "type": "always_allow"
+          }
+        },
+        "configs": []
+      }
+    ],
+    "mcp_servers": [],
+    "skills": [],
+    "execution_identity": {
+      "type": "service_account"
+    }
+  }
+}

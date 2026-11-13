@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "asana",
   "x-source": {
     "openapi": "#/components/schemas/JobCompact",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "A *job* is an object representing a process that handles asynchronous work.",
   "type": "object",
@@ -41,6 +41,27 @@
       ],
       "readOnly": true,
       "example": "in_progress"
+    },
+    "dates_rollup_progress": {
+      "description": "Progress of a subtask date rollup job. Only present on project rollup jobs; the object is empty until the job discovers tasks to reconcile.",
+      "type": "object",
+      "readOnly": true,
+      "properties": {
+        "updated_tasks": {
+          "description": "The number of tasks whose dates have been reconciled so far.",
+          "type": "integer",
+          "minimum": 0,
+          "readOnly": true,
+          "example": 12
+        },
+        "total_tasks": {
+          "description": "The total number of tasks discovered for reconciliation so far. This value may increase while the job is running and is final when the job completes.",
+          "type": "integer",
+          "minimum": 0,
+          "readOnly": true,
+          "example": 40
+        }
+      }
     },
     "new_portfolio": {
       "$ref": "PortfolioCompact.json"

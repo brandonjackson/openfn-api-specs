@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cartodb/LayerOptionsMapnik",
+  "title": "Layer options Mapnik",
+  "x-openfn-adaptor": "cartodb",
+  "x-source": {
+    "openapi": "#/components/schemas/LayerOptionsMapnik",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "If you are using Mapnik as a layer resource, the following configurations are required in your MapConfig file.\n",
+  "properties": {
+    "sql": {
+      "type": "string",
+      "description": "The SQL request to the user database that will fetch the rendered data.\n\n**Tip:** The SQL request should include the following Mapnik layer configurations:\n  * ```geom_column```\n  * ```interactivity```\n  * ```attributes```\n\n\n**Note:** The SQL request may contain substitutions tokens, such as ```!bbox!```, ```!pixel_width!``` and ```!pixel_height!```. It is suggested to define the layergroup ```minzoom``` and ```extent``` variables to prevent errors.\n"
+    },
+    "cartocss": {
+      "$ref": "CartoCSS.json"
+    },
+    "cartocss_version": {
+      "$ref": "CartoCSSVersion.json"
+    },
+    "geom_column": {
+      "type": "string",
+      "description": "The name of the column containing the geometry.\n\n*You **must** specify this value as part of the Mapnik layer SQLconfiguration.\n",
+      "default": "the_geom_webmercator"
+    },
+    "geom_type": {
+      "type": "string",
+      "enum": [
+        "geometry",
+        "raster"
+      ],
+      "description": "Defines the type of column as either _geometry_ or _raster_.\n\n**Note:** ```geom_type``` is not compatible with the Mapnik layer interactivity option.\n",
+      "default": "geometry"
+    },
+    "raster_band": {
+      "type": "string",
+      "description": "Defines the raster band (this option is only applicable when the ```geom_type=raster```.\n\n**Note:** If the default, or no value is specified, raster bands are interpreted as either:\n  * grayscale (for single bands)\n  * RGB (for 3 bands)\n  * RGBA (for 4 bands).\n",
+      "default": 0
+    },
+    "srid": {
+      "$ref": "Srid.json"
+    },
+    "affected_tables": {
+      "$ref": "Affected_tables.json"
+    },
+    "interactivity": {
+      "type": "string",
+      "description": "A string of values that contains the fields rendered inside grid.json.  All the parameters should be exposed as a result of executing the Mapnik layer SQL query.\n\n**Note:** interactivity is not compatible with the Mapnik layer ```geom_type``` option.  For example, you cannot create a layergroup instance with a raster layer by defining the ```geom_type=raster```.\n*You **must** specify this value as part of the Mapnik layer SQL configuration.\n"
+    },
+    "attributes": {
+      "description": "The id and column values returned by the Mapnik attributes service. (This option is disabled if no configuration is defined).\n*You **must** specify this value as part of the Mapnik layer SQL configuration.\n",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The key value used to fetch columns."
+          },
+          "columns": {
+            "type": "string",
+            "description": "A string of values (columns) returned by the Mapnik attribute service."
+          }
+        },
+        "required": [
+          "id",
+          "columns"
+        ]
+      }
+    }
+  },
+  "required": [
+    "sql",
+    "cartocss",
+    "cartocss_version"
+  ]
+}

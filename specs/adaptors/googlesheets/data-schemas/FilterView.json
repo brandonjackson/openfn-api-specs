@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "googlesheets",
   "x-source": {
     "openapi": "#/components/schemas/FilterView",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "A filter view. For more information, see [Manage data visibility with filters](https://developers.google.com/workspace/sheets/api/guides/filters).",
@@ -14,14 +14,12 @@
       "type": "string",
       "description": "The named range this filter view is backed by, if any. When writing, only one of range, named_range_id, or table_id may be set."
     },
-    "filterViewId": {
-      "type": "integer",
-      "format": "int32",
-      "description": "The ID of the filter view."
-    },
-    "title": {
-      "type": "string",
-      "description": "The name of the filter view."
+    "filterSpecs": {
+      "type": "array",
+      "description": "The filter criteria for showing or hiding values per column. Both criteria and filter_specs are populated in responses. If both fields are specified in an update request, this field takes precedence.",
+      "items": {
+        "$ref": "FilterSpec.json"
+      }
     },
     "criteria": {
       "type": "object",
@@ -31,6 +29,13 @@
         "$ref": "FilterCriteria.json"
       }
     },
+    "sortSpecs": {
+      "type": "array",
+      "description": "The sort order per column. Later specifications are used when values are equal in the earlier specifications.",
+      "items": {
+        "$ref": "SortSpec.json"
+      }
+    },
     "range": {
       "$ref": "GridRange.json"
     },
@@ -38,19 +43,14 @@
       "type": "string",
       "description": "The table this filter view is backed by, if any. When writing, only one of range, named_range_id, or table_id may be set."
     },
-    "filterSpecs": {
-      "type": "array",
-      "description": "The filter criteria for showing or hiding values per column. Both criteria and filter_specs are populated in responses. If both fields are specified in an update request, this field takes precedence.",
-      "items": {
-        "$ref": "FilterSpec.json"
-      }
+    "title": {
+      "type": "string",
+      "description": "The name of the filter view."
     },
-    "sortSpecs": {
-      "type": "array",
-      "description": "The sort order per column. Later specifications are used when values are equal in the earlier specifications.",
-      "items": {
-        "$ref": "SortSpec.json"
-      }
+    "filterViewId": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The ID of the filter view."
     }
   }
 }

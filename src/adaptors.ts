@@ -30,7 +30,6 @@ export const NON_REST_ADAPTORS: Record<string, string> = {
   collections: 'OpenFn Collections (internal Lightning API)',
   openfn: 'OpenFn platform (internal Lightning API)',
   testing: 'test/dev harness, no external system',
-  ping: 'connectivity probe, no external system',
   memento: 'note-taking app, thin surface',
   postgresql: 'SQL database (protocol adaptor, not REST)',
   mysql: 'SQL database (protocol adaptor, not REST)',

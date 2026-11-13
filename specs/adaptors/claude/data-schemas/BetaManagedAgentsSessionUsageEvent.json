@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionUsageEvent",
+  "title": "BetaManagedAgentsSessionUsageEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionUsageEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Periodic snapshot of the session's cumulative usage and tracked list cost.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "usage"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "session.usage"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "processed_at": {
+      "description": "Timestamp when the snapshot was taken.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "usage": {
+      "description": "The session's cumulative usage at the snapshot time.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionUsageSnapshot.json"
+        }
+      ]
+    },
+    "budget": {
+      "description": "The session's configured budget at the snapshot time, or null when the session has no budget.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsBudget.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

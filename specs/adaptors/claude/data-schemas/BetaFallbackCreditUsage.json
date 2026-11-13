@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaFallbackCreditUsage",
+  "title": "FallbackCreditUsage",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaFallbackCreditUsage",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Outcome of the ``fallback_credit_token`` presented on this request.",
+  "properties": {
+    "status": {
+      "description": "Whether the fallback-credit reprice was applied to this response's billing.\n\nA union discriminated on `type`. `redeemed`: the retry is billed as if\nthe conversation had been on the retry model all along — including when the\nresulting shift is zero because there was nothing to move. `not_applied`:\nno reprice was applied; the arm's `reason` says why.",
+      "discriminator": {
+        "mapping": {
+          "not_applied": "#/components/schemas/BetaFallbackCreditNotApplied",
+          "redeemed": "#/components/schemas/BetaFallbackCreditRedeemed"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaFallbackCreditRedeemed.json"
+        },
+        {
+          "$ref": "BetaFallbackCreditNotApplied.json"
+        }
+      ],
+      "title": "Status"
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "type": "object"
+}

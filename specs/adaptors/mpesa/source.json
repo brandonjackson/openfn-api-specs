@@ -3,11 +3,86 @@
   "npm": "@openfn/language-mpesa",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "docs-site",
+      "url": "https://developer.safaricom.co.ke/api/graphql",
+      "result": "used",
+      "note": "The Daraja portal (Next.js) loads its API catalogue and documentation from a GraphQL endpoint: getApis lists 30 API entries (incl. sub-APIs), populateApi(apiName) returns each API's markdown/HTML documentation, sample bodies and parameter tables. No OpenAPI/Swagger is served; all 30 documentation payloads were captured and used as the docs source."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developer.safaricom.co.ke/openapi.json",
+      "result": "not-found",
+      "note": "also tried /swagger.json, /api-docs and /v3/api-docs on developer.safaricom.co.ke and api.safaricom.co.ke; the portal JS bundles reference only /api/graphql, /api/logout and /api/version."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.getpostman.com/collections/c3cdb608190b849fa6c4",
+      "result": "not-found",
+      "note": "postmanCollectionLink on the Authorization docs; Postman answers linkExpiredError. Same for the Dynamic QR link (c41badd4c9090cf3dfa7). The M-Pesa Ratiba link (api.postman.com/collections/29845159-9ed99b30-...) answers 401, its access key expired. The current docs say the Postman collections are only available when logged in."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/safaricom",
+      "result": "not-found",
+      "note": "Safaricom's org has hand-written SDKs and samples (mpesa-php-sdk, mpesa-node-library, mpesa-java-sdk, ...) and no OpenAPI/Swagger file; a GitHub search for daraja openapi found only third-party gateways."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no safaricom / mpesa / daraja entry."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/safaricom/mpesa-node-library",
+      "result": "not-found",
+      "note": "hand-written SDK, not generated; carries no spec."
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "modifications": [],
   "sources": [
-    "https://developer.safaricom.co.ke/APIs",
+    "https://developer.safaricom.co.ke/apis",
+    "https://developer.safaricom.co.ke/api/graphql",
+    "https://developer.safaricom.co.ke/apis/Authorization",
+    "https://developer.safaricom.co.ke/apis/MpesaExpressSimulate",
+    "https://developer.safaricom.co.ke/apis/MpesaExpressQuery",
+    "https://developer.safaricom.co.ke/apis/CustomerToBusiness",
+    "https://developer.safaricom.co.ke/apis/BusinessToCustomer",
+    "https://developer.safaricom.co.ke/apis/BusinessToPochi",
+    "https://developer.safaricom.co.ke/apis/TransactionStatus",
+    "https://developer.safaricom.co.ke/apis/AccountBalance",
+    "https://developer.safaricom.co.ke/apis/Reversal",
+    "https://developer.safaricom.co.ke/apis/TaxRemittance",
+    "https://developer.safaricom.co.ke/apis/BusinessPayBill",
+    "https://developer.safaricom.co.ke/apis/BusinessBuyGoods",
+    "https://developer.safaricom.co.ke/apis/B2CAccountTopUp",
+    "https://developer.safaricom.co.ke/apis/B2BExpressCheckout",
+    "https://developer.safaricom.co.ke/apis/BillManager",
+    "https://developer.safaricom.co.ke/apis/DynamicQRCode",
+    "https://developer.safaricom.co.ke/apis/PullTransaction",
+    "https://developer.safaricom.co.ke/apis/Swap",
+    "https://developer.safaricom.co.ke/apis/IMSI",
+    "https://developer.safaricom.co.ke/apis/AgeOnNetwork",
+    "https://developer.safaricom.co.ke/apis/MobileNumberValidation",
+    "https://developer.safaricom.co.ke/apis/QueryOrgInfo",
+    "https://developer.safaricom.co.ke/apis/C2BHakikisha",
+    "https://developer.safaricom.co.ke/apis/B2CHakikisha",
+    "https://developer.safaricom.co.ke/apis/LipaNaBonga",
+    "https://developer.safaricom.co.ke/apis/MobileCenter",
+    "https://developer.safaricom.co.ke/apis/MpesaRatiba",
+    "https://developer.safaricom.co.ke/apis/IotSimManagement",
     "https://cdn.jsdelivr.net/npm/@openfn/language-mpesa/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-mpesa/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/mpesa"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No official OpenAPI/Swagger or Postman collection published by Safaricom for the Daraja API; authored by hand from the Daraja developer docs and the adaptor source. Covers the exact endpoints the mpesa adaptor calls: OAuth token (/oauth/v1/generate), STK Push (/mpesa/stkpush/v1/processrequest), transaction status (/mpesa/transactionstatus/v1/query), C2B register URL (/mpesa/c2b/v1/registerurl), B2B remit tax (/mpesa/b2b/v1/remittax), and B2B buy goods (/mpesa/b2b/v1/paymentrequest). The adaptor's generic request() helper can hit any Daraja path and is not separately modelled. Most Daraja endpoints return only a synchronous acknowledgement (modelled here); the real transaction result is delivered asynchronously to caller-supplied callback/result URLs, which are out of scope for the mocker. RegisterUrl response field name 'OriginatorCoversationID' reflects the documented Daraja spelling."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Safaricom Daraja (M-Pesa and related Safaricom APIs) authored from the developer portal's own documentation, read through the portal's GraphQL backend (getApis + populateApi for all 30 catalogue entries). 52 operations cover every documented endpoint: OAuth, M-Pesa Express push and query, C2B register/simulate (v1, which the adaptor uses, kept and marked deprecated, plus v2), B2C v3, B2Pochi, Transaction Status, Account Balance, Reversal, B2B remit tax and payment request (pay bill / buy goods / B2C account top-up share one path), B2B Express Checkout, Dynamic QR, Bill Manager (7), Pull Transactions (2), the Swap/IMSI/Age-on-Network/KYC/Hakikisha lookups, Lipa na Bonga (2), Mobile Data Bundles (3), M-Pesa Ratiba and IoT SIM Management (12). Schemas are inferred from the docs' sample bodies with descriptions from their parameter tables; several samples are not valid JSON (Bill Manager invoices, Dynamic QR response) and were transcribed, and the docs' 'Command ID' key typo is normalised to CommandID. Asynchronous outcomes are webhooks, not responses: ResultCallback, StkCallback, C2BTransactionNotification, C2BValidationResponse, BillManagerPayment, RatibaCallback and the others are components.schemas only. Phone numbers, names, emails, credentials and the base64 QR image in vendor samples are replaced with placeholders. HTTP methods are POST except the token and the two Mobile Data Bundles GETs, per the docs' rule 'all M-PESA APIs are POST except Authorization'. Adaptor check: stkPush, checkTransactionStatus, registerUrl (c2b v1), remitTax, buyGoods and the token call all map to modelled paths."
 }

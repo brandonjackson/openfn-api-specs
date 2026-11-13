@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/UserProfileEfsProgram",
+  "title": "UserProfileEfsProgram",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/UserProfileEfsProgram",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A user profile's standing in Enterprise Frontier Safeguards, a program under which Anthropic approves the entity the profile represents and may approve any of the program's features.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "features"
+  ],
+  "properties": {
+    "status": {
+      "description": "Anthropic's decision on the entity the profile represents: `pending` while it is awaited, `active` once Anthropic has approved the entity for the program, or `rejected` once Anthropic has declined or has removed the entity from the program. `active` does not mean that any one feature is approved: read the feature you need in `features`.",
+      "allOf": [
+        {
+          "$ref": "UserProfileProgramStatus.json"
+        }
+      ],
+      "examples": [
+        "active"
+      ]
+    },
+    "features": {
+      "description": "The program's features, keyed by feature: `data_retention_exemption` (use of models that normally require data retention, without the data being retained), `cmek` (customer-managed encryption keys) and `storage` (customer-owned storage). Every feature that the caller's organization may read has a key, whether or not it is approved; a missing key does not mean that the feature is inactive. Anthropic may add features; ignore a key you do not recognize.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "UserProfileEfsFeature.json"
+      },
+      "examples": [
+        {
+          "data_retention_exemption": {
+            "status": "inactive"
+          },
+          "cmek": {
+            "status": "active"
+          },
+          "storage": {
+            "status": "inactive"
+          }
+        }
+      ]
+    }
+  },
+  "example": {
+    "status": "active",
+    "features": {
+      "data_retention_exemption": {
+        "status": "inactive"
+      },
+      "cmek": {
+        "status": "active"
+      },
+      "storage": {
+        "status": "inactive"
+      }
+    }
+  }
+}

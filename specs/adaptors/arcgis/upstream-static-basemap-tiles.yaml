@@ -1,0 +1,2359 @@
+openapi: 3.0.3
+info:
+  title: ArcGIS static basemap tiles service
+  description: |
+    # ArcGIS static basemap tiles
+
+    The static basemap tiles service gives you access to Esri's
+    [ArcGIS](https://developers.arcgis.com/rest/basemap-styles/#arcgis-styles)
+    styles as rasterized (.png) basemap tiles.
+
+    The service provides an endpoint to fetch tiles for each supported style
+    (for example `/arcgis/streets/static/tile/{level}/{row}/{column}`). To fetch
+    a basemap tile for your chosen style, supply the desired level, row and
+    column. Note that, in some systems, a tiling scheme is defined by `x`
+    (column), `y` (row), `z` (level) which should be arranged as
+    `/arcgis/streets/static/tile/{z}/{y}/{x}`.
+
+    Tiles are supplied as 512x512 .png files in a Web Mercator spatial
+    reference.
+
+    Each style also has a metadata endpoint (for example
+    `/arcgis/streets/static`) that provides details such as the tiling scheme
+    and attribution. Basemap attribution is required when building and deploying
+    mapping applications that use the [Static basemap tiles
+    service](xref://site.rest/static-basemap-tiles/). There are two types of
+    attribution that you need to display:
+
+    1. _Powered by Esri_.
+    2. Attribution for the data source providers.
+
+    For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+
+    To access the service, you must use an ArcGIS Location Platform account to
+    create a token that includes the `premium:user:staticbasemaptiles` privilege.
+  version: 1.6.1
+  termsOfService: https://developers.arcgis.com/documentation/terms-of-use/
+servers:
+- url: https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/{apiVersion}
+  description: Static basemap tiles service.
+  variables:
+    apiVersion:
+      description: Version of the static basemap tiles service.
+      enum:
+      - v1
+      default: v1
+tags:
+- name: arcgis
+  description: ArcGIS static basemap tiles.
+- name: arcgis-metadata
+  description: Metadata for ArcGIS static basemap tiles.
+- name: open
+  description: Open Basemaps static basemap tiles.
+- name: open-metadata
+  description: Metadata for Open static basemap tiles.
+- name: self-description
+  description: Information about the service.
+security:
+- ArcGISAuthorizationHeader: []
+- ArcGISXEsriAuthorizationHeader: []
+- ArcGISTokenParameter: []
+paths:
+  /self:
+    get:
+      tags:
+      - self-description
+      responses:
+        '200':
+          $ref: '#/components/responses/ServiceSelfResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+      operationId: ServiceSelfGet
+      x-arcgis-frontmatter:
+        keywords:
+        - style
+        - basemap
+        - self
+      summary: Describes the static basemap tiles service.
+      description: |
+        Returns JSON describing the static basemap tiles service.
+
+        This self describing endpoint includes details on supported styles,
+        including the name, thumbnail and a list of supported languages and
+        worldviews. The information for each style also includes the URLs to be
+        used for requesting tiles.
+
+        You can use this information to build a dynamic user interface that
+        presents a user with the available selection of basemap styles.
+      parameters:
+      - $ref: '#/components/parameters/TokenParam'
+  /arcgis/navigation/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisNavigationTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Navigation
+        keywords:
+        - navigation
+      summary: Static basemap tiles for the ArcGIS Navigation style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Navigation style in PNG format.
+
+        ![ArcGIS Navigation](https://www.arcgis.com/sharing/rest/content/items/78c096abedb9498380f5db1922f96aa0/info/thumbnail/thumbnail1659480881868.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/navigation/static:
+    get:
+      operationId: arcgisNavigationMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - navigation
+      summary: Metadata for ArcGIS Navigation static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Navigation static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/navigation-night/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisNavigationNightTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Navigation Night
+        keywords:
+        - navigation
+        - night
+      summary: Static basemap tiles for the ArcGIS Navigation Night style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Navigation Night style in PNG format.
+
+        ![ArcGIS Navigation Night](https://www.arcgis.com/sharing/rest/content/items/77073a29526046b89bb5622b6276e933/info/thumbnail/thumbnail1659480999259.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/navigation-night/static:
+    get:
+      operationId: arcgisNavigationNightMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - navigation
+        - night
+      summary: Metadata for ArcGIS Navigation Night static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Navigation Night static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/streets/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisStreetsTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Streets
+        keywords:
+        - streets
+      summary: Static basemap tiles for the ArcGIS Streets style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Streets style in PNG format.
+
+        ![ArcGIS Streets](https://www.arcgis.com/sharing/rest/content/items/e3e6df1d2f6a485d8a70f28fdd3ce19e/info/thumbnail/thumbnail1626360997976.jpeg)
+
+         **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/streets/static:
+    get:
+      operationId: arcgisStreetsMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - streets
+      summary: Metadata for ArcGIS Streets static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Streets static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/streets-night/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisStreetsNightTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Streets Night
+        keywords:
+        - streets
+        - night
+      summary: Static basemap tiles for the ArcGIS Streets Night style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Streets Night style in PNG format.
+
+        ![ArcGIS Streets Night](https://www.arcgis.com/sharing/rest/content/items/b22e146f927e413c92f75b5e4614354a/info/thumbnail/thumbnail1659481791228.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/streets-night/static:
+    get:
+      operationId: arcgisStreetsNightMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - streets
+        - night
+      summary: Metadata for ArcGIS Streets Night static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Streets Night static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/outdoor/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisOutdoorTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Outdoor
+        keywords:
+        - outdoor
+      summary: Static basemap tiles for the ArcGIS Outdoor style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Outdoor style in PNG format.
+
+        ![ArcGIS Outdoor](https://www.arcgis.com/sharing/rest/content/items/659e7c1b1e374f6c8a89eefe17b23380/info/thumbnail/thumbnail1658946460034.png)
+
+         **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/outdoor/static:
+    get:
+      operationId: arcgisOutdoorMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - outdoor
+      summary: Metadata for ArcGIS Outdoor static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Outdoor static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/light-gray/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisLightGrayTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Light Gray
+        keywords:
+        - light gray
+      summary: Static basemap tiles for the ArcGIS Light Gray Canvas style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Light Gray Canvas style in PNG format.
+
+        ![ArcGIS Light Gray](https://www.arcgis.com/sharing/rest/content/items/0f74af7609054be8a29e0ba5f154f0a8/info/thumbnail/thumbnail1659480444177.png)
+
+         **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/light-gray/static:
+    get:
+      operationId: arcgisLightGrayMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - light gray
+      summary: Metadata for ArcGIS Light Gray Canvas static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Light Gray Canvas static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/dark-gray/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisDarkGrayTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Dark Gray
+        keywords:
+        - dark gray
+      summary: Static basemap tiles for the ArcGIS Dark Gray Canvas style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Dark Gray Canvas style in PNG format.
+
+        ![ArcGIS Dark Gray](https://www.arcgis.com/sharing/rest/content/items/7742cd5abef8497288dc81426266df9b/info/thumbnail/thumbnail1659479985387.png)
+
+         **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/dark-gray/static:
+    get:
+      operationId: arcgisDarkGrayMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - dark gray
+      summary: Metadata for ArcGIS Dark Gray Canvas static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Dark Gray Canvas static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/imagery/labels/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisImageryLabelsTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Imagery Labels
+        keywords:
+        - imagery
+        - labels
+      summary: Static basemap tiles for the ArcGIS Imagery Labels style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Imagery Labels style in PNG format.
+
+        This layer provides a detailed reference layer for the world designed to be overlaid on imagery.
+
+        ![ArcGIS Imagery Labels](https://www.arcgis.com/sharing/rest/content/items/e71216afee5045b59e015702a0169183/info/thumbnail/thumbnail1605214382152.jpeg)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/imagery/labels/static:
+    get:
+      operationId: arcgisImageryLabelsMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - imagery
+      summary: Metadata for Imagery Labels static basemap tiles.
+      description: |
+        Returns metadata for Imagery Labels static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/oceans/labels/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisOceansLabelsTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Oceans Labels
+        keywords:
+        - oceans
+        - labels
+      summary: Static basemap tiles for the ArcGIS Oceans Labels style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Oceans Labels style in PNG format.
+
+        This style is designed to be used as the reference layer for the World Ocean Base map.
+
+        ![ArcGIS Oceans Labels](https://www.maps.arcgis.com/sharing/rest/content/items/549bc703f887476c9356a8756068767a/info/thumbnail/thumbnail1605305854401.jpeg)
+
+        **Data providers:**
+
+        Esri, GEBCO, NOAA, National Geographic, Garmin, TomTom, Geonames.org, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/oceans/labels/static:
+    get:
+      operationId: arcgisOceansLabelsMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - oceans
+        - labels
+      summary: Metadata for ArcGIS Oceans Labels static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Oceans Labels static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/community/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisCommunityTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Community
+        keywords:
+        - community
+      summary: Static basemap tiles for the ArcGIS Community style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Community style in PNG format.
+
+        ![ArcGIS Community](https://www.arcgis.com/sharing/rest/content/items/184f5b81589844699ca1e132d007920e/info/thumbnail/thumbnail1659479749621.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/community/static:
+    get:
+      operationId: arcgisCommunityMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - community
+      summary: Metadata for ArcGIS Community static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Community static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/nova/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisNovaTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Nova
+        keywords:
+        - nova
+      summary: Static basemap tiles for the ArcGIS Nova style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Nova style in PNG format.
+
+        ![ArcGIS Nova](https://www.arcgis.com/sharing/rest/content/items/90f86b329f37499096d3715ac6e5ed1f/info/thumbnail/thumbnail1659481192979.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/nova/static:
+    get:
+      operationId: arcgisNovaMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - nova
+      summary: Metadata for ArcGIS Nova static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Nova static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/midcentury/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisMidcenturyTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Midcentury
+        keywords:
+        - midcentury
+      summary: Static basemap tiles for the ArcGIS Midcentury style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Midcentury style in PNG format.
+
+        ![ArcGIS Midcentury](https://www.arcgis.com/sharing/rest/content/items/52d6a28f09704f04b33761ba7c4bf93f/info/thumbnail/thumbnail1659480642524.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/midcentury/static:
+    get:
+      operationId: arcgisMidcenturyMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - midcentury
+      summary: Metadata for ArcGIS Midcentury static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Midcentury static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/newspaper/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisNewspaperTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Newspaper
+        keywords:
+        - newspaper
+      summary: Static basemap tiles for the ArcGIS Newspaper style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Newspaper style in PNG format.
+
+        ![ArcGIS Newspaper](https://www.arcgis.com/sharing/rest/content/items/e3c062eedf8b487b8bb5b9b08db1b7a9/info/thumbnail/thumbnail1659481176432.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/newspaper/static:
+    get:
+      operationId: arcgisNewspaperMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - newspaper
+      summary: Metadata for ArcGIS Newspaper static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Newspaper static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/human-geography/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisHumanGeographyTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Human Geography
+        keywords:
+        - human geography
+      summary: Static basemap tiles for the ArcGIS Human Geography style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Human Geography style in PNG format.
+
+        ![ArcGIS Human Geography](https://www.arcgis.com/sharing/rest/content/items/6a6bf92e7824417db632aa1d058a13b4/info/thumbnail/thumbnail1664546258111.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/human-geography/static:
+    get:
+      operationId: arcgisHumanGeographyMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - human geography
+      summary: Metadata for ArcGIS Human Geography static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Human Geography static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/human-geography-dark/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: arcgisHumanGeographyDarkTileGet
+      tags:
+      - arcgis
+      x-arcgis-frontmatter:
+        styleName: ArcGIS Human Geography Dark
+        keywords:
+        - human geography
+        - dark
+      summary: Static basemap tiles for the ArcGIS Human Geography Dark style in PNG format.
+      description: |
+        Returns static basemap tiles for the ArcGIS Human Geography Dark style in PNG format.
+
+        ![ArcGIS Human Geography Dark](https://www.arcgis.com/sharing/rest/content/items/69b9605f8a734c6f861148bb8e5a1f40/info/thumbnail/thumbnail1664546284715.png)
+
+        **Data providers:**
+
+        Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community. For more details see [Esri and data attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/LanguageParam'
+      - $ref: '#/components/parameters/WorldviewParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /arcgis/human-geography-dark/static:
+    get:
+      operationId: arcgisHumanGeographyDarkMetaDataGet
+      tags:
+      - arcgis-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - human geography
+        - dark
+      summary: Metadata for ArcGIS Human Geography Dark static basemap tiles.
+      description: |
+        Returns metadata for ArcGIS Human Geography Dark static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/dark-gray/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openDarkGrayTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps Dark Gray
+        keywords:
+        - open basemap dark gray
+        - dark gray
+      summary: Static basemap tiles for the Open Dark Gray style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open Dark Gray style in PNG format.
+
+        ![Open Basemaps Dark Gray](https://www.arcgis.com/sharing/rest/content/items/2d2acb267d854c45a1a61d76412c678b/info/thumbnail/thumbnail1734492474046.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/dark-gray/static:
+    get:
+      operationId: openDarkGrayMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - open basemap dark gray
+        - dark gray
+      summary: Metadata for Open Dark Gray static basemap tiles.
+      description: |
+        Returns metadata for Open Dark Gray static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/hybrid/detail/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openHybridDetailTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps Hybrid Detail
+        keywords:
+        - hybrid detail
+        - open basemap hybrid detail
+      summary: Static basemap tiles for the Open Hybrid Detail style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open Hybrid Detail style in PNG format.
+
+        ![Open Basemaps Hybrid Detail](https://esri.maps.arcgis.com/sharing/rest/content/items/0769f07cc0c3453faec703e77dbb3459/info/thumbnail/thumbnail1730101634742.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/hybrid/detail/static:
+    get:
+      operationId: openHybridDetailMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - hybrid detail
+        - open basemap hybrid detail
+      summary: Metadata for Open Hybrid Detail static basemap tiles.
+      description: |
+        Returns metadata for Open Hybrid Detail static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/light-gray/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openLightGrayTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps Light Gray
+        keywords:
+        - open basemap light gray
+        - light gray
+      summary: Static basemap tiles for the Open Light Gray style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open Light Gray style in PNG format.
+
+        ![Open Basemaps Light Gray](https://www.arcgis.com/sharing/rest/content/items/5caf5cc6047c43a1ad68e7063fa0d980/info/thumbnail/thumbnail1734496216755.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/light-gray/static:
+    get:
+      operationId: openLightGrayMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - open basemap light gray
+        - light gray
+      summary: Metadata for Open Light Gray static basemap tiles.
+      description: |
+        Returns metadata for Open Light Gray static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/navigation/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openNavigationTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps Navigation
+        keywords:
+        - open basemap navigation
+        - navigation
+      summary: Static basemap tiles for the Open Navigation style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open Navigation style in PNG format.
+
+        ![Open Basemaps Navigation](https://www.arcgis.com/sharing/rest/content/items/6f3860ba2a314b4084f9241cf86c42ba/info/thumbnail/thumbnail1746613603106.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/navigation/static:
+    get:
+      operationId: openNavigationMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - open basemap navigation
+        - navigation
+      summary: Metadata for Open Navigation static basemap tiles.
+      description: |
+        Returns metadata for Open Navigation static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/navigation-dark/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openNavigationDarkTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps Navigation Dark
+        keywords:
+        - open basemap navigation dark
+        - navigation dark
+      summary: Static basemap tiles for the Open Navigation Dark style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open Navigation Dark style in PNG format.
+
+        ![Open Basemaps Navigation Dark](https://www.arcgis.com/sharing/rest/content/items/b0c48730d6034260bc13e4d2c59566cb/info/thumbnail/thumbnail1746613859251.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/navigation-dark/static:
+    get:
+      operationId: openNavigationDarkMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - open basemap navigation dark
+        - navigation dark
+      summary: Metadata for Open Navigation Dark static basemap tiles.
+      description: |
+        Returns metadata for Open Navigation Dark static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/osm-style/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openOsmStyleTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps OpenStreetMap Style
+        keywords:
+        - open basemap osm style
+        - osm style
+        - openStreetMap style
+      summary: Static basemap tiles for the Open OSM style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open OSM style in PNG format.
+
+        ![Open Basemaps Osm Style](https://esri.maps.arcgis.com/sharing/rest/content/items/aa809b0ba7a14c61a3a25a6d1df3e6af/info/thumbnail/thumbnail1730084302882.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/osm-style/static:
+    get:
+      operationId: openOsmStyleMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - open basemap osm style
+        - osm style
+        - openStreetMap style
+      summary: Metadata for Open OSM style static basemap tiles.
+      description: |
+        Returns metadata for Open OSM style static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/streets/static/tile/{level}/{row}/{column}:
+    get:
+      operationId: openStreetsTileGet
+      tags:
+      - open
+      x-arcgis-frontmatter:
+        styleName: Open Basemaps Streets
+        keywords:
+        - open basemap streets style
+        - Streets
+        - openStreets
+      summary: Static basemap tiles for the Open Streets style in PNG format.
+      description: |
+        Returns static basemap tiles for the Open Streets style in PNG format.
+
+        ![Open Basemaps Streets](https://esri.maps.arcgis.com/sharing/rest/content/items/643f29ef5ab94511912dd337c9e1a13b/info/thumbnail/thumbnail1730084288363.png)
+
+         **Data providers:**
+
+        Map data © OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Map layer by Esri. For more details see [Esri and Data Attribution](https://developers.arcgis.com/documentation/esri-and-data-attribution/).
+      parameters:
+      - $ref: '#/components/parameters/LevelParam'
+      - $ref: '#/components/parameters/RowParam'
+      - $ref: '#/components/parameters/ColumnParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MapTileResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+  /open/streets/static:
+    get:
+      operationId: openStreetsMetaDataGet
+      tags:
+      - open-metadata
+      x-arcgis-frontmatter:
+        keywords:
+        - open basemap streets style
+        - Streets
+        - openStreets
+      summary: Metadata for Open Streets style static basemap tiles.
+      description: |
+        Returns metadata for Open Streets style static basemap tiles.
+      parameters:
+      - $ref: '#/components/parameters/FormatParam'
+      - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetaDataResponse'
+        '400':
+          $ref: '#/components/responses/InvalidQueryErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/PermissionMissingErrorResponse'
+        5XX:
+          $ref: '#/components/responses/ServerErrorResponse'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          description: Error information
+          type: object
+          properties:
+            code:
+              description: |
+                A code identifying the type of error.
+
+                This can be an HTTP status code, `498` (invalid or expired
+                token), or `499` (missing token).
+              type: integer
+              example: 400
+              enum:
+              - 400
+              - 401
+              - 403
+              - 404
+              - 498
+              - 499
+              - 500
+            message:
+              description: A message describing the error.
+              type: string
+              minLength: 1
+              example: Parameter invalid.
+            details:
+              description: List of details about the error.
+              type: array
+              items:
+                type: string
+                minItems: 0
+          required:
+          - code
+          - message
+      required:
+      - error
+    ServiceSelf:
+      type: object
+      description: A JSON structure which describes the static basemap tiles service. Includes a list of all supported styles.
+      properties:
+        languages:
+          description: |
+            List of languages that are supported by certain basemap styles. The language code can be set in the `language` query parameter for tile requests of supported styles.
+
+            Check the array of `supportedLanguageCodes` for a style to see which
+            languages are available.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: Name of the language.
+                type: string
+                example: French
+              code:
+                description: Code for the language.
+                type: string
+                example: fr
+        styleFamilies:
+          description: |
+            A list of the available style families.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: Name of the style family.
+                type: string
+                example: ArcGIS
+              code:
+                description: Code for the style family.
+                $ref: '#/components/schemas/StyleFamily'
+                example: arcgis
+        worldviews:
+          description: Supported worldviews that can be passed to the {?worldview} parameter.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: Name of the worldview.
+                type: string
+                example: United States of America
+              code:
+                description: Code for the worldview.
+                type: string
+                example: unitedStatesOfAmerica
+        styles:
+          description: List of provided styles that can be used.
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/StylesItemSelf'
+      required:
+      - languages
+      - styles
+    StylesItemSelf:
+      type: object
+      description: Describes a given style.
+      properties:
+        name:
+          description: Name of the style.
+          type: string
+          example: ArcGIS Navigation
+        deprecated:
+          description: Details whether the style is deprecated.
+          type: boolean
+          default: false
+        complete:
+          description: |
+            Details whether the style can be used as a complete basemap, or whether it requires additional layers.
+
+            To present a list of static basemap tiles that are ready to be used stand-alone, filter out styles that are not `complete`.
+
+            For example, the `arcgis/streets` style is `complete` because it includes all of the basemap data required to provide the context for a mapping application. It contains a base layer of streets and buildings, with an overlay of place name labels and street names.
+
+            By contrast the `arcgis/imagery/labels` style only provides the place name labels and street names. Without an accompanying satellite imagery base layer this style does not provide a complete basemap.
+          type: boolean
+          default: true
+        path:
+          description: Endpoint path used to access the style.
+          type: string
+          example: /arcgis/navigation
+        provider:
+          description: The style provider.
+          type: string
+          enum:
+          - arcgis
+          example: arcgis
+        styleFamily:
+          $ref: '#/components/schemas/StyleFamily'
+        group:
+          $ref: '#/components/schemas/StyleGroup'
+        url:
+          description: |
+            Full URL to the style metadata.
+
+            This can be used with mapping clients that read the tiling scheme
+            etc. from the metadata XML as the entry point for fetching tiles
+            (for example, the ArcGIS Maps SDKs).
+
+            You can append the `language` query parameter to this style, using
+            the codes shown in the `supportedLanguageCodes` property for the
+            style.
+
+            Append the `token` query parameter to this style to authenticate
+            tile requests.
+          type: string
+          format: URL
+          example: https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/navigation/static
+        templateUrl:
+          description: |
+            Template URL for fetching a tile from the style
+
+            This can be used with mapping clients that form tile requests using
+            the `{x}/{y}/{z}` syntax (for example, Cesium JS, OpenLayers, Leaflet
+            and MapLibre). Note that the order of arguments for this service is
+            `{z}/{y}/{x}` where `z` equates to the `level` path parameter, `y`
+            is `row` and `x` is `column`.
+
+            You can append the `language` query parameter to this style, using
+            the codes shown in the `supportedLanguageCodes` property for the
+            style.
+
+            Append the `token` query parameter to this style to authenticate
+            tile requests.
+          type: string
+          format: URL
+          example: https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/navigation/static/tile/{z}/{y}/{x}
+        thumbnailUrl:
+          description: Link to a thumbnail JPG for the style.
+          type: string
+          format: URL
+          example: https://www.arcgis.com/sharing/rest/content/items/ea3befe305494bb5b2acd77e1b3135dc/info/thumbnail/thumbnail1607389425104.jpeg
+        supportedLanguageCodes:
+          description: |
+            A list of the language codes that are supported for this style.
+
+            Language codes can be passed to a given style with the `language`
+            query parameter. You can see full details of a given language,
+            including it's display name in the top-level `languages` property
+            for the service's `self` endpoint.
+
+            If this array is empty for a give style, only the default language
+            for the basemap is supported.
+          type: array
+          items:
+            type: string
+            minItems: 0
+            example:
+            - fr
+            - de
+        supportedWorldviewCodes:
+          description: |
+            A list of the worldview codes that are supported for this style.
+
+            Pass a worldview code to a given style with the `worldview` query
+            parameter to get that edition of the basemap. You can see full
+            details of an edition, including its display name in the top-level
+            `worldviews` property for the service's `self` endpoint.
+
+            If this array is empty for a given style, only the default worldview
+            for the basemap is supported.
+
+            Note: `worldview` is currently only supported with the default
+            `language`. If a `worldview` parameter is provided, any `language`
+            query parameter passed alongside it will be ignored.
+          type: array
+          items:
+            type: string
+            minItems: 0
+            example:
+            - unitedStatesOfAmerica
+        description:
+          description: A description of the style.
+          type: string
+          example: This layer provides a detailed basemap for the world featuring a custom navigation map style.
+      required:
+      - complete
+      - name
+      - path
+      - provider
+      - thumbnailUrl
+      - url
+      - templateUrl
+      - supportedLanguageCodes
+      - supportedWorldviewCodes
+    MetaData:
+      type: object
+      description: |
+        The metadata.
+      properties:
+        serviceDescription:
+          description: A description of the static basemap tiles service.
+          type: string
+        mapName:
+          description: The name of the basemap style.
+          type: string
+          example: ArcGIS Streets
+        description:
+          description: A description of the map.
+          type: string
+          example: This layer provides a detailed basemap for the world symbolized with a classic Esri street map style.
+        copyrightText:
+          description: Copyright information for the map.
+          type: string
+          example: 'Sources: Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community'
+        supportsDynamicLayers:
+          description: Whether the service supports dynamic layers.
+          type: boolean
+          example: false
+        spatialReference:
+          description: The spatial reference of the map.
+          $ref: '#/components/schemas/SpatialReference'
+        singleFusedMapCache:
+          description: Whether the service has a single fused map cache.
+          type: boolean
+          example: true
+        tileInfo:
+          description: The tile information of the service.
+          $ref: '#/components/schemas/TileInfo'
+        initialExtent:
+          description: The initial extent of the service.
+          $ref: '#/components/schemas/Extent'
+        fullExtent:
+          description: The full extent of the service.
+          $ref: '#/components/schemas/Extent'
+        minScale:
+          description: A number representing the minimum scale at which the layer will be visible. The number is the scale's denominator.
+          minimum: 0
+          example: 0
+        maxScale:
+          description: A number representing the maximum scale at which the layer will be visible. The number is the scale's denominator.
+          minimum: 0
+          example: 0
+        units:
+          description: Units used by the service.
+          type: string
+          enum:
+          - esriMeters
+        supportedImageFormatTypes:
+          description: The image format types supported by the service when generating a map image.
+          type: string
+          example: PNG
+        documentInfo:
+          description: Information about the service.
+          $ref: '#/components/schemas/DocumentInfo'
+        capabilities:
+          description: The service's capabilities.
+          type: string
+          example: Map
+        exportTilesAllowed:
+          description: Whether exporting tiles in compact format (.tpk) is supported.
+          type: boolean
+          example: false
+        maxRecordCount:
+          description: The maximum number of records that will be returned at once for a query.
+          type: integer
+          example: 100
+        maxImageHeight:
+          description: The maximum image height in pixels.
+          type: integer
+          example: 512
+        maxImageWidth:
+          description: The maximum image width in pixels.
+          type: integer
+          example: 512
+    SpatialReference:
+      type: object
+      description: A spatial reference.
+      required:
+      - wkid
+      properties:
+        wkid:
+          description: The well-known ID (WKID) of the coordinate system.
+          type: integer
+          example: 102100
+        latestWkid:
+          description: Identifies the current wkid value associated with the same spatial reference. For example a WKID of '102100' (Web Mercator) has a latestWKid of '3857'.
+          type: integer
+          example: 3857
+    TileInfo:
+      type: object
+      description: Tile information, returned from the service.
+      properties:
+        rows:
+          type: integer
+          description: Requested tile's row.
+          example: 512
+        cols:
+          type: integer
+          description: Requested tile's column.
+          example: 512
+        dpi:
+          type: number
+          description: The dpi of the tiling scheme.
+          example: 96
+        compressionQuality:
+          type: number
+          description: Compression quality of the tile.
+          minimum: 0
+          maximum: 100
+          example: 75
+        format:
+          type: string
+          description: Image format of the tile.
+          enum:
+          - PNG
+        lods:
+          type: array
+          description: An array of levels of detail that define the tiling scheme.
+          items:
+            type: object
+            $ref: '#/components/schemas/LevelOfDetail'
+          uniqueItems: true
+        origin:
+          type: object
+          description: The tiling scheme origin.
+          $ref: '#/components/schemas/Point'
+        spatialReference:
+          type: object
+          description: The spatial reference of the tiling schema.
+          $ref: '#/components/schemas/SpatialReference'
+      additionalProperties: false
+    LevelOfDetail:
+      type: object
+      description: A level of detail (LOD) in a tiling scheme.
+      properties:
+        level:
+          type: integer
+          description: ID for each level.
+          example: 6
+        resolution:
+          type: number
+          description: Resolution in map units of each pixel in a tile for each level.
+          example: 1222.992452562495
+        scale:
+          type: number
+          description: Scale for each level.
+          example: 4622324.434309
+      additionalProperties: false
+    Point:
+      type: object
+      properties:
+        m:
+          type: number
+          description: M coordinate which contains measures used for linear referencing.
+        spatialReference:
+          type: object
+          description: The spatial reference can be defined using a well-known ID (WKID) or well-known text (WKT).
+          $ref: '#/components/schemas/SpatialReference'
+        x:
+          description: X coordinate which is measured along the east/west axis.
+          type: number
+        y:
+          type: number
+          description: Y coordinate which is measured along the north/south axis.
+        z:
+          type: number
+          description: Z coordinate which measures height or elevation.
+      required:
+      - x
+      - y
+      additionalProperties: false
+    Extent:
+      description: Defines a bounding geometry given the lower-left and upper-right corners of the bounding box.
+      type: object
+      properties:
+        spatialReference:
+          type: object
+          description: An object used to specify the spatial reference of the given geometry.
+          $ref: '#/components/schemas/SpatialReference'
+        xmax:
+          type: number
+          description: A numeric value indicating the top-right X-coordinate of an extent envelope.
+          example: 20037507.22959434
+        xmin:
+          description: A numeric value indicating the bottom-left X-coordinate of an extent envelope.
+          type: number
+          example: -20037507.22959434
+        ymax:
+          type: number
+          description: A numeric value indicating the top-right Y-coordinate of an extent envelope.
+          example: 19971868.880408563
+        ymin:
+          type: number
+          description: A numeric value indicating the bottom-left Y-coordinate of an extent envelope.
+          example: -19971868.880408563
+      additionalProperties: false
+    DocumentInfo:
+      description: Provides various information about the service such as title, author, keywords and comments.
+      type: object
+      properties:
+        Title:
+          description: The document title.
+          type: string
+          example: ArcGIS Streets
+        Author:
+          description: The document author.
+          type: string
+          example: Esri
+        Comments:
+          type: string
+          description: The document comments.
+        Subject:
+          type: string
+          description: The document subject.
+          example: imagery, satellite, aerial
+        Category:
+          type: string
+          description: The document category.
+          example: imageryBaseMapsEarthCover (Imagery, basemaps, and land cover)
+        AntialiasingMode:
+          description: The anti-aliasing mode.
+          type: string
+          enum:
+          - None
+          - Fastest
+          - Fast
+          - Normal
+          - Best
+        TextAntialiasingMode:
+          description: The text anti-aliasing mode.
+          type: string
+          enum:
+          - None
+          - Normal
+          - Force
+        Keywords:
+          description: The document keywords.
+          type: string
+          example: World,Global,United States
+    StyleFamily:
+      type: string
+      enum:
+      - arcgis
+      example: arcgis
+    StyleGroup:
+      description: |
+        A group or theme used to describe basemap styles that have a similar purpose.
+
+        A style group can be used to search for styles that meet a particular
+        business need or to group related styles in a table of contents or a
+        basemap picker app.
+      type: string
+      enum:
+      - streets
+      - topography
+      - satellite
+      - reference
+      - creative
+      example: streets
+  securitySchemes:
+    ArcGISTokenParameter:
+      type: apiKey
+      in: query
+      name: token
+      description: |
+        The authentication token used to access the static basemap tiles service.
+
+        The `token` parameter can be:
+        - an API key
+        - a short-lived token
+
+        API keys and short-lived tokens must be created from an ArcGIS Location
+        Platform account, with the `premium:user:staticbasemaptiles`
+        [privilege](https://developers.arcgis.com/rest/users-groups-and-items/privileges/).
+
+        See [ArcGIS security
+        documentation](https://developers.arcgis.com/documentation/security-and-authentication/)
+        for more information on authentication.
+    ArcGISXEsriAuthorizationHeader:
+      type: http
+      scheme: bearer
+      bearerFormat: 'X-Esri-Authorization: Bearer <YOUR_TOKEN>'
+      description: |
+        The authentication token used to access the static basemap tiles service.
+
+        The `token` parameter can be:
+        - an API key
+        - a short-lived token
+
+        API keys and short-lived tokens must be created from an ArcGIS Location
+        Platform account, with the `premium:user:staticbasemaptiles`
+        [privilege](https://developers.arcgis.com/rest/users-groups-and-items/privileges/).
+
+        See [ArcGIS security
+        documentation](https://developers.arcgis.com/documentation/security-and-authentication/)
+        for more information on authentication.
+
+        Supply the token in the request header using the "Bearer" scheme:
+        `X-Esri-Authorization: Bearer <YOUR_TOKEN>`
+
+        See [this
+        topic](https://developers.arcgis.com/documentation/security-and-authentication/reference/http-authorization-headers/)
+        for more details on header authentication.
+    ArcGISAuthorizationHeader:
+      type: http
+      scheme: bearer
+      bearerFormat: 'Authorization: Bearer <YOUR_TOKEN>'
+      description: |
+        The authentication token used to access the static basemap tiles service.
+
+        The `token` parameter can be:
+        - an API key
+        - a short-lived token
+
+        API keys and short-lived tokens must be created from an ArcGIS Location
+        Platform account, with the `premium:user:staticbasemaptiles`
+        [privilege](https://developers.arcgis.com/rest/users-groups-and-items/privileges/).
+
+        See [ArcGIS security
+        documentation](https://developers.arcgis.com/documentation/security-and-authentication/)
+        for more information on authentication.
+
+        Supply the token in the request header using the "Bearer" scheme:
+        `Authorization: Bearer <YOUR_TOKEN>`
+
+        See [this
+        topic](https://developers.arcgis.com/documentation/security-and-authentication/reference/http-authorization-headers/)
+        for more details on header authentication.
+  parameters:
+    RowParam:
+      name: row
+      in: path
+      description: |
+        Row index of the tile on the selected level of detail.
+
+        The `row` parameter is described as the `y` component in some systems.
+      required: true
+      schema:
+        minimum: 0
+        type: integer
+      example: 10
+    ColumnParam:
+      name: column
+      in: path
+      description: |
+        Column index of the tile on the selected level of detail.
+
+        The `column` parameter is described as the `x` component in some systems.
+      required: true
+      schema:
+        minimum: 0
+        type: integer
+      example: 15
+    LevelParam:
+      name: level
+      in: path
+      description: |
+        The level of detail (or "tile matrix set") requested for a tile.
+
+        The `level` parameter is described as the `z` component in some systems.
+
+        Supplying a level of `0` returns the smallest scale of tiles (e.g. the
+        global scale) and a level of `22` returns ths largest scale (e.g. street
+        scale).
+
+        Note that the static basemap tiles service uses the tiling scheme of the
+        underlying vector tile service (512x512 pixels), rather than the
+        traditional image tile scheme (256x256 pixels). This means that static
+        basemap tiles service zoom levels are 1 less than those of other APIs.
+        For example: level 12 is equivalent to level 13 for other image map tile
+        services.
+
+        The table below shows the resolution and scale of each level:
+
+        level | resolution | scale
+        --- | --- | ---
+        0 | 78271.516964 | 1:295828763.795777
+        1 | 39135.75848199995 | 1:147914381.897889
+        2 | 19567.87924100005 | 1:73957190.948944
+        3 | 9783.93962049995 | 1:36978595.474472
+        4 | 4891.96981024998 | 1:18489297.737236
+        5 | 2445.98490512499 | 1:9244648.868618
+        6 | 1222.992452562495 | 1:4622324.434309
+        7 | 611.496226281245 | 1:2311162.217155
+        8 | 305.74811314069 | 1:1155581.108577
+        9 | 152.874056570279 | 1:577790.554289
+        10 | 76.4370282852055 | 1:288895.277144
+        11 | 38.2185141425366 | 1:144447.638572
+        12 | 19.1092570712683 | 1:72223.819286
+        13 | 9.55462853563415 | 1:36111.909643
+        14 | 4.777314267817075 | 1:18055.954822
+        15 | 2.388657133974685 | 1:9027.977411
+        16 | 1.19432856698734 | 1:4513.9887055
+        17 | 0.597164283427525 | 1:2256.9943525
+        18 | 0.2985821417799085 | 1:1128.4971765
+        19 | 0.1492910708238085 | 1:564.248588
+        20 | 0.07464553541190416 | 1:282.124294
+        21 | 0.03732276770595208 | 1:141.062147
+        22 | 0.01866138385297604 | 1:70.5310735
+
+        For more information on levels of detail see [this
+        page](https://developers.arcgis.com/documentation/mapping-and-location-services/reference/zoom-levels-and-scale/).
+      required: true
+      schema:
+        minimum: 0
+        maximum: 22
+        type: integer
+      example: 10
+    TokenParam:
+      name: token
+      in: query
+      description: |
+        The authentication token used to access the static basemap tiles service.
+
+        The `token` parameter can be:
+        - an API key
+        - a short-lived token
+
+        API keys and short-lived tokens must be created from an ArcGIS Location
+        Platform account, with the `premium:user:staticbasemaptiles`
+        [privilege](https://developers.arcgis.com/rest/users-groups-and-items/privileges/).
+
+        See [ArcGIS security
+        documentation](https://developers.arcgis.com/documentation/security-and-authentication/)
+        for more information on authentication.
+
+        This parameter is required _unless_ you supply an access token in the
+        request header with one of the following keys using the "Bearer" scheme:
+
+        - `Authorization: Bearer <YOUR_TOKEN>`
+        - `X-Esri-Authorization: Bearer <YOUR_TOKEN>`
+      schema:
+        type: string
+    LanguageParam:
+      name: language
+      in: query
+      description: |
+        Optional case-sensitive parameter to specify the preferred language for basemap labels.
+
+        This query parameter uses language codes to specify the preferred
+        language. If not set, or if no translation is available, the default
+        basemap labels will be used.
+
+        The language codes use the [CLDR](https://cldr.unicode.org/) (Common
+        Locale Data Repository) format string that uses a two letter language
+        code (e.g. "fr" for French) optionally followed by a two letter country
+        code (e.g. "fr-CA" for French in Canada).
+
+        If an unsupported language code is used, then the service will attempt
+        to fall-back to the closest available language. This is done by
+        stripping regional and extension sub-tags to find a known language code.
+        For example, French Canadian (`fr-CA`) is unsupported so this falls back
+        to French `fr`.
+
+        Should the fallback fail, then the service will default to showing
+        the default basemap labels.
+
+        Language codes:
+        - English - `en`
+        - Dutch - `nl`
+        - Danish - `da`
+        - Finnish - `fi`
+        - French - `fr`
+        - German - `de`
+        - Norwegian - `no` or `nb`
+
+        Note: if a `worldview` parameter is provided to the query, the
+        `language` parameter will be ignored.
+      schema:
+        type: string
+        enum:
+        - en
+        - nl
+        - da
+        - fi
+        - fr
+        - de
+        - nb
+        - no
+        example: fr
+    WorldviewParam:
+      name: worldview
+      in: query
+      description: |
+        Optional, case-sensitive parameter to control the boundary lines and labels displayed with some ArcGIS styles.
+
+        To select a US edition of a basemap style, set the `worldview` parameter
+        to `unitedStatesOfAmerica`.
+
+        If the `worldview` parameter is not set, the style will use the standard
+        set of boundary lines and labels as defined by the style, rather than
+        the specific view of a single country.
+
+        The `worldview` parameter allows you to display an edition of basemap
+        borders and labels based on the specific view of a country. Please note
+        that it is not that country's international policy outside of their
+        country.
+
+        Note: if this query parameter is set, any provided `language` parameter
+        will be ignored.
+      schema:
+        type: string
+        enum:
+        - unitedStatesOfAmerica
+      examples:
+        unitedStatesOfAmerica:
+          value: unitedStatesOfAmerica
+          summary: |
+            Shows boundary lines and labels that correspond to the United States
+            of America's view of world boundaries and labels.
+    FormatParam:
+      name: f
+      in: query
+      description: |
+        The requested response format - either `json` or `pjson` (pretty json).
+      schema:
+        type: string
+        default: json
+        enum:
+        - json
+        - pjson
+    StyleFamilyParam:
+      name: styleFamily
+      in: query
+      description: |
+        A family of basemap styles.
+      schema:
+        $ref: '#/components/schemas/StyleFamily'
+  responses:
+    UnauthorizedErrorResponse:
+      description: Authentication Error. The API key or token is missing, invalid or expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerErrorResponse:
+      description: An error occurred on the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InvalidQueryErrorResponse:
+      description: Invalid query parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundErrorResponse:
+      description: The requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PermissionMissingErrorResponse:
+      description: |
+        The required parameter 'token' is valid, but does not have permission to access the service.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceSelfResponse:
+      description: A successful response for the root self request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceSelf'
+    MapTileResponse:
+      description: |
+        Tile in PNG format with a size of 512 x 512 pixels.
+      content:
+        image/png:
+          schema:
+            type: string
+            format: binary
+    MetaDataResponse:
+      description: |
+        Metadata response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MetaData'

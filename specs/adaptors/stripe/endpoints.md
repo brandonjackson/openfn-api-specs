@@ -1,8 +1,8 @@
-# Stripe API (stripe) v2026-06-24.dahlia
+# Stripe API (stripe) v2026-09-30.endive
 
 <!-- derived from openapi.json by `pnpm specs index stripe` — do not edit by hand -->
 
-base: https://api.stripe.com/ | auth: http/basic, http/bearer (auth-scheme) | 587 operations in 76 resources
+base: https://api.stripe.com/ | auth: http/basic, http/bearer (auth-scheme) | 612 operations in 78 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -17,13 +17,13 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## accounts
 - GET /v1/accounts — GetAccounts: List all connected accounts
-- POST /v1/accounts — PostAccounts: With Connect, you can create Stripe accounts for your users.
+- POST /v1/accounts — PostAccounts: Create an account
 - GET /v1/accounts/{account} — GetAccountsAccount: Retrieve account
 - POST /v1/accounts/{account} — PostAccountsAccount: Update an account
 - DELETE /v1/accounts/{account} — DeleteAccountsAccount: Delete an account
 - POST /v1/accounts/{account}/bank_accounts — PostAccountsAccountBankAccounts: Create an external account
 - GET /v1/accounts/{account}/bank_accounts/{id} — GetAccountsAccountBankAccountsId: Retrieve an external account
-- POST /v1/accounts/{account}/bank_accounts/{id} — PostAccountsAccountBankAccountsId: Updates the metadata, account holder name, account holder type of a bank account belonging to a connected account and optionally sets it as…
+- POST /v1/accounts/{account}/bank_accounts/{id} — PostAccountsAccountBankAccountsId: Update a bank account
 - DELETE /v1/accounts/{account}/bank_accounts/{id} — DeleteAccountsAccountBankAccountsId: Delete an external account
 - GET /v1/accounts/{account}/capabilities — GetAccountsAccountCapabilities: List all account capabilities
 - GET /v1/accounts/{account}/capabilities/{capability} — GetAccountsAccountCapabilitiesCapability: Retrieve an Account Capability
@@ -31,7 +31,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/accounts/{account}/external_accounts — GetAccountsAccountExternalAccounts: List all external accounts
 - POST /v1/accounts/{account}/external_accounts — PostAccountsAccountExternalAccounts: Create an external account
 - GET /v1/accounts/{account}/external_accounts/{id} — GetAccountsAccountExternalAccountsId: Retrieve an external account
-- POST /v1/accounts/{account}/external_accounts/{id} — PostAccountsAccountExternalAccountsId: Updates the metadata, account holder name, account holder type of a bank account belonging to a connected account and optionally sets it as…
+- POST /v1/accounts/{account}/external_accounts/{id} — PostAccountsAccountExternalAccountsId: Update a bank account
 - DELETE /v1/accounts/{account}/external_accounts/{id} — DeleteAccountsAccountExternalAccountsId: Delete an external account
 - POST /v1/accounts/{account}/login_links — PostAccountsAccountLoginLinks: Create a login link
 - GET /v1/accounts/{account}/people — GetAccountsAccountPeople: List all persons
@@ -45,6 +45,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/accounts/{account}/persons/{person} — PostAccountsAccountPersonsPerson: Update a person
 - DELETE /v1/accounts/{account}/persons/{person} — DeleteAccountsAccountPersonsPerson: Delete a person
 - POST /v1/accounts/{account}/reject — PostAccountsAccountReject: Reject an account
+- POST /v1/accounts/{account}/unreject — PostAccountsAccountUnreject: Unreject an account
 
 ## apple_pay
 - GET /v1/apple_pay/domains — GetApplePayDomains: List apple pay domains.
@@ -62,6 +63,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/application_fees/{id}/refunds — PostApplicationFeesIdRefunds: Create an application fee refund
 
 ## apps
+- GET /v1/apps/installs — GetAppsInstalls: List all app installs
+- POST /v1/apps/installs — PostAppsInstalls: Create an app install
+- GET /v1/apps/installs/{id} — GetAppsInstallsId: Retrieve an app install
+- POST /v1/apps/installs/{id} — PostAppsInstallsId: Update an app install
+- POST /v1/apps/installs/{id}/uninstall — PostAppsInstallsIdUninstall: Uninstall an app install
 - GET /v1/apps/secrets — GetAppsSecrets: List secrets
 - POST /v1/apps/secrets — PostAppsSecrets: Set a Secret
 - POST /v1/apps/secrets/delete — PostAppsSecretsDelete: Delete a Secret
@@ -96,6 +102,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/billing/credit_grants/{id} — PostBillingCreditGrantsId: Update a credit grant
 - POST /v1/billing/credit_grants/{id}/expire — PostBillingCreditGrantsIdExpire: Expire a credit grant
 - POST /v1/billing/credit_grants/{id}/void — PostBillingCreditGrantsIdVoid: Void a credit grant
+- GET /v1/billing/feedback_options — GetBillingFeedbackOptions: List all feedback options
+- POST /v1/billing/feedback_options — PostBillingFeedbackOptions: Create a feedback option
+- GET /v1/billing/feedback_options/{id} — GetBillingFeedbackOptionsId: Retrieve a feedback option
+- POST /v1/billing/feedback_options/{id} — PostBillingFeedbackOptionsId: Update a feedback option
+- POST /v1/billing/feedback_options/{id}/deactivate — PostBillingFeedbackOptionsIdDeactivate: Deactivate a feedback option
 - POST /v1/billing/meter_event_adjustments — PostBillingMeterEventAdjustments: Create a billing meter event adjustment
 - POST /v1/billing/meter_events — PostBillingMeterEvents: Create a billing meter event
 - GET /v1/billing/meters — GetBillingMeters: List billing meters
@@ -115,17 +126,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## charges
 - GET /v1/charges — GetCharges: List all charges
-- POST /v1/charges — PostCharges: This method is no longer recommended—use the Payment Intents API to initiate a new payment instead.
+- POST /v1/charges — PostCharges: Create a charge
 - GET /v1/charges/search — GetChargesSearch: Search charges
 - GET /v1/charges/{charge} — GetChargesCharge: Retrieve a charge
 - POST /v1/charges/{charge} — PostChargesCharge: Update a charge
-- POST /v1/charges/{charge}/capture — PostChargesChargeCapture: Capture a payment
+- POST /v1/charges/{charge}/capture — PostChargesChargeCapture: Capture a charge
 - GET /v1/charges/{charge}/dispute — GetChargesChargeDispute: Retrieve a dispute for a specified charge.
 - POST /v1/charges/{charge}/dispute — PostChargesChargeDispute
 - POST /v1/charges/{charge}/dispute/close — PostChargesChargeDisputeClose
 - POST /v1/charges/{charge}/refund — PostChargesChargeRefund: Create a refund
 - GET /v1/charges/{charge}/refunds — GetChargesChargeRefunds: List all refunds
-- POST /v1/charges/{charge}/refunds — PostChargesChargeRefunds: Create customer balance refund
+- POST /v1/charges/{charge}/refunds — PostChargesChargeRefunds: Create a refund
 - GET /v1/charges/{charge}/refunds/{refund} — GetChargesChargeRefundsRefund: Retrieves the details of an existing refund.
 - POST /v1/charges/{charge}/refunds/{refund} — PostChargesChargeRefundsRefund: Update a specified refund.
 
@@ -189,13 +200,13 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/customers/{customer}/bank_accounts — GetCustomersCustomerBankAccounts: List all bank accounts (deprecated)
 - POST /v1/customers/{customer}/bank_accounts — PostCustomersCustomerBankAccounts: Create a card
 - GET /v1/customers/{customer}/bank_accounts/{id} — GetCustomersCustomerBankAccountsId: Retrieve a bank account (deprecated)
-- POST /v1/customers/{customer}/bank_accounts/{id} — PostCustomersCustomerBankAccountsId: Update a specified source for a given customer.
+- POST /v1/customers/{customer}/bank_accounts/{id} — PostCustomersCustomerBankAccountsId: Update a card
 - DELETE /v1/customers/{customer}/bank_accounts/{id} — DeleteCustomersCustomerBankAccountsId: Delete a customer source
 - POST /v1/customers/{customer}/bank_accounts/{id}/verify — PostCustomersCustomerBankAccountsIdVerify: Verify a bank account
 - GET /v1/customers/{customer}/cards — GetCustomersCustomerCards: List all cards (deprecated)
 - POST /v1/customers/{customer}/cards — PostCustomersCustomerCards: Create a card
 - GET /v1/customers/{customer}/cards/{id} — GetCustomersCustomerCardsId: Retrieve a card (deprecated)
-- POST /v1/customers/{customer}/cards/{id} — PostCustomersCustomerCardsId: Update a specified source for a given customer.
+- POST /v1/customers/{customer}/cards/{id} — PostCustomersCustomerCardsId: Update a card
 - DELETE /v1/customers/{customer}/cards/{id} — DeleteCustomersCustomerCardsId: Delete a customer source
 - GET /v1/customers/{customer}/cash_balance — GetCustomersCustomerCashBalance: Retrieve a cash balance
 - POST /v1/customers/{customer}/cash_balance — PostCustomersCustomerCashBalance: Update a cash balance's settings
@@ -209,7 +220,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/customers/{customer}/sources — GetCustomersCustomerSources: List sources for a specified customer.
 - POST /v1/customers/{customer}/sources — PostCustomersCustomerSources: Create a card
 - GET /v1/customers/{customer}/sources/{id} — GetCustomersCustomerSourcesId: Retrieve a specified source for a given customer.
-- POST /v1/customers/{customer}/sources/{id} — PostCustomersCustomerSourcesId: Update a specified source for a given customer.
+- POST /v1/customers/{customer}/sources/{id} — PostCustomersCustomerSourcesId: Update a card
 - DELETE /v1/customers/{customer}/sources/{id} — DeleteCustomersCustomerSourcesId: Delete a customer source
 - POST /v1/customers/{customer}/sources/{id}/verify — PostCustomersCustomerSourcesIdVerify: Verify a bank account
 - GET /v1/customers/{customer}/subscriptions — GetCustomersCustomerSubscriptions: List active subscriptions
@@ -251,7 +262,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/exchange_rates/{rate_id} — GetExchangeRatesRateId: Retrieve an exchange rate
 
 ## external_accounts
-- POST /v1/external_accounts/{id} — PostExternalAccountsId: Updates the metadata, account holder name, account holder type of a bank account belonging to a connected account and optionally sets it as…
+- POST /v1/external_accounts/{id} — PostExternalAccountsId: Update a bank account
 
 ## file_links
 - GET /v1/file_links — GetFileLinks: List all file links
@@ -417,13 +428,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## payment_methods
 - GET /v1/payment_methods — GetPaymentMethods: List PaymentMethods
-- POST /v1/payment_methods — PostPaymentMethods: Shares a PaymentMethod
+- POST /v1/payment_methods — PostPaymentMethods: Create a PaymentMethod
 - GET /v1/payment_methods/{payment_method} — GetPaymentMethodsPaymentMethod: Retrieve a PaymentMethod
 - POST /v1/payment_methods/{payment_method} — PostPaymentMethodsPaymentMethod: Update a PaymentMethod
 - POST /v1/payment_methods/{payment_method}/attach — PostPaymentMethodsPaymentMethodAttach: Attach a PaymentMethod to a Customer
 - POST /v1/payment_methods/{payment_method}/detach — PostPaymentMethodsPaymentMethodDetach: Detach a PaymentMethod from a Customer
 
 ## payment_records
+- GET /v1/payment_records — GetPaymentRecords: List Payment Records
 - POST /v1/payment_records/report_payment — PostPaymentRecordsReportPayment: Report a payment
 - GET /v1/payment_records/{id} — GetPaymentRecordsId: Retrieve a Payment Record
 - POST /v1/payment_records/{id}/report_payment_attempt — PostPaymentRecordsIdReportPaymentAttempt: Report a payment attempt
@@ -454,6 +466,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/prices/search — GetPricesSearch: Search prices
 - GET /v1/prices/{price} — GetPricesPrice: Retrieve a price
 - POST /v1/prices/{price} — PostPricesPrice: Update a price
+
+## product_catalog
+- GET /v1/product_catalog/trial_offers — GetProductCatalogTrialOffers: List trial offers
+- POST /v1/product_catalog/trial_offers — PostProductCatalogTrialOffers: Create a trial offer
+- GET /v1/product_catalog/trial_offers/{id} — GetProductCatalogTrialOffersId: Retrieve a trial offer
+- POST /v1/product_catalog/trial_offers/{id} — PostProductCatalogTrialOffersId: Update a trial offer
 
 ## products
 - GET /v1/products — GetProducts: List all products
@@ -501,7 +519,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## refunds
 - GET /v1/refunds — GetRefunds: List all refunds
-- POST /v1/refunds — PostRefunds: Create customer balance refund
+- POST /v1/refunds — PostRefunds: Create a refund
 - GET /v1/refunds/{refund} — GetRefundsRefund: Retrieve a refund
 - POST /v1/refunds/{refund} — PostRefundsRefund: Update a refund
 - POST /v1/refunds/{refund}/cancel — PostRefundsRefundCancel: Cancel a refund
@@ -542,7 +560,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/sigma/scheduled_query_runs/{scheduled_query_run} — GetSigmaScheduledQueryRunsScheduledQueryRun: Retrieve a scheduled query run
 
 ## sources
-- POST /v1/sources — PostSources: Shares a source
+- POST /v1/sources — PostSources: Create a source
 - GET /v1/sources/{source} — GetSourcesSource: Retrieve a source
 - POST /v1/sources/{source} — PostSourcesSource: Update a source
 - GET /v1/sources/{source}/mandate_notifications/{mandate_notification} — GetSourcesSourceMandateNotificationsMandateNotification: Retrieve a Source MandateNotification
@@ -574,6 +592,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /v1/subscriptions/{subscription_exposed_id} — DeleteSubscriptionsSubscriptionExposedId: Cancel a subscription
 - DELETE /v1/subscriptions/{subscription_exposed_id}/discount — DeleteSubscriptionsSubscriptionExposedIdDiscount: Delete a subscription discount
 - POST /v1/subscriptions/{subscription}/migrate — PostSubscriptionsSubscriptionMigrate: Migrate a subscription
+- POST /v1/subscriptions/{subscription}/pause — PostSubscriptionsSubscriptionPause: Pause a subscription
 - POST /v1/subscriptions/{subscription}/resume — PostSubscriptionsSubscriptionResume: Resume a subscription
 
 ## tax
@@ -581,6 +600,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/tax/calculations — PostTaxCalculations: Create a Calculation
 - GET /v1/tax/calculations/{calculation} — GetTaxCalculationsCalculation: Retrieve a Calculation
 - GET /v1/tax/calculations/{calculation}/line_items — GetTaxCalculationsCalculationLineItems: Retrieve a Calculation's line items
+- GET /v1/tax/locations — GetTaxLocations: List tax locations
+- POST /v1/tax/locations — PostTaxLocations: Create a tax location
+- GET /v1/tax/locations/{location} — GetTaxLocationsLocation: Retrieve a tax location
 - GET /v1/tax/registrations — GetTaxRegistrations: List registrations
 - POST /v1/tax/registrations — PostTaxRegistrations: Create a registration
 - GET /v1/tax/registrations/{id} — GetTaxRegistrationsId: Retrieve a registration
@@ -682,8 +704,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/test_helpers/treasury/received_credits — PostTestHelpersTreasuryReceivedCredits: Test mode: Create a ReceivedCredit
 - POST /v1/test_helpers/treasury/received_debits — PostTestHelpersTreasuryReceivedDebits: Test mode: Create a ReceivedDebit
 
+## three_d_secure
+- GET /v1/three_d_secure/authentications — GetThreeDSecureAuthentications: List all 3D Secure Authentications
+- POST /v1/three_d_secure/authentications — PostThreeDSecureAuthentications: Create a 3DS Authentication
+- GET /v1/three_d_secure/authentications/{authentication} — GetThreeDSecureAuthenticationsAuthentication: Retrieve a 3DS Authentication
+- POST /v1/three_d_secure/authentications/{authentication}/cancel — PostThreeDSecureAuthenticationsAuthenticationCancel: Cancel a 3DS Authentication
+- POST /v1/three_d_secure/authentications/{authentication}/submit — PostThreeDSecureAuthenticationsAuthenticationSubmit: Submit a 3DS Authentication
+
 ## tokens
-- POST /v1/tokens — PostTokens: Create a CVC update token
+- POST /v1/tokens — PostTokens: Create a bank account token
 - GET /v1/tokens/{token} — GetTokensToken: Retrieve a token
 
 ## topups

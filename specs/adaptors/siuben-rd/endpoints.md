@@ -1,21 +1,15 @@
-# SIUBEN (Sistema Único de Beneficiarios) API (siuben-rd) v1.0.0
+# SIUBEN (Sistema Único de Beneficiarios) API (siuben-rd) vunpublished
 
 <!-- derived from openapi.json by `pnpm specs index siuben-rd` — do not edit by hand -->
 
-base: https://api.siuben.gob.do | auth: http/bearer | 6 operations in 4 resources
+base: {baseUrl} | auth: http/bearer (JWT) | 4 operations in 2 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## authenticate
-- POST /authenticate — authenticate: Authenticate and obtain a bearer token
+## Authentication
+- POST /authenticate — authenticate: Obtain a bearer token
+- POST /api/auth/login — login: Obtain a bearer token (login variant seen in a third-party client)
 
-## beneficiarios
-- GET /beneficiarios — listBeneficiarios: List/search beneficiaries
-- GET /beneficiarios/{cedula} — getBeneficiario: Get a beneficiary by cédula
-
-## hogares
-- GET /hogares/{hogarId} — getHogar: Get a household by id
-- GET /hogares/{hogarId}/miembros — getHogarMiembros: List members of a household
-
-## icv
-- GET /icv/{hogarId} — getIcv: Get the Quality of Life Index (ICV) for a household
+## Beneficiarios
+- GET /api/Data/get/{cedula} — getBeneficiario: Look up a beneficiary by cédula
+- PUT /api/Data/update/{cedula} — updateBeneficiarioContrato: Record a programme contract against a beneficiary

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionUsageSnapshot",
+  "title": "BetaManagedAgentsSessionUsageSnapshot",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionUsageSnapshot",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Point-in-time snapshot of a session's cumulative usage.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "input_tokens": {
+      "description": "Total input tokens consumed across all turns.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "output_tokens": {
+      "description": "Total output tokens generated across all turns.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "cache_read_input_tokens": {
+      "description": "Total tokens read from prompt cache.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "cache_creation": {
+      "description": "Tokens used to create prompt cache entries, broken down by cache TTL.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsCacheCreationUsage.json"
+        }
+      ]
+    },
+    "list_cost": {
+      "description": "Cumulative list cost of the session across all turns, priced at public list rates.",
+      "allOf": [
+        {
+          "$ref": "BetaMonetaryAmount.json"
+        }
+      ]
+    },
+    "server_tool_use": {
+      "description": "Cumulative server-executed tool usage across all turns.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsServerToolUsage.json"
+        }
+      ]
+    },
+    "active_seconds": {
+      "description": "Cumulative time in seconds during which the session had at least one thread in running status. Overlapping activity from concurrent threads is counted once. This is the duration the session's runtime cost is priced on.",
+      "type": "number",
+      "format": "double"
+    }
+  }
+}

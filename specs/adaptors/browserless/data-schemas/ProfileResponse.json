@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "browserless/ProfileResponse",
+  "title": "ProfileResponse",
+  "x-openfn-adaptor": "browserless",
+  "x-source": {
+    "openapi": "#/components/schemas/ProfileResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Public-facing profile response returned by HTTP routes.\nOmits internal fields like token_hash and storage_key.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique profile identifier.",
+      "type": "string"
+    },
+    "name": {
+      "description": "User-supplied profile name. Unique per token.",
+      "type": "string"
+    },
+    "cookieCount": {
+      "description": "Number of cookies captured in the profile.",
+      "type": "number"
+    },
+    "originCount": {
+      "description": "Number of distinct origins with stored localStorage or IndexedDB.",
+      "type": "number"
+    },
+    "captureSettings": {
+      "$ref": "ProfileCaptureSettings.json",
+      "description": "Capture inputs the CLI used, or null for profiles not created by the CLI. The UI\nderives no capture flag from these; it uses any non-empty object to stamp the CLI\nbadge and show a read-only summary, and reads `browser`/`profile` specifically to\ndecide whether its refresh command needs placeholders for them. The CLI reads the\nrest itself and decides the exclusion behaviour from `excludeDomains`."
+    },
+    "domainAuth": {
+      "description": "Per-domain auth status + expiry for the saved logins in this profile, with\nstatus classified at read time (valid / expiring_soon / expired / unknown).\nEmpty for profiles saved before this feature, until their next capture,\nupload, or refresh. Never contains a cookie value.",
+      "type": "array",
+      "items": {
+        "$ref": "ProfileDomainAuth.json"
+      }
+    },
+    "lastUsedAt": {
+      "description": "ISO timestamp of the last time this profile was applied to a session, or null if never used.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO timestamp of when the profile was created.",
+      "type": "string"
+    },
+    "updatedAt": {
+      "description": "ISO timestamp of the last metadata change (e.g., rename).",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "captureSettings",
+    "cookieCount",
+    "createdAt",
+    "domainAuth",
+    "id",
+    "lastUsedAt",
+    "name",
+    "originCount",
+    "updatedAt"
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/ExternalKey",
+  "title": "ExternalKey",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/ExternalKey",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "attachment": {
+      "oneOf": [
+        {
+          "$ref": "AttachedAttachment.json"
+        },
+        {
+          "$ref": "UnattachedAttachment.json"
+        }
+      ],
+      "title": "Attachment",
+      "description": "Whether any workspace uses this config to encrypt its data — counting live and archived workspaces (an archived workspace's data remains encrypted under the config), excluding deleted ones. Only an attached config is used by the encryption path; an `unattached` config is inert and can be deleted.",
+      "examples": [
+        {
+          "type": "attached"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "attached": "#/components/schemas/AttachedAttachment",
+          "unattached": "#/components/schemas/UnattachedAttachment"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "examples": [
+        "2024-10-30T23:58:27.427722Z"
+      ]
+    },
+    "display_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Display Name",
+      "description": "Human-friendly display name. Null if none was set.",
+      "examples": [
+        "prod-us-key"
+      ]
+    },
+    "geo": {
+      "type": "string",
+      "title": "Geo",
+      "description": "Data residency geo. Selects the region this key is used in.",
+      "examples": [
+        "us"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Identifier of the external key config: a tagged ID prefixed `ekey_`, or, on Claude Platform on AWS, an AWS KMS key's ARN.",
+      "examples": [
+        "ekey_01SDCCSbTxrXDpWc1phhtcfK"
+      ]
+    },
+    "provider_config": {
+      "oneOf": [
+        {
+          "$ref": "AwsExternalKeyConfig.json"
+        },
+        {
+          "$ref": "GcpExternalKeyConfig.json"
+        },
+        {
+          "$ref": "AzureExternalKeyConfig.json"
+        }
+      ],
+      "title": "Provider Config",
+      "description": "KMS provider identity and auth coordinates.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "aws": "#/components/schemas/AwsExternalKeyConfig",
+          "azure": "#/components/schemas/AzureExternalKeyConfig",
+          "gcp": "#/components/schemas/GcpExternalKeyConfig"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "const": "external_key",
+      "title": "Type",
+      "default": "external_key"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At",
+      "examples": [
+        "2024-10-30T23:58:27.427722Z"
+      ]
+    },
+    "user_profile_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "User Profile Id",
+      "description": "ID of the user profile the key is bound to, or null if the key is not bound to one. A key bound to a user profile can only be attached to a Workspace that has the same user profile. A key that isn't bound can be attached to a Workspace whatever its user profile.",
+      "examples": [
+        "uprof_01SDCCSbTxrXDpWc1phhtcfK"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "attachment",
+    "created_at",
+    "display_name",
+    "geo",
+    "id",
+    "provider_config",
+    "type",
+    "updated_at",
+    "user_profile_id"
+  ],
+  "description": "CMEK external key config belonging to the caller's organization.\n\nConfigs are organization-scoped. Workspaces attach to a config; once any\nworkspace references it, the provider fields become effectively immutable\n(existing encrypted data needs the config for decrypt)."
+}

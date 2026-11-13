@@ -1,512 +1,4542 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OpenFn Platform API (synthesized from adaptor surface)",
-    "version": "1.0.0",
-    "description": "Synthesized OpenAPI document for the OpenFn v1 platform (Lightning) API as exercised by the @openfn/language-openfn adaptor. The adaptor exposes generic HTTP operations request(method, path, options), get(path, options) and post(path, data, options) that target resources relative to /api/. This spec models the generic passthrough plus the concrete Lightning resources the adaptor is used to read and write: jobs, projects, workflows, triggers, runs, credentials and dataclips. There is no public vendor OpenAPI; shapes are inferred from adaptor docs/examples and the OpenFn/Lightning platform.",
+    "title": "OpenFn Lightning REST API",
+    "version": "2.20.1+main.71ce1f0",
+    "description": "The JSON API of OpenFn Lightning (app.openfn.org or a self-hosted instance), under /api: users, projects, provisioning, credentials, collection management, workflows, jobs, work orders, runs and log lines. The openfn adaptor reaches it with request(method, path)/get/post against {baseUrl}/api/{path} and a Bearer personal access token (configuration.access_token). Modelled from the Lightning router and API controllers at main commit 71ce1f0 (2026-11-05) and the vendor's API.md; operations marked x-lightning-unreleased are not in the latest release (v2.20.1). Cookie-session-only /api routes (AI assistant sessions, workflow health) are excluded because a bearer token cannot reach them.",
     "x-openfn-adaptor": "openfn"
   },
-  "servers": [{ "url": "http://localhost:4010" }],
+  "servers": [
+    {
+      "url": "https://{host}/api",
+      "description": "Lightning instance (configuration.baseUrl + /api).",
+      "variables": {
+        "host": {
+          "default": "app.openfn.org",
+          "description": "Lightning host."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "Projects"
+    },
+    {
+      "name": "Provisioning"
+    },
+    {
+      "name": "Collections"
+    },
+    {
+      "name": "Credentials"
+    },
+    {
+      "name": "Workflows"
+    },
+    {
+      "name": "Jobs"
+    },
+    {
+      "name": "Work Orders"
+    },
+    {
+      "name": "Runs"
+    },
+    {
+      "name": "Log Lines"
+    }
+  ],
   "paths": {
-    "/api/{path}": {
+    "/oauth/token": {
+      "post": {
+        "operationId": "exchangeServiceAccountToken",
+        "summary": "Exchange a service account assertion for an access token",
+        "tags": [
+          "Auth"
+        ],
+        "description": "OAuth 2.0 client_credentials with private_key_jwt (RFC 7523). Metadata is at /.well-known/oauth-authorization-server on the instance root. Takes no bearer token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "grant_type",
+                  "client_assertion_type",
+                  "client_assertion",
+                  "scope"
+                ],
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "client_credentials"
+                    ]
+                  },
+                  "client_assertion_type": {
+                    "type": "string",
+                    "enum": [
+                      "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+                    ]
+                  },
+                  "client_assertion": {
+                    "type": "string",
+                    "description": "RS256-signed JWT (private_key_jwt)."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Space-separated grants: users:read users:write projects:write credentials:write collections:write."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token issued (cache-control: no-store).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused exchange (invalid_request, unsupported_grant_type, invalid_scope, ...).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_client: the assertion did not authenticate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenError"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/users": {
       "get": {
-        "operationId": "request",
-        "summary": "Generic GET passthrough to any OpenFn API resource",
-        "description": "Backs the adaptor request()/get() operations. Path is relative to /api/.",
+        "operationId": "listUsers",
+        "summary": "List users, or find one by email",
+        "tags": [
+          "Users"
+        ],
+        "description": "Service-account tokens only (grant users:read); a personal access token gets 403 forbidden.",
         "parameters": [
-          { "name": "path", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Resource path relative to /api/, e.g. jobs" },
-          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "description": "Find by email, case-insensitive.",
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Arbitrary JSON resource response",
+            "description": "A page of users.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/GenericResponse" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserList"
+                }
+              }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "post": {
-        "operationId": "post",
-        "summary": "Generic POST passthrough to any OpenFn API resource",
-        "description": "Backs the adaptor request()/post() operations. Path is relative to /api/.",
-        "parameters": [
-          { "name": "path", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Resource path relative to /api/, e.g. jobs" }
+        "operationId": "createUser",
+        "summary": "Create a user",
+        "tags": [
+          "Users"
         ],
+        "description": "Service-account tokens only (grant users:write).",
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/GenericResponse" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
           }
         },
         "responses": {
           "201": {
-            "description": "Created resource",
+            "description": "Created.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/GenericResponse" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
           }
         }
       }
     },
-    "/api/projects": {
+    "/users/{id}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Read a user",
+        "tags": [
+          "Users"
+        ],
+        "description": "Service-account tokens only (grant users:read).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateUser",
+        "summary": "Change a user",
+        "tags": [
+          "Users"
+        ],
+        "description": "Service-account tokens only (grant users:write).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "operationId": "registerUser",
+        "summary": "Sign up, where the instance offers it",
+        "tags": [
+          "Users"
+        ],
+        "description": "Answers 501 not_implemented unless the instance configures a registration_controller extension. Takes no token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Defined by the registration extension.",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registered. The shape is defined by the instance's registration extension, not by open-source Lightning.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "501": {
+            "$ref": "#/components/responses/NotImplemented"
+          }
+        },
+        "security": []
+      }
+    },
+    "/projects": {
       "get": {
         "operationId": "listProjects",
         "summary": "List projects",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Project list",
+            "description": "A page of projects the caller can access.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ProjectList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectList"
+                }
+              }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "operationId": "getProject",
+        "summary": "Read a project",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project with its members.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
-      "post": {
-        "operationId": "createProject",
-        "summary": "Create a project",
+      "put": {
+        "operationId": "putProject",
+        "summary": "Create or replace a project",
+        "tags": [
+          "Projects"
+        ],
+        "x-lightning-unreleased": true,
+        "description": "Unreleased: present on Lightning main (commit 71ce1f0, 2026-11-05) and documented in API.md, but not in the latest release v2.20.1.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Project" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutProjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Replaced (name and description).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      }
+    },
+    "/provision": {
+      "post": {
+        "operationId": "provisionProject",
+        "summary": "Apply a provisioning document",
+        "tags": [
+          "Provisioning"
+        ],
+        "description": "Creates the project if the body id names none, otherwise updates it. Not open to the service account.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProvisionDocumentRequest"
+              }
+            }
           }
         },
         "responses": {
           "201": {
-            "description": "Created project",
+            "description": "Applied; Location: /api/provision/{id}.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Project" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProvisionedProject"
+                    }
+                  }
+                }
+              }
             }
+          },
+          "402": {
+            "description": "exceeds_limit: the document would exceed a plan limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
           }
         }
       }
     },
-    "/api/projects/{id}": {
+    "/provision/yaml": {
       "get": {
-        "operationId": "getProject",
-        "summary": "Get a project by id",
+        "operationId": "getProvisionedProjectYaml",
+        "summary": "Read a project as YAML",
+        "tags": [
+          "Provisioning"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Project UUID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "snapshots[]",
+            "in": "query",
+            "required": false,
+            "description": "Snapshot ids to render in place of the workflows' current state.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "style": "form",
+            "explode": true
+          }
         ],
         "responses": {
           "200": {
-            "description": "Project",
+            "description": "The project as a YAML provisioning document.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Project" } }
+              "text/yaml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
-    "/api/workflows": {
+    "/provision/{id}": {
       "get": {
-        "operationId": "listWorkflows",
-        "summary": "List workflows",
+        "operationId": "getProvisionedProject",
+        "summary": "Read a project as a provisioning document",
+        "tags": [
+          "Provisioning"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "name": "snapshots[]",
+            "in": "query",
+            "required": false,
+            "description": "Snapshot ids to render in place of the workflows' current state.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "style": "form",
+            "explode": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Workflow list",
+            "description": "The project state with UUIDs.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/WorkflowList" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProvisionedProject"
+                    }
+                  }
+                }
+              }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/collections/{id}": {
+      "get": {
+        "operationId": "getCollection",
+        "summary": "Read a collection",
+        "tags": [
+          "Collections"
+        ],
+        "x-lightning-unreleased": true,
+        "description": "Items are served by the separate Collections API at /collections (see the collections adaptor spec). Unreleased: present on Lightning main (commit 71ce1f0, 2026-11-05) and documented in API.md, but not in the latest release v2.20.1.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Collection"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putCollection",
+        "summary": "Create or rename a collection",
+        "tags": [
+          "Collections"
+        ],
+        "x-lightning-unreleased": true,
+        "description": "Unreleased: present on Lightning main (commit 71ce1f0, 2026-11-05) and documented in API.md, but not in the latest release v2.20.1.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutCollectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Renamed (items kept).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Collection"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Collection"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "exceeds_limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      }
+    },
+    "/credentials": {
+      "get": {
+        "operationId": "listCredentials",
+        "summary": "List your credentials, or a project's by project_id",
+        "tags": [
+          "Credentials"
+        ],
+        "description": "Releases up to v2.20.1 return {credentials, errors} without links and do not paginate.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "description": "List the credentials linked to this project instead of your own. Required for the service account.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of credentials (no secret bodies).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCredential",
+        "summary": "Create a credential you own",
+        "tags": [
+          "Credentials"
+        ],
+        "description": "Not open to the service account.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCredentialRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "credential"
+                  ],
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/Credential"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "description": "Always empty."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/credentials/{id}": {
+      "get": {
+        "operationId": "getCredential",
+        "summary": "Read a credential, without its secrets",
+        "tags": [
+          "Credentials"
+        ],
+        "x-lightning-unreleased": true,
+        "description": "Unreleased: present on Lightning main (commit 71ce1f0, 2026-11-05) and documented in API.md, but not in the latest release v2.20.1.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "credential"
+                  ],
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/Credential"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "description": "Always empty."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putCredential",
+        "summary": "Create or replace a credential",
+        "tags": [
+          "Credentials"
+        ],
+        "x-lightning-unreleased": true,
+        "description": "Unreleased: present on Lightning main (commit 71ce1f0, 2026-11-05) and documented in API.md, but not in the latest release v2.20.1.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutCredentialRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Replaced (name, schema and main body; links only added).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "credential"
+                  ],
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/Credential"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "description": "Always empty."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "credential"
+                  ],
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/Credential"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "description": "Always empty."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteCredential",
+        "summary": "Delete a credential you own",
+        "tags": [
+          "Credentials"
+        ],
+        "description": "Not open to the service account.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/credentials": {
+      "get": {
+        "operationId": "listProjectCredentials",
+        "summary": "List a project's credentials",
+        "tags": [
+          "Credentials"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of the project's credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/workflows": {
+      "get": {
+        "operationId": "listProjectWorkflows",
+        "summary": "List a project's workflows",
+        "tags": [
+          "Workflows"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All of the project's workflows (not paginated).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflows"
+                  ],
+                  "description": "Not paginated.",
+                  "properties": {
+                    "workflows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Workflow"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
       "post": {
         "operationId": "createWorkflow",
         "summary": "Create a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Workflow" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowInput"
+              }
+            }
           }
         },
         "responses": {
           "201": {
-            "description": "Created workflow",
+            "description": "Created; client ids for jobs/triggers are replaced with UUIDs.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Workflow" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflow"
+                  ],
+                  "properties": {
+                    "workflow": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                }
+              }
             }
+          },
+          "402": {
+            "description": "exceeds_limit (enabled-trigger plan limit).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
           }
         }
       }
     },
-    "/api/workflows/{id}": {
+    "/projects/{project_id}/workflows/{id}": {
+      "get": {
+        "operationId": "getProjectWorkflow",
+        "summary": "Read a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workflow.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflow"
+                  ],
+                  "properties": {
+                    "workflow": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceWorkflow",
+        "summary": "Change a workflow (PUT)",
+        "tags": [
+          "Workflows"
+        ],
+        "description": "PUT and PATCH both route to the same update action: lists sent replace stored ones. 409 being_edited while the workflow is open in the editor.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated workflow.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflow"
+                  ],
+                  "properties": {
+                    "workflow": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "exceeds_limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateWorkflow",
+        "summary": "Change a workflow (PATCH)",
+        "tags": [
+          "Workflows"
+        ],
+        "description": "PUT and PATCH both route to the same update action: lists sent replace stored ones. 409 being_edited while the workflow is open in the editor.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated workflow.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflow"
+                  ],
+                  "properties": {
+                    "workflow": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "exceeds_limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      }
+    },
+    "/workflows": {
+      "get": {
+        "operationId": "listWorkflows",
+        "summary": "List workflows across projects",
+        "tags": [
+          "Workflows"
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "description": "Limit to one project.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflows of every project the caller can access (not paginated).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflows"
+                  ],
+                  "description": "Not paginated.",
+                  "properties": {
+                    "workflows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Workflow"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/workflows/{id}": {
       "get": {
         "operationId": "getWorkflow",
-        "summary": "Get a workflow by id",
+        "summary": "Read a workflow",
+        "tags": [
+          "Workflows"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/id"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Workflow",
+            "description": "The workflow.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Workflow" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "workflow"
+                  ],
+                  "properties": {
+                    "workflow": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
-    "/api/jobs": {
+    "/projects/{project_id}/jobs": {
+      "get": {
+        "operationId": "listProjectJobs",
+        "summary": "List a project's jobs",
+        "tags": [
+          "Jobs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of jobs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/jobs/{id}": {
+      "get": {
+        "operationId": "getProjectJob",
+        "summary": "Read a job",
+        "tags": [
+          "Jobs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Job"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/jobs": {
       "get": {
         "operationId": "listJobs",
-        "summary": "List jobs",
+        "summary": "List jobs across projects",
+        "tags": [
+          "Jobs"
+        ],
         "parameters": [
-          { "name": "project_id", "in": "query", "schema": { "type": "string" } },
-          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by project.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Job list",
+            "description": "A page of jobs.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/JobList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobList"
+                }
+              }
             }
-          }
-        }
-      },
-      "post": {
-        "operationId": "createJob",
-        "summary": "Create a job",
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Job" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created job",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Job" } }
-            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
     },
-    "/api/jobs/{id}": {
+    "/jobs/{id}": {
       "get": {
         "operationId": "getJob",
-        "summary": "Get a job by id",
+        "summary": "Read a job",
+        "tags": [
+          "Jobs"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/id"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Job",
+            "description": "The job.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Job" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Job"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
-        }
-      }
-    },
-    "/api/triggers": {
-      "get": {
-        "operationId": "listTriggers",
-        "summary": "List triggers",
-        "responses": {
-          "200": {
-            "description": "Trigger list",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TriggerList" } }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "createTrigger",
-        "summary": "Create a trigger",
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Trigger" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created trigger",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Trigger" } }
-            }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
     },
-    "/api/triggers/{id}": {
+    "/projects/{project_id}/work_orders": {
       "get": {
-        "operationId": "getTrigger",
-        "summary": "Get a trigger by id",
+        "operationId": "listProjectWorkOrders",
+        "summary": "List a project's work orders",
+        "tags": [
+          "Work Orders"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Work order ids, comma-separated or repeated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "States, comma-separated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "rejected",
+                  "pending",
+                  "running",
+                  "success",
+                  "failed",
+                  "crashed",
+                  "cancelled",
+                  "killed",
+                  "exception",
+                  "lost"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "$ref": "#/components/parameters/inserted_after"
+          },
+          {
+            "$ref": "#/components/parameters/inserted_before"
+          },
+          {
+            "$ref": "#/components/parameters/updated_after"
+          },
+          {
+            "$ref": "#/components/parameters/updated_before"
+          },
+          {
+            "$ref": "#/components/parameters/workflow_id_query"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Trigger",
+            "description": "A page of work orders.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Trigger" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkOrderList"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
-    "/api/runs": {
+    "/projects/{project_id}/work_orders/{id}": {
+      "get": {
+        "operationId": "getProjectWorkOrder",
+        "summary": "Read a work order",
+        "tags": [
+          "Work Orders"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The work order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WorkOrder"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/work_orders": {
+      "get": {
+        "operationId": "listWorkOrders",
+        "summary": "List work orders across projects",
+        "tags": [
+          "Work Orders"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Work order ids, comma-separated or repeated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "States, comma-separated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "rejected",
+                  "pending",
+                  "running",
+                  "success",
+                  "failed",
+                  "crashed",
+                  "cancelled",
+                  "killed",
+                  "exception",
+                  "lost"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "$ref": "#/components/parameters/inserted_after"
+          },
+          {
+            "$ref": "#/components/parameters/inserted_before"
+          },
+          {
+            "$ref": "#/components/parameters/updated_after"
+          },
+          {
+            "$ref": "#/components/parameters/updated_before"
+          },
+          {
+            "$ref": "#/components/parameters/workflow_id_query"
+          },
+          {
+            "$ref": "#/components/parameters/project_id_query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of work orders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkOrderList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/work_orders/{id}": {
+      "get": {
+        "operationId": "getWorkOrder",
+        "summary": "Read a work order",
+        "tags": [
+          "Work Orders"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The work order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WorkOrder"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/runs": {
+      "get": {
+        "operationId": "listProjectRuns",
+        "summary": "List a project's runs",
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "States, comma-separated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "claimed",
+                  "started",
+                  "success",
+                  "failed",
+                  "crashed",
+                  "cancelled",
+                  "killed",
+                  "exception",
+                  "lost"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "$ref": "#/components/parameters/inserted_after"
+          },
+          {
+            "$ref": "#/components/parameters/inserted_before"
+          },
+          {
+            "$ref": "#/components/parameters/updated_after"
+          },
+          {
+            "$ref": "#/components/parameters/updated_before"
+          },
+          {
+            "$ref": "#/components/parameters/workflow_id_query"
+          },
+          {
+            "name": "work_order_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by work order.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of runs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/runs/{id}": {
+      "get": {
+        "operationId": "getProjectRun",
+        "summary": "Read a run",
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Run"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/runs": {
       "get": {
         "operationId": "listRuns",
-        "summary": "List runs",
+        "summary": "List runs across projects",
+        "tags": [
+          "Runs"
+        ],
         "parameters": [
-          { "name": "project_id", "in": "query", "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "States, comma-separated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "claimed",
+                  "started",
+                  "success",
+                  "failed",
+                  "crashed",
+                  "cancelled",
+                  "killed",
+                  "exception",
+                  "lost"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "$ref": "#/components/parameters/inserted_after"
+          },
+          {
+            "$ref": "#/components/parameters/inserted_before"
+          },
+          {
+            "$ref": "#/components/parameters/updated_after"
+          },
+          {
+            "$ref": "#/components/parameters/updated_before"
+          },
+          {
+            "$ref": "#/components/parameters/workflow_id_query"
+          },
+          {
+            "name": "work_order_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by work order.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/project_id_query"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Run list",
+            "description": "A page of runs.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/RunList" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunList"
+                }
+              }
             }
-          }
-        }
-      },
-      "post": {
-        "operationId": "createRun",
-        "summary": "Create (enqueue) a run",
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Run" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created run",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Run" } }
-            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
     },
-    "/api/runs/{id}": {
+    "/runs/{id}": {
       "get": {
         "operationId": "getRun",
-        "summary": "Get a run by id",
+        "summary": "Read a run",
+        "tags": [
+          "Runs"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/id"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Run",
+            "description": "The run.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Run" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Run"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Always empty."
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/SelfLink"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
-        }
-      }
-    },
-    "/api/credentials": {
-      "get": {
-        "operationId": "listCredentials",
-        "summary": "List credentials",
-        "responses": {
-          "200": {
-            "description": "Credential list",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/CredentialList" } }
-            }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
     },
-    "/api/credentials/{id}": {
+    "/log_lines": {
       "get": {
-        "operationId": "getCredential",
-        "summary": "Get a credential by id",
+        "operationId": "listLogLines",
+        "summary": "List log lines",
+        "tags": [
+          "Log Lines"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "$ref": "#/components/parameters/project_id_query"
+          },
+          {
+            "name": "timestamp_after",
+            "in": "query",
+            "required": false,
+            "description": "Lines at or after.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "timestamp_before",
+            "in": "query",
+            "required": false,
+            "description": "Lines at or before.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/workflow_id_query"
+          },
+          {
+            "name": "job_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by job.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "work_order_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by work order.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by run.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "description": "Filter by level.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "success",
+                "always",
+                "info",
+                "warn",
+                "error",
+                "debug"
+              ]
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Credential",
+            "description": "A page of log lines.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Credential" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogLineList"
+                }
+              }
             }
           },
-          "404": { "description": "Not found" }
-        }
-      }
-    },
-    "/api/dataclips": {
-      "get": {
-        "operationId": "listDataclips",
-        "summary": "List dataclips",
-        "responses": {
-          "200": {
-            "description": "Dataclip list",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/DataclipList" } }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "createDataclip",
-        "summary": "Create a dataclip",
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Dataclip" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created dataclip",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Dataclip" } }
-            }
-          }
-        }
-      }
-    },
-    "/api/dataclips/{id}": {
-      "get": {
-        "operationId": "getDataclip",
-        "summary": "Get a dataclip by id",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": {
-            "description": "Dataclip",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Dataclip" } }
-            }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
-          "404": { "description": "Not found" }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A personal access token (profile > Personal Access Tokens) or a service-account access token from POST /api/oauth/token."
+      }
+    },
+    "parameters": {
+      "page": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "Page number, from 1. A value below 1 or with no leading number is ignored.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "page_size": {
+        "name": "page_size",
+        "in": "query",
+        "required": false,
+        "description": "Items per page (default 10, cut to 100).",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        }
+      },
+      "project_id_query": {
+        "name": "project_id",
+        "in": "query",
+        "required": false,
+        "description": "Limit to one project. Required when the caller is the service account (400 invalid_parameter otherwise) on work orders, runs and log lines.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "inserted_after": {
+        "name": "inserted_after",
+        "in": "query",
+        "required": false,
+        "description": "Created after this ISO 8601 datetime.",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "inserted_before": {
+        "name": "inserted_before",
+        "in": "query",
+        "required": false,
+        "description": "Created before this ISO 8601 datetime.",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "updated_after": {
+        "name": "updated_after",
+        "in": "query",
+        "required": false,
+        "description": "Updated after this ISO 8601 datetime.",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "updated_before": {
+        "name": "updated_before",
+        "in": "query",
+        "required": false,
+        "description": "Updated before this ISO 8601 datetime.",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "workflow_id_query": {
+        "name": "workflow_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by workflow.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Record UUID.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "project_id": {
+        "name": "project_id",
+        "in": "path",
+        "required": true,
+        "description": "Project UUID.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "400: invalid_request (unreadable Authorization header), invalid_parameter, malformed (body is not a JSON object).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "401: unauthenticated (no bearer token) or invalid_token (unknown, revoked or expired token).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "403: forbidden (no permission, or the record may not exist) or insufficient_scope (token lacks the grant).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "404: not_found (record or route does not exist), only to callers allowed to learn that.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "409: id_taken, scheduled_for_deletion, concurrent_edit, being_edited, in_use or ambiguous_name.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Unprocessable": {
+        "description": "422: invalid (see errors).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "ServiceUnavailable": {
+        "description": "503: not_ready (adaptor catalogue still loading; retry-after 5) or service_unavailable.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "NotImplemented": {
+        "description": "501 not_implemented: not available on this instance.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      }
+    },
     "schemas": {
-      "GenericResponse": {
+      "ProblemEntry": {
         "type": "object",
-        "description": "Arbitrary JSON payload for the generic request/get/post passthrough operations.",
-        "additionalProperties": true,
+        "description": "One error entry in a problem document. Exactly one of pointer/parameter/header/path says where the problem is.",
+        "required": [
+          "code",
+          "detail"
+        ],
         "properties": {
-          "data": { "type": "object", "additionalProperties": true }
+          "code": {
+            "type": "string",
+            "description": "Stable entry code (an Ecto validation code or a Lightning entry code, e.g. unknown_key, taken, type, not_found)."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable message; may change."
+          },
+          "pointer": {
+            "type": "string",
+            "description": "JSON Pointer into the request body, e.g. #/members/0/email."
+          },
+          "parameter": {
+            "type": "string",
+            "description": "Query parameter name."
+          },
+          "header": {
+            "type": "string",
+            "description": "Request header name, lower case."
+          },
+          "path": {
+            "type": "string",
+            "description": "Path segment name, e.g. id or project_id."
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "description": "RFC 9457 problem document (LightningWeb.API.Problem). Sent as application/problem+json when Accept names it, application/json otherwise. Branch on `code`. Lightning releases up to v2.20.1 answered most API errors with ad-hoc JSON instead (the Unreleased changelog entry calls the switch breaking).",
+        "required": [
+          "type",
+          "status",
+          "title",
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Always about:blank.",
+            "example": "about:blank"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status."
+          },
+          "title": {
+            "type": "string",
+            "description": "HTTP reason phrase."
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable response code (LightningWeb.API.Codes).",
+            "enum": [
+              "bad_request",
+              "invalid_request",
+              "malformed",
+              "invalid_parameter",
+              "invalid_header",
+              "unauthenticated",
+              "invalid_token",
+              "exceeds_limit",
+              "forbidden",
+              "insufficient_scope",
+              "trigger_disabled",
+              "not_found",
+              "not_acceptable",
+              "request_timeout",
+              "scheduled_for_deletion",
+              "id_taken",
+              "being_edited",
+              "concurrent_edit",
+              "in_use",
+              "ambiguous_name",
+              "export_conflict",
+              "content_too_large",
+              "uri_too_long",
+              "unsupported_media_type",
+              "invalid",
+              "too_many_runs",
+              "too_many_requests",
+              "internal",
+              "not_implemented",
+              "bad_gateway",
+              "service_unavailable",
+              "not_ready",
+              "timeout"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Fixed human-readable explanation of the code."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemEntry"
+            }
+          },
+          "scope": {
+            "type": "string",
+            "description": "On insufficient_scope: the token grant the route needs."
+          }
+        },
+        "additionalProperties": true,
+        "example": {
+          "type": "about:blank",
+          "status": 400,
+          "title": "Bad Request",
+          "code": "invalid_parameter",
+          "detail": "A path or query parameter is not valid. See errors.",
+          "errors": [
+            {
+              "path": "id",
+              "code": "type",
+              "detail": "is not a UUID"
+            }
+          ]
+        }
+      },
+      "PaginationLinks": {
+        "type": "object",
+        "description": "Pagination links (URLs carrying the applied filters, page and page_size). next/prev are null at the ends.",
+        "properties": {
+          "self": {
+            "type": "string",
+            "format": "uri"
+          },
+          "first": {
+            "type": "string",
+            "format": "uri"
+          },
+          "last": {
+            "type": "string",
+            "format": "uri"
+          },
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "prev": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
+      "PageMeta": {
+        "type": "object",
+        "properties": {
+          "total_entries": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          }
+        }
+      },
+      "SelfLink": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "ProjectAttributes": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "members": {
+            "type": "array",
+            "description": "Present on GET/PUT /projects/{id} only (main; not in v2.20.1).",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMember"
+            }
+          }
         }
       },
       "Project": {
         "type": "object",
+        "description": "A project as a JSON:API resource object (LightningWeb.API.ProjectJSON).",
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
         "properties": {
-          "id": { "type": "string", "example": "c1f2e3d4-0001-4a2b-9c3d-000000000001" },
-          "name": { "type": "string", "example": "Malaria Reporting" },
-          "description": { "type": "string", "example": "Aggregate malaria case data" },
-          "inserted_at": { "type": "string", "format": "date-time", "example": "2026-01-15T09:00:00Z" },
-          "updated_at": { "type": "string", "format": "date-time", "example": "2026-06-01T12:30:00Z" }
+          "type": {
+            "type": "string",
+            "enum": [
+              "projects"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/ProjectAttributes"
+          },
+          "relationships": {
+            "type": "object",
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/SelfLink"
+          }
+        },
+        "example": {
+          "type": "projects",
+          "id": "6f1e2d3c-4b5a-4968-8776-5a4b3c2d1e0f",
+          "relationships": {},
+          "links": {
+            "self": "https://app.openfn.org/api/projects/6f1e2d3c-4b5a-4968-8776-5a4b3c2d1e0f"
+          },
+          "attributes": {
+            "name": "example-project",
+            "description": "An example project"
+          }
         }
+      },
+      "ProjectMember": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "viewer",
+              "editor",
+              "admin",
+              "owner"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
       },
       "ProjectList": {
         "type": "object",
         "properties": {
-          "projects": { "type": "array", "items": { "$ref": "#/components/schemas/Project" } }
-        }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            }
+          },
+          "included": {
+            "type": "array",
+            "items": {},
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
+        },
+        "required": [
+          "data",
+          "links"
+        ]
       },
-      "Workflow": {
+      "UserAttributes": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "a2b3c4d5-0002-4a2b-9c3d-000000000002" },
-          "name": { "type": "string", "example": "Sync patients to DHIS2" },
-          "project_id": { "type": "string", "example": "c1f2e3d4-0001-4a2b-9c3d-000000000001" },
-          "inserted_at": { "type": "string", "format": "date-time", "example": "2026-01-15T09:05:00Z" }
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "superuser"
+            ]
+          }
         }
       },
-      "WorkflowList": {
+      "User": {
+        "type": "object",
+        "description": "A user as a JSON:API resource object (LightningWeb.API.UserJSON). Service-account tokens only.",
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "users"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/UserAttributes"
+          },
+          "links": {
+            "$ref": "#/components/schemas/SelfLink"
+          }
+        }
+      },
+      "UserList": {
+        "type": "object",
+        "required": [
+          "data",
+          "links"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
+        }
+      },
+      "JobAttributes": {
         "type": "object",
         "properties": {
-          "workflows": { "type": "array", "items": { "$ref": "#/components/schemas/Workflow" } }
+          "name": {
+            "type": "string"
+          }
         }
       },
       "Job": {
         "type": "object",
+        "description": "A job (workflow step) as a JSON:API resource object. Only `name` is exposed as an attribute (LightningWeb.API.JobJSON).",
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
         "properties": {
-          "id": { "type": "string", "example": "b3c4d5e6-0003-4a2b-9c3d-000000000003" },
-          "name": { "type": "string", "example": "test job" },
-          "body": { "type": "string", "example": "fn(state => state)" },
-          "adaptor": { "type": "string", "example": "@openfn/language-http@latest" },
-          "trigger_id": { "type": "string", "example": "d5e6f7a8-0004-4a2b-9c3d-000000000004" },
-          "project_id": { "type": "string", "example": "c1f2e3d4-0001-4a2b-9c3d-000000000001" },
-          "workflow_id": { "type": "string", "example": "a2b3c4d5-0002-4a2b-9c3d-000000000002" },
-          "enabled": { "type": "boolean", "example": true }
+          "type": {
+            "type": "string",
+            "enum": [
+              "jobs"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/JobAttributes"
+          },
+          "relationships": {
+            "type": "object",
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/SelfLink"
+          }
         }
       },
       "JobList": {
         "type": "object",
         "properties": {
-          "jobs": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } }
-        }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            }
+          },
+          "included": {
+            "type": "array",
+            "items": {},
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
+        },
+        "required": [
+          "data",
+          "links"
+        ]
       },
-      "Trigger": {
+      "WorkOrderAttributes": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "d5e6f7a8-0004-4a2b-9c3d-000000000004" },
-          "type": { "type": "string", "enum": ["webhook", "cron"], "example": "cron" },
-          "cron_expression": { "type": "string", "example": "0 8 * * *" },
-          "enabled": { "type": "boolean", "example": true },
-          "workflow_id": { "type": "string", "example": "a2b3c4d5-0002-4a2b-9c3d-000000000002" }
+          "state": {
+            "type": "string",
+            "enum": [
+              "rejected",
+              "pending",
+              "running",
+              "success",
+              "failed",
+              "crashed",
+              "cancelled",
+              "killed",
+              "exception",
+              "lost"
+            ]
+          },
+          "last_activity": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "inserted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
-      "TriggerList": {
+      "WorkOrder": {
+        "type": "object",
+        "description": "A work order as a JSON:API resource object (LightningWeb.API.WorkOrdersJSON).",
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "work_orders"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/WorkOrderAttributes"
+          },
+          "relationships": {
+            "type": "object",
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/SelfLink"
+          }
+        }
+      },
+      "WorkOrderList": {
         "type": "object",
         "properties": {
-          "triggers": { "type": "array", "items": { "$ref": "#/components/schemas/Trigger" } }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkOrder"
+            }
+          },
+          "included": {
+            "type": "array",
+            "items": {},
+            "description": "Always empty."
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
+        },
+        "required": [
+          "data",
+          "links"
+        ]
+      },
+      "RunAttributes": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "claimed",
+              "started",
+              "success",
+              "failed",
+              "crashed",
+              "cancelled",
+              "killed",
+              "exception",
+              "lost"
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "immediate",
+              "normal"
+            ]
+          },
+          "error_type": {
+            "type": "string",
+            "nullable": true
+          }
         }
       },
       "Run": {
         "type": "object",
+        "description": "A run as a JSON:API resource object (LightningWeb.API.RunJSON).",
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
         "properties": {
-          "id": { "type": "string", "example": "e6f7a8b9-0005-4a2b-9c3d-000000000005" },
-          "job_id": { "type": "string", "example": "b3c4d5e6-0003-4a2b-9c3d-000000000003" },
-          "workflow_id": { "type": "string", "example": "a2b3c4d5-0002-4a2b-9c3d-000000000002" },
-          "dataclip_id": { "type": "string", "example": "f7a8b9c0-0006-4a2b-9c3d-000000000006" },
-          "state": { "type": "string", "enum": ["available", "claimed", "started", "success", "failed", "crashed"], "example": "success" },
-          "started_at": { "type": "string", "format": "date-time", "example": "2026-06-01T08:00:00Z" },
-          "finished_at": { "type": "string", "format": "date-time", "example": "2026-06-01T08:00:03Z" }
+          "type": {
+            "type": "string",
+            "enum": [
+              "runs"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/RunAttributes"
+          },
+          "relationships": {
+            "type": "object",
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/SelfLink"
+          }
         }
       },
       "RunList": {
         "type": "object",
         "properties": {
-          "runs": { "type": "array", "items": { "$ref": "#/components/schemas/Run" } }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Run"
+            }
+          },
+          "included": {
+            "type": "array",
+            "items": {},
+            "description": "Always empty."
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
+        },
+        "required": [
+          "data",
+          "links"
+        ]
+      },
+      "LogLineAttributes": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "success",
+              "always",
+              "info",
+              "warn",
+              "error",
+              "debug"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "step_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "run_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "LogLine": {
+        "type": "object",
+        "description": "A run log line (LightningWeb.API.LogLinesJSON). No links or relationships.",
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "log_lines"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/LogLineAttributes"
+          }
+        }
+      },
+      "LogLineList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogLine"
+            }
+          },
+          "included": {
+            "type": "array",
+            "items": {},
+            "description": "Always empty."
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
+        },
+        "required": [
+          "data",
+          "links"
+        ]
+      },
+      "ProjectCredential": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "credential_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inserted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CredentialProject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
         }
       },
       "Credential": {
         "type": "object",
+        "description": "A credential without its secret body (LightningWeb.API.CredentialJSON). Links to projects the caller may not list are pruned.",
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
-          "id": { "type": "string", "example": "a0b1c2d3-0007-4a2b-9c3d-000000000007" },
-          "name": { "type": "string", "example": "DHIS2 Play" },
-          "schema": { "type": "string", "example": "dhis2" },
-          "production": { "type": "boolean", "example": false }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "string",
+            "description": "Credential schema, e.g. raw, http, dhis2.",
+            "nullable": true
+          },
+          "external_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Owner.",
+            "format": "uuid"
+          },
+          "project_credentials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectCredential"
+            }
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CredentialProject"
+            }
+          },
+          "inserted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "CredentialList": {
         "type": "object",
+        "required": [
+          "credentials"
+        ],
         "properties": {
-          "credentials": { "type": "array", "items": { "$ref": "#/components/schemas/Credential" } }
+          "credentials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Credential"
+            }
+          },
+          "errors": {
+            "type": "object",
+            "description": "Always empty."
+          },
+          "links": {
+            "$ref": "#/components/schemas/PaginationLinks"
+          }
         }
       },
-      "Dataclip": {
+      "CredentialBody": {
         "type": "object",
+        "required": [
+          "name",
+          "body"
+        ],
         "properties": {
-          "id": { "type": "string", "example": "f7a8b9c0-0006-4a2b-9c3d-000000000006" },
-          "type": { "type": "string", "enum": ["http_request", "global", "step_result", "saved_input"], "example": "http_request" },
-          "body": { "type": "object", "additionalProperties": true, "example": { "name": "Jane Doe", "age": 33 } },
-          "project_id": { "type": "string", "example": "c1f2e3d4-0001-4a2b-9c3d-000000000001" },
-          "inserted_at": { "type": "string", "format": "date-time", "example": "2026-06-01T07:59:00Z" }
+          "name": {
+            "type": "string",
+            "description": "Environment name; PUT accepts exactly one body named main."
+          },
+          "body": {
+            "type": "object",
+            "description": "Secret fields (write-only; never returned).",
+            "additionalProperties": true
+          }
         }
       },
-      "DataclipList": {
+      "CreateCredentialRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "oauth_client_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "credential_bodies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CredentialBody"
+            }
+          },
+          "project_credentials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "project_id"
+              ],
+              "properties": {
+                "project_id": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PutCredentialRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "credential_bodies"
+        ],
+        "description": "Only these keys are accepted; any other is 422 unknown_key.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Must match the path id when sent.",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner email; applies only on create (service account only).",
+            "format": "email"
+          },
+          "credential_bodies": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/CredentialBody"
+            }
+          },
+          "project_credentials": {
+            "type": "array",
+            "description": "Links are only ever added.",
+            "items": {
+              "type": "object",
+              "required": [
+                "project_id"
+              ],
+              "properties": {
+                "project_id": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      },
+      "WorkflowJob": {
         "type": "object",
         "properties": {
-          "dataclips": { "type": "array", "items": { "$ref": "#/components/schemas/Dataclip" } }
+          "id": {
+            "type": "string",
+            "description": "UUID; on create any client id, replaced by a new UUID."
+          },
+          "name": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Job expression (JavaScript)."
+          },
+          "adaptor": {
+            "type": "string",
+            "example": "@openfn/language-common@latest"
+          },
+          "project_credential_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "keychain_credential_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "WebhookResponseConfig": {
+        "type": "object",
+        "properties": {
+          "success_code": {
+            "type": "integer",
+            "nullable": true
+          },
+          "error_code": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowTrigger": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_path": {
+            "type": "string",
+            "nullable": true
+          },
+          "cron_expression": {
+            "type": "string",
+            "nullable": true
+          },
+          "cron_cursor_job_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "webhook",
+              "cron"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "webhook_reply": {
+            "type": "string",
+            "enum": [
+              "before_start",
+              "after_completion",
+              "custom"
+            ],
+            "nullable": true
+          },
+          "webhook_response_config": {
+            "$ref": "#/components/schemas/WebhookResponseConfig",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowEdge": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "condition_type": {
+            "type": "string",
+            "enum": [
+              "on_job_success",
+              "on_job_failure",
+              "always",
+              "js_expression"
+            ]
+          },
+          "condition_expression": {
+            "type": "string",
+            "nullable": true
+          },
+          "condition_label": {
+            "type": "string",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "source_job_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "source_trigger_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "target_job_id": {
+            "type": "string"
+          }
+        }
+      },
+      "Workflow": {
+        "type": "object",
+        "description": "A workflow with its jobs, triggers and edges (Workflow.json_fields() minus state).",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowJob"
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowTrigger"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowEdge"
+            }
+          },
+          "positions": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "concurrency": {
+            "type": "integer",
+            "nullable": true
+          },
+          "enable_job_logs": {
+            "type": "boolean"
+          },
+          "inserted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": "a414cb3b-e387-4c4f-b8de-70d51f1160da",
+          "name": "My Workflow",
+          "project_id": "79efba60-072a-4d4f-8d6c-22dfd3852176",
+          "edges": [
+            {
+              "id": "759fe475-ed23-4914-8a6d-155968bc0aa1",
+              "condition_type": "always",
+              "enabled": true,
+              "source_job_id": null,
+              "source_trigger_id": "c79ce46c-ab0f-4f5b-bf2d-fed52aef2a41",
+              "target_job_id": "26304a1e-267b-4bc9-940f-171db1905885"
+            }
+          ],
+          "jobs": [
+            {
+              "id": "26304a1e-267b-4bc9-940f-171db1905885",
+              "body": "/* job code goes here */",
+              "name": "my-job",
+              "adaptor": "@openfn/language-common@latest"
+            }
+          ],
+          "triggers": [
+            {
+              "id": "c79ce46c-ab0f-4f5b-bf2d-fed52aef2a41",
+              "comment": null,
+              "custom_path": null,
+              "cron_expression": null,
+              "type": "webhook",
+              "enabled": true
+            }
+          ]
+        }
+      },
+      "WorkflowInput": {
+        "type": "object",
+        "description": "Workflow body for create/update. Lists sent replace the stored ones (triggers can be added or edited, not removed).",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowJob"
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowTrigger"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowEdge"
+            }
+          },
+          "positions": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "concurrency": {
+            "type": "integer",
+            "nullable": true
+          },
+          "enable_job_logs": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Collection": {
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ProvisionedJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "adaptor": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "project_credential_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "ProvisionedTrigger": {
+        "type": "object",
+        "description": "Keys with null values are dropped.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "webhook",
+              "cron"
+            ]
+          },
+          "custom_path": {
+            "type": "string"
+          },
+          "cron_expression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "webhook_reply": {
+            "type": "string",
+            "enum": [
+              "before_start",
+              "after_completion",
+              "custom"
+            ]
+          },
+          "cron_cursor_job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "webhook_response_config": {
+            "$ref": "#/components/schemas/WebhookResponseConfig"
+          }
+        }
+      },
+      "ProvisionedEdge": {
+        "type": "object",
+        "description": "Keys with null values are dropped.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "source_job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_trigger_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "condition_type": {
+            "type": "string",
+            "enum": [
+              "on_job_success",
+              "on_job_failure",
+              "always",
+              "js_expression"
+            ]
+          },
+          "condition_label": {
+            "type": "string"
+          },
+          "condition_expression": {
+            "type": "string"
+          },
+          "target_job_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ProvisionedWorkflow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "inserted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lock_version": {
+            "type": "integer"
+          },
+          "concurrency": {
+            "type": "integer",
+            "nullable": true
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedJob"
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedTrigger"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedEdge"
+            }
+          },
+          "version_history": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "<source>:<hash> heads, oldest first. Absent when a snapshot is returned."
+          }
+        }
+      },
+      "ProvisionedProjectCredential": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner email.",
+            "format": "email"
+          }
+        }
+      },
+      "ProvisionedCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Channel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "destination_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "destination_credential_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "ProvisionedProject": {
+        "type": "object",
+        "description": "A project as a provisioning document (LightningWeb.API.ProvisioningJSON): the project fields plus workflows, project credentials, collections and channels, with UUIDs for idempotent redeploys.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "allow_support_access": {
+            "type": "boolean"
+          },
+          "concurrency": {
+            "type": "integer",
+            "nullable": true
+          },
+          "scheduled_deletion": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "requires_mfa": {
+            "type": "boolean"
+          },
+          "retention_policy": {
+            "type": "string",
+            "enum": [
+              "retain_all",
+              "retain_with_errors",
+              "erase_all"
+            ]
+          },
+          "history_retention_period": {
+            "type": "integer",
+            "nullable": true
+          },
+          "dataclip_retention_period": {
+            "type": "integer",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "env": {
+            "type": "string",
+            "nullable": true
+          },
+          "parent_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "inserted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "workflows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedWorkflow"
+            }
+          },
+          "project_credentials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedProjectCredential"
+            }
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedCollection"
+            }
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          }
+        }
+      },
+      "ProvisionDocumentRequest": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "additionalProperties": true,
+        "description": "A provisioning document (see Lightning PROVISIONING.md): the project with its workflows, jobs, triggers, edges, collections and credentials, each keyed by UUID.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "workflows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "project_credentials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "first_name"
+        ],
+        "description": "Flat object; any other key is 422 unknown_key.",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "superuser"
+            ]
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "description": "email cannot be changed; confirmed only ever confirms.",
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "superuser"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AccessToken": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "Service-account JWT (typ at+jwt)."
+          },
+          "token_type": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ]
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Lifetime in seconds (300)."
+          },
+          "scope": {
+            "type": "string",
+            "description": "Space-separated grants issued."
+          }
+        }
+      },
+      "TokenError": {
+        "type": "object",
+        "description": "OAuth 2.0 token endpoint error (RFC 6749 §5.2), not a problem document.",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "error_description": {
+            "type": "string"
+          }
+        }
+      },
+      "PutProjectRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "description": "Only these keys are accepted; any other is 422 unknown_key.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Must match the path id when sent.",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "members": {
+            "type": "array",
+            "description": "Applies only when the PUT creates the project; exactly one owner.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMember"
+            }
+          },
+          "notify": {
+            "type": "boolean",
+            "description": "Email each member added (create only).",
+            "default": true
+          }
+        }
+      },
+      "PutCollectionRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Must match the path id when sent.",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
         }
       }
     }

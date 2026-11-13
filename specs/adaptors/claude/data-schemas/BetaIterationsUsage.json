@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaIterationsUsage",
+  "title": "Iterations",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaIterationsUsage",
+    "capturedAt": "2026-11-13"
+  },
+  "anyOf": [
+    {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "advisor_message": "#/components/schemas/BetaAdvisorMessageIterationUsage",
+            "compaction": "#/components/schemas/BetaCompactionIterationUsage",
+            "fallback_message": "#/components/schemas/BetaFallbackMessageIterationUsage",
+            "message": "#/components/schemas/BetaMessageIterationUsage"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "BetaMessageIterationUsage.json"
+          },
+          {
+            "$ref": "BetaCompactionIterationUsage.json"
+          },
+          {
+            "$ref": "BetaAdvisorMessageIterationUsage.json",
+            "x-anthropic-beta-required": [
+              "advisor-tool-2026-03-01"
+            ]
+          },
+          {
+            "$ref": "BetaFallbackMessageIterationUsage.json",
+            "x-anthropic-beta-required": [
+              "server-side-fallback-2026-06-01",
+              "server-side-fallback-2026-07-01"
+            ]
+          }
+        ],
+        "x-stainless-naming": {
+          "csharp": {
+            "type_name": "BetaIterationsUsageItems"
+          },
+          "java": {
+            "type_name": "BetaIterationsUsageItems"
+          }
+        }
+      },
+      "type": "array"
+    },
+    {
+      "type": "null"
+    }
+  ],
+  "description": "Per-iteration token usage breakdown.\n\nEach entry represents one sampling iteration, with its own input/output token counts and cache statistics, discriminated by `type`. For `message` entries (model sampling iterations, such as the turns of a server-side tool use loop), this allows you to:\n- Calculate the context window size from the last `message` entry\n- Understand token accumulation across server-side tool use loops\n\nA `compaction` entry reports the token usage of the compaction operation itself — the server-side request that summarizes the context being closed — NOT the size of the context that was compacted away, and its token counts can be much smaller than that closed context (for example, a compaction that closes a ~200k-token context can report only a few thousand tokens). Do not derive the context window size from a `compaction` entry, even when it is the last entry. A `compaction` entry's tokens are not included in the top-level `usage` fields. When an input-token trigger is in effect (the default — 150,000 tokens unless configured otherwise), each `compaction` entry closes a context that had reached at least that threshold, though the context can exceed it by the final iteration's output and tool results."
+}

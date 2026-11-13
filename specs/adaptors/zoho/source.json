@@ -3,12 +3,67 @@
   "npm": "@openfn/language-zoho",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-zoho/types/Adaptor.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-zoho/dist/index.cjs",
-    "https://www.zoho.com/analytics/api/v1/introduction.html",
-    "https://www.zoho.com/analytics/api/v1/data-api.html"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://github.com/zoho/analytics-oas",
+      "result": "rejected",
+      "note": "Zoho's own OpenAPI 3.1 files (10 domain files, 180 operations) describe the Zoho Analytics REST API v2 (analyticsapi.zoho.com/restapi/v2, OAuth, CONFIG-JSON requests). The adaptor calls the v1 action API (/api/{owner}/{db}/{table}?ZOHO_ACTION=ADDROW on reportsapi.zoho.com) and has no generic HTTP builder that could reach v2, so the v2 spec is the wrong API version. No v1 folder exists in the repo."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://www.zoho.com/analytics/api/v1/introduction.html",
+      "result": "not-found",
+      "note": "The v1 reference is static HTML rendered by zp_api.js; it links no machine spec. Its nav is driven by https://www.zohowebstatic.com/sites/zweb/json/api/analytics-api-menu.json (MenuID 19146), which was used as the page inventory."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No Zoho Analytics / Zoho Reports entry on apis.guru."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.zoho.com/analytics/api/v2/rest-api-collection.html",
+      "result": "rejected",
+      "note": "Zoho's Postman collections are published for API v2 only."
+    },
+    {
+      "kind": "docs",
+      "url": "https://www.zoho.com/analytics/api/v1/introduction.html",
+      "result": "used",
+      "note": "All 112 v1 reference pages in the menu were fetched; the 68 endpoint pages (each REQUEST URI + method + ZOHO_ACTION + action-specific parameter table + sample JSON response) were extracted mechanically and every action modelled."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored by hand from the adaptor source and Zoho docs; Zoho publishes no widely-available machine-readable OpenAPI 3.x for this legacy API. IMPORTANT CORRECTION: despite the task framing this adaptor as the Zoho CRM REST API, the published package only implements a single operation, addRow(db, table, rowData), which calls POST https://reportsapi.zoho.com/api/{account}/{db}/{table} with query params ZOHO_ACTION=ADDROW, ZOHO_OUTPUT_FORMAT=JSON, ZOHO_ERROR_FORMAT=JSON, authtoken and ZOHO_API_VERSION, and a form-encoded row body (see the `post`/`addRow` functions in dist/index.cjs). This is the legacy Zoho Reports (now Zoho Analytics) v1 Data API, not CRM. The spec models that action-driven API family: server is reportsapi.zoho.com/api (NOT www.zohoapis.com/crm/v2). Operations beyond addRow (exportData, createTable, getWorkspaceMetadata, listWorkspaces) are documented siblings on the same endpoint pattern and are included for coverage but are not directly exposed by the current adaptor. ZOHO_ACTION selects the operation rather than HTTP method/path; write siblings DELETE/UPDATE/IMPORT share addRow's path+method and are documented via the ZOHO_ACTION enum."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://www.zoho.com/analytics/api/v1/introduction.html",
+    "https://www.zoho.com/analytics/api/v1/api-specification.html",
+    "https://www.zoho.com/analytics/api/v1/data-api/add-row.html",
+    "https://www.zoho.com/analytics/api/v1/data-api/import-data.html",
+    "https://www.zoho.com/analytics/api/v1/data-api/export-data.html",
+    "https://www.zoho.com/analytics/api/v1/modeling-api.html",
+    "https://www.zoho.com/analytics/api/v1/metadata-api/workspace-metadata.html",
+    "https://www.zoho.com/analytics/api/v1/sharing-api/share-views.html",
+    "https://www.zoho.com/analytics/api/v1/embed-api/get-view-url.html",
+    "https://www.zoho.com/analytics/api/v1/usermanagement-api/get-users.html",
+    "https://www.zoho.com/analytics/api/v1/zoho-cloudsql/cloudsql-api-specification.html",
+    "https://www.zoho.com/analytics/api/v1/authentication/generating-token.html",
+    "https://www.zoho.com/analytics/api/v1/single-sign-on/setup/sign-up-api.html",
+    "https://www.zohowebstatic.com/sites/zweb/json/api/analytics-api-menu.json",
+    "https://css.zohostatic.com/analytics/api/v10_m3/docs/python/ReportClient-pysrc.html",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-zoho/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/zoho"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The zoho adaptor (v0.5.3) is not a Zoho CRM adaptor: its only operation, addRow(db, table, rowData), POSTs a form-encoded row to https://reportsapi.zoho.com/api/{account}/{db}/{table}?ZOHO_ACTION=ADDROW with the legacy authtoken query parameter, i.e. the Zoho Analytics (formerly Zoho Reports) API v1. It exports no generic HTTP builder, so v1 is the whole API it can reach; that host still answers v1 requests (a probe returns the v1 JSON error envelope). Zoho publishes OpenAPI only for Analytics API v2 (zoho/analytics-oas), so this spec is authored from the v1 reference: every one of the 68 endpoint pages in the docs' own menu JSON is modelled (67 ZOHO_ACTIONs, with DATABASEMETADATA split into its four ZOHO_METADATA variants, plus the CloudSQL workspace-level EXPORT), together with the Zoho Accounts OAuth token/refresh/revoke endpoints and the white-label SSO sign-up/sign-in endpoints the same reference documents: 77 operations, 63 schemas (was a 5-operation stub). Because v1 selects the operation with ZOHO_ACTION rather than path+method, each action is its own path key with a '#ZOHO_ACTION=<ACTION>' discriminator (the azure-storage/aws-s3 convention the conformer understands); responses are the v1 {response: {uri, action, result}} envelope, so data-schemas lists the per-action envelopes (WorkspaceListResponse, ViewListResponse, ...) with the domain objects (Workspace, View, Folder, Dashboard, User, Group, ...) nested in them. Best-effort because the source is prose docs: the IMPORT result has no sample in the docs (field names taken from Zoho's v1 SDK ImportResult), GET actions are documented with 'Get' though the overview says all requests are POST, non-JSON EXPORT formats (CSV/PDF/HTML/IMAGE) are described rather than modelled, and the white-label SSO sign-out (a browser redirect) is not an API call and is omitted."
 }

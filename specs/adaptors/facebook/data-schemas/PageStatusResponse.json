@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "facebook/PageStatusResponse",
+  "title": "PageStatusResponse",
+  "x-openfn-adaptor": "facebook",
+  "x-source": {
+    "openapi": "#/components/schemas/PageStatusResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Page ID"
+    },
+    "timestamp": {
+      "type": "integer",
+      "description": "The time when this response was generated"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "warning",
+        "restricted",
+        "ok",
+        "suspended"
+      ],
+      "description": "The overall status of the page"
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "$ref": "PageStatusViolation.json"
+      },
+      "description": "The violations that are affecting the page status"
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "$ref": "PageStatusRestriction.json"
+      },
+      "description": "The restrictions that are affecting the page status"
+    },
+    "recommended_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "PageStatusRecommendedAction.json"
+      },
+      "description": "The recommended actions that can be taken to improve the page status"
+    },
+    "action_events": {
+      "type": "array",
+      "items": {
+        "$ref": "PageStatusActionEvent.json"
+      },
+      "description": "The statuses of the recommended actions that have been taken"
+    }
+  },
+  "required": [
+    "id",
+    "timestamp",
+    "status"
+  ],
+  "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+}

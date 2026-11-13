@@ -5,14 +5,19 @@
   "x-openfn-adaptor": "googlesheets",
   "x-source": {
     "openapi": "#/components/schemas/ValueRange",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Data within a range of the spreadsheet.",
   "properties": {
-    "range": {
+    "majorDimension": {
       "type": "string",
-      "description": "The range the values cover, in [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell). For output, this range indicates the entire requested range, even though the values will exclude trailing rows and columns. When appending values, this field represents the range to search for a table, after which values will be appended."
+      "description": "The major dimension of the values. For output, if the spreadsheet data is: `A1=1,B1=2,A2=3,B2=4`, then requesting `range=A1:B2,majorDimension=ROWS` will return `[[1,2],[3,4]]`, whereas requesting `range=A1:B2,majorDimension=COLUMNS` will return `[[1,3],[2,4]]`. For input, with `range=A1:B2,majorDimension=ROWS` then `[[1,2],[3,4]]` will set `A1=1,B1=2,A2=3,B2=4`. With `range=A1:B2,majorDimension=COLUMNS` then `[[1,2],[3,4]]` will set `A1=1,B1=3,A2=2,B2=4`. When writing, if this field is not set, it defaults to ROWS.",
+      "enum": [
+        "DIMENSION_UNSPECIFIED",
+        "ROWS",
+        "COLUMNS"
+      ]
     },
     "values": {
       "type": "array",
@@ -22,14 +27,9 @@
         "items": {}
       }
     },
-    "majorDimension": {
+    "range": {
       "type": "string",
-      "description": "The major dimension of the values. For output, if the spreadsheet data is: `A1=1,B1=2,A2=3,B2=4`, then requesting `range=A1:B2,majorDimension=ROWS` will return `[[1,2],[3,4]]`, whereas requesting `range=A1:B2,majorDimension=COLUMNS` will return `[[1,3],[2,4]]`. For input, with `range=A1:B2,majorDimension=ROWS` then `[[1,2],[3,4]]` will set `A1=1,B1=2,A2=3,B2=4`. With `range=A1:B2,majorDimension=COLUMNS` then `[[1,2],[3,4]]` will set `A1=1,B1=3,A2=2,B2=4`. When writing, if this field is not set, it defaults to ROWS.",
-      "enum": [
-        "DIMENSION_UNSPECIFIED",
-        "ROWS",
-        "COLUMNS"
-      ]
+      "description": "The range the values cover, in [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell). For output, this range indicates the entire requested range, even though the values will exclude trailing rows and columns. When appending values, this field represents the range to search for a table, after which values will be appended."
     }
   }
 }

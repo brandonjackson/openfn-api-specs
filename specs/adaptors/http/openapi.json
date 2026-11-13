@@ -1,158 +1,711 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Generic HTTP API (synthesized)",
-    "version": "1.0.0",
-    "description": "Synthesized OpenAPI facade for the OpenFn http adaptor, a generic REST/HTTP client with no fixed upstream API. Its operations (request, get, post, put, patch, del, parseXML) target arbitrary endpoints. This document models a generic RESTful resource collection so mocker can serve conventional GET/POST/PUT/PATCH/DELETE interactions and seed a reusable resource shape. Point servers[0].url at the real target when using it against a specific API.",
-    "x-openfn-adaptor": "http"
+    "title": "Generic HTTP target (OpenFn http adaptor)",
+    "version": "7.3.3",
+    "description": "The http adaptor is a generic HTTP client: request/get/post/put/patch/del send any method to any path under configuration.baseUrl (or an absolute URL when baseUrl is unset), with optional Basic (username/password) or Bearer (access_token) auth, TLS options, query, headers and JSON/form/XML/text bodies. There is no vendor API, so this document models the operation surface itself: every HTTP method the adaptor can emit, at collection-level and item-level path templates, carrying arbitrary JSON. info.x-openfn-local-operations lists the exports that make no request.",
+    "x-openfn-adaptor": "http",
+    "x-openfn-local-operations": [
+      {
+        "name": "parseXML",
+        "kind": "adaptor",
+        "description": "Parses an XML string with cheerio and runs a callback; no request."
+      },
+      {
+        "name": "alterState",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "arrayToString",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "as",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "chunk",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "combine",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "cursor",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "dataPath",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "dataValue",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "dateFns",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "each",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "field",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "fields",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "fn",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "fnIf",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "group",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "humanProper",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "lastReferenceValue",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "log",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "map",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "merge",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "parseCsv",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "scrubEmojis",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "sourceValue",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "splitKeys",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      },
+      {
+        "name": "toArray",
+        "kind": "common re-export",
+        "description": "From @openfn/language-common; no request."
+      }
+    ]
   },
-  "servers": [{ "url": "http://localhost:4010" }],
+  "servers": [
+    {
+      "url": "{baseUrl}",
+      "description": "configuration.baseUrl of whatever API the job targets.",
+      "variables": {
+        "baseUrl": {
+          "default": "https://api.example.org",
+          "description": "Placeholder; set per credential."
+        }
+      }
+    }
+  ],
+  "security": [
+    {},
+    {
+      "basicAuth": []
+    },
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Resources",
+      "description": "Any path on the target API."
+    }
+  ],
   "paths": {
-    "/resources": {
+    "/{resource}": {
       "get": {
-        "operationId": "listResources",
-        "summary": "List resources (get)",
+        "operationId": "getCollection",
+        "summary": "GET a collection path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "GET {baseUrl}/{resource} - made by get(path) or request(\"GET\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
         "parameters": [
-          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+          {
+            "$ref": "#/components/parameters/resource"
+          }
         ],
         "responses": {
           "200": {
-            "description": "A list of resources",
+            "description": "Whatever the target API returns.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Resource" }
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Resource"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/Resource"
+                    }
+                  ]
                 }
               }
             }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
           }
         }
       },
       "post": {
-        "operationId": "createResource",
-        "summary": "Create a resource (post)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Resource" } }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "The created resource",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Resource" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/resources/{id}": {
-      "get": {
-        "operationId": "getResource",
-        "summary": "Get a resource by id (get)",
+        "operationId": "postCollection",
+        "summary": "POST a collection path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "POST {baseUrl}/{resource} - made by post(path, data) or request(\"POST\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/resource"
+          }
         ],
         "responses": {
           "200": {
-            "description": "The resource",
+            "description": "Whatever the target API returns.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Resource" }
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
               }
             }
           }
         }
       },
       "put": {
-        "operationId": "replaceResource",
-        "summary": "Replace a resource (put)",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "operationId": "putCollection",
+        "summary": "PUT a collection path of the target API",
+        "tags": [
+          "Resources"
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Resource" } }
+        "description": "PUT {baseUrl}/{resource} - made by put(path, data) or request(\"PUT\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "The replaced resource",
+            "description": "Whatever the target API returns.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Resource" }
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
               }
             }
           }
         }
       },
       "patch": {
-        "operationId": "updateResource",
-        "summary": "Partially update a resource (patch)",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "operationId": "patchCollection",
+        "summary": "PATCH a collection path of the target API",
+        "tags": [
+          "Resources"
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Resource" } }
+        "description": "PATCH {baseUrl}/{resource} - made by patch(path, data) or request(\"PATCH\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "The updated resource",
+            "description": "Whatever the target API returns.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Resource" }
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
               }
             }
           }
         }
       },
       "delete": {
-        "operationId": "deleteResource",
-        "summary": "Delete a resource (del)",
+        "operationId": "deleteCollection",
+        "summary": "DELETE a collection path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "DELETE {baseUrl}/{resource} - made by del(path) or request(\"DELETE\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/resource"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Deletion result",
+            "description": "Whatever the target API returns.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DeleteResult" }
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
               }
             }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        }
+      }
+    },
+    "/{resource}/{id}": {
+      "get": {
+        "operationId": "getItem",
+        "summary": "GET a item path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "GET {baseUrl}/{resource}/{id} - made by get(path) or request(\"GET\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whatever the target API returns.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        }
+      },
+      "post": {
+        "operationId": "postItem",
+        "summary": "POST a item path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "POST {baseUrl}/{resource}/{id} - made by post(path, data) or request(\"POST\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whatever the target API returns.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putItem",
+        "summary": "PUT a item path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "PUT {baseUrl}/{resource}/{id} - made by put(path, data) or request(\"PUT\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whatever the target API returns.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchItem",
+        "summary": "PATCH a item path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "PATCH {baseUrl}/{resource}/{id} - made by patch(path, data) or request(\"PATCH\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whatever the target API returns.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteItem",
+        "summary": "DELETE a item path of the target API",
+        "tags": [
+          "Resources"
+        ],
+        "description": "DELETE {baseUrl}/{resource}/{id} - made by del(path) or request(\"DELETE\", path). The path is any path the job passes; {resource}/{id} stand for its segments (OpenAPI cannot express a multi-segment wildcard). Response bodies are parsed as JSON when the server says so (parseAs), otherwise text or a stream.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/resource"
+          },
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whatever the target API returns.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error from the target API; the adaptor throws on 4xx/5xx unless options.errors suppresses it."
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Sent when configuration.username and password are set (and no access_token)."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Sent when configuration.access_token is set."
+      }
+    },
+    "parameters": {
+      "resource": {
+        "name": "resource",
+        "in": "path",
+        "required": true,
+        "description": "First segment(s) of the job-supplied path.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Last segment of the job-supplied path.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
     "schemas": {
       "Resource": {
         "type": "object",
-        "description": "A generic JSON resource. Concrete fields depend on the target API.",
-        "properties": {
-          "id": { "type": "string", "example": "1" },
-          "name": { "type": "string", "example": "example" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        },
-        "additionalProperties": true
-      },
-      "DeleteResult": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "example": "1" },
-          "deleted": { "type": "boolean", "example": true }
-        }
+        "additionalProperties": true,
+        "description": "Any JSON object returned by, or sent to, the target API. The adaptor imposes no shape."
       }
     }
   }

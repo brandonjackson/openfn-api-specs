@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsEventDeltaEvent",
+  "title": "BetaManagedAgentsEventDeltaEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsEventDeltaEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An incremental update to an event that is still being streamed. Deltas are best-effort and may stop early; when the buffered event with id == event_id is produced it carries the complete content. A model request that ends early (an error or interrupt) produces no buffered event — its terminal span.model_request_end closes the preview. Only sent on stream connections that opt in via event_deltas; never appears in event history.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "event_id",
+    "delta"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "event_delta"
+    },
+    "event_id": {
+      "description": "The id of the event being previewed. Matches event.id on the corresponding event_start and the buffered event that reconciles the preview.",
+      "type": "string"
+    },
+    "delta": {
+      "description": "One fragment of the previewed event. The delta type is named for the previewed event's field it streams into: agent.message events stream content_delta fragments, each a partial element of the content array.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsEventDeltaEvent_Delta.json"
+        }
+      ]
+    }
+  }
+}

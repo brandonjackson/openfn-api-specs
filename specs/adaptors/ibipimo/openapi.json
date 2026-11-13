@@ -1,31 +1,114 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "IBIPIMO Viral Load API (mock subset)",
+    "title": "IBIPIMO Laboratory API",
     "version": "v1",
-    "description": "Focused OpenAPI for the IBIPIMO laboratory / viral load API used by the OpenFn ibipimo adaptor. IBIPIMO is a laboratory information system used for HIV viral load sample tracking. Covers submitting viral load test requests, asking for results, and reading sample status and sites. Authenticated with a Bearer apiToken.",
+    "description": "IBIPIMO is Burundi's laboratory information management system for HIV viral-load testing. Its REST API (Laravel, bearer-token auth) lets SIDAInfo-connected sites submit viral-load test requests and poll for results. No public documentation exists; this document is reconstructed from the OpenFn adaptor's source, README (which records live responses from https://demo.ibipimo.org) and test jobs. The adaptor sends `Authorization: Bearer <apiToken>` and `User-Agent: Mozilla/5.0` (the host's ModSecurity rejects other agents).",
     "x-openfn-adaptor": "ibipimo"
   },
-  "servers": [{ "url": "https://demo.ibipimo.org" }],
+  "servers": [
+    {
+      "url": "https://demo.ibipimo.org",
+      "description": "Demo/test instance used in the adaptor README; production base URL is set per credential (configuration.baseUrl)."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Viral load requests"
+    },
+    {
+      "name": "Viral load results"
+    },
+    {
+      "name": "Samples"
+    },
+    {
+      "name": "Sites"
+    }
+  ],
   "paths": {
     "/api/v1/post-viral-load-requests": {
       "post": {
-        "operationId": "postViralLoadRequest",
+        "tags": [
+          "Viral load requests"
+        ],
+        "operationId": "postViralLoadRequests",
         "summary": "Submit viral load test requests",
+        "description": "Adaptor operation postViralLoadRequest(). Registers one or more viral-load samples for a site. Returns 201 with the saved samples (IBIPIMO assigns s_uid) and any per-sample errors.",
+        "x-openfn-source": "adaptor source packages/ibipimo/src/Adaptor.js postViralLoadRequest(); README 'Success Response (201)'",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ViralLoadRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ViralLoadRequestSubmission"
+              }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Submission result",
+          "201": {
+            "description": "Samples saved",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/SubmissionResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ViralLoadSubmissionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation failed or invalid format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Duplicate integration attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Server processing failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -34,22 +117,81 @@
     },
     "/api/v1/ask-for-vl-results": {
       "post": {
-        "operationId": "getViralLoadResults",
-        "summary": "Request viral load results for a set of samples",
+        "tags": [
+          "Viral load results"
+        ],
+        "operationId": "askForViralLoadResults",
+        "summary": "Ask for viral load results by sample UID",
+        "description": "Adaptor operation getViralLoadResults(). Returns published results plus a per-sample status map explaining why a result is not yet available.",
+        "x-openfn-source": "adaptor source packages/ibipimo/src/Adaptor.js getViralLoadResults(); README 'Success Response (200)'",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ResultsRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ViralLoadResultsQuery"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Viral load results",
+            "description": "Results and statuses",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ResultsResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ViralLoadResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation failed or invalid format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - No results found for provided UIDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Server processing failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -58,24 +200,38 @@
     },
     "/api/v1/samples/status": {
       "get": {
-        "operationId": "getSamplesStatus",
-        "summary": "Get sample processing statuses",
-        "parameters": [
-          { "name": "siteid", "in": "query", "schema": { "type": "string" } }
+        "tags": [
+          "Samples"
         ],
+        "operationId": "getSamplesStatus",
+        "summary": "Sample status (from adaptor JSDoc example; unverified)",
+        "description": "Appears only as the example in the adaptor's get() JSDoc. Neither its parameters nor its response are documented, and the demo host answered an unauthenticated GET with an Apache 404, so the route may not exist.",
+        "x-openfn-source": "adaptor JSDoc example get(\"/api/v1/samples/status\") (packages/ibipimo/src/Adaptor.js)",
         "responses": {
           "200": {
-            "description": "Sample statuses",
+            "description": "Response body not documented (type not documented).",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing access token",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statuses": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/SampleStatus" }
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - No results found for provided UIDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -85,19 +241,49 @@
     },
     "/api/v1/sites": {
       "get": {
-        "operationId": "getSites",
-        "summary": "List sites",
+        "tags": [
+          "Sites"
+        ],
+        "operationId": "listSites",
+        "summary": "List sites (from adaptor examples; unverified)",
+        "description": "Used by the adaptor's get() JSDoc example (with query active=true) and by jobs/test-generic-get-request.js. Response shape not documented; the demo host answered an unauthenticated GET with an Apache 404.",
+        "x-openfn-source": "adaptor JSDoc example get(\"/api/v1/sites\", { query: { active: true } }); jobs/test-generic-get-request.js",
         "parameters": [
-          { "name": "active", "in": "query", "schema": { "type": "boolean" } }
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Filter to active sites (from the JSDoc example).",
+            "schema": {
+              "type": "boolean"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "A list of sites",
+            "description": "Response body not documented (type not documented).",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing access token",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Site" }
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - No results found for provided UIDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -107,106 +293,395 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "configuration.apiToken issued by IBIPIMO."
+      }
+    },
     "schemas": {
-      "ViralLoadRequest": {
+      "ViralLoadRequestSubmission": {
         "type": "object",
-        "required": ["siteid", "samples"],
+        "required": [
+          "siteid",
+          "samples"
+        ],
         "properties": {
-          "siteid": { "type": "string", "example": "77889900" },
+          "siteid": {
+            "type": "string",
+            "description": "IBIPIMO/SIDAInfo site id."
+          },
           "samples": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Sample" }
-          }
-        }
-      },
-      "Sample": {
-        "type": "object",
-        "properties": {
-          "sidainfo_uid": { "type": "string", "example": "147460" },
-          "p_code": { "type": "string", "example": "000003" },
-          "p_name": { "type": "string", "example": "Magara" },
-          "p_prename": { "type": "string", "example": "Mahire" },
-          "p_sex": { "type": "string", "enum": ["M", "F"], "example": "M" },
-          "p_dob": { "type": "string", "format": "date", "example": "1950-01-15" },
-          "sample_uid": { "type": "string", "example": "2026010401" }
-        }
-      },
-      "ResultsRequest": {
-        "type": "object",
-        "required": ["siteid", "sample_uids"],
-        "properties": {
-          "siteid": { "type": "string", "example": "77889900" },
-          "sample_uids": {
-            "type": "array",
-            "items": { "type": "string" },
-            "example": ["2026010401", "IBI-2024-000001"]
-          }
-        }
-      },
-      "SubmissionResponse": {
-        "type": "object",
-        "properties": {
-          "saved_samples": {
-            "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "sidainfo_uid": { "type": "string", "example": "147460" },
-                "sample_uid": { "type": "string", "example": "IBI-2024-000001" }
-              }
+              "$ref": "#/components/schemas/ViralLoadSampleInput"
             }
+          }
+        }
+      },
+      "ViralLoadSampleInput": {
+        "type": "object",
+        "description": "One sample request, as in the adaptor README example. Field meanings beyond the names are not documented; required-ness is not documented.",
+        "additionalProperties": true,
+        "properties": {
+          "sidainfo_uid": {
+            "type": "string",
+            "description": "Patient/sample id in SIDAInfo."
           },
-          "saved_count": { "type": "integer", "example": 1 },
+          "p_code": {
+            "type": "string",
+            "description": "Patient code."
+          },
+          "p_name": {
+            "type": "string",
+            "description": "Patient surname."
+          },
+          "p_prename": {
+            "type": "string",
+            "description": "Patient given name."
+          },
+          "p_sex": {
+            "type": "string",
+            "description": "Sex.",
+            "enum": [
+              "M",
+              "F"
+            ]
+          },
+          "p_dob": {
+            "type": "string",
+            "description": "Date of birth (YYYY-MM-DD).",
+            "format": "date"
+          },
+          "p_telephone": {
+            "type": "string",
+            "description": "Patient phone."
+          },
+          "female_status": {
+            "type": "string",
+            "description": "Pregnancy/breastfeeding status, 'na' when not applicable."
+          },
+          "colline": {
+            "type": "string",
+            "nullable": true
+          },
+          "arv_start_date": {
+            "type": "string",
+            "description": "ARV start date.",
+            "format": "date"
+          },
+          "p_stade_clinique": {
+            "type": "string",
+            "description": "WHO clinical stage."
+          },
+          "p_ligne_therap": {
+            "type": "string",
+            "description": "Therapeutic line."
+          },
+          "reason_vl": {
+            "type": "string",
+            "description": "Reason for the viral load test, e.g. suspicion_echec."
+          },
+          "on_arv": {
+            "type": "string",
+            "description": "'1' when on ARV."
+          },
+          "sample_type": {
+            "type": "string",
+            "description": "e.g. DBS.",
+            "nullable": true
+          },
+          "date_blood_taken": {
+            "type": "string",
+            "description": "Collection timestamp 'YYYY-MM-DD HH:mm:ss'."
+          },
+          "place_blood_taken": {
+            "type": "string"
+          },
+          "blood_taken_by": {
+            "type": "string",
+            "nullable": true
+          },
+          "prescription_by": {
+            "type": "string",
+            "nullable": true
+          },
+          "contact_sender": {
+            "type": "string",
+            "nullable": true
+          },
+          "blood_received_by": {
+            "type": "string"
+          },
+          "province_id": {
+            "type": "string"
+          },
+          "commune_id": {
+            "type": "string"
+          },
+          "arv_combination_id": {
+            "type": "string",
+            "description": "ARV regimen, e.g. TDF(300)/3TC(300)/DTG(50)."
+          },
+          "date_last_vl": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_vl_copies": {
+            "type": "string",
+            "description": "Last viral load in copies/mL, '-1' if none."
+          },
+          "site": {
+            "type": "string"
+          },
+          "dateprelevement": {
+            "type": "string",
+            "description": "Collection date (YYYY-MM-DD).",
+            "format": "date"
+          },
+          "sidainfo_siteid": {
+            "type": "string"
+          },
+          "hf_district": {
+            "type": "string",
+            "nullable": true
+          },
+          "hf_province": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ViralLoadSubmissionResult": {
+        "type": "object",
+        "properties": {
           "errors": {
             "type": "array",
+            "description": "Per-sample error messages.",
             "items": {
-              "type": "object",
-              "properties": {
-                "sidainfo_uid": { "type": "string" },
-                "message": { "type": "string" }
-              }
+              "type": "string"
             }
           },
-          "error_count": { "type": "integer", "example": 0 }
-        }
-      },
-      "ResultsResponse": {
-        "type": "object",
-        "properties": {
-          "results": {
+          "saved_viral_load_samples": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ViralLoadResult" }
+            "items": {
+              "$ref": "#/components/schemas/SavedViralLoadSample"
+            }
           }
         }
       },
-      "ViralLoadResult": {
+      "SavedViralLoadSample": {
         "type": "object",
         "properties": {
-          "sample_uid": { "type": "string", "example": "2026010401" },
-          "sidainfo_uid": { "type": "string", "example": "147460" },
-          "published": { "type": "boolean", "example": true },
-          "result_value": { "type": "string", "example": "< 20 copies/mL" },
-          "result_numeric": { "type": "number", "nullable": true, "example": 0 },
-          "log_value": { "type": "number", "nullable": true },
-          "result_date": { "type": "string", "format": "date", "example": "2026-01-10" },
-          "status": { "type": "string", "example": "published" }
+          "id": {
+            "type": "integer"
+          },
+          "s_uid": {
+            "type": "string",
+            "description": "IBIPIMO sample UID used to ask for results."
+          },
+          "siteid": {
+            "type": "string"
+          },
+          "codepatient": {
+            "type": "string"
+          },
+          "date_prelevement": {
+            "type": "string",
+            "description": "Collection timestamp 'DD/MM/YYYY HH:mm:ss'."
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "'YYYY-MM-DD HH:mm:ss'."
+          }
+        },
+        "example": {
+          "id": 830139,
+          "s_uid": "634W",
+          "siteid": "22222222",
+          "codepatient": "000010",
+          "date_prelevement": "15/04/2024 11:49:00",
+          "updated_at": "2026-02-18 12:52:51"
+        }
+      },
+      "ViralLoadResultsQuery": {
+        "type": "object",
+        "required": [
+          "siteid",
+          "sample_uids"
+        ],
+        "properties": {
+          "siteid": {
+            "type": "string"
+          },
+          "sample_uids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ViralLoadResults": {
+        "type": "object",
+        "properties": {
+          "siteid": {
+            "type": "string"
+          },
+          "results": {
+            "type": "array",
+            "description": "Published results (element shape not documented; the README example is empty).",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "sample_statuses": {
+            "type": "object",
+            "description": "Map of sample UID to status.",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SampleStatus"
+            }
+          },
+          "no_published_results": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "no_results": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "no_results_summary": {
+            "type": "object",
+            "description": "Map of reason code to {count, sample_uids}.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer"
+                },
+                "sample_uids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "not_found_sample_uids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total_requested": {
+            "type": "integer"
+          },
+          "total_found": {
+            "type": "integer"
+          },
+          "total_without_published_result": {
+            "type": "integer"
+          }
         }
       },
       "SampleStatus": {
         "type": "object",
         "properties": {
-          "sample_uid": { "type": "string", "example": "2026010401" },
-          "status": { "type": "string", "example": "processing" },
-          "received_date": { "type": "string", "format": "date" }
+          "sample_uid": {
+            "type": "string"
+          },
+          "request_found": {
+            "type": "boolean"
+          },
+          "request_status": {
+            "type": "string",
+            "description": "e.g. not_processed."
+          },
+          "request_mode": {
+            "type": "string",
+            "description": "e.g. api_sidainfo."
+          },
+          "sidainfo_uid": {
+            "type": "string"
+          },
+          "codelabo": {
+            "type": "string",
+            "nullable": true
+          },
+          "date_blood_taken": {
+            "type": "string"
+          },
+          "date_blood_received": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result_status": {
+            "type": "string",
+            "description": "e.g. not_available."
+          },
+          "result_available": {
+            "type": "boolean"
+          },
+          "no_result_reason_code": {
+            "type": "string",
+            "description": "e.g. sample_not_processed.",
+            "nullable": true
+          },
+          "no_result_reason_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "latest_result_meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Shape not documented."
+          },
+          "result": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Shape not documented."
+          }
+        },
+        "example": {
+          "sample_uid": "634W",
+          "request_found": true,
+          "request_status": "not_processed",
+          "request_mode": "api_sidainfo",
+          "sidainfo_uid": "147460",
+          "codelabo": null,
+          "date_blood_taken": "15/04/2024 11:49:00",
+          "date_blood_received": null,
+          "created_at": "2026-02-18T12:52:51.000000Z",
+          "updated_at": "2026-02-18T12:52:51.000000Z",
+          "result_status": "not_available",
+          "result_available": false,
+          "no_result_reason_code": "sample_not_processed",
+          "no_result_reason_message": "Sample request exists but has not been processed by the laboratory yet.",
+          "latest_result_meta": null,
+          "result": null
         }
       },
-      "Site": {
+      "Error": {
         "type": "object",
-        "properties": {
-          "siteid": { "type": "string", "example": "77889900" },
-          "name": { "type": "string", "example": "Bujumbura Central Lab" },
-          "active": { "type": "boolean", "example": true }
-        }
+        "description": "Error body; shape not documented (the adaptor maps status codes to fixed messages).",
+        "additionalProperties": true
       }
     }
   }

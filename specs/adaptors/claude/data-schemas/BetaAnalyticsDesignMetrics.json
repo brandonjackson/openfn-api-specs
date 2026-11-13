@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaAnalyticsDesignMetrics",
+  "title": "AnalyticsDesignMetrics",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAnalyticsDesignMetrics",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "distinct_projects_created_count": {
+      "type": "integer",
+      "title": "Distinct Projects Created Count",
+      "description": "Number of distinct Claude Design projects created. Exact in date-range mode: a creation belongs to exactly one day, so the per-day counts never overlap and their sum over the window is the exact count of distinct creations in it."
+    },
+    "distinct_projects_used_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Distinct Projects Used Count",
+      "description": "Number of distinct Claude Design projects the user worked in. Approximate (HLL, typical error <2%) in date-range mode. Null on aggregated rows where a distinct count cannot be computed."
+    },
+    "distinct_session_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Distinct Session Count",
+      "description": "Number of distinct Claude Design sessions. Approximate (HLL, typical error <2%) in date-range mode. Null on aggregated rows where a distinct count cannot be computed."
+    },
+    "message_count": {
+      "type": "integer",
+      "title": "Message Count",
+      "description": "Number of messages sent in Claude Design sessions"
+    }
+  },
+  "type": "object",
+  "required": [
+    "distinct_projects_created_count",
+    "distinct_projects_used_count",
+    "distinct_session_count",
+    "message_count"
+  ],
+  "description": "Claude Design activity metrics for a single user on a given day."
+}

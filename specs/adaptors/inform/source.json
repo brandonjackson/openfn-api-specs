@@ -3,12 +3,75 @@
   "npm": "@openfn/language-inform",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://api.ona.io/static/docs/forms.html",
-    "https://api.ona.io/static/docs/data.html",
-    "https://api.ona.io/static/docs/index.html",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-inform/ast.json"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://data.inform.unicef.org/{openapi.json,swagger.json,api/schema/,api/v1/schema/,api/v1/?format=openapi,swagger/,api/docs/}",
+      "result": "not-found",
+      "note": "all 404; /api/v1/ answers 401 without a token. /api-docs/ and /static/docs/ serve the Sphinx (prose) reference"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.ona.io/{openapi.json,swagger.json,api/schema/,api/v1/?format=openapi}",
+      "result": "not-found",
+      "note": "same onadata server software, same result"
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/onaio/onadata",
+      "result": "not-found",
+      "note": "no OpenAPI/Swagger in the repo; requirements carry no drf-spectacular/drf-yasg. docs/*.rst (the source of the Sphinx reference) used for the inventory; onadata/apps/api/urls/v1_urls.py and v2_urls.py consulted for route confirmation"
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no ona/onadata/inform entry"
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=onadata",
+      "result": "not-found",
+      "note": "no Ona-owned API"
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=onadata",
+      "result": "not-found",
+      "note": "no vendor workspace found"
+    },
+    {
+      "kind": "docs",
+      "url": "https://data.inform.unicef.org/static/docs/index.html",
+      "result": "used",
+      "note": "Inform's own copy of the onadata API reference (27 API pages); mechanical inventory identical to onaio/onadata main docs/*.rst"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "UNICEF Inform (data.inform.unicef.org) is built on the Ona/onadata platform, which exposes no OpenAPI document. Authored a focused OpenAPI 3.0.3 from the Ona API docs, matching the exact paths the adaptor calls (confirmed in dist/index.cjs): forms, forms/{id}, forms/{id}/form.json, data/{id}, data/{id}/{submissionId}, media/{id}. Field sets for Form, Submission and Attachment come from the Ona docs; Submission uses additionalProperties since form field keys are form-specific."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://data.inform.unicef.org/static/docs/index.html",
+    "https://data.inform.unicef.org/static/docs/forms.html",
+    "https://data.inform.unicef.org/static/docs/data.html",
+    "https://data.inform.unicef.org/static/docs/media.html",
+    "https://data.inform.unicef.org/static/docs/projects.html",
+    "https://data.inform.unicef.org/static/docs/entities.html",
+    "https://data.inform.unicef.org/static/docs/authentication.html",
+    "https://github.com/onaio/onadata/tree/main/docs",
+    "https://github.com/onaio/onadata/blob/main/onadata/apps/api/urls/v1_urls.py",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-inform/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-inform/dist/index.cjs",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/inform"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "UNICEF Inform (data.inform.unicef.org) runs Ona's open-source onadata server and hosts onadata's own Sphinx API reference; there is no machine spec anywhere (checked the instance, api.ona.io, the onadata repo, apis.guru, SwaggerHub, Postman). This spec is authored from that reference: a mechanical inventory of every documented method+path across all 27 API pages (prettyprint blocks plus curl examples) was built first and every row maps to an operation (194 operations, 132 paths, 69 schemas), replacing a 6-operation stub. Paths keep their /api/v1, /api/v2 prefixes because OpenRosa (/formList, /{username}/{pk}/submission) and OAuth (/o/token/) routes live at the root. Schemas come from the docs' example responses; submissions and dataview/merged-dataset records are open objects since their keys are form fields. Docs quirks kept as notes on the operations: POST vs GET /formList, POST vs DELETE delete_async, /project/ vs /projects/ labels, /profile/ vs /profiles/ change_password, PUT invitations with or without an id. All six adaptor operations map: GET /api/v1/forms, /forms/{pk}, /forms/{pk}/form.{format} (structureOnly), /data/{pk}, /data/{pk}/{dataid}, /media/{pk}, and /files/{pk} for downloadAttachment, which the old stub lacked. Not modelled: router-only, undocumented viewsets (briefcase, osm, private-data, totp, v1 open-data); Flow Results package detail and responses routes come from the FLOIP specification the docs defer to, confirmed in onadata's floip_viewset."
 }

@@ -97,6 +97,35 @@ export interface BuildResult {
  * (AGENTS.md requires the file to be self-identifying); Swagger and Discovery
  * documents go through their converters.
  */
+/** Keys whose values are instance data, not schemas: never rewritten. */
+const DATA_KEYS = new Set(['example', 'examples', 'default', 'enum', 'const', 'x-examples']);
+
+/**
+ * OpenAPI 3.0's Schema Object requires `items` to be a single schema, but some
+ * vendors publish draft-07 tuple form (`items: [A, B]`), which Ajv in the
+ * conformance engine refuses to compile. The nearest 3.0 equivalent is
+ * `items: { anyOf: [A, B] }` (positional ordering is lost, the member types
+ * are kept). Mutates `node` in place and returns how many were rewritten.
+ * The verbatim upstream is never touched; this only shapes the served copy.
+ */
+export function rewriteTupleItems(node: any): number {
+  if (!node || typeof node !== 'object') return 0;
+  let n = 0;
+  if (Array.isArray(node)) {
+    for (const v of node) n += rewriteTupleItems(v);
+    return n;
+  }
+  if (Array.isArray(node.items) && (node.type === 'array' || node.type === undefined)) {
+    node.items = { anyOf: node.items };
+    n++;
+  }
+  for (const [k, v] of Object.entries(node)) {
+    if (DATA_KEYS.has(k)) continue;
+    n += rewriteTupleItems(v);
+  }
+  return n;
+}
+
 export function buildOpenapi(doc: any, adaptor: string, ext: 'json' | 'yaml'): BuildResult {
   const detected = detect(doc, ext);
   switch (detected.kind) {
@@ -106,7 +135,12 @@ export function buildOpenapi(doc: any, adaptor: string, ext: 'json' | 'yaml'): B
       const openapi = JSON.parse(JSON.stringify(doc));
       openapi.info ??= {};
       openapi.info['x-openfn-adaptor'] = adaptor;
-      return { detected, openapi, warnings: [] };
+      const warnings: string[] = [];
+      if (detected.format === 'openapi-3.0') {
+        const n = rewriteTupleItems(openapi);
+        if (n) warnings.push(`rewrote ${n} draft-07 tuple \`items: [..]\` array(s) as \`items: {anyOf: [..]}\` (array-valued items is invalid in OpenAPI 3.0)`);
+      }
+      return { detected, openapi, warnings };
     }
     case 'swagger': {
       const { openapi, warnings } = swaggerToOpenApi(doc, adaptor);

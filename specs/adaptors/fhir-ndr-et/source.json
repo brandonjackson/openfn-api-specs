@@ -1,12 +1,109 @@
 {
   "adaptor": "fhir-ndr-et",
   "npm": "@openfn/language-fhir-ndr-et",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://github.com/OpenFn/adaptors/tree/main/packages/fhir-ndr-et",
-    "https://www.hl7.org/fhir/R4/http.html"
+  "origin": "converted",
+  "upstreamFormat": "json-schema",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://hl7.org/fhir/R4/fhir.schema.json",
+    "format": "json-schema-draft-06",
+    "contentHash": "sha256:2230406893b4cf002a4ee1e5e2bbeca22ac5d2d4931b3e9ef7b9594bbc376a01",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/fhir-ndr-et/src/Adaptor.js",
+      "result": "used",
+      "note": "One HTTP operation, create(resourceType, resource, params): builds the resource with the IG builder and calls util.request(configuration, 'POST', resourceType, {body}) — i.e. POST {baseUrl}/{resourceType}, Basic auth from username/password (configuration-schema: baseUrl, username, password). FINDING: src/utils.js exports no `request` (nor prepareNextState), and the published 0.2.3 dist compiles both calls to `(void 0)(...)`, so create() throws a TypeError before sending anything (it logs 'This object has NOT been posted to fhir'). The modelled endpoint is the one the code is written to call."
+    },
+    {
+      "kind": "implementation-guide",
+      "url": "https://github.com/jembi/ethiopia-hiv",
+      "result": "used",
+      "note": "Source of the Ethiopia HIV IG (ethiopia.fhir.hiv 1.0.1, fhirVersion 4.0.1, canonical http://moh.gov.et/fhir/hiv, Jembi; HEAD f6d9332, 2026-02-09). FSH: 158 Profiles (all with R4 parents or IG-internal generic profiles), 21 Extensions, 50 CodeSystems, 82 ValueSets, 318 example Instances; no CapabilityStatement, SearchParameter or OperationDefinition. The IG narrows content but does not change the R4 REST surface."
+    },
+    {
+      "kind": "implementation-guide",
+      "url": "https://build.fhir.org/ig/jembi/ethiopia-hiv/branches/master/definitions.json.zip",
+      "result": "not-found",
+      "note": "The adaptor's generator input (build/fetch-schema.ts, README) now 404s, as do .../package.tgz and the IG home page; build.fhir.org's qas.json registry no longer lists the IG. The adaptor cannot be regenerated from its recorded source."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://hl7.org/fhir/R4/fhir.openapi.json",
+      "result": "not-found",
+      "note": "HL7 publishes no OpenAPI for R4: fhir.openapi.json returns Apache's 300 'similar names' page; /openapi.json, /openapi.yaml, /swagger.json and /openapi/ on hl7.org/fhir/R4 all 404 (re-probed 2026-11-13)."
+    },
+    {
+      "kind": "docs",
+      "url": "https://hl7.org/fhir/R4/downloads.html",
+      "result": "rejected",
+      "note": "The R4 downloads page offers definitions.json.zip, fhir.schema.json and the core package — machine-readable, but no OpenAPI/Swagger artifact."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "apis.guru (2529 APIs) lists no HL7/FHIR API; the only health entries are amazonaws.com:comprehendmedical and infermedica.com."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/gotidy/fhir-to-openapi",
+      "result": "rejected",
+      "note": "Community FHIR-to-OpenAPI generators exist but are not vendor-published (SKILL.md §2); followed back to HL7's own machine-readable definitions."
+    },
+    {
+      "kind": "json-schema",
+      "url": "https://hl7.org/fhir/R4/fhir.schema.json",
+      "result": "used",
+      "note": "HL7's own complete R4 (v4.0.1) JSON Schema (draft-06): 680 definitions covering all 145 resource types, datatypes and backbone elements. Saved verbatim as upstream.json (sha256:2230406893b4cf002a4ee1e5e2bbeca22ac5d2d4931b3e9ef7b9594bbc376a01) and converted to components.schemas."
+    },
+    {
+      "kind": "capability-statement",
+      "url": "https://hl7.org/fhir/R4/capabilitystatement-base.json",
+      "result": "used",
+      "note": "HL7's base CapabilityStatement for R4 ('a server that provides the full set of functionality defined by FHIR'): 145 resource types, their interactions, 1697 resource search parameters, the system interactions and the 46-entry operation list. Saved verbatim as upstream-capabilities.json (sha256:29ae88d66f66371f97a71feece55f2464ae35e8fadf40ddb79d4a005c1a5c217) and converted to the path surface."
+    },
+    {
+      "kind": "operation-definitions",
+      "url": "https://hl7.org/fhir/R4/operationslist.html",
+      "result": "used",
+      "note": "All 46 R4 OperationDefinitions fetched individually (https://hl7.org/fhir/R4/operation-<resource>-<code>.json) for the $-operation paths, levels, input/output parameters and response resource."
+    },
+    {
+      "kind": "docs",
+      "url": "https://hl7.org/fhir/R4/http.html",
+      "result": "used",
+      "note": "The normative RESTful API specification: URL shapes per interaction, patch, the conditional create/update/delete forms, the _search POST form and the GET-invocation rule for operations."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "FHIR R4 profile for the Ethiopia National Data Repository (NDR). Adaptor exposes create(resourceType, resource) with server-assigned ids, plus the common FHIR REST verbs. Modelled as standard FHIR R4 REST + transaction Bundle over core resources. Server URL is a representative placeholder for the NDR FHIR endpoint."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "published-dist",
+    "configuration-schema.json",
+    "fhir-r4-regeneration"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://hl7.org/fhir/R4/fhir.schema.json",
+    "https://hl7.org/fhir/R4/capabilitystatement-base.json",
+    "https://hl7.org/fhir/R4/operationslist.html",
+    "https://hl7.org/fhir/R4/http.html",
+    "https://hl7.org/fhir/R4/search.html",
+    "https://hl7.org/fhir/R4/operations.html",
+    "https://hl7.org/fhir/R4/downloads.html",
+    "https://github.com/jembi/ethiopia-hiv",
+    "https://build.fhir.org/ig/jembi/ethiopia-hiv/branches/master/definitions.json.zip",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-fhir-ndr-et/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-fhir-ndr-et@0.2.3/dist/index.js",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/fhir-ndr-et"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "HL7 FHIR Release 4 (v4.0.1) RESTful API: the surface of the Ethiopia National Data Repository FHIR R4 endpoint that receives HIV care data conforming to Jembi's Ethiopia HIV IG (ethiopia.fhir.hiv 1.0.1). The IG publishes only profiles, extensions and terminology, so the REST surface is the R4 base; this spec reuses HL7's R4 fhir.schema.json and base CapabilityStatement verbatim (the same bytes and hashes as specs/adaptors/fhir). The NDR deployment's host is not public, so servers[0] is the configured baseUrl with a public R4 test server as default; auth is HTTP Basic, the only scheme the configuration offers. 'Full' means all 145 R4 resource types with the eight base interactions plus patch and the conditional forms, the system interactions, /metadata and all 46 R4 operations: 1872 operations over 944 paths and all 680 upstream definitions. Conversion: the same derivation as specs/adaptors/fhir (a converter that regenerates that adaptor's committed openapi.json byte-for-byte from the same R4 inputs was used, so the two specs share every path, operationId, parameter and schema): draft-06 `const` became a single-value `enum`; `type: object` was added to object definitions; FHIR's 20 primitive types are inlined at their use sites; every body and response is offered as application/json and application/fhir+json; operations take a `Parameters` body, and a GET form is emitted only when every required input is primitive and the operation does not change state. One deliberate difference from specs/adaptors/fhir: the system-level operations (/$meta, /$versions, /$graphql, /$data-requirements, /$closure, /$process-message, /$convert) do not carry the `resourceType` path parameter, which the fhir spec declares on those paths although they have no `{resourceType}` segment. Adaptor surface: create(resourceType, resource) → POST /{resourceType} (createPatient, createEncounter, ...) is present, but in the published 0.2.3 build the request helper it calls does not exist, so it throws before any request; the IG's generator URL on build.fhir.org is also gone (both recorded in attempts). IG profile constraints are not encoded as schemas."
 }

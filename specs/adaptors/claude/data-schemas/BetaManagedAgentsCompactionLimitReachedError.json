@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsCompactionLimitReachedError",
+  "title": "BetaManagedAgentsCompactionLimitReachedError",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsCompactionLimitReachedError",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "The turn stopped because the context was compacted the maximum number of times in a row without the model producing a message or a tool call, not because a request failed. The thread goes idle with `stop_reason: retries_exhausted` (a child thread then terminates); the next `user.message` starts a new turn.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "message",
+    "retry_status"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "compaction_limit_reached_error",
+      "examples": [
+        "compaction_limit_reached_error"
+      ]
+    },
+    "message": {
+      "description": "Human-readable error description.",
+      "type": "string",
+      "examples": [
+        "This turn stopped because the context was compacted the maximum number of times in a row without the model producing a message or a tool call. Nothing failed. This can happen when content sent with every request, such as a large system prompt, leaves too little room for the conversation. Send the session a new message to continue; nothing from the stopped turn is discarded."
+      ]
+    },
+    "retry_status": {
+      "description": "What the client should do next.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsRetryStatus.json"
+        }
+      ],
+      "examples": [
+        {
+          "type": "exhausted"
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "compaction_limit_reached_error",
+    "message": "This turn stopped because the context was compacted the maximum number of times in a row without the model producing a message or a tool call. Nothing failed. This can happen when content sent with every request, such as a large system prompt, leaves too little room for the conversation. Send the session a new message to continue; nothing from the stopped turn is discarded.",
+    "retry_status": {
+      "type": "exhausted"
+    }
+  }
+}

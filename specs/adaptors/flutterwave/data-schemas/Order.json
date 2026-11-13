@@ -1,0 +1,838 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "flutterwave/Order",
+  "title": "Order",
+  "x-openfn-adaptor": "flutterwave",
+  "x-source": {
+    "openapi": "#/components/schemas/Order",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the order"
+    },
+    "amount": {
+      "type": "number",
+      "description": "The payment amount in decimals",
+      "minimum": 0.01
+    },
+    "fees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The specific type of fee. i.e., \"vat\", \"app\", \"merchant\", \"stamp_duty\""
+          },
+          "amount": {
+            "type": "number",
+            "description": "The fee amount in decimal format"
+          }
+        }
+      },
+      "description": "Fees charged on payment amount"
+    },
+    "billing_details": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The Customer's email address",
+          "pattern": "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$"
+        },
+        "name": {
+          "$ref": "PersonName.json"
+        },
+        "phone": {
+          "$ref": "Phone.json"
+        }
+      }
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code",
+      "enum": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "AQD",
+        "ARS",
+        "AUD",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BRL",
+        "BSD",
+        "BWP",
+        "BYR",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHF",
+        "CLP",
+        "CNY",
+        "COP",
+        "CRC",
+        "CUP",
+        "CVE",
+        "CYP",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "ECS",
+        "EEK",
+        "EGP",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GGP",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HRK",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LTL",
+        "LVL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRO",
+        "MTL",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SKK",
+        "SLL",
+        "SOS",
+        "SRD",
+        "STD",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "UYU",
+        "UZS",
+        "VEF",
+        "VND",
+        "VUV",
+        "XAF",
+        "XCD",
+        "XOF",
+        "XPF",
+        "YER",
+        "ZAR",
+        "ZMK",
+        "ZWD",
+        "ZMW",
+        "USDC",
+        "USDT",
+        "RLUSD"
+      ]
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "ID of the customer"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the order"
+    },
+    "meta": {
+      "type": "object"
+    },
+    "next_action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "redirect_url"
+            },
+            "redirect_url": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "Payment screen URL to redirect customer to"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "redirect_url"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "requires_additional_fields"
+            },
+            "requires_additional_fields": {
+              "type": "object",
+              "properties": {
+                "fields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "fields"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "requires_additional_fields"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "requires_pin"
+            },
+            "requires_pin": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "requires_requery"
+            },
+            "requires_requery": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "requires_otp"
+            },
+            "requires_otp": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "payment_instruction"
+            },
+            "payment_instruction": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Custom field containing the payment instruction"
+                }
+              },
+              "required": [
+                "note"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "payment_instruction"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "requires_capture"
+            },
+            "requires_capture": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "requires_bank_transfer"
+            },
+            "requires_bank_transfer": {
+              "type": "object",
+              "properties": {
+                "account_number": {
+                  "type": "string",
+                  "description": "The account number designated for receiving payments"
+                },
+                "account_bank_name": {
+                  "type": "string",
+                  "description": "The Bank name"
+                },
+                "account_expiration_datetime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Specifies when the virtual account expires"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "account_number",
+                "account_bank_name"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "default": "qr_code"
+            },
+            "qr_code": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "type": "string",
+                  "description": "Qr code"
+                }
+              },
+              "required": [
+                "image"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "qr_code"
+          ]
+        }
+      ]
+    },
+    "payment_method_details": {
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "string",
+              "description": "ID of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "The type of the payment method"
+            },
+            {
+              "type": "string",
+              "description": "ID of the customer"
+            },
+            {
+              "type": "object",
+              "description": "meta"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device fingerprint"
+            },
+            {
+              "type": "string",
+              "description": "The customer's device IP"
+            },
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time when the virtual account was created"
+            }
+          ]
+        }
+      ]
+    },
+    "redirect_url": {
+      "type": "string",
+      "description": "Specifies the URL to redirect to"
+    },
+    "reference": {
+      "type": "string",
+      "description": "A custom identifier to track the transaction, This must be unique across all your transactions",
+      "pattern": "^[a-zA-Z0-9\\-]+$",
+      "minLength": 6,
+      "maxLength": 42
+    },
+    "status": {
+      "type": "string",
+      "description": "The status of the order",
+      "enum": [
+        "completed",
+        "pending",
+        "authorized",
+        "partially-completed",
+        "voided",
+        "failed"
+      ]
+    },
+    "processor_response": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "\\d{2}"
+        },
+        "message": {
+          "type": "string",
+          "description": "A human-readable description of the processor response. For failed transactions, this is the reason provided by the processor"
+        }
+      },
+      "required": [
+        "type",
+        "code"
+      ],
+      "enum": [
+        "{'type': 'approved', 'code': '00'}",
+        "{'type': 'refer_to_issuer', 'code': '01'}",
+        "{'type': 'refer_to_issuer_special_condition', 'code': '02'}",
+        "{'type': 'invalid_merchant', 'code': '03'}",
+        "{'type': 'pick_up_card_no_fraud', 'code': '04'}",
+        "{'type': 'do_not_honor', 'code': '05'}",
+        "{'type': 'error', 'code': '06'}",
+        "{'type': 'pick_up_card_fraud', 'code': '07'}",
+        "{'type': 'partial_approval', 'code': '10'}",
+        "{'type': 'invalid_transaction', 'code': '12'}",
+        "{'type': 'invalid_amount', 'code': '13'}",
+        "{'type': 'invalid_account_number', 'code': '14'}",
+        "{'type': 'no_such_issuer', 'code': '15'}",
+        "{'type': 'reenter_transaction', 'code': '19'}",
+        "{'type': 'no_action_taken', 'code': '21'}",
+        "{'type': 'unable_to_locate_record_in_file', 'code': '25'}",
+        "{'type': 'file_temporarily_not_available', 'code': '28'}",
+        "{'type': 'lost_card_pick_up', 'code': '41'}",
+        "{'type': 'stolen_card_pick_up', 'code': '43'}",
+        "{'type': 'insufficient_funds', 'code': '51'}",
+        "{'type': 'no_checking_account', 'code': '52'}",
+        "{'type': 'no_savings_account', 'code': '53'}",
+        "{'type': 'expired_card', 'code': '54'}",
+        "{'type': 'incorrect_pin', 'code': '55'}",
+        "{'type': 'transaction_not_permitted_card', 'code': '57'}",
+        "{'type': 'transaction_not_permitted_terminal', 'code': '58'}",
+        "{'type': 'suspected_fraud', 'code': '59'}",
+        "{'type': 'exceeds_approval_amount_limit', 'code': '61'}",
+        "{'type': 'invalid_restricted_service_code', 'code': '62'}",
+        "{'type': 'security_violation', 'code': '63'}",
+        "{'type': 'transaction_does_not_fulfill_aml_req', 'code': '64'}",
+        "{'type': 'exceeds_withdrawal_limit', 'code': '65'}",
+        "{'type': 'pin_data_required', 'code': '70'}",
+        "{'type': 'pin_entry_tries_exceeded', 'code': '75'}",
+        "{'type': 'unsolicited_reversal', 'code': '76'}",
+        "{'type': 'blocked_first_use', 'code': '78'}",
+        "{'type': 'already_reversed', 'code': '79'}",
+        "{'type': 'negative_cvv_result', 'code': '82'}",
+        "{'type': 'no_reason_to_decline', 'code': '85'}",
+        "{'type': 'cannot_verify_pin', 'code': '86'}",
+        "{'type': 'issuer_unavailable', 'code': '91'}",
+        "{'type': 'unable_to_route_transaction', 'code': '92'}",
+        "{'type': 'cannot_complete_violation_of_law', 'code': '93'}",
+        "{'type': 'system_error', 'code': '96'}",
+        "{'type': 'invalid_cvv', 'code': '97'}"
+      ]
+    },
+    "created_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp for when the order was created"
+    },
+    "descriptor": {
+      "type": "string",
+      "description": "The name of the processor"
+    }
+  }
+}

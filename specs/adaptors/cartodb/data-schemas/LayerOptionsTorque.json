@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cartodb/LayerOptionsTorque",
+  "title": "Layer options Torque",
+  "x-openfn-adaptor": "cartodb",
+  "x-source": {
+    "openapi": "#/components/schemas/LayerOptionsTorque",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "If you are using Torque as a layer resource, the following configurations are required in your MapConfig file. For more details about Torque layers in general, see the Torque API documentation.\n",
+  "properties": {
+    "sql": {
+      "type": "string",
+      "description": "The SQL request to the user database that will fetch the rendered data.\n\n**Tip:** The SQL request should include the following Mapnik layer configurations:\n  * geom_column\n  * interactivity\n  * attributes\n"
+    },
+    "cartocss": {
+      "$ref": "CartoCSS.json"
+    },
+    "cartocss_version": {
+      "$ref": "CartoCSSVersion.json"
+    },
+    "step": {
+      "type": "integer",
+      "description": "The number of animation steps to render when requesting a torque.png tile.",
+      "default": 0
+    },
+    "geom_column": {
+      "type": "string",
+      "description": "The name of the column containing the geometry.\n\n*You **must** specify this value as part of the Torque layer SQLconfiguration.\n",
+      "default": "the_geom_webmercator"
+    },
+    "srid": {
+      "$ref": "Srid.json"
+    },
+    "affected_tables": {
+      "$ref": "Affected_tables.json"
+    },
+    "attributes": {
+      "description": "The id and column values returned by the Torque attributes service. (This option is disabled if no configuration is defined).\n*You **must** specify this value as part of the Torque layer SQL configuration.\n",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The key value used to fetch columns."
+          },
+          "columns": {
+            "type": "string",
+            "description": "A string of values (columns) returned by the Torque attribute service."
+          }
+        },
+        "required": [
+          "id",
+          "columns"
+        ]
+      }
+    }
+  },
+  "required": [
+    "sql",
+    "cartocss",
+    "cartocss_version"
+  ]
+}

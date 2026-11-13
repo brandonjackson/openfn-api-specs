@@ -1,15 +1,84 @@
 {
   "adaptor": "puntosolidario-rd",
   "npm": "@openfn/language-puntosolidario-rd",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-puntosolidario-rd/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-puntosolidario-rd/dist/index.cjs",
-    "https://puntosolidario.gob.do/",
-    "https://adess.gob.do/",
-    "https://www.superate.gob.do/subsidios-sociales/"
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://apim.puntosolidario.gob.do/swagger/v2/swagger.json",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:9a50fc88a4a42a9866d542ff12a189e56eca606220d9d03ef31fc928049495cc",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://apim.puntosolidario.gob.do/swagger/v2/swagger.json",
+      "result": "used",
+      "note": "Vendor OpenAPI 3.0.4 behind the public Swashbuckle UI at https://apim.puntosolidario.gob.do/swagger/index.html (its index.js lists the single document '/swagger/v2/swagger.json'). 643 paths / 935 operations / 287 schemas. Host found in the Punto Solidario web client bundle (https://psweb.puntosolidario.gob.do/js/app.*.js), which calls https://apim.puntosolidario.gob.do/api/authentication/request, the same login route the adaptor uses."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://apim.puntosolidario.gob.do/swagger/v1/swagger.json",
+      "result": "not-found",
+      "note": "404; only v2 is published."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://psweb.puntosolidario.gob.do/swagger/v1/swagger.json",
+      "result": "not-found",
+      "note": "psweb is a Vue SPA that answers every path with index.html; no spec there."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://puntosolidario.gob.do/swagger",
+      "result": "not-found",
+      "note": "Institutional WordPress site; /swagger, /api-docs, /v3/api-docs, /openapi.json all 404."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenFn/adaptors/issues/1635",
+      "result": "rejected",
+      "note": "Adaptor request issue: API docs were shared privately ('Ask me for API docs'); the only sample is get('/casos', {query:{id}}), which has no matching route in the vendor spec (cases live under /api/CasoInfo and /api/External/adess/consulta/casos)."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=puntosolidario&type=code",
+      "result": "not-found",
+      "note": "No vendor GitHub org or SDK; code search finds only the OpenFn adaptor and domain lists."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Not listed."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=punto%20solidario",
+      "result": "not-found",
+      "note": "No public workspace."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Punto Solidario is a Dominican Republic single-window social-subsidy service run by ADESS / Supérate (Gabinete de Coordinación de Políticas Sociales). The adaptor exposes no documented public operations (ast operations[] is empty); it is a thin HTTP client with generic http get/post/request helpers over a configured base URL. No public vendor API/machine spec exists (the platform is government-internal). Synthesized a minimal OpenAPI 3.0 from the adaptor surface, modeling representative beneficiary, subsidy and payment-transaction resources with Spanish field names matching the domain. Server URL, paths and field names are best-effort placeholders."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-tests"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://apim.puntosolidario.gob.do/swagger/v2/swagger.json",
+    "https://apim.puntosolidario.gob.do/swagger/index.html",
+    "https://psweb.puntosolidario.gob.do/",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/puntosolidario-rd",
+    "https://github.com/OpenFn/adaptors/issues/1635",
+    "https://github.com/OpenFn/adaptors/pull/1636",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-puntosolidario-rd/ast.json"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Punto Solidario (Dominican Republic social-programmes single window, ADESS/Superate) runs an ASP.NET Core Web API at https://apim.puntosolidario.gob.do whose Swashbuckle UI is public; its 'Punto Solidario v2' OpenAPI 3.0.4 document is committed verbatim as upstream.json and served unchanged apart from info.x-openfn-adaptor. It replaces the July 2026 stub, which invented /beneficiarios, /subsidios and /transacciones paths that do not exist; the real API has 935 operations over 104 controllers (CasoInfo, Ciudadano, Hogar, Miembro, TramiteBeneficiario, Transaccion, Tarjeta, Nomina, External ADESS/SIUBEN/SENASA proxies, OData query routes, CSV/PDF exports). The adaptor authenticates with POST {baseUrl}/authentication/request {username,password} and sends the returned token as a Bearer header; that is the spec's POST /api/Authentication/request (TokenRequest), so configuration.baseUrl should be https://apim.puntosolidario.gob.do/api (ASP.NET routing is case-insensitive). Vendor gaps kept as-is: the document declares no servers and no securitySchemes, and 914 of 935 operations declare a bare 200 'OK' with no response body schema, so data-schemas/ holds only the handful of DTOs the vendor typed. Whether OpenFn's 'TEST API' credential points at this host or a separate test deployment is not public; the adaptor surface (generic http.get/post/request) is fully covered either way."
 }

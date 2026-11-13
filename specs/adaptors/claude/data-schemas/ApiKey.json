@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/ApiKey",
+  "title": "ApiKey",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/ApiKey",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "description": "RFC 3339 datetime string indicating when the API Key was created.",
+      "examples": [
+        "2024-10-30T23:58:27.427722Z"
+      ]
+    },
+    "created_by": {
+      "anyOf": [
+        {
+          "$ref": "CreatedBy.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The ID and type of the actor that created the API key, or `null` when the\ncreator is not recorded (legacy, workload-identity-federated, or\nsystem-created keys).",
+      "examples": [
+        {
+          "id": "user_01WxYzAbCdEfGhJkMnPqRsTu",
+          "type": "user"
+        }
+      ]
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Expires At",
+      "description": "RFC 3339 datetime string indicating when the API Key expires, or `null` if it never expires.",
+      "examples": [
+        "2024-10-30T23:58:27.427722Z"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "ID of the API key.",
+      "examples": [
+        "apikey_01Rj2N8SVvo6BePZj99NhmiT"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Name of the API key.",
+      "examples": [
+        "Developer Key"
+      ]
+    },
+    "partial_key_hint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Partial Key Hint",
+      "description": "Partially redacted hint for the API key.",
+      "examples": [
+        "sk-ant-api03-R2D...igAA"
+      ]
+    },
+    "principal": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "$ref": "ApiKeyUserActor.json"
+            },
+            {
+              "$ref": "ApiKeyServiceAccountActor.json"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "service_account_actor": "#/components/schemas/ApiKeyServiceAccountActor",
+              "user_actor": "#/components/schemas/ApiKeyUserActor"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Principal",
+      "description": "The principal the API key acts as (a User or a Service Account), or `null` if the API key is not bound to a principal.",
+      "examples": [
+        {
+          "type": "user_actor",
+          "user_id": "user_01WxYzAbCdEfGhJkMnPqRsTu"
+        }
+      ]
+    },
+    "scope": {
+      "oneOf": [
+        {
+          "$ref": "ApiKeyOrganizationScope.json"
+        },
+        {
+          "$ref": "ApiKeyWorkspaceScope.json"
+        }
+      ],
+      "title": "Scope",
+      "description": "Where the API key belongs: its Workspace (`{\"type\": \"workspace\", \"workspace_id\": \"wrkspc_...\"}`, with the Workspace's real ID even when it is the organization's default Workspace), or the organization (`{\"type\": \"organization\"}`) for a principal-bound API key that has no Workspace.",
+      "examples": [
+        {
+          "type": "workspace",
+          "workspace_id": "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/ApiKeyOrganizationScope",
+          "workspace": "#/components/schemas/ApiKeyWorkspaceScope"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "expired",
+        "inactive"
+      ],
+      "title": "Status",
+      "description": "Status of the API key.",
+      "examples": [
+        "active"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "api_key",
+      "title": "Type",
+      "description": "Object type.\n\nFor API Keys, this is always `\"api_key\"`.",
+      "default": "api_key"
+    }
+  },
+  "type": "object",
+  "required": [
+    "created_at",
+    "created_by",
+    "expires_at",
+    "id",
+    "name",
+    "partial_key_hint",
+    "principal",
+    "scope",
+    "status",
+    "type"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsWebFetchToolConfig",
+  "title": "BetaManagedAgentsWebFetchToolConfig",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsWebFetchToolConfig",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Configuration for the web_fetch tool.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "name",
+    "enabled",
+    "permission_policy",
+    "url_sources"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "web_fetch"
+    },
+    "name": {
+      "type": "string",
+      "const": "web_fetch"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "permission_policy": {
+      "$ref": "BetaManagedAgentsPermissionPolicy.json"
+    },
+    "allowed_domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocked_domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "max_content_tokens": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int32"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "url_sources": {
+      "description": "Which sources contribute URLs the tool may fetch, always in the object form. Null when not set, which allows every source.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsWebFetchUrlSources.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

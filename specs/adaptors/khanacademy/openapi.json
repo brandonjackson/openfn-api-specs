@@ -1,321 +1,1974 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Khan Academy API v1",
-    "version": "1.0.0",
-    "description": "OpenAPI description of the public Khan Academy REST API v1 (base https://www.khanacademy.org/api/v1). The @openfn/language-khanacademy adaptor exposes a single generic fetch({ getEndpoint, queryParams }) operation that issues GET requests against these endpoints. This spec covers the core content and account endpoints (topic tree, topics, exercises, videos, badges, user, playlists). Note: Khan Academy deprecated and removed these public API endpoints during 2020; this document reflects the historical documented surface the adaptor was built against.",
-    "x-openfn-adaptor": "khanacademy"
+    "title": "Khan Academy API v1 (removed)",
+    "version": "1.0",
+    "description": "The public Khan Academy REST API v1 (content library, badges and user progress) and its OAuth 1.0a token endpoints, as last documented by Khan Academy before it removed them: /badges, /user and /playlists on 2020-01-06, /topictree, /topic, /videos and /exercises on 2020-07-29 (per the khan-api README). Every /api/v1 route now answers 410 Gone ('API removed'), so this document is historical. The OpenFn khanacademy adaptor's fetch({ getEndpoint, queryParams, postUrl }) runs the auth2 request_token -> authorize (POST with the app owner's email/password) -> access_token dance against https://www.khanacademy.org/api/auth2 and then GETs https://www.khanacademy.org/api/v1/<getEndpoint>; it can no longer succeed.",
+    "x-openfn-adaptor": "khanacademy",
+    "x-api-status": "removed"
   },
   "servers": [
     {
-      "url": "https://www.khanacademy.org/api/v1"
+      "url": "https://www.khanacademy.org",
+      "description": "Production (the /api/v1 and /api/auth* routes return 410/404 since 2020)."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Topics"
+    },
+    {
+      "name": "Playlists"
+    },
+    {
+      "name": "Videos"
+    },
+    {
+      "name": "Exercises"
+    },
+    {
+      "name": "Badges"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "User video history"
+    },
+    {
+      "name": "User exercise history"
+    },
+    {
+      "name": "OAuth"
     }
   ],
   "paths": {
-    "/topictree": {
+    "/api/v1/topic/{topic_id}": {
+      "get": {
+        "operationId": "getTopic",
+        "summary": "Get a topic with its abbreviated children",
+        "tags": [
+          "Topics"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Topic slug (e.g. addition-subtraction)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/topic/{topic_id}/videos": {
+      "get": {
+        "operationId": "listTopicVideos",
+        "summary": "List the videos in a topic",
+        "tags": [
+          "Topics"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Topic slug (e.g. addition-subtraction)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Video"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/topic/{topic_id}/exercises": {
+      "get": {
+        "operationId": "listTopicExercises",
+        "summary": "List the exercises in a topic",
+        "tags": [
+          "Topics"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Topic slug (e.g. addition-subtraction)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Exercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/topictree": {
       "get": {
         "operationId": "getTopicTree",
-        "summary": "Retrieve the full topic tree",
+        "summary": "Get the full topic tree (whole library, ~30MB)",
+        "tags": [
+          "Topics"
+        ],
+        "deprecated": true,
+        "description": "Honours ETag / If-None-Match. Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
         "parameters": [
           {
             "name": "kind",
             "in": "query",
             "required": false,
-            "description": "Comma-separated list of node kinds to include (e.g. Video,Exercise,Topic).",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The root topic node with nested children.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Topic" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/topic/{topic_slug}": {
-      "get": {
-        "operationId": "getTopic",
-        "summary": "Retrieve a single topic by slug",
-        "parameters": [
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restrict the tree to node kinds (e.g. Topic, Video, Exercise); used by client wrappers, not in the 2013 docs."
+          },
           {
-            "name": "topic_slug",
-            "in": "path",
-            "required": true,
-            "description": "The slug identifying the topic.",
-            "schema": { "type": "string" }
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
           }
         ],
         "responses": {
           "200": {
-            "description": "The requested topic.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Topic" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/topic/{topic_slug}/exercises": {
-      "get": {
-        "operationId": "getTopicExercises",
-        "summary": "List exercises within a topic",
-        "parameters": [
-          {
-            "name": "topic_slug",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Exercises belonging to the topic.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Exercise" }
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {}
+        ]
       }
     },
-    "/topic/{topic_slug}/videos": {
+    "/api/v1/playlists/library": {
       "get": {
-        "operationId": "getTopicVideos",
-        "summary": "List videos within a topic",
+        "operationId": "getPlaylistLibrary",
+        "summary": "Get the library tree (deprecated alias of /topictree)",
+        "tags": [
+          "Playlists"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone. This was already a deprecated alias route before the removal.",
+        "x-khan-removed-on": "2020-01-06",
         "parameters": [
           {
-            "name": "topic_slug",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
           }
         ],
         "responses": {
           "200": {
-            "description": "Videos belonging to the topic.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Video" }
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {}
+        ]
       }
     },
-    "/exercises": {
+    "/api/v1/playlists/library/list": {
       "get": {
-        "operationId": "listExercises",
-        "summary": "List all exercises",
-        "responses": {
-          "200": {
-            "description": "A list of all exercises.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Exercise" }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/exercises/{exercise_name}": {
-      "get": {
-        "operationId": "getExercise",
-        "summary": "Retrieve a single exercise by name",
+        "operationId": "listLibraryPlaylists",
+        "summary": "List all playlists with their videos",
+        "tags": [
+          "Playlists"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone. This was already a deprecated alias route before the removal.",
+        "x-khan-removed-on": "2020-01-06",
         "parameters": [
           {
-            "name": "exercise_name",
-            "in": "path",
-            "required": true,
-            "description": "The unique name (slug) of the exercise.",
-            "schema": { "type": "string" }
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
           }
         ],
         "responses": {
           "200": {
-            "description": "The requested exercise.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Exercise" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/videos": {
-      "get": {
-        "operationId": "listVideos",
-        "summary": "List all videos",
-        "responses": {
-          "200": {
-            "description": "A list of all videos.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Video" }
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Playlist"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {}
+        ]
       }
     },
-    "/videos/{video_id}": {
+    "/api/v1/playlists/{playlist_title}/videos": {
+      "get": {
+        "operationId": "listPlaylistVideos",
+        "summary": "List a playlist's videos (deprecated alias of topic videos)",
+        "tags": [
+          "Playlists"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone. This was already a deprecated alias route before the removal.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "playlist_title",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Playlist title / topic slug (deprecated route)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Video"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/playlists/{playlist_title}/exercises": {
+      "get": {
+        "operationId": "listPlaylistExercises",
+        "summary": "List a playlist's exercises (deprecated alias of topic exercises)",
+        "tags": [
+          "Playlists"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone. This was already a deprecated alias route before the removal.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "playlist_title",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Playlist title / topic slug (deprecated route)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Exercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/videos/{video_id}": {
       "get": {
         "operationId": "getVideo",
-        "summary": "Retrieve a single video by id or readable id",
+        "summary": "Get a video",
+        "tags": [
+          "Videos"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
         "parameters": [
           {
             "name": "video_id",
             "in": "path",
             "required": true,
-            "description": "The video id, YouTube id, or readable id.",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            },
+            "description": "Video readable_id (deprecated: youtube_id is also accepted)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
           }
         ],
         "responses": {
           "200": {
-            "description": "The requested video.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Video" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/badges": {
-      "get": {
-        "operationId": "listBadges",
-        "summary": "List all badges",
-        "responses": {
-          "200": {
-            "description": "A list of all badges. When authenticated, ownership fields are populated for the current user.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Badge" }
+                  "$ref": "#/components/schemas/Video"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {}
+        ]
       }
     },
-    "/badges/categories": {
+    "/api/v1/videos/{youtube_id}/exercises": {
+      "get": {
+        "operationId": "listVideoExercises",
+        "summary": "List the exercises associated with a video",
+        "tags": [
+          "Videos"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "youtube_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Exercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/exercises": {
+      "get": {
+        "operationId": "listExercises",
+        "summary": "List all exercises",
+        "tags": [
+          "Exercises"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated exercise tags filter; used by client wrappers, not in the 2013 docs."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Exercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/exercises/{exercise_name}": {
+      "get": {
+        "operationId": "getExercise",
+        "summary": "Get an exercise",
+        "tags": [
+          "Exercises"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "exercise_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Exercise"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {},
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/exercises/{exercise_name}/followup_exercises": {
+      "get": {
+        "operationId": "listExerciseFollowups",
+        "summary": "List exercises that have this exercise as a prerequisite",
+        "tags": [
+          "Exercises"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "exercise_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Exercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/exercises/{exercise_name}/videos": {
+      "get": {
+        "operationId": "listExerciseVideos",
+        "summary": "List the videos associated with an exercise",
+        "tags": [
+          "Exercises"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-07-29; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-07-29",
+        "parameters": [
+          {
+            "name": "exercise_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Video"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/badges": {
+      "get": {
+        "operationId": "listBadges",
+        "summary": "List all badges (with the user's earned badges when authenticated)",
+        "tags": [
+          "Badges"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/Badge"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {},
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/badges/categories": {
       "get": {
         "operationId": "listBadgeCategories",
         "summary": "List badge categories",
+        "tags": [
+          "Badges"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
         "responses": {
           "200": {
-            "description": "A list of badge categories.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/BadgeCategory" }
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/BadgeCategory"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {}
+        ]
       }
     },
-    "/user": {
+    "/api/v1/badges/categories/{category}": {
       "get": {
-        "operationId": "getUser",
-        "summary": "Retrieve the authenticated user's profile",
+        "operationId": "getBadgeCategory",
+        "summary": "Get a badge category",
+        "tags": [
+          "Badges"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
         "parameters": [
           {
-            "name": "username",
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "callback",
             "in": "query",
             "required": false,
-            "description": "Look up a specific user by username (requires appropriate permissions).",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgeCategory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/api/v1/user": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get the logged-in (or specified) user's data",
+        "tags": [
+          "Users"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserData"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/videos": {
+      "get": {
+        "operationId": "listUserVideos",
+        "summary": "List the videos a user has watched",
+        "tags": [
+          "User video history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "dt_start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UTC start, YYYY-mm-ddTHH:MM:SS(Z)."
+          },
+          {
+            "name": "dt_end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UTC end, YYYY-mm-ddTHH:MM:SS(Z)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/UserVideo"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/videos/{youtube_id}": {
+      "get": {
+        "operationId": "getUserVideo",
+        "summary": "Get a user's progress on one video",
+        "tags": [
+          "User video history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "youtube_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "email",
             "in": "query",
             "required": false,
-            "description": "Look up a specific user by email (requires appropriate permissions).",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
           }
         ],
         "responses": {
           "200": {
-            "description": "The user profile.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/User" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/playlists": {
-      "get": {
-        "operationId": "listPlaylists",
-        "summary": "List all playlists",
-        "responses": {
-          "200": {
-            "description": "A list of playlists.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Playlist" }
+                  "$ref": "#/components/schemas/UserVideo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
       }
     },
-    "/playlists/{topic_slug}/videos": {
+    "/api/v1/user/videos/{youtube_id}/log": {
       "get": {
-        "operationId": "getPlaylistVideos",
-        "summary": "List videos in a playlist",
+        "operationId": "listUserVideoLogs",
+        "summary": "List a user's viewing sessions for one video",
+        "tags": [
+          "User video history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
         "parameters": [
           {
-            "name": "topic_slug",
+            "name": "youtube_id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "dt_start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UTC start, YYYY-mm-ddTHH:MM:SS(Z)."
+          },
+          {
+            "name": "dt_end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UTC end, YYYY-mm-ddTHH:MM:SS(Z)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
           }
         ],
         "responses": {
           "200": {
-            "description": "Videos belonging to the playlist.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Video" }
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/VideoLog"
+                  }
                 }
               }
             }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/playlists": {
+      "get": {
+        "operationId": "listUserPlaylists",
+        "summary": "List the playlists a user has watched",
+        "tags": [
+          "User video history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone. This was already a deprecated alias route before the removal.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/UserPlaylist"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/exercises": {
+      "get": {
+        "operationId": "listUserExercises",
+        "summary": "List the exercises a user has engaged with",
+        "tags": [
+          "User exercise history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/UserExercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/exercises/{exercise_name}": {
+      "get": {
+        "operationId": "getUserExercise",
+        "summary": "Get a user's progress on one exercise",
+        "tags": [
+          "User exercise history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "exercise_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserExercise"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/exercises/{exercise_name}/followup_exercises": {
+      "get": {
+        "operationId": "listUserExerciseFollowups",
+        "summary": "List the user's progress on follow-up exercises",
+        "tags": [
+          "User exercise history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "exercise_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/UserExercise"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/exercises/{exercise_name}/log": {
+      "get": {
+        "operationId": "listUserExerciseLogs",
+        "summary": "List a user's problem logs for one exercise",
+        "tags": [
+          "User exercise history"
+        ],
+        "deprecated": true,
+        "description": "Removed by Khan Academy on 2020-01-06; now answers 410 Gone.",
+        "x-khan-removed-on": "2020-01-06",
+        "parameters": [
+          {
+            "name": "exercise_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email (coach or student id) of the user; defaults to the logged-in user."
+          },
+          {
+            "name": "dt_start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UTC start, YYYY-mm-ddTHH:MM:SS(Z)."
+          },
+          {
+            "name": "dt_end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UTC end, YYYY-mm-ddTHH:MM:SS(Z)."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP callback; every method returns JSONP when set."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Bare JSON array.",
+                  "items": {
+                    "$ref": "#/components/schemas/ProblemLog"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired OAuth access token."
+          },
+          "410": {
+            "description": "API removed.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ]
+      }
+    },
+    "/api/auth2/request_token": {
+      "post": {
+        "operationId": "createRequestToken",
+        "summary": "Get an OAuth 1.0a request token (auth flow v2)",
+        "tags": [
+          "OAuth"
+        ],
+        "description": "Step 1 of the v2 flow (added March 2015). OAuth parameters are sent signed (HMAC-SHA1); the OpenFn adaptor sends them via the request library's oauth option. Removed with the rest of the public API in 2020 (request_token now answers 404 'API removed.').",
+        "deprecated": true,
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Form-encoded token pair.",
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad OAuth signature or token."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthRequestTokenParams"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth2/authorize": {
+      "get": {
+        "operationId": "authorizeRequestTokenPage",
+        "summary": "Browser approval page for a request token",
+        "tags": [
+          "OAuth"
+        ],
+        "deprecated": true,
+        "security": [
+          {}
+        ],
+        "description": "Step 2 (interactive): the user's browser is sent here with oauth_token, logs in and approves; redirects to oauth_callback (or /api/auth/default_callback) with oauth_token, oauth_token_secret and oauth_verifier.",
+        "parameters": [
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML login / approval page.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Redirect to the callback after approval."
+          }
+        }
+      },
+      "post": {
+        "operationId": "authorizeRequestToken",
+        "summary": "Approve a request token directly with the app owner's credentials",
+        "tags": [
+          "OAuth"
+        ],
+        "deprecated": true,
+        "security": [
+          {}
+        ],
+        "description": "Step 2 (non-interactive): only for the KA user who registered the app. The client must follow all redirects. This is what the OpenFn adaptor's fetch() does with configuration.email/password.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorizeTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Final page after following redirects.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Redirect to the callback."
+          }
+        }
+      }
+    },
+    "/api/auth2/access_token": {
+      "get": {
+        "operationId": "createAccessToken",
+        "summary": "Exchange an authorised request token for an access token",
+        "tags": [
+          "OAuth"
+        ],
+        "description": "Step 3. Signed with the consumer key/secret and the request token/secret; oauth_verifier is required if oauth_callback was given in step 1. Removed with the rest of the public API in 2020 (request_token now answers 404 'API removed.').",
+        "deprecated": true,
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Form-encoded token pair.",
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad OAuth signature or token."
+          }
+        },
+        "parameters": [
+          {
+            "name": "oauth_verifier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/auth/request_token": {
+      "get": {
+        "operationId": "createRequestTokenV1",
+        "summary": "Get a request token (legacy v1 flow)",
+        "tags": [
+          "OAuth"
+        ],
+        "description": "Legacy non-standard v1 flow: redirects through the identity-provider login and returns the token on the callback. Removed with the rest of the public API in 2020 (request_token now answers 404 'API removed.').",
+        "deprecated": true,
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Form-encoded token pair.",
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad OAuth signature or token."
+          }
+        }
+      }
+    },
+    "/api/auth/access_token": {
+      "get": {
+        "operationId": "createAccessTokenV1",
+        "summary": "Exchange a request token for an access token (legacy v1 flow)",
+        "tags": [
+          "OAuth"
+        ],
+        "description": "Legacy v1 flow; identical to the v2 access_token step. Removed with the rest of the public API in 2020 (request_token now answers 404 'API removed.').",
+        "deprecated": true,
+        "security": [
+          {
+            "khanOAuth1": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Form-encoded token pair.",
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad OAuth signature or token."
           }
         }
       }
@@ -323,177 +1976,968 @@
   },
   "components": {
     "schemas": {
+      "TopicChild": {
+        "type": "object",
+        "description": "Abbreviated child entry of a topic. `id` is the readable_id for videos, the name for exercises and the id for topics.",
+        "properties": {
+          "hide": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Topic",
+              "Video",
+              "Exercise",
+              "Article",
+              "Scratchpad"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
       "Topic": {
         "type": "object",
-        "description": "A node in the Khan Academy content topic tree.",
+        "description": "A node of the content topic tree.",
         "properties": {
-          "kind": { "type": "string", "example": "Topic" },
-          "id": { "type": "string", "example": "x2e352b1a2d21e07e" },
-          "slug": { "type": "string", "example": "algebra" },
-          "title": { "type": "string", "example": "Algebra" },
-          "description": { "type": "string", "nullable": true },
-          "node_slug": { "type": "string", "example": "math/algebra" },
-          "extended_slug": { "type": "string", "example": "math/algebra" },
-          "relative_url": { "type": "string", "example": "/math/algebra" },
-          "ka_url": { "type": "string", "example": "https://www.khanacademy.org/math/algebra" },
-          "render_type": { "type": "string", "example": "Subject" },
-          "icon_src": { "type": "string", "nullable": true },
-          "hide": { "type": "boolean" },
+          "id": {
+            "type": "string",
+            "description": "Topic slug; 'root' is the root of the tree."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Topic"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "standalone_title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "extended_slug": {
+            "type": "string"
+          },
+          "hide": {
+            "type": "boolean"
+          },
+          "ka_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "relative_url": {
+            "type": "string"
+          },
+          "topic_page_url": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "children": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Topic" }
+            "description": "Children: abbreviated entries on /topic/{id}; full Topic/Video/Exercise objects on /topictree.",
+            "items": {
+              "type": "object"
+            }
           }
         },
-        "required": ["kind", "id", "slug", "title"]
+        "required": [
+          "id",
+          "kind"
+        ],
+        "example": {
+          "id": "addition-subtraction",
+          "kind": "Topic",
+          "title": "Addition and subtraction",
+          "standalone_title": "Addition and subtraction",
+          "description": "Adding and subtracting positive and negative whole numbers.",
+          "extended_slug": "math/arithmetic/addition-subtraction",
+          "hide": false,
+          "ka_url": "http://www.khanacademy.org/#addition-subtraction",
+          "relative_url": "/#addition-subtraction",
+          "topic_page_url": "/math/arithmetic/addition-subtraction",
+          "tags": [],
+          "children": [
+            {
+              "hide": false,
+              "id": "addition_3",
+              "kind": "Exercise",
+              "title": "Addition 3",
+              "url": "http://www.khanacademy.org/exercise/addition_3"
+            }
+          ]
+        }
       },
-      "Exercise": {
+      "DownloadUrls": {
         "type": "object",
-        "description": "A Khan Academy exercise.",
         "properties": {
-          "kind": { "type": "string", "example": "Exercise" },
-          "id": { "type": "string", "example": "9527" },
-          "name": { "type": "string", "example": "adding_and_subtracting_fractions" },
-          "display_name": { "type": "string", "example": "Adding and subtracting fractions" },
-          "short_display_name": { "type": "string", "example": "Add/sub fractions" },
-          "description": { "type": "string", "nullable": true },
-          "relative_url": { "type": "string", "example": "/e/adding_and_subtracting_fractions" },
-          "ka_url": { "type": "string", "example": "https://www.khanacademy.org/e/adding_and_subtracting_fractions" },
-          "seconds_per_fast_problem": { "type": "number", "example": 8 },
-          "live": { "type": "boolean" },
-          "creation_date": { "type": "string", "format": "date-time" },
-          "prerequisites": {
-            "type": "array",
-            "items": { "type": "string" }
+          "mp4": {
+            "type": "string",
+            "format": "uri"
           },
-          "covers": {
-            "type": "array",
-            "items": { "type": "string" }
+          "png": {
+            "type": "string",
+            "format": "uri"
           },
-          "related_videos": {
-            "type": "array",
-            "items": { "type": "string" }
+          "m3u8": {
+            "type": "string",
+            "format": "uri"
           }
-        },
-        "required": ["kind", "name", "display_name"]
+        }
       },
       "Video": {
         "type": "object",
-        "description": "A Khan Academy video.",
         "properties": {
-          "kind": { "type": "string", "example": "Video" },
-          "id": { "type": "string", "example": "xba62d78" },
-          "readable_id": { "type": "string", "example": "adding-and-subtracting-fractions" },
-          "title": { "type": "string", "example": "Adding and subtracting fractions" },
-          "description": { "type": "string", "nullable": true },
-          "youtube_id": { "type": "string", "example": "52ZlXsFJULI" },
-          "duration": { "type": "integer", "example": 233 },
-          "date_added": { "type": "string", "format": "date-time" },
-          "views": { "type": "integer", "example": 123456 },
-          "keywords": { "type": "string", "example": "fractions, adding, subtracting" },
-          "ka_url": { "type": "string", "example": "https://www.khanacademy.org/video/adding-and-subtracting-fractions" },
-          "url": { "type": "string", "example": "https://www.youtube.com/watch?v=52ZlXsFJULI" },
-          "relative_url": { "type": "string", "example": "/video/adding-and-subtracting-fractions" },
-          "image_url": { "type": "string", "nullable": true },
+          "readable_id": {
+            "type": "string"
+          },
+          "youtube_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Video"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "translated_title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "translated_description": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "string",
+            "description": "Comma-separated keywords."
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Seconds."
+          },
+          "views": {
+            "type": "integer"
+          },
+          "date_added": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "backup_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ka_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "relative_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "YouTube watch URL.",
+            "format": "uri"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri"
+          },
           "download_urls": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "mp4": { "type": "string" },
-              "png": { "type": "string" },
-              "m3u8": { "type": "string" }
+            "$ref": "#/components/schemas/DownloadUrls"
+          },
+          "extra_properties": {
+            "description": "Type not documented (null in every example).",
+            "nullable": true
+          },
+          "has_questions": {
+            "type": "string"
+          },
+          "progress_key": {
+            "type": "string"
+          },
+          "edit_slug": {
+            "type": "string"
+          },
+          "node_slug": {
+            "type": "string"
+          },
+          "sha": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "author_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
+          },
+          "playlists": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Titles of playlists containing the video (older responses)."
           }
         },
-        "required": ["kind", "id", "title"]
+        "required": [
+          "readable_id",
+          "youtube_id"
+        ],
+        "example": {
+          "readable_id": "adding-subtracting-negative-numbers",
+          "youtube_id": "C38B33ZywWs",
+          "kind": "Video",
+          "title": "Adding/Subtracting negative numbers",
+          "description": "Adding and subtracting negative numbers",
+          "keywords": "Math, negative, numbers",
+          "duration": 555,
+          "views": 313883,
+          "date_added": "2011-02-20T16:51:16Z",
+          "ka_url": "http://www.khanacademy.org/video/adding-subtracting-negative-numbers",
+          "relative_url": "/video/adding-subtracting-negative-numbers",
+          "url": "http://www.youtube.com/watch?v=C38B33ZywWs",
+          "download_urls": {
+            "mp4": "http://s3.amazonaws.com/KA-youtube-converted/C38B33ZywWs.mp4/C38B33ZywWs.mp4"
+          },
+          "extra_properties": null
+        }
       },
-      "Badge": {
+      "Exercise": {
         "type": "object",
-        "description": "A Khan Academy achievement badge.",
         "properties": {
-          "name": { "type": "string", "example": "challenge_patch_algebra" },
-          "description": { "type": "string", "example": "Algebra Master" },
-          "safe_extended_description": { "type": "string", "nullable": true },
-          "translated_description": { "type": "string", "nullable": true },
-          "points": { "type": "integer", "example": 0 },
-          "badge_category": { "type": "integer", "example": 4 },
-          "category_description": { "type": "string", "example": "Challenge Patches" },
-          "is_owned": { "type": "boolean" },
-          "absolute_url": { "type": "string", "example": "https://www.khanacademy.org/badges" },
-          "relative_url": { "type": "string", "example": "/badges" },
-          "icons": {
-            "type": "object",
-            "properties": {
-              "small": { "type": "string" },
-              "compact": { "type": "string" },
-              "large": { "type": "string" },
-              "email": { "type": "string" }
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Exercise"
+            ]
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "short_display_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "creation_date": {
+            "type": "string",
+            "description": "Timestamp (examples use both with and without a trailing Z)."
+          },
+          "covers": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
-          }
-        },
-        "required": ["name", "description"]
-      },
-      "BadgeCategory": {
-        "type": "object",
-        "description": "A category grouping for badges.",
-        "properties": {
-          "category": { "type": "integer", "example": 4 },
-          "type_label": { "type": "string", "example": "Challenge Patches" },
-          "description": { "type": "string", "example": "Challenge Patches" },
-          "points": { "type": "integer", "example": 0 },
-          "icons": {
-            "type": "object",
-            "properties": {
-              "small": { "type": "string" },
-              "compact": { "type": "string" },
-              "large": { "type": "string" },
-              "email": { "type": "string" }
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
+          },
+          "h_position": {
+            "type": "integer"
+          },
+          "v_position": {
+            "type": "integer"
+          },
+          "num_milestones": {
+            "type": "integer"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "summative": {
+            "description": "Boolean; one documented example returns the string \"false\".",
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "seconds_per_fast_problem": {
+            "type": "number"
+          },
+          "ka_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "relative_url": {
+            "type": "string"
+          },
+          "sha1": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "proficient": {
+            "type": "boolean",
+            "description": "Present only on authenticated calls."
+          },
+          "review": {
+            "type": "boolean",
+            "description": "Present only on authenticated calls."
+          },
+          "suggested": {
+            "type": "boolean",
+            "description": "Present only on authenticated calls."
           }
         },
-        "required": ["category", "description"]
-      },
-      "User": {
-        "type": "object",
-        "description": "A Khan Academy user profile.",
-        "properties": {
-          "kind": { "type": "string", "example": "UserProfile" },
-          "user_id": { "type": "string", "example": "http://googleid.khanacademy.org/1234567890" },
-          "username": { "type": "string", "example": "learner123" },
-          "nickname": { "type": "string", "example": "Jane Learner" },
-          "email": { "type": "string", "format": "email", "nullable": true },
-          "prettified_user_email": { "type": "string", "nullable": true },
-          "points": { "type": "integer", "example": 45230 },
-          "total_seconds_watched": { "type": "integer", "example": 18320 },
-          "joined": { "type": "string", "format": "date-time" },
-          "is_registered": { "type": "boolean" },
-          "badge_counts": {
-            "type": "object",
-            "additionalProperties": { "type": "integer" },
-            "example": { "0": 5, "1": 3, "2": 1 }
-          }
-        },
-        "required": ["kind", "user_id"]
+        "required": [
+          "name"
+        ],
+        "example": {
+          "name": "logarithms_1",
+          "kind": "Exercise",
+          "short_display_name": "Log. 1",
+          "covers": [
+            "multiplication_1"
+          ],
+          "prerequisites": [
+            "exponents_3"
+          ],
+          "h_position": 12,
+          "v_position": 3,
+          "live": true,
+          "summative": false,
+          "seconds_per_fast_problem": 8.0,
+          "ka_url": "http://www.khanacademy.org/exercises?exid=logarithms_1"
+        }
       },
       "Playlist": {
         "type": "object",
-        "description": "A Khan Academy playlist (legacy topic grouping of videos).",
+        "description": "Deprecated playlist entity (pre-topic-tree library).",
         "properties": {
-          "kind": { "type": "string", "example": "Playlist" },
-          "id": { "type": "string", "example": "algebra-playlist" },
-          "title": { "type": "string", "example": "Algebra" },
-          "description": { "type": "string", "nullable": true },
-          "youtube_id": { "type": "string", "nullable": true },
-          "standalone_title": { "type": "string", "example": "Algebra" },
-          "slug": { "type": "string", "example": "algebra" },
-          "url": { "type": "string", "example": "https://www.khanacademy.org/math/algebra" },
-          "ka_url": { "type": "string", "example": "https://www.khanacademy.org/math/algebra" },
-          "topic_page_url": { "type": "string", "example": "/math/algebra" },
-          "tags": {
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Playlist"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "ka_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "youtube_id": {
+            "type": "string"
+          },
+          "videos": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "$ref": "#/components/schemas/Video"
+            }
+          }
+        }
+      },
+      "UserBadge": {
+        "type": "object",
+        "properties": {
+          "badge_name": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "UserBadge"
+            ]
+          },
+          "points_earned": {
+            "type": "integer"
+          },
+          "target_context": {
+            "type": "object",
+            "description": "An Exercise or Playlist entity."
+          },
+          "target_context_name": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string",
+            "description": "User identifier (email or student id)."
+          }
+        }
+      },
+      "Badge": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "safe_extended_description": {
+            "type": "string"
+          },
+          "badge_category": {
+            "type": "integer",
+            "description": "References BadgeCategory.category."
+          },
+          "points": {
+            "type": "integer"
+          },
+          "user_badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserBadge"
+            },
+            "description": "Only present on authenticated calls, when the user has earned the badge."
           }
         },
-        "required": ["kind", "title", "slug"]
+        "required": [
+          "name"
+        ],
+        "example": {
+          "name": "greattimedproblembadge",
+          "description": "Going Transonic",
+          "safe_extended_description": "Quickly & correctly answer 10 exercise problems in a row",
+          "badge_category": 1,
+          "points": 500
+        }
+      },
+      "BadgeCategory": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "integer"
+          },
+          "type_label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon_src": {
+            "type": "string"
+          },
+          "large_icon_src": {
+            "type": "string"
+          },
+          "chart_icon_src": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "category"
+        ],
+        "example": {
+          "category": 1,
+          "type_label": "Moon",
+          "description": "Moon badges are uncommon and represent an investment in learning.",
+          "icon_src": "/images/badges/moon-small.png",
+          "large_icon_src": "/images/badges/moon.png",
+          "chart_icon_src": "/images/badges/moon-small-chart.png"
+        }
+      },
+      "UserData": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "UserData"
+            ]
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "prettified_user_email": {
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "joined": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_activity": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "points": {
+            "type": "integer"
+          },
+          "total_seconds_watched": {
+            "type": "integer",
+            "description": "Removed by Khan Academy on 2019-11-30 (usage-time fields)."
+          },
+          "all_proficient_exercises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "proficient_exercises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_exercises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coaches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "badge_counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Count of earned badges keyed by badge category number."
+          }
+        },
+        "example": {
+          "kind": "UserData",
+          "user_id": "student@example.org",
+          "nickname": "Example Student",
+          "joined": "2011-02-04T06:01:47Z",
+          "last_activity": "2011-05-04T06:01:47Z",
+          "points": 9188,
+          "proficient_exercises": [
+            "addition_1"
+          ],
+          "all_proficient_exercises": [
+            "addition_1"
+          ],
+          "suggested_exercises": [
+            "addition_2"
+          ],
+          "coaches": [
+            "coach@example.org"
+          ],
+          "badge_counts": {
+            "0": 1,
+            "1": 1
+          }
+        }
+      },
+      "UserVideo": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "UserVideo"
+            ]
+          },
+          "user": {
+            "type": "string"
+          },
+          "video": {
+            "$ref": "#/components/schemas/Video"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "last_second_watched": {
+            "type": "integer"
+          },
+          "last_watched": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "points": {
+            "type": "integer"
+          },
+          "seconds_watched": {
+            "type": "integer"
+          }
+        }
+      },
+      "UserPlaylist": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "UserPlaylist"
+            ]
+          },
+          "user": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "last_watched": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "seconds_watched": {
+            "type": "integer"
+          },
+          "playlist": {
+            "$ref": "#/components/schemas/Playlist"
+          }
+        }
+      },
+      "VideoLog": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "VideoLog"
+            ]
+          },
+          "user": {
+            "type": "string"
+          },
+          "video_title": {
+            "type": "string"
+          },
+          "playlist_titles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "points_earned": {
+            "type": "integer"
+          },
+          "seconds_watched": {
+            "type": "integer"
+          },
+          "time_watched": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ExerciseStates": {
+        "type": "object",
+        "properties": {
+          "endangered": {
+            "type": "boolean"
+          },
+          "proficient": {
+            "type": "boolean"
+          },
+          "reviewing": {
+            "type": "boolean"
+          },
+          "struggling": {
+            "type": "boolean"
+          },
+          "suggested": {
+            "type": "boolean"
+          },
+          "summative": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UserExercise": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "UserExercise"
+            ]
+          },
+          "user": {
+            "type": "string"
+          },
+          "exercise": {
+            "type": "string"
+          },
+          "exercise_model": {
+            "$ref": "#/components/schemas/Exercise"
+          },
+          "exercise_states": {
+            "$ref": "#/components/schemas/ExerciseStates"
+          },
+          "first_done": {
+            "type": "string"
+          },
+          "last_done": {
+            "type": "string"
+          },
+          "last_review": {
+            "type": "string"
+          },
+          "proficient_date": {
+            "type": "string"
+          },
+          "longest_streak": {
+            "type": "integer"
+          },
+          "streak": {
+            "type": "integer"
+          },
+          "streak_start": {
+            "type": "number"
+          },
+          "next_points": {
+            "type": "integer"
+          },
+          "point_display": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "number"
+          },
+          "seconds_per_fast_problem": {
+            "type": "number"
+          },
+          "summative": {
+            "type": "boolean"
+          },
+          "total_correct": {
+            "type": "integer"
+          },
+          "total_done": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProblemLog": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ProblemLog"
+            ]
+          },
+          "user": {
+            "type": "string"
+          },
+          "exercise": {
+            "type": "string"
+          },
+          "problem_number": {
+            "type": "integer"
+          },
+          "problem_type": {
+            "type": "string"
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "count_attempts": {
+            "type": "integer"
+          },
+          "count_hints": {
+            "type": "integer"
+          },
+          "hint_used": {
+            "type": "boolean"
+          },
+          "hint_after_attempt_list": {
+            "type": "array",
+            "items": {}
+          },
+          "hint_time_taken_list": {
+            "type": "array",
+            "items": {}
+          },
+          "earned_proficiency": {
+            "type": "boolean"
+          },
+          "exercise_non_summative": {
+            "type": "string",
+            "nullable": true
+          },
+          "ip_address": {
+            "type": "string"
+          },
+          "ka_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "points_earned": {
+            "type": "integer"
+          },
+          "random_float": {
+            "type": "number"
+          },
+          "seed": {
+            "type": "string"
+          },
+          "sha1": {
+            "type": "string"
+          },
+          "suggested": {
+            "type": "boolean"
+          },
+          "time_done": {
+            "type": "string"
+          },
+          "time_taken": {
+            "type": "integer"
+          },
+          "time_taken_attempts": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "OAuthToken": {
+        "type": "object",
+        "description": "Form-encoded body (oauth_token=...&oauth_token_secret=...).",
+        "properties": {
+          "oauth_token": {
+            "type": "string"
+          },
+          "oauth_token_secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "oauth_token",
+          "oauth_token_secret"
+        ]
+      },
+      "OAuthRequestTokenParams": {
+        "type": "object",
+        "properties": {
+          "oauth_consumer_key": {
+            "type": "string"
+          },
+          "oauth_nonce": {
+            "type": "string"
+          },
+          "oauth_version": {
+            "type": "string",
+            "enum": [
+              "1.0"
+            ]
+          },
+          "oauth_signature": {
+            "type": "string"
+          },
+          "oauth_signature_method": {
+            "type": "string",
+            "enum": [
+              "HMAC-SHA1"
+            ]
+          },
+          "oauth_timestamp": {
+            "type": "integer"
+          },
+          "oauth_callback": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "oauth_consumer_key",
+          "oauth_nonce",
+          "oauth_version",
+          "oauth_signature",
+          "oauth_signature_method",
+          "oauth_timestamp"
+        ]
+      },
+      "AuthorizeTokenRequest": {
+        "type": "object",
+        "description": "Direct self-authorisation (the flow the OpenFn adaptor uses).",
+        "properties": {
+          "oauth_token": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Username or email of the KA account that registered the app."
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        },
+        "required": [
+          "oauth_token",
+          "identifier",
+          "password"
+        ]
+      },
+      "Error": {
+        "type": "string",
+        "description": "Plain-text error body. Since 2020 every /api/v1 route answers 410 'API removed. Please see https://github.com/Khan/khan-api for details'."
+      }
+    },
+    "securitySchemes": {
+      "khanOAuth1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "OAuth 1.0a (HMAC-SHA1) signed request: consumer key/secret plus access token/secret from /api/auth2/access_token. OpenAPI 3.0 has no native OAuth 1 scheme, so it is modelled as the signed Authorization header."
       }
     }
   }

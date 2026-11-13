@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/Message",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "A complete HL7v2 message. See [Introduction to HL7 Standards] (https://www.hl7.org/implement/standards/index.cfm?ref=common) for details on the standard.",
@@ -25,15 +25,35 @@
       "description": "Output only. The datetime when the message was created. Set by the server.",
       "readOnly": true
     },
+    "sendFacility": {
+      "type": "string",
+      "description": "Output only. The hospital that this message came from. MSH-4.",
+      "readOnly": true
+    },
     "messageType": {
       "type": "string",
       "description": "Output only. The message type for this message. MSH-9.1.",
       "readOnly": true
     },
+    "schematizedData": {
+      "$ref": "SchematizedData.json"
+    },
+    "labels": {
+      "type": "object",
+      "description": "User-supplied key-value pairs used to organize HL7v2 stores. Label keys must be between 1 and 63 characters long, have a UTF-8 encoding of maximum 128 bytes, and must conform to the following PCRE regular expression: \\p{Ll}\\p{Lo}{0,62} Label values are optional, must be between 1 and 63 characters long, have a UTF-8 encoding of maximum 128 bytes, and must conform to the following PCRE regular expression: [\\p{Ll}\\p{Lo}\\p{N}_-]{0,63} No more than 64 labels can be associated with a given store.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
     "name": {
       "type": "string",
       "description": "Output only. Resource name of the Message, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/hl7V2Stores/{hl7_v2_store_id}/messages/{message_id}`.",
       "readOnly": true
+    },
+    "data": {
+      "type": "string",
+      "format": "byte",
+      "description": "Required. Raw message bytes."
     },
     "patientIds": {
       "type": "array",
@@ -41,26 +61,6 @@
       "readOnly": true,
       "items": {
         "$ref": "PatientId.json"
-      }
-    },
-    "data": {
-      "type": "string",
-      "format": "byte",
-      "description": "Required. Raw message bytes."
-    },
-    "schematizedData": {
-      "$ref": "SchematizedData.json"
-    },
-    "sendFacility": {
-      "type": "string",
-      "description": "Output only. The hospital that this message came from. MSH-4.",
-      "readOnly": true
-    },
-    "labels": {
-      "type": "object",
-      "description": "User-supplied key-value pairs used to organize HL7v2 stores. Label keys must be between 1 and 63 characters long, have a UTF-8 encoding of maximum 128 bytes, and must conform to the following PCRE regular expression: \\p{Ll}\\p{Lo}{0,62} Label values are optional, must be between 1 and 63 characters long, have a UTF-8 encoding of maximum 128 bytes, and must conform to the following PCRE regular expression: [\\p{Ll}\\p{Lo}\\p{N}_-]{0,63} No more than 64 labels can be associated with a given store.",
-      "additionalProperties": {
-        "type": "string"
       }
     }
   }

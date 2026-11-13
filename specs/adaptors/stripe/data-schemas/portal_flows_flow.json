@@ -5,12 +5,20 @@
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/portal_flows_flow",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "",
   "properties": {
     "after_completion": {
       "$ref": "portal_flows_flow_after_completion.json"
+    },
+    "customer_update": {
+      "anyOf": [
+        {
+          "$ref": "portal_flows_flow_customer_update.json"
+        }
+      ],
+      "description": "Configuration when `flow.type=customer_update`."
     },
     "subscription_cancel": {
       "anyOf": [
@@ -39,12 +47,14 @@
     "type": {
       "description": "Type of flow that the customer will go through.",
       "enum": [
+        "customer_update",
         "payment_method_update",
         "subscription_cancel",
         "subscription_update",
         "subscription_update_confirm"
       ],
-      "type": "string"
+      "type": "string",
+      "x-stripeBypassValidation": true
     }
   },
   "required": [
@@ -54,6 +64,7 @@
   "type": "object",
   "x-expandableFields": [
     "after_completion",
+    "customer_update",
     "subscription_cancel",
     "subscription_update",
     "subscription_update_confirm"

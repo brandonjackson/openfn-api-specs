@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsAgentToolResultEvent",
+  "title": "BetaManagedAgentsAgentToolResultEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsAgentToolResultEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Event representing the result of an agent tool execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "tool_use_id",
+    "processed_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "agent.tool_result"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "tool_use_id": {
+      "description": "The id of the `agent.tool_use` event this result corresponds to.",
+      "type": "string"
+    },
+    "content": {
+      "description": "The result content returned by the tool.",
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsToolResultContentBlock.json"
+      }
+    },
+    "is_error": {
+      "description": "Whether the tool execution resulted in an error.",
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when this event was processed.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    }
+  }
+}

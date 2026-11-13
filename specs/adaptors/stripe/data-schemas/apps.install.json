@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/apps.install",
+  "title": "App Install",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/apps.install",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An app install represents a Stripe App that is installed on an account. It reports the permissions,\ncontent security policy entries, and endpoints that the installing account has authorized, along with any\nthat the app's latest version requests but the account has not authorized yet. Use the Install API to\ninstall, reauthorize, and uninstall apps, and to check the state of existing installs.",
+  "properties": {
+    "account": {
+      "description": "The ID of the account that the app install belongs to.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "app": {
+      "description": "The ID of the app installed.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "approval_required": {
+      "description": "Whether the installer must authorize pending permissions, content security policy entries, or endpoints. For private apps, `approval_required` stays `false`; creating or reauthorizing the install through the API installs the newest completed upload and grants its permissions.",
+      "type": "boolean"
+    },
+    "auth_code": {
+      "description": "The authorization code for an oauth app install.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "channel": {
+      "description": "The distribution channel associated with the app install.",
+      "enum": [
+        "private_live",
+        "private_test",
+        "public",
+        "review",
+        "testing"
+      ],
+      "type": "string"
+    },
+    "content_security_policy_granted": {
+      "$ref": "app_service_resource_install_content_security_policy.json"
+    },
+    "content_security_policy_pending": {
+      "$ref": "app_service_resource_install_content_security_policy.json"
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "created_by": {
+      "description": "The ID of the embedding platform that created the install, if applicable.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endpoints_granted": {
+      "description": "The endpoint URLs authorized by the installer.",
+      "items": {
+        "maxLength": 5000,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "endpoints_pending": {
+      "description": "The endpoint URLs requested by the latest app version that the installer has not authorized.",
+      "items": {
+        "maxLength": 5000,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "apps.install"
+      ],
+      "type": "string"
+    },
+    "permissions_granted": {
+      "description": "The permissions authorized by the installer.",
+      "items": {
+        "maxLength": 5000,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "permissions_pending": {
+      "description": "The permissions requested by the latest app version that the installer has not authorized.",
+      "items": {
+        "maxLength": 5000,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "status": {
+      "description": "The status of the app install.",
+      "enum": [
+        "install_failed",
+        "installed",
+        "installing",
+        "uninstall_failed",
+        "uninstalling"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "account",
+    "app",
+    "approval_required",
+    "channel",
+    "content_security_policy_granted",
+    "content_security_policy_pending",
+    "created",
+    "endpoints_granted",
+    "endpoints_pending",
+    "id",
+    "livemode",
+    "object",
+    "permissions_granted",
+    "permissions_pending",
+    "status"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "content_security_policy_granted",
+    "content_security_policy_pending"
+  ],
+  "x-resourceId": "apps.install"
+}

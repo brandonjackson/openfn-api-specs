@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaThinkingDroppedInputTransformation",
+  "title": "ThinkingDroppedInputTransformation",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaThinkingDroppedInputTransformation",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "path": {
+      "description": "Where the removed block was in your request, as `messages.{i}.content.{j}`:\n`i` indexes the `messages` array you sent and `j` that message's `content`\narray — the same form error messages use.",
+      "title": "Path",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Which binding check removed the block: `model_binding_mismatch` — it was\ncreated by a model whose reasoning the requested model may not read;\n`prefix_binding_mismatch` — the conversation before it differs from the\nconversation it was created in (the rest of that turn's consecutive thinking\nblocks are removed with it, each with this reason);\n`organization_binding_mismatch` — it was created under a different\norganization (an Anthropic organization, AWS account or Google Cloud project)\nand this organization is not one of its additional organizations;\n`end_user_binding_mismatch` — it was created for a different end user, or\nwas removed by the consumer-organization binding. A block that would fail\nseveral checks reports one reason, in this order of precedence:\n`organization_binding_mismatch`, `end_user_binding_mismatch`,\n`model_binding_mismatch`, `prefix_binding_mismatch`.",
+      "enum": [
+        "model_binding_mismatch",
+        "prefix_binding_mismatch",
+        "organization_binding_mismatch",
+        "end_user_binding_mismatch"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "type": {
+      "const": "thinking_dropped",
+      "default": "thinking_dropped",
+      "description": "Always `thinking_dropped` for this entry type.",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "reason",
+    "type"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsMemoryStoreResourceConfig",
+  "title": "BetaManagedAgentsMemoryStoreResourceConfig",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsMemoryStoreResourceConfig",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A memory store attached to each session created from this deployment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "memory_store_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "memory_store"
+    },
+    "memory_store_id": {
+      "description": "The memory store ID (memstore_...). Must belong to the caller's organization and workspace.",
+      "type": "string"
+    },
+    "access": {
+      "description": "Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts the store as a read-only filesystem.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsMountMode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "instructions": {
+      "description": "Per-attachment guidance for the agent on how to use this store. Rendered into the memory section of the system prompt. Max 4096 chars.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "agent-memory-2026-07-22",
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

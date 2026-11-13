@@ -5,26 +5,29 @@
   "x-openfn-adaptor": "pesapal",
   "x-source": {
     "openapi": "#/components/schemas/TransactionStatus",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
+  "description": "Payment status of an order.",
   "properties": {
     "payment_method": {
-      "type": "string"
+      "type": "string",
+      "description": "e.g. Visa, MPESA, MTN."
     },
     "amount": {
       "type": "number"
     },
     "created_date": {
       "type": "string",
-      "format": "date-time"
+      "description": "Date the payment was made."
     },
     "confirmation_code": {
-      "type": "string"
+      "type": "string",
+      "description": "Confirmation code from the payment provider; used for refunds."
     },
     "payment_status_description": {
       "type": "string",
-      "example": "Completed"
+      "description": "INVALID, FAILED, COMPLETED or REVERSED."
     },
     "description": {
       "type": "string"
@@ -33,14 +36,21 @@
       "type": "string"
     },
     "payment_account": {
-      "type": "string"
+      "type": "string",
+      "description": "Masked card number or phone number used."
     },
     "call_back_url": {
-      "type": "string",
-      "format": "uri"
+      "type": "string"
     },
     "status_code": {
-      "type": "integer"
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "description": "0 INVALID, 1 COMPLETED, 2 FAILED, 3 REVERSED."
     },
     "merchant_reference": {
       "type": "string"
@@ -51,12 +61,36 @@
     "currency": {
       "type": "string"
     },
+    "subscription_transaction_info": {
+      "$ref": "SubscriptionTransactionInfo.json"
+    },
     "error": {
-      "$ref": "PesapalError.json"
+      "$ref": "ApiError.json"
     },
     "status": {
-      "type": "string",
-      "example": "200"
+      "type": "string"
     }
+  },
+  "example": {
+    "payment_method": "Visa",
+    "amount": 100,
+    "created_date": "2022-04-30T07:41:09.763",
+    "confirmation_code": "6513008693186320103009",
+    "payment_status_description": "Failed",
+    "description": "Unable to Authorize Transaction.Kindly contact your bank for assistance",
+    "message": "Request processed successfully",
+    "payment_account": "476173**0010",
+    "call_back_url": "https://example.com/?OrderTrackingId=7e6b62d9-883e-440f-a63e-e1105bbfadc3&OrderMerchantReference=1515111111",
+    "status_code": 2,
+    "merchant_reference": "1515111111",
+    "payment_status_code": "",
+    "currency": "KES",
+    "error": {
+      "error_type": null,
+      "code": null,
+      "message": null,
+      "call_back_url": null
+    },
+    "status": "200"
   }
 }

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaAnalyticsFederatedActor",
+  "title": "AnalyticsFederatedActor",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAnalyticsFederatedActor",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "provider": {
+      "$ref": "BetaAnalyticsFederatedActorProvider.json",
+      "description": "The trusted provider that asserted the caller's identity."
+    },
+    "subject": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Subject",
+      "description": "The provider's identifier for the caller: on `aws`, the IAM principal ARN (one role is one actor across its sessions); on `gcp`, the caller's IAM principal identifier as Google Cloud reports it, such as `serviceAccount:<email>`, `user:<email>`, or a `principal://...` URI."
+    },
+    "type": {
+      "type": "string",
+      "const": "federated_actor",
+      "title": "Type"
+    }
+  },
+  "type": "object",
+  "required": [
+    "provider",
+    "subject",
+    "type"
+  ]
+}

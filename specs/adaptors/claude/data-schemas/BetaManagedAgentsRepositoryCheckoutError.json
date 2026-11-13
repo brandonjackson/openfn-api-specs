@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsRepositoryCheckoutError",
+  "title": "BetaManagedAgentsRepositoryCheckoutError",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsRepositoryCheckoutError",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "The requested branch or commit does not exist in the repository.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "message",
+    "retry_status",
+    "repository_url"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "repository_checkout_error",
+      "examples": [
+        "repository_checkout_error"
+      ]
+    },
+    "message": {
+      "description": "Human-readable error description.",
+      "type": "string",
+      "examples": [
+        "The requested branch or commit does not exist in the repository."
+      ]
+    },
+    "retry_status": {
+      "description": "What the client should do next. Always `retrying`: the session keeps running without the repository.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsRetryStatus.json"
+        }
+      ],
+      "examples": [
+        {
+          "type": "retrying"
+        }
+      ]
+    },
+    "repository_url": {
+      "description": "URL of the repository that could not be cloned. Null when it could not be identified.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "https://github.com/example-org/example-repo"
+      ]
+    }
+  },
+  "example": {
+    "type": "repository_checkout_error",
+    "message": "The requested branch or commit does not exist in the repository.",
+    "retry_status": {
+      "type": "retrying"
+    },
+    "repository_url": "https://github.com/example-org/example-repo"
+  }
+}

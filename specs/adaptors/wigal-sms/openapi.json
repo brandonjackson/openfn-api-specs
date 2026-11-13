@@ -1,352 +1,204 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Wigal Frog SMS API",
-    "version": "3.0.0",
-    "description": "OpenAPI description of the Wigal Frog messaging API (SMS, OTP, account balance and delivery history), authored from the vendor documentation at https://frogdocs.wigal.com.gh. Covers the endpoints used by the @openfn/language-wigal-sms adaptor and closely related messaging operations. All requests authenticate via the API-KEY and USERNAME headers.",
+    "title": "Wigal Frog API",
+    "version": "v3",
+    "description": "Wigal's Frog messaging API (Ghana): SMS (general and personalised sends, history), SMS and voice OTP, voice calls (pre-recorded and interactive) and account balance, as documented on frogdocs.wigal.com.gh. Delivery reports, interactive-voice events and Smart USSD sessions are webhooks to the customer's own URLs and appear only as components.schemas. The OpenFn wigal-sms adaptor POSTs to /api/v3/sms/send on https://frogapi.wigal.com.gh with API-KEY and USERNAME headers.",
     "x-openfn-adaptor": "wigal-sms"
   },
   "servers": [
     {
       "url": "https://frogapi.wigal.com.gh",
-      "description": "Wigal Frog production API"
+      "description": "Live"
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "ApiKey": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "API-KEY"
-      },
-      "Username": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "USERNAME"
-      }
+  "tags": [
+    {
+      "name": "SMS"
     },
-    "schemas": {
-      "SmsDestination": {
-        "type": "object",
-        "description": "A single SMS recipient. When sending personalized messages, per-destination message, msgid and smstype may be supplied.",
-        "required": ["destination"],
-        "properties": {
-          "destination": {
-            "type": "string",
-            "description": "Recipient phone number.",
-            "example": "0552825710"
-          },
-          "message": {
-            "type": "string",
-            "description": "Per-destination message content (personalized send).",
-            "example": "Hello Joe your order is ready"
-          },
-          "msgid": {
-            "type": "string",
-            "description": "Client-supplied message identifier.",
-            "example": "MGS1010101"
-          },
-          "smstype": {
-            "type": "string",
-            "description": "Message type for this destination.",
-            "example": "text"
-          }
-        }
-      },
-      "SendSmsRequest": {
-        "type": "object",
-        "required": ["senderid", "destinations"],
-        "properties": {
-          "senderid": {
-            "type": "string",
-            "description": "Approved sender identifier.",
-            "example": "Stevkky"
-          },
-          "destinations": {
-            "type": "array",
-            "description": "Array of destination objects.",
-            "items": { "$ref": "#/components/schemas/SmsDestination" }
-          },
-          "message": {
-            "type": "string",
-            "description": "Message body applied to all destinations (general send).",
-            "example": "This is a sample message for SMS sending via Wigal FROG API."
-          },
-          "smstype": {
-            "type": "string",
-            "description": "Type of message to send.",
-            "default": "text",
-            "example": "text"
-          }
-        }
-      },
-      "SendSmsResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "Result status code.",
-            "example": "ACCEPTD"
-          },
-          "message": {
-            "type": "string",
-            "description": "Human-readable result message.",
-            "example": "Message Accepted For Processing"
-          }
-        }
-      },
-      "GenerateOtpRequest": {
-        "type": "object",
-        "required": ["number", "senderid", "messagetemplate"],
-        "properties": {
-          "number": {
-            "type": "string",
-            "description": "Recipient phone number.",
-            "example": "0276128936"
-          },
-          "expiry": {
-            "type": "integer",
-            "description": "Minutes before the OTP expires.",
-            "example": 5
-          },
-          "length": {
-            "type": "integer",
-            "description": "Length of the generated OTP code.",
-            "example": 6
-          },
-          "messagetemplate": {
-            "type": "string",
-            "description": "Message template. Must contain the %OTPCODE% placeholder; other placeholders include %EXPIRY%, %SERVICE%, %LENGTH%, %TYPE%.",
-            "example": "Your code is %OTPCODE%. It expires in %EXPIRY% minutes."
-          },
-          "type": {
-            "type": "string",
-            "description": "OTP character set.",
-            "enum": ["NUMERIC", "ALPHA", "ALPHANUMERIC"],
-            "example": "NUMERIC"
-          },
-          "senderid": {
-            "type": "string",
-            "description": "Approved sender identifier.",
-            "example": "Stevkky"
-          }
-        }
-      },
-      "OtpResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "Result status code.",
-            "example": "SUCCESS"
-          },
-          "message": {
-            "type": "string",
-            "description": "Human-readable result message.",
-            "example": "OTP processed for delivery"
-          }
-        }
-      },
-      "VerifyOtpRequest": {
-        "type": "object",
-        "required": ["otpcode", "number"],
-        "properties": {
-          "otpcode": {
-            "type": "string",
-            "description": "The OTP code entered by the user.",
-            "example": "8a2b3"
-          },
-          "number": {
-            "type": "string",
-            "description": "Phone number the OTP was sent to.",
-            "example": "0276128936"
-          }
-        }
-      },
-      "BalanceResponse": {
-        "type": "object",
-        "properties": {
-          "status": { "type": "string", "example": "SUCCESS" },
-          "message": { "type": "string", "example": "SUCCESS" },
-          "data": {
-            "type": "object",
-            "properties": {
-              "paidcashbalance": { "type": "number", "example": 0 },
-              "cashbalance": { "type": "number", "example": 677.56 },
-              "bundles": {
-                "type": "object",
-                "additionalProperties": { "type": "number" },
-                "example": {
-                  "VOICE": 15,
-                  "KYCVERIFY": 12,
-                  "SIMACTIVE": 123,
-                  "SMS": 82,
-                  "USSD": 100
-                }
-              },
-              "invoicesummary": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "invoicetype": { "type": "string", "example": "TOPUP" },
-                    "count": { "type": "integer", "example": 2 },
-                    "totalamount": { "type": "number", "example": 2 }
-                  }
-                }
-              },
-              "activebundleinvoices": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "integer", "example": 387 },
-                    "description": { "type": "string", "example": "Mashup Bundle dash" },
-                    "enddate": { "type": "string", "example": "2024-08-30" },
-                    "invoicetype": { "type": "string", "example": "BUNDLE" },
-                    "details": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "service": { "type": "string", "example": "KYCVERIFY" },
-                          "quantity": { "type": "integer", "example": 12 },
-                          "used": { "type": "integer", "example": 0 }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "HistoryRequest": {
-        "type": "object",
-        "properties": {
-          "service": {
-            "type": "string",
-            "description": "Service type (SMS, USSD, VOICE, etc).",
-            "example": "SMS"
-          },
-          "servicetype": {
-            "type": "string",
-            "description": "TEXT, FLASH, CALL, RECORD, IVR, etc.",
-            "example": "TEXT"
-          },
-          "datefrom": {
-            "type": "string",
-            "description": "Start date (max 3-month range).",
-            "example": "2024-06-01"
-          },
-          "dateto": {
-            "type": "string",
-            "description": "End date (max 3-month range).",
-            "example": "2024-06-30"
-          },
-          "senderid": {
-            "type": "string",
-            "description": "Approved sender identifier.",
-            "example": "Stevkky"
-          },
-          "status": {
-            "type": "string",
-            "description": "Filter by delivery status (DELIVRD, FAILED, etc).",
-            "example": "DELIVRD"
-          },
-          "msgid": {
-            "type": "string",
-            "description": "Message ID filter.",
-            "example": "MGS1010101"
-          }
-        }
-      },
-      "HistoryResponse": {
-        "type": "object",
-        "properties": {
-          "status": { "type": "string", "example": "SUCCESS" },
-          "message": { "type": "string", "example": "Success" },
-          "data": {
-            "type": "object",
-            "properties": {
-              "content": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "apimessageid": { "type": "string", "example": "MGS1010101" },
-                    "status": { "type": "string", "example": "DELIVRD" },
-                    "recipient": { "type": "string", "example": "233542709210" },
-                    "statusdate": { "type": "string", "example": "2024-06-26T13:06:14.087856" },
-                    "charge": { "type": "number", "example": 0.03 },
-                    "service": { "type": "string", "example": "SMS" },
-                    "servicetype": { "type": "string", "example": "TEXT" }
-                  }
-                }
-              },
-              "totalElements": { "type": "integer", "example": 3 },
-              "totalPages": { "type": "integer", "example": 1 }
-            }
-          }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "status": { "type": "string", "example": "ERROR" },
-          "message": { "type": "string", "example": "Internal server error" }
-        }
-      }
+    {
+      "name": "OTP"
+    },
+    {
+      "name": "Voice"
+    },
+    {
+      "name": "Account"
     }
-  },
+  ],
   "security": [
-    { "ApiKey": [], "Username": [] }
+    {
+      "apiKey": [],
+      "username": []
+    }
   ],
   "paths": {
     "/api/v3/sms/send": {
       "post": {
         "operationId": "sendSms",
-        "summary": "Send SMS (general or personalized)",
-        "description": "Send an SMS message to one or more destinations. Provide a top-level message for a general broadcast, or per-destination message fields for personalized sends. This is the endpoint used by the adaptor's sendSms operation.",
+        "tags": [
+          "SMS"
+        ],
+        "summary": "Send general or personalised SMS",
+        "description": "One endpoint for both: a general send puts message/smstype at the top level; a personalised send puts them on each destination. Used by the adaptor's sendSms().",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/SendSmsRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SendSmsRequest"
+              },
+              "examples": {
+                "general": {
+                  "value": {
+                    "senderid": "MySenderId",
+                    "destinations": [
+                      {
+                        "destination": "0200000000",
+                        "msgid": "MGS1010101"
+                      }
+                    ],
+                    "message": "This is a sample message.",
+                    "smstype": "text"
+                  }
+                },
+                "personalized": {
+                  "value": {
+                    "senderid": "MySenderId",
+                    "destinations": [
+                      {
+                        "destination": "0200000000",
+                        "message": "Hello, your order is ready",
+                        "msgid": "MGS1010101",
+                        "smstype": "text"
+                      }
+                    ]
+                  }
+                }
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Message accepted for processing.",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/SendSmsResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Acceptance"
+                }
               }
             }
           },
           "400": {
-            "description": "Invalid request.",
+            "description": "Invalid request (status INVALID_REQUEST or ERROR)",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
           "401": {
-            "description": "Unauthorized.",
+            "description": "Invalid API credentials (status UNAUTHORIZED)",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (status FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
           "404": {
-            "description": "Sender ID not found.",
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/sms/history": {
+      "post": {
+        "operationId": "listMessageHistory",
+        "tags": [
+          "SMS"
+        ],
+        "summary": "Get sent message history",
+        "description": "The docs label this POST with a JSON filter body (JavaScript/PHP samples) while the cURL sample uses -G; modelled as POST.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API credentials (status UNAUTHORIZED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -355,39 +207,69 @@
     },
     "/api/v3/sms/otp/generate": {
       "post": {
-        "operationId": "generateOtp",
-        "summary": "Generate and send an OTP",
-        "description": "Generate a one-time password and deliver it to the recipient via SMS using the supplied message template.",
+        "operationId": "generateSmsOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Generate and send an OTP by SMS",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/GenerateOtpRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/GenerateOtpRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OTP processed for delivery.",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/OtpResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/OtpResult"
+                }
               }
             }
           },
           "402": {
-            "description": "Insufficient balance.",
+            "description": "Insufficient balance",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
           "422": {
-            "description": "Validation error (e.g. missing %OTPCODE% placeholder).",
+            "description": "Message template must contain %OTPCODE%",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -396,39 +278,69 @@
     },
     "/api/v3/sms/otp/verify": {
       "post": {
-        "operationId": "verifyOtp",
-        "summary": "Verify an OTP",
-        "description": "Verify a one-time password previously generated for a phone number.",
+        "operationId": "verifySmsOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Verify an SMS OTP",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/VerifyOtpRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OTP verified successfully.",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/OtpResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/OtpResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (status INVALID_REQUEST or ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
           "404": {
-            "description": "Invalid OTP code.",
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
           "408": {
-            "description": "OTP code has expired.",
+            "description": "OTP code has expired",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -438,57 +350,1174 @@
     "/api/v3/balance": {
       "get": {
         "operationId": "getAccountBalance",
-        "summary": "Get account balance",
-        "description": "Retrieve the account cash balance, service bundles, invoice summary and active bundle invoices.",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get the account balance and bundles",
         "responses": {
           "200": {
-            "description": "Account balance details.",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/BalanceResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceResponse"
+                }
               }
             }
           },
-          "401": {
-            "description": "Unauthorized.",
+          "402": {
+            "description": "Insufficient balance",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/api/v3/sms/history": {
+    "/api/v3/voice/send": {
       "post": {
-        "operationId": "getSmsHistory",
-        "summary": "Get message history / delivery status",
-        "description": "Query message delivery history with optional filters over a date range of up to 3 months.",
+        "operationId": "sendVoice",
+        "tags": [
+          "Voice"
+        ],
+        "summary": "Place pre-recorded voice calls",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/HistoryRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SendVoiceRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Paginated message history.",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/HistoryResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Acceptance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (status INVALID_REQUEST or ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
           "401": {
-            "description": "Unauthorized.",
+            "description": "Invalid API credentials (status UNAUTHORIZED)",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
+          },
+          "403": {
+            "description": "Forbidden (status FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/voice/send/dynamic": {
+      "post": {
+        "operationId": "sendInteractiveVoice",
+        "tags": [
+          "Voice"
+        ],
+        "summary": "Place interactive voice calls",
+        "description": "The call flow is driven by the account's voice callback URL (VoiceCallEvent in, VoiceCallAction out).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendVoiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Acceptance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (status INVALID_REQUEST or ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API credentials (status UNAUTHORIZED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (status FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/voice/otp/generate": {
+      "post": {
+        "operationId": "generateVoiceOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Generate and deliver an OTP by voice call",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateVoiceOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpResult"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Message template must contain %OTPCODE%",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/voice/otp/verify": {
+      "post": {
+        "operationId": "verifyVoiceOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Verify a voice OTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (status INVALID_REQUEST or ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, e.g. SENDER_ID_NOT_FOUND or invalid phone number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "OTP code has expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (status ERROR)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "API-KEY",
+        "description": "Frog API key."
+      },
+      "username": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "USERNAME",
+        "description": "Frog account username (sent with every request alongside API-KEY)."
+      }
+    },
+    "schemas": {
+      "Acceptance": {
+        "type": "object",
+        "description": "Acknowledgement that messages or calls were queued.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "ACCEPTD when the request was queued (Frog's spelling)."
+          },
+          "message": {
+            "type": "string",
+            "description": "Message Accepted For Processing on success."
+          }
+        },
+        "example": {
+          "status": "ACCEPTD",
+          "message": "Message Accepted For Processing"
+        }
+      },
+      "AccountBalance": {
+        "type": "object",
+        "description": "Balances on the Frog account.",
+        "properties": {
+          "paidcashbalance": {
+            "type": "number",
+            "description": "Paid cash balance."
+          },
+          "cashbalance": {
+            "type": "number",
+            "description": "Cash balance."
+          },
+          "bundles": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Remaining units per service bundle (SMS, VOICE, USSD, KYCVERIFY, SIMACTIVE, ...)."
+          },
+          "invoicesummary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceSummary"
+            }
+          },
+          "activebundleinvoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleInvoice"
+            }
+          }
+        },
+        "example": {
+          "paidcashbalance": 0,
+          "cashbalance": 677.56,
+          "bundles": {
+            "VOICE": 15,
+            "SMS": 82,
+            "USSD": 100
+          },
+          "invoicesummary": [
+            {
+              "invoicetype": "TOPUP",
+              "count": 2,
+              "totalamount": 2
+            }
+          ],
+          "activebundleinvoices": [
+            {
+              "id": 387,
+              "description": "Mashup Bundle",
+              "enddate": "2024-08-30",
+              "invoicetype": "BUNDLE",
+              "details": [
+                {
+                  "service": "SMS",
+                  "quantity": 100,
+                  "used": 18
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "BalanceResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "SUCCESS on success."
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountBalance"
+          }
+        }
+      },
+      "BundleInvoice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enddate": {
+            "type": "string",
+            "format": "date"
+          },
+          "invoicetype": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleUsage"
+            }
+          }
+        }
+      },
+      "BundleUsage": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        }
+      },
+      "DeliveryReport": {
+        "type": "object",
+        "description": "Webhook POSTed to the account's callback URL when a message's status changes (not returned by any endpoint).",
+        "properties": {
+          "msgid": {
+            "type": "string",
+            "description": "Message ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DELETED",
+              "UNKNOWN",
+              "EXPIRED",
+              "WAITING",
+              "FAILED",
+              "REJECTD",
+              "UNDELIV",
+              "ACCEPTD",
+              "DELIVRD",
+              "BUSY",
+              "ANSWERED"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "statusdate": {
+            "type": "string"
+          },
+          "handlecharge": {
+            "type": "integer"
+          },
+          "topupcharge": {
+            "type": "integer"
+          }
+        },
+        "example": {
+          "msgid": "MGS1010101",
+          "status": "DELIVRD",
+          "reason": "DELIVRD",
+          "destination": "233200000000",
+          "statusdate": "2024-04-23T14:59:14.143+00:00",
+          "handlecharge": 4,
+          "topupcharge": 0
+        }
+      },
+      "Destination": {
+        "type": "object",
+        "required": [
+          "destination"
+        ],
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Recipient phone number."
+          },
+          "msgid": {
+            "type": "string",
+            "description": "Your message id, echoed in delivery reports."
+          },
+          "message": {
+            "type": "string",
+            "description": "Per-recipient message (personalised send only)."
+          },
+          "smstype": {
+            "type": "string",
+            "description": "Per-recipient message type (personalised send only). Default text."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error body.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Error status, e.g. ERROR, INVALID_REQUEST, UNAUTHORIZED, FORBIDDEN, SENDER_ID_NOT_FOUND."
+          },
+          "message": {
+            "type": "string",
+            "description": "Error description."
+          },
+          "data": {
+            "nullable": true,
+            "description": "Always null on errors."
+          }
+        }
+      },
+      "GenerateOtpRequest": {
+        "type": "object",
+        "required": [
+          "number",
+          "messagetemplate"
+        ],
+        "description": "messagetemplate placeholders: %OTPCODE% (required), %EXPIRY%, %SERVICE%, %LENGTH%, %TYPE%.",
+        "properties": {
+          "number": {
+            "type": "string",
+            "description": "Recipient phone number."
+          },
+          "expiry": {
+            "type": "integer",
+            "description": "Minutes before the OTP expires."
+          },
+          "length": {
+            "type": "integer",
+            "description": "Length of the OTP code."
+          },
+          "messagetemplate": {
+            "type": "string",
+            "description": "Message template with placeholders."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "NUMERIC",
+              "ALPHA",
+              "ALPHANUMERIC"
+            ]
+          },
+          "senderid": {
+            "type": "string",
+            "description": "Approved sender ID."
+          }
+        },
+        "example": {
+          "number": "0200000000",
+          "expiry": 1,
+          "length": 5,
+          "messagetemplate": "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins",
+          "type": "ALPHANUMERIC",
+          "senderid": "MySenderId"
+        }
+      },
+      "GenerateVoiceOtpRequest": {
+        "type": "object",
+        "required": [
+          "number",
+          "messagetemplate"
+        ],
+        "properties": {
+          "number": {
+            "type": "string",
+            "description": "Recipient phone number."
+          },
+          "expiry": {
+            "type": "integer",
+            "description": "Minutes before the OTP expires."
+          },
+          "length": {
+            "type": "integer"
+          },
+          "messagetemplate": {
+            "type": "string",
+            "description": "Spoken template with placeholders (%OTPCODE% required)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "NUMERIC",
+              "ALPHA",
+              "ALPHANUMERIC"
+            ]
+          },
+          "callerid": {
+            "type": "string",
+            "nullable": true,
+            "description": "Caller ID; a generic number is used when null."
+          },
+          "ttsvoicename": {
+            "type": "string",
+            "nullable": true,
+            "description": "Text-to-speech voice.",
+            "enum": [
+              "Charon",
+              "Fenrir",
+              "Orus",
+              "Puck",
+              "Achernar",
+              "Aoede",
+              "Erinome",
+              "Gacrux",
+              "Kore",
+              "Leda",
+              "Sulafat",
+              "Zephyr",
+              null
+            ]
+          }
+        },
+        "example": {
+          "number": "0200000000",
+          "expiry": 15,
+          "length": 5,
+          "messagetemplate": "Hello, your OTP is : %OTPCODE%.",
+          "type": "NUMERIC",
+          "callerid": null,
+          "ttsvoicename": null
+        }
+      },
+      "HistoryPage": {
+        "type": "object",
+        "description": "Spring-style page of history records.",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryRecord"
+            }
+          },
+          "pageable": {
+            "type": "object",
+            "properties": {
+              "pageNumber": {
+                "type": "integer"
+              },
+              "pageSize": {
+                "type": "integer"
+              },
+              "sort": {
+                "$ref": "#/components/schemas/Sort"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "unpaged": {
+                "type": "boolean"
+              },
+              "paged": {
+                "type": "boolean"
+              }
+            }
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sort"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HistoryRecord": {
+        "type": "object",
+        "description": "A sent message or call in the history.",
+        "properties": {
+          "apimessageid": {
+            "type": "string",
+            "description": "Your message id."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DELETED",
+              "UNKNOWN",
+              "EXPIRED",
+              "WAITING",
+              "FAILED",
+              "REJECTD",
+              "UNDELIV",
+              "ACCEPTD",
+              "DELIVRD",
+              "BUSY",
+              "ANSWERED"
+            ]
+          },
+          "statusreason": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string"
+          },
+          "statusdate": {
+            "type": "string"
+          },
+          "bundlecredits": {
+            "type": "number"
+          },
+          "charge": {
+            "type": "number"
+          },
+          "service": {
+            "type": "string"
+          },
+          "servicetype": {
+            "type": "string"
+          },
+          "messagecount": {
+            "type": "integer"
+          },
+          "charactercount": {
+            "type": "integer"
+          }
+        },
+        "example": {
+          "apimessageid": "MGS1010101",
+          "status": "DELIVRD",
+          "statusreason": "DELIVRD",
+          "recipient": "233200000000",
+          "statusdate": "2024-06-26T13:06:14.087856",
+          "bundlecredits": 0,
+          "charge": 0.03,
+          "service": "SMS",
+          "servicetype": "TEXT",
+          "messagecount": 1,
+          "charactercount": 53
+        }
+      },
+      "HistoryRequest": {
+        "type": "object",
+        "description": "Filters for the history query. datefrom..dateto may span at most 3 months.",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "SMS",
+              "USSD",
+              "VOICE",
+              "SIMACTIVE",
+              "KYCVERIFY"
+            ]
+          },
+          "servicetype": {
+            "type": "string",
+            "description": "TEXT, FLASH, CALL, RECORD, IVR, TEXT2SPEECH, OTP, SIMACTIVE or KYCVALIDATE."
+          },
+          "datefrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateto": {
+            "type": "string",
+            "format": "date"
+          },
+          "senderid": {
+            "type": "string",
+            "description": "Approved sender ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DELETED",
+              "UNKNOWN",
+              "EXPIRED",
+              "WAITING",
+              "FAILED",
+              "REJECTD",
+              "UNDELIV",
+              "ACCEPTD",
+              "DELIVRD",
+              "BUSY",
+              "ANSWERED"
+            ]
+          },
+          "msgid": {
+            "type": "string",
+            "description": "Message ID."
+          }
+        },
+        "example": {
+          "service": "SMS",
+          "servicetype": "TEXT",
+          "datefrom": "2024-04-01",
+          "dateto": "2024-06-18",
+          "senderid": "MySenderId",
+          "status": "DELIVRD",
+          "msgid": "MGS1010101"
+        }
+      },
+      "InvoiceSummary": {
+        "type": "object",
+        "properties": {
+          "invoicetype": {
+            "type": "string",
+            "description": "TOPUP, BUNDLE, CREDIT_NOTE, IOU, ..."
+          },
+          "count": {
+            "type": "integer"
+          },
+          "totalamount": {
+            "type": "number"
+          }
+        }
+      },
+      "MessageHistory": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "SUCCESS on success."
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryPage"
+          }
+        }
+      },
+      "OtpResult": {
+        "type": "object",
+        "description": "Result of an OTP generate or verify call.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "SUCCESS on success."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "status": "SUCCESS",
+          "message": "OTP processed for delivery"
+        }
+      },
+      "SendSmsRequest": {
+        "type": "object",
+        "required": [
+          "senderid",
+          "destinations"
+        ],
+        "description": "General send: one message for all destinations (top-level message/smstype). Personalised send: message and smstype set on each destination.",
+        "properties": {
+          "senderid": {
+            "type": "string",
+            "description": "Approved sender ID."
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Destination"
+            }
+          },
+          "message": {
+            "type": "string",
+            "description": "Message to send to every destination (general send)."
+          },
+          "smstype": {
+            "type": "string",
+            "description": "Message type. Default text."
+          }
+        },
+        "example": {
+          "senderid": "MySenderId",
+          "destinations": [
+            {
+              "destination": "0200000000",
+              "msgid": "MGS1010101"
+            }
+          ],
+          "message": "This is a sample message.",
+          "smstype": "text"
+        }
+      },
+      "SendVoiceRequest": {
+        "type": "object",
+        "required": [
+          "destinations"
+        ],
+        "properties": {
+          "callerid": {
+            "type": "string",
+            "description": "Caller ID (a default is used if omitted)."
+          },
+          "soundurl": {
+            "type": "string",
+            "description": "URL of a WAV file (mono, a-law, 8 kHz, 64 kbps) to play. Not used by interactive calls."
+          },
+          "servicetype": {
+            "type": "string",
+            "description": "Service type. Default CALL."
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Destination"
+            }
+          }
+        },
+        "example": {
+          "callerid": "your_caller_id",
+          "soundurl": "https://example.com/sound.wav",
+          "servicetype": "CALL",
+          "destinations": [
+            {
+              "destination": "0200000000",
+              "msgid": "MSG123456789"
+            }
+          ]
+        }
+      },
+      "Sort": {
+        "type": "object",
+        "properties": {
+          "sorted": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UssdSession": {
+        "type": "object",
+        "description": "Smart USSD v2: JSON Frog POSTs to the content provider's URL, and the provider returns the same object with mode (MORE/END) and userdata (the menu text, ^ for newline) set. Smart USSD v1 sends the same fields (msisdn instead of phonenumber) as GET query parameters and expects a pipe-delimited reply.",
+        "properties": {
+          "network": {
+            "type": "string"
+          },
+          "sessionid": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "START",
+              "MORE",
+              "END"
+            ]
+          },
+          "phonenumber": {
+            "type": "string"
+          },
+          "userdata": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "trafficid": {
+            "type": "string"
+          },
+          "other": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "required": [
+          "otpcode",
+          "number"
+        ],
+        "properties": {
+          "otpcode": {
+            "type": "string",
+            "description": "The OTP code to verify."
+          },
+          "number": {
+            "type": "string",
+            "description": "Recipient phone number."
+          }
+        },
+        "example": {
+          "otpcode": "8a2b3",
+          "number": "0200000000"
+        }
+      },
+      "VoiceCallAction": {
+        "type": "object",
+        "description": "Body the voice callback URL returns to drive an interactive call.",
+        "properties": {
+          "channelid": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "READ",
+              "PLAY",
+              "COLLECT",
+              "RECORD",
+              "DISCONNECT",
+              "STOPRECORD",
+              "STOPPLAY",
+              "CONTINUE"
+            ]
+          },
+          "actiondata": {
+            "type": "string",
+            "description": "Text, or a WAV URL for PLAY and RECORD."
+          },
+          "batchid": {
+            "type": "string"
+          },
+          "callfrom": {
+            "type": "string"
+          },
+          "callto": {
+            "type": "string"
+          },
+          "clientid": {
+            "type": "string"
+          }
+        }
+      },
+      "VoiceCallEvent": {
+        "type": "object",
+        "description": "Webhook POSTed to the voice callback URL for interactive calls (not returned by any endpoint).",
+        "properties": {
+          "channelid": {
+            "type": "string",
+            "description": "Call id generated by Wigal."
+          },
+          "activitytime": {
+            "type": "string"
+          },
+          "additionaldetails": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string",
+            "description": "DIALED, RINGING, ANSWERED, PROGRESS, ENDING, ENDED, playback/recording events, ChannelDtmfReceived."
+          },
+          "batchid": {
+            "type": "string"
+          },
+          "callfrom": {
+            "type": "string"
+          },
+          "callto": {
+            "type": "string"
+          },
+          "clientid": {
+            "type": "string",
+            "description": "Your msgid."
+          },
+          "callstarttime": {
+            "type": "string"
+          },
+          "callendtime": {
+            "type": "string"
+          },
+          "callduration": {
+            "type": "integer"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "Inbound",
+              "Outbound"
+            ]
+          },
+          "keypressed": {
+            "type": "string"
           }
         }
       }

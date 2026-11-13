@@ -5,31 +5,18 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/Consent",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Represents a user's consent.",
   "properties": {
-    "policies": {
-      "type": "array",
-      "description": "Optional. Represents a user's consent in terms of the resources that can be accessed and under what conditions.",
-      "items": {
-        "$ref": "GoogleCloudHealthcareV1ConsentPolicy.json"
-      }
-    },
-    "consentArtifact": {
-      "type": "string",
-      "description": "Required. The resource name of the Consent artifact that contains proof of the end user's consent, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/consentArtifacts/{consent_artifact_id}`."
-    },
     "name": {
       "type": "string",
       "description": "Identifier. Resource name of the Consent, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/consents/{consent_id}`. Cannot be changed after creation."
     },
-    "revisionCreateTime": {
+    "consentArtifact": {
       "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The timestamp that the revision was created.",
-      "readOnly": true
+      "description": "Required. The resource name of the Consent artifact that contains proof of the end user's consent, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/consentArtifacts/{consent_artifact_id}`."
     },
     "metadata": {
       "type": "object",
@@ -43,15 +30,32 @@
       "description": "Output only. The revision ID of the Consent. The format is an 8-character hexadecimal string. Refer to a specific revision of a Consent by appending `@{revision_id}` to the Consent's resource name.",
       "readOnly": true
     },
+    "expireTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Timestamp in UTC of when this Consent is considered expired."
+    },
     "ttl": {
       "type": "string",
       "format": "google-duration",
       "description": "Input only. The time to live for this Consent from when it is created."
     },
-    "expireTime": {
+    "userId": {
+      "type": "string",
+      "description": "Required. User's UUID provided by the client."
+    },
+    "policies": {
+      "type": "array",
+      "description": "Optional. Represents a user's consent in terms of the resources that can be accessed and under what conditions.",
+      "items": {
+        "$ref": "GoogleCloudHealthcareV1ConsentPolicy.json"
+      }
+    },
+    "revisionCreateTime": {
       "type": "string",
       "format": "google-datetime",
-      "description": "Timestamp in UTC of when this Consent is considered expired."
+      "description": "Output only. The timestamp that the revision was created.",
+      "readOnly": true
     },
     "state": {
       "type": "string",
@@ -64,10 +68,6 @@
         "DRAFT",
         "REJECTED"
       ]
-    },
-    "userId": {
-      "type": "string",
-      "description": "Required. User's UUID provided by the client."
     }
   }
 }

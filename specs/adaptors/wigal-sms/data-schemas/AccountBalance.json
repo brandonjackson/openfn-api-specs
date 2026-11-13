@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wigal-sms/AccountBalance",
+  "title": "AccountBalance",
+  "x-openfn-adaptor": "wigal-sms",
+  "x-source": {
+    "openapi": "#/components/schemas/AccountBalance",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "Balances on the Frog account.",
+  "properties": {
+    "paidcashbalance": {
+      "type": "number",
+      "description": "Paid cash balance."
+    },
+    "cashbalance": {
+      "type": "number",
+      "description": "Cash balance."
+    },
+    "bundles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "description": "Remaining units per service bundle (SMS, VOICE, USSD, KYCVERIFY, SIMACTIVE, ...)."
+    },
+    "invoicesummary": {
+      "type": "array",
+      "items": {
+        "$ref": "InvoiceSummary.json"
+      }
+    },
+    "activebundleinvoices": {
+      "type": "array",
+      "items": {
+        "$ref": "BundleInvoice.json"
+      }
+    }
+  },
+  "example": {
+    "paidcashbalance": 0,
+    "cashbalance": 677.56,
+    "bundles": {
+      "VOICE": 15,
+      "SMS": 82,
+      "USSD": 100
+    },
+    "invoicesummary": [
+      {
+        "invoicetype": "TOPUP",
+        "count": 2,
+        "totalamount": 2
+      }
+    ],
+    "activebundleinvoices": [
+      {
+        "id": 387,
+        "description": "Mashup Bundle",
+        "enddate": "2024-08-30",
+        "invoicetype": "BUNDLE",
+        "details": [
+          {
+            "service": "SMS",
+            "quantity": 100,
+            "used": 18
+          }
+        ]
+      }
+    ]
+  }
+}

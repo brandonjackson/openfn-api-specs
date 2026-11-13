@@ -3,11 +3,30 @@
   "npm": "@openfn/language-testing",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "none",
+      "url": "https://github.com/OpenFn/adaptors/tree/main/packages/testing",
+      "result": "not-found",
+      "note": "Internal test adaptor (package description \"Internal use only\"); src/Adaptor.js defines only version() and re-exports combine, fn, log. It makes no network calls, so there is no external spec to find."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
   "sources": [
     "https://cdn.jsdelivr.net/npm/@openfn/language-testing/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-testing/types/index.d.ts",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/testing"
+    "https://github.com/OpenFn/adaptors/blob/main/packages/testing/src/Adaptor.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/testing/README.md"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Synthesized from adaptor surface; testing is a dev/test harness with no external vendor API. Its real surface is minimal: version() plus fn/combine/log re-exported from @openfn/language-common. Modelled each operation as an httpbin-style endpoint (fn, combine, log, version, get/post echo, status simulation) against a localhost:4010 mock placeholder so the mocker has a concrete surface. Schemas (State, LogRequest, LogEntry, Version, EchoResponse, StatusResponse) are invented; no real endpoints, paths, auth, or field names exist upstream."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "testing (1.0.10) is a monorepo test fixture with no external system. ast.json lists no operations (version() carries no @public tag); the source defines version() and re-exports combine, fn and log from common. \"Full\" is that surface: version() is modelled as POST /version (state in, {...state, version} out) and the three re-exports are enumerated in info.x-openfn-local-operations. The July stub's httpbin-style /get, /post and /status/{code} endpoints were invented (nothing in the adaptor calls them) and are removed, as are its facades for the common re-exports."
 }

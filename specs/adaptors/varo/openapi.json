@@ -1,48 +1,81 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OpenFn Varo Adaptor (synthesized surface)",
-    "version": "1.0.0",
-    "description": "SYNTHESIZED spec. The @openfn/language-varo adaptor performs NO HTTP I/O against any external API. It is a pure, in-process data-transformation adaptor for vaccine cold-chain data: it converts proprietary Varo/FridgeTag message contents (typically pulled from Gmail attachments) into EMS-compliant (Electronic Management/monitoring System) reports and records, and back into Varo-compatible message components. Because there is no upstream API, the operations below are modeled as local transformation endpoints on a placeholder base URL purely so the mocker can represent the adaptor's input/output resource shapes. There is no real server to mock.",
+    "title": "OpenFn Varo adaptor (in-process operations)",
+    "version": "2.2.3",
+    "description": "The Varo adaptor (@openfn/language-varo) makes no network calls. It converts vaccine cold-chain monitoring data between proprietary Varo/FridgeTag message contents (attachments fetched by the Gmail adaptor) and WHO EMS (Electronic Monitoring System) reports and records, and builds Varo email packages for Pogo LT. Each adaptor function is modelled as a POST to a local placeholder path whose request body is the function's arguments and whose 200 body is what the operation writes to state.data (or, for the two plain helper functions, their return value). There is no server to call.",
     "x-openfn-adaptor": "varo"
   },
   "servers": [
     {
-      "url": "https://varo.local/transform",
-      "description": "Placeholder. The adaptor has no network target; operations are pure functions executed in-process."
+      "url": "https://varo.local",
+      "description": "Placeholder. All operations run in-process inside the OpenFn job; nothing is sent over the network."
+    }
+  ],
+  "tags": [
+    {
+      "name": "EMS conversion",
+      "description": "Varo/FridgeTag/EMS-like data to EMS reports."
+    },
+    {
+      "name": "Varo packaging",
+      "description": "EMS reports to Varo email components."
+    },
+    {
+      "name": "Date helpers",
+      "description": "Plain functions (not state operations) for collection-key date windows."
     }
   ],
   "paths": {
     "/convertToEms": {
       "post": {
+        "tags": [
+          "EMS conversion"
+        ],
         "operationId": "convertToEms",
-        "summary": "Convert Varo/FridgeTag message contents to EMS-compliant data",
-        "description": "Processes EMS data from the provided list of message contents (as produced by the Gmail adaptor) and returns the EMS-compliant version of each.",
+        "summary": "Convert Varo/FridgeTag message contents to EMS reports",
+        "description": "Operation convertToEms(messageContents). Each message content (from gmail getContentsFromMessages) must carry `metadata` (Varo JSON metadata file) and either `fridgeTag` (FridgeTag .txt export) or `data` (Varo *_CURRENT_DATA_<RELT>_<USB date>.json). FridgeTag files yield one report per file with min/max records and zReports; Varo data files are re-timed from relative RTCW/RELT durations to absolute ABST using the device's USB-mount timestamp. Contents with neither are logged and skipped. state.data becomes the array of reports.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "messageContents"
+                ],
                 "properties": {
                   "messageContents": {
                     "type": "array",
-                    "items": { "$ref": "#/components/schemas/MessageContent" }
+                    "items": {
+                      "$ref": "#/components/schemas/MessageContent"
+                    }
                   }
-                },
-                "required": ["messageContents"]
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "EMS-compliant converted data",
+            "description": "state.data: one EMS report per processed message content",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/EmsRecord" }
+                  "items": {
+                    "$ref": "#/components/schemas/EmsReport"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The operation throws (e.g. unsupported reportType, malformed filename or duration).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -52,37 +85,66 @@
     },
     "/convertItemsToReports": {
       "post": {
+        "tags": [
+          "EMS conversion"
+        ],
         "operationId": "convertItemsToReports",
-        "summary": "Convert EMS-like records to an EMS report",
-        "description": "Reads a collection of EMS-like data records and converts them to a standard EMS report/record format, separating report properties from record properties.",
+        "summary": "Group EMS-like records into EMS reports",
+        "description": "Operation convertItemsToReports(items, reportType). reportType 'ems' groups flat records by LSER and splits report-level from record-level EMS fields (logger fields are copied to EMD fields when absent); 'rtmd' groups raw reports by ESER, merges their records by ABST and lists differing report properties in zDifferences (EMD fields copied to logger fields when absent). Any other reportType throws. state.data becomes the array of reports (null when items is empty).",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "items"
+                ],
                 "properties": {
                   "items": {
                     "type": "array",
-                    "items": { "$ref": "#/components/schemas/EmsRecord" }
+                    "description": "EMS-like objects: flat records for 'ems', raw reports with records[] for 'rtmd'.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
                   },
                   "reportType": {
                     "type": "string",
+                    "enum": [
+                      "ems",
+                      "rtmd"
+                    ],
                     "default": "unknown",
-                    "description": "Source of the report, e.g. \"ems\" or \"rtmd\"."
+                    "description": "Source of the items. The default 'unknown' throws."
                   }
-                },
-                "required": ["items"]
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The converted EMS report with records",
+            "description": "state.data: the EMS reports",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/EmsReport" }
+                "schema": {
+                  "type": "array",
+                  "nullable": true,
+                  "items": {
+                    "$ref": "#/components/schemas/EmsReport"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The operation throws (e.g. unsupported reportType, malformed filename or duration).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -91,34 +153,59 @@
     },
     "/convertReportsToMessageContents": {
       "post": {
+        "tags": [
+          "Varo packaging"
+        ],
         "operationId": "convertReportsToMessageContents",
-        "summary": "Convert an EMS report to Varo message components",
-        "description": "Converts an EMS-compliant report into Varo-compatible message components (subject line and data file) ready to be emailed via the Gmail adaptor.",
+        "summary": "Package EMS reports as Varo email message contents",
+        "description": "Operation convertReportsToMessageContents(reports, reportType). For each report it stamps zReportType and zGeneratedTimestamp, then builds an email subject 'OpenFn | <REPORTTYPE> | <ESER|LSER|ASER>', a plain-text device summary body and a data.json attachment holding the report. state.data becomes the array, ready for gmail sendMessage.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "reports"
+                ],
                 "properties": {
-                  "reports": { "$ref": "#/components/schemas/EmsReport" },
+                  "reports": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/EmsReport"
+                    }
+                  },
                   "reportType": {
                     "type": "string",
                     "default": "unknown",
-                    "description": "Source of the report, e.g. \"ems\" or \"rtmd\"."
+                    "description": "Label used in the subject and zReportType."
                   }
-                },
-                "required": ["reports"]
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Varo-compatible message component",
+            "description": "state.data: one message content per report",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/VaroMessageComponent" }
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VaroMessageContent"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The operation throws (e.g. unsupported reportType, malformed filename or duration).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -127,34 +214,59 @@
     },
     "/parseUtcForDataRange": {
       "post": {
+        "tags": [
+          "Date helpers"
+        ],
         "operationId": "parseUtcForDataRange",
-        "summary": "Compute the UTC datetime range for a timezone",
-        "description": "Computes the UTC datetime range that corresponds to a given IANA timezone and ISO date bounds.",
+        "summary": "Compute a UTC window and collection-key patterns for a local date range",
+        "description": "Plain function parseUtcForDataRange(timeZone, startIso, endIso) (returns a value; not a state operation). Interprets the ISO bounds in the IANA zone and returns their UTC equivalents plus one '*yyyyMMdd*' collection-key wildcard per local day.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "timeZone",
+                  "startIso",
+                  "endIso"
+                ],
                 "properties": {
                   "timeZone": {
                     "type": "string",
-                    "description": "IANA time zone identifier, e.g. \"America/Los_Angeles\"."
+                    "description": "IANA time zone, e.g. America/Los_Angeles."
                   },
-                  "startIso": { "type": "string", "format": "date-time" },
-                  "endIso": { "type": "string", "format": "date-time" }
-                },
-                "required": ["timeZone", "startIso", "endIso"]
+                  "startIso": {
+                    "type": "string",
+                    "description": "Start of range (ISO 8601, local to timeZone)."
+                  },
+                  "endIso": {
+                    "type": "string",
+                    "description": "End of range (ISO 8601, local to timeZone)."
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The computed UTC range",
+            "description": "Return value",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/UtcRange" }
+                "schema": {
+                  "$ref": "#/components/schemas/UtcRange"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The operation throws (e.g. unsupported reportType, malformed filename or duration).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -163,34 +275,61 @@
     },
     "/isKeyInRange": {
       "post": {
+        "tags": [
+          "Date helpers"
+        ],
         "operationId": "isKeyInRange",
-        "summary": "Check whether a key's embedded timestamp is within a UTC range",
-        "description": "Checks whether the timestamp embedded in a key (format YYYYMMDDTHHMMSS following a colon) falls within a UTC datetime range.",
+        "summary": "Test whether a collection key's timestamp falls in a UTC range",
+        "description": "Plain function isKeyInRange(key, start, end) (returns a boolean; not a state operation). Parses the 'YYYYMMDDTHHMMSS' part after the first ':' of key; false when missing or shorter than 15 characters; true when start <= date < end.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "key",
+                  "start",
+                  "end"
+                ],
                 "properties": {
                   "key": {
                     "type": "string",
-                    "description": "Key containing a UTC timestamp, e.g. \"prefix:20250624T101530\"."
+                    "description": "Key such as 'A:BJBC 08 30:20241205T004440Z'; the timestamp is the segment after the first colon."
                   },
-                  "start": { "type": "string", "format": "date-time" },
-                  "end": { "type": "string", "format": "date-time" }
-                },
-                "required": ["key", "start", "end"]
+                  "start": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Inclusive lower bound (a JS Date)."
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Exclusive upper bound (a JS Date)."
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Whether the key is within range",
+            "description": "Return value: true when the key's timestamp is in range",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/KeyInRangeResult" }
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The operation throws (e.g. unsupported reportType, malformed filename or duration).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -202,61 +341,383 @@
     "schemas": {
       "FileContent": {
         "type": "object",
-        "description": "A single file's content and name, as extracted from a Gmail message attachment.",
+        "description": "One extracted attachment as produced by the Gmail adaptor.",
         "properties": {
-          "content": { "type": "string", "description": "Raw file content (text or JSON string)." },
-          "filename": { "type": "string" }
+          "filename": {
+            "type": "string"
+          },
+          "content": {
+            "description": "File text, or already-parsed JSON for data files.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          }
         }
       },
       "MessageContent": {
         "type": "object",
-        "description": "A Varo/FridgeTag message content bundle produced by the Gmail adaptor.",
+        "description": "A Gmail message's extracted Varo files.",
         "properties": {
-          "metadata": { "$ref": "#/components/schemas/FileContent" },
-          "data": { "$ref": "#/components/schemas/FileContent" },
-          "fridgeTag": { "$ref": "#/components/schemas/FileContent" }
+          "messageId": {
+            "type": "string",
+            "description": "Gmail message id (used in error logs)."
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/FileContent"
+          },
+          "data": {
+            "$ref": "#/components/schemas/FileContent"
+          },
+          "fridgeTag": {
+            "$ref": "#/components/schemas/FileContent"
+          }
         }
       },
       "EmsRecord": {
         "type": "object",
-        "description": "An EMS-compliant atomic sensor reading.",
+        "description": "One EMS reading. Field codes follow the WHO EMS data specification; the adaptor's whitelist is listed, with descriptions only where the adaptor source gives them.",
+        "additionalProperties": true,
         "properties": {
-          "ASER": { "type": "string", "description": "Asset/device serial identifier." },
-          "ABST": { "type": "string", "description": "Absolute ISO-8601 timestamp of the reading, e.g. \"2024-10-08T08:15:00.000Z\"." },
-          "TVC": { "type": "number", "description": "Temperature value in degrees Celsius." },
-          "ALRM": { "type": "string", "nullable": true, "description": "Optional alarm flag, e.g. \"HEAT\" or \"FRZE\"." },
-          "zdescription": { "type": "string", "description": "Human-readable label for context." }
+          "ABST": {
+            "description": "Absolute time UTC, abbreviated ISO (YYYYMMDDTHHMMSSZ) for Varo EMS data; a JS Date for FridgeTag"
+          },
+          "ACCD": {
+            "description": "EMS field (type not documented)."
+          },
+          "ACSV": {
+            "description": "EMS field (type not documented)."
+          },
+          "ALRM": {
+            "description": "Presence of defined alarm conditions (e.g. HEAT, FRZE, HEATACK)"
+          },
+          "BEMD": {
+            "description": "EMD estimated days of battery life remaining"
+          },
+          "BLOG": {
+            "description": "Logger estimated days of battery life remaining"
+          },
+          "CMPR": {
+            "description": "Compressor operation seconds per 15 minutes"
+          },
+          "CMPR2": {
+            "description": "EMS field (type not documented)."
+          },
+          "CMPS": {
+            "description": "EMS field (type not documented)."
+          },
+          "CMPS2": {
+            "description": "EMS field (type not documented)."
+          },
+          "CSOF": {
+            "description": "EMS field (type not documented)."
+          },
+          "CSOF2": {
+            "description": "EMS field (type not documented)."
+          },
+          "DCCD": {
+            "description": "EMS field (type not documented)."
+          },
+          "DCSV": {
+            "description": "EMS field (type not documented)."
+          },
+          "DORF": {
+            "description": "EMS field (type not documented)."
+          },
+          "DORV": {
+            "description": "Vaccine compartment door-open seconds per 15 minutes"
+          },
+          "DRCF": {
+            "description": "EMS field (type not documented)."
+          },
+          "DRCV": {
+            "description": "EMS field (type not documented)."
+          },
+          "EERR": {
+            "description": "EMD errors"
+          },
+          "FANS": {
+            "description": "EMS field (type not documented)."
+          },
+          "HAMB": {
+            "description": "Relative humidity"
+          },
+          "HCOM": {
+            "description": "EMS field (type not documented)."
+          },
+          "HOLD": {
+            "description": "Days the vaccine compartment stays cold if power is disconnected"
+          },
+          "IDRF": {
+            "description": "EMS field (type not documented)."
+          },
+          "IDRV": {
+            "description": "EMS field (type not documented)."
+          },
+          "LERR": {
+            "description": "Logger errors"
+          },
+          "MSW": {
+            "description": "EMS field (type not documented)."
+          },
+          "SVA": {
+            "description": "Good-voltage seconds per 15 minutes"
+          },
+          "TAMB": {
+            "description": "Ambient temperature (°C)",
+            "type": "number"
+          },
+          "TCON": {
+            "description": "EMS field (type not documented)."
+          },
+          "TCON2": {
+            "description": "EMS field (type not documented)."
+          },
+          "TFRZ": {
+            "description": "EMS field (type not documented)."
+          },
+          "TPCB": {
+            "description": "EMS field (type not documented)."
+          },
+          "TPCB2": {
+            "description": "EMS field (type not documented)."
+          },
+          "TVC": {
+            "description": "Vaccine chamber temperature (°C)",
+            "type": "number"
+          },
+          "zDescription": {
+            "type": "string",
+            "description": "FridgeTag only: '<date> Min T' / '<date> Max T' label."
+          },
+          "zTvcAlrm": {
+            "type": "string",
+            "description": "rtmd merge: alarm taken from a TVC reading."
+          },
+          "zTambAlrm": {
+            "type": "string",
+            "description": "rtmd merge: alarm taken from an ambient reading (not promoted to ALRM)."
+          }
+        },
+        "example": {
+          "ABST": "20241205T004440Z",
+          "TVC": 5.0,
+          "DORV": 900,
+          "BLOG": 1826
         }
       },
       "EmsReport": {
         "type": "object",
-        "description": "An EMS report: report-level properties plus an array of EMS records. Also carries optional out-of-spec zReports.",
+        "description": "An EMS report: device/location fields plus records[]. z-prefixed fields are adaptor extensions outside the EMS spec.",
+        "additionalProperties": true,
         "properties": {
-          "ASER": { "type": "string", "description": "Asset/device serial identifier for the report." },
+          "ACAT": {
+            "description": "Appliance PQS category"
+          },
+          "ADOP": {
+            "description": "Appliance date of production"
+          },
+          "AID": {
+            "description": "EMS field (type not documented)."
+          },
+          "AMFR": {
+            "description": "Appliance manufacturer"
+          },
+          "AMID": {
+            "description": "EMS field (type not documented)."
+          },
+          "AMOD": {
+            "description": "Appliance model"
+          },
+          "APQS": {
+            "description": "Appliance WHO PQS code"
+          },
+          "ASER": {
+            "description": "Appliance serial number"
+          },
+          "CDAT": {
+            "description": "EMS field (type not documented)."
+          },
+          "CDAT2": {
+            "description": "EMS field (type not documented)."
+          },
+          "CID": {
+            "description": "Country (from facility metadata)"
+          },
+          "CNAM": {
+            "description": "Compressor name"
+          },
+          "CNAM2": {
+            "description": "EMS field (type not documented)."
+          },
+          "CSER": {
+            "description": "Compressor serial"
+          },
+          "CSER2": {
+            "description": "EMS field (type not documented)."
+          },
+          "CSOF": {
+            "description": "Compressor software version"
+          },
+          "CSOF2": {
+            "description": "EMS field (type not documented)."
+          },
+          "DLST": {
+            "description": "EMS field (type not documented)."
+          },
+          "DNAM": {
+            "description": "EMS field (type not documented)."
+          },
+          "EDOP": {
+            "description": "EMD date of production"
+          },
+          "EID": {
+            "description": "EMS field (type not documented)."
+          },
+          "EMFR": {
+            "description": "EMD manufacturer"
+          },
+          "EMOD": {
+            "description": "EMD model"
+          },
+          "EMSV": {
+            "description": "EMD software version"
+          },
+          "EPQS": {
+            "description": "EMD WHO PQS code"
+          },
+          "ESER": {
+            "description": "EMD serial number"
+          },
+          "FID": {
+            "description": "EMS field (type not documented)."
+          },
+          "FNAM": {
+            "description": "EMS field (type not documented)."
+          },
+          "LACC": {
+            "description": "Location accuracy (metres)"
+          },
+          "LAT": {
+            "description": "Latitude"
+          },
+          "LDOP": {
+            "description": "Logger date of production"
+          },
+          "LID": {
+            "description": "EMS field (type not documented)."
+          },
+          "LMFR": {
+            "description": "Logger manufacturer"
+          },
+          "LMOD": {
+            "description": "Logger model"
+          },
+          "LNG": {
+            "description": "Longitude"
+          },
+          "LPQS": {
+            "description": "Logger WHO PQS code"
+          },
+          "LSER": {
+            "description": "Logger serial number"
+          },
+          "LSV": {
+            "description": "Logger software version"
+          },
+          "RNAM": {
+            "description": "EMS field (type not documented)."
+          },
+          "SIGN": {
+            "description": "EMS field (type not documented)."
+          },
           "records": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/EmsRecord" }
+            "items": {
+              "$ref": "#/components/schemas/EmsRecord"
+            }
           },
           "zReports": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ZReport" }
+            "description": "FridgeTag only: out-of-spec daily summaries.",
+            "items": {
+              "$ref": "#/components/schemas/ZReport"
+            }
+          },
+          "zDifferences": {
+            "type": "array",
+            "description": "rtmd only: distinct report-level property values that differed across merged raw reports.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "zHasUnreconciledRtcw": {
+            "type": "boolean",
+            "description": "Varo EMS only: true when some records were dropped because their RTCW timeline could not be mapped to an absolute date."
+          },
+          "zReportType": {
+            "type": "string",
+            "description": "Set by convertReportsToMessageContents."
+          },
+          "zGeneratedTimestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Set by convertReportsToMessageContents."
           }
+        },
+        "example": {
+          "ASER": "BJBC 08 30",
+          "AMFR": "ICECO",
+          "AMOD": "VL45",
+          "LSER": "000000000000000000000000",
+          "records": [
+            {
+              "ABST": "20241205T004440Z",
+              "TVC": 5.0
+            }
+          ]
         }
       },
       "ZReport": {
         "type": "object",
-        "description": "Out-of-spec daily aggregate and alarm summary (FridgeTag). Ignored by EMS consumers; retained for dashboards.",
+        "description": "FridgeTag daily summary (out of EMS spec).",
         "properties": {
-          "date": { "type": "string", "format": "date-time" },
-          "duration": { "type": "string", "description": "Aggregation window, e.g. \"1D\"." },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "string",
+            "description": "Always '1D'."
+          },
           "alarms": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "condition": { "type": "string" },
-                "conditionMinutes": { "type": "integer" },
-                "alarmTime": { "type": "string", "format": "date-time" }
+                "condition": {
+                  "type": "string",
+                  "enum": [
+                    "FRZE",
+                    "HEAT"
+                  ]
+                },
+                "conditionMinutes": {
+                  "type": "integer"
+                },
+                "alarmTime": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "count": {
+                  "type": "integer"
+                }
               }
             }
           },
@@ -265,42 +726,84 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "string" },
-                "min": { "type": "number" },
-                "max": { "type": "number" },
-                "average": { "type": "number" }
+                "id": {
+                  "type": "string",
+                  "description": "Always 'TVC'."
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "average": {
+                  "type": "number"
+                }
               }
             }
           }
         }
       },
-      "VaroMessageComponent": {
+      "VaroMessageContent": {
         "type": "object",
-        "description": "A Varo-compatible message component: an email subject and a data file, ready for the Gmail adaptor.",
+        "description": "Email components for the Gmail adaptor.",
         "properties": {
-          "subject": { "type": "string", "description": "Email subject, e.g. \"OpenFn | EMS\"." },
-          "data": { "$ref": "#/components/schemas/FileContent" }
+          "subject": {
+            "type": "string",
+            "description": "'OpenFn | <REPORTTYPE> | <serial>'."
+          },
+          "body": {
+            "type": "string",
+            "description": "Appliance/Logger/EMD manufacturer, model and serial summary."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "type": "string",
+                "description": "Always 'data.json'."
+              },
+              "content": {
+                "type": "string",
+                "description": "The report serialised as indented JSON."
+              }
+            }
+          }
         }
       },
       "UtcRange": {
         "type": "object",
-        "description": "A UTC datetime range derived from a wall-clock timezone window.",
         "properties": {
-          "wallClock": { "type": "string", "format": "date-time", "description": "Current local datetime in the specified timezone." },
-          "startUtc": { "type": "string", "format": "date-time", "description": "UTC start of range (inclusive)." },
-          "endUtc": { "type": "string", "format": "date-time", "description": "UTC end of range (exclusive)." },
+          "wallClock": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Current local wall-clock time in timeZone (as a Date)."
+          },
+          "startUtc": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC start (inclusive)."
+          },
+          "endUtc": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC end (exclusive)."
+          },
           "collectionKeys": {
             "type": "array",
-            "items": { "type": "string" },
-            "description": "Wildcard patterns matching UTC dates in range, e.g. \"*20250624*\"."
+            "items": {
+              "type": "string"
+            },
+            "description": "'*yyyyMMdd*' patterns, one per local day."
           }
         }
       },
-      "KeyInRangeResult": {
+      "Error": {
         "type": "object",
-        "description": "Result of an isKeyInRange check.",
         "properties": {
-          "result": { "type": "boolean" }
+          "message": {
+            "type": "string"
+          }
         }
       }
     }

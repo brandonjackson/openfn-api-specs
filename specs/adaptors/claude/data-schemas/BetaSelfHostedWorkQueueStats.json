@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaSelfHostedWorkQueueStats",
+  "title": "SelfHostedWorkQueueStats",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaSelfHostedWorkQueueStats",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "depth": {
+      "type": "integer",
+      "title": "Depth",
+      "description": "Number of work items waiting to be picked up"
+    },
+    "oldest_queued_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Oldest Queued At",
+      "description": "RFC 3339 timestamp of oldest item in the work stream (includes both queued and pending items), null if stream empty"
+    },
+    "pending": {
+      "type": "integer",
+      "title": "Pending",
+      "description": "Number of work items being processed (polled but not acknowledged)",
+      "default": 0
+    },
+    "type": {
+      "type": "string",
+      "const": "work_queue_stats",
+      "title": "Type",
+      "description": "The type of object",
+      "default": "work_queue_stats"
+    },
+    "workers_polling": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Workers Polling",
+      "description": "Number of workers that have polled for work in the last 30 seconds. Requires worker_id to be sent with poll requests."
+    }
+  },
+  "type": "object",
+  "required": [
+    "depth",
+    "oldest_queued_at",
+    "pending",
+    "type",
+    "workers_polling"
+  ],
+  "description": "Statistics about the work queue for an environment."
+}

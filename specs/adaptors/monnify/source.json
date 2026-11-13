@@ -1,15 +1,92 @@
 {
   "adaptor": "monnify",
   "npm": "@openfn/language-monnify",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://developers.monnify.com/api",
-    "https://developers.monnify.com/docs/collections/customer-reserved-account",
-    "https://developers.monnify.com/docs/disbursements/single-transfers",
-    "https://www.postman.com/monnifyteam/monnify-public-apis/collection/0k8llkr/monnify-api",
-    "https://github.com/OpenFn/adaptors/blob/main/packages/monnify/src/Adaptor.js"
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://raw.githubusercontent.com/Monnify/mcp-server/main/openapi/monnify.yaml",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:16414cf6caaf32f2b6b24006e5cd1461dc299516f4c196d7d4ffd86d025a0792",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://developers.monnify.com/collection/monnify-collection.yml",
+      "result": "not-found",
+      "note": "Search engines index this as the docs portal's OpenAPI ('Monnify API Reference', openapi 3.1.0, v2.0.0), but developers.monnify.com answers 403 (Cloudflare 'you have been blocked') to every request from this environment, including /api, /llms.txt, /sitemap.xml and this file, via curl and the fetch tool. Could not be captured; re-try from an unblocked network and compare with the GitHub copy."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developers.monnify.com/openapi.json",
+      "result": "not-found",
+      "note": "well-known paths (/openapi.json, /api/openapi.json, /swagger.json) on the docs host: Cloudflare 403. On the API hosts sandbox.monnify.com / api.monnify.com, /openapi.json, /v3/api-docs and /swagger-ui.html return 401 JSON (gateway requires a token)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/Monnify/mcp-server/main/openapi/monnify.yaml",
+      "result": "used",
+      "note": "Vendor-owned repo (github.com/Monnify, the org behind @monnify/mcp-server on npm). openapi/monnify.yaml is the Monnify API OpenAPI 3.0.3 the vendor generates its MCP server types and Zod schemas from (scripts/generate-types.sh). 70 paths / 77 operations / 176 schemas; servers sandbox.monnify.com and api.monnify.com. Its info.description carries the vendor's public sandbox test credentials, kept verbatim."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/Monnify",
+      "result": "used",
+      "note": "Cloned Monnify-java-sdk, monnify-python, monnify-dotnet-lib, Monnify-ts and mcp-server and diffed every /api/v1|v2 route they call against the spec: all present except GET /api/v1/direct-debit/mandates, GET /api/v1/disbursements/account/validate (deprecated v1 of the v2 path in the spec) and POST /api/v1/merchant/ussd/initialize."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/monnifyteam/monnify-public-apis/collection/0k8llkr/monnify-api",
+      "result": "not-found",
+      "note": "Vendor's public Postman workspace exists but the collection could not be exported without a Postman session; the GitHub OpenAPI is a machine spec and takes precedence anyway."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no monnify / moniepoint entry."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://apis.io/providers/moniepoint/",
+      "result": "rejected",
+      "note": "API Evangelist per-area Moniepoint/Monnify OpenAPI files are third-party reconstructions; not used."
+    },
+    {
+      "kind": "adaptor-surface",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-monnify/ast.json",
+      "result": "used",
+      "note": "v1.1.3: generic get, list, post, request; examples name /api/v1/transactions/search, /api/v2/disbursements/search-transactions and /api/v1/transaction-notification/resend-failed-notifications."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/monnify/src/Utils.js",
+      "result": "used",
+      "note": "POST api/v1/auth/login with Basic apiKey:secretKey to get a Bearer token; list() pages with pageNo/pageSize and reads responseBody.content / responseBody.last."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The monnify adaptor exposes only generic get/list/post/request helpers, so this OpenAPI 3.0.3 was authored from the Monnify developer docs to cover the common endpoints those helpers target: auth login, transaction search, reserved accounts, and single disbursement transfers. Base URL is the sandbox host (https://sandbox.monnify.com; live is https://api.monnify.com). All responses use Monnify's standard envelope (requestSuccessful/responseMessage/responseCode/responseBody) modelled via MonnifyEnvelope + allOf. Focused subset of a larger API."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-sdks"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://raw.githubusercontent.com/Monnify/mcp-server/main/openapi/monnify.yaml",
+    "https://github.com/Monnify/mcp-server",
+    "https://www.npmjs.com/package/@monnify/mcp-server",
+    "https://developers.monnify.com/api",
+    "https://developers.monnify.com/collection/monnify-collection.yml",
+    "https://github.com/Monnify/Monnify-java-sdk",
+    "https://github.com/Monnify/monnify-python",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-monnify/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/monnify"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Monnify (Moniepoint) payments API. The upstream is the vendor's own OpenAPI 3.0.3, committed in the Monnify GitHub org's mcp-server repo and used there to generate the official MCP server's types; openapi.json is that file rendered to JSON with only info.x-openfn-adaptor added. It covers 77 operations: auth, transactions/checkout and card charge, transfers (single and bulk disbursements, OTP, summaries, wallet balance), reserved accounts, invoices, recurring card tokens, direct debit mandates, sub-accounts, limit profiles, refunds, settlements, BVN/NIN/account verification, bills payment, banks, wallets and paycodes. The docs portal's own copy (developers.monnify.com/collection/monnify-collection.yml, reportedly OpenAPI 3.1.0 v2.0.0) is behind a Cloudflare block from this environment and could not be compared; it may be newer. Known gaps against the adaptor and vendor SDKs (not added, since upstream is verbatim): POST /api/v1/transaction-notification/resend-failed-notifications (used in the adaptor's post() example), GET /api/v1/direct-debit/mandates and POST /api/v1/merchant/ussd/initialize. Operations carry no operationId and every response is a named whole-envelope schema (requestSuccessful/responseMessage/responseCode/responseBody), so data-schemas lists the *SuccessResponse wrappers as resources; that is the vendor's modelling."
 }

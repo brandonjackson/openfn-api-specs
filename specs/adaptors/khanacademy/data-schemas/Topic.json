@@ -5,26 +5,26 @@
   "x-openfn-adaptor": "khanacademy",
   "x-source": {
     "openapi": "#/components/schemas/Topic",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
-  "description": "A node in the Khan Academy content topic tree.",
+  "description": "A node of the content topic tree.",
   "properties": {
-    "kind": {
-      "type": "string",
-      "example": "Topic"
-    },
     "id": {
       "type": "string",
-      "example": "x2e352b1a2d21e07e"
+      "description": "Topic slug; 'root' is the root of the tree."
     },
-    "slug": {
+    "kind": {
       "type": "string",
-      "example": "algebra"
+      "enum": [
+        "Topic"
+      ]
     },
     "title": {
-      "type": "string",
-      "example": "Algebra"
+      "type": "string"
+    },
+    "standalone_title": {
+      "type": "string"
     },
     "description": {
       "type": [
@@ -32,46 +32,60 @@
         "null"
       ]
     },
-    "node_slug": {
-      "type": "string",
-      "example": "math/algebra"
-    },
     "extended_slug": {
-      "type": "string",
-      "example": "math/algebra"
-    },
-    "relative_url": {
-      "type": "string",
-      "example": "/math/algebra"
-    },
-    "ka_url": {
-      "type": "string",
-      "example": "https://www.khanacademy.org/math/algebra"
-    },
-    "render_type": {
-      "type": "string",
-      "example": "Subject"
-    },
-    "icon_src": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
     "hide": {
       "type": "boolean"
     },
-    "children": {
+    "ka_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "relative_url": {
+      "type": "string"
+    },
+    "topic_page_url": {
+      "type": "string"
+    },
+    "tags": {
       "type": "array",
       "items": {
-        "$ref": "Topic.json"
+        "type": "string"
+      }
+    },
+    "children": {
+      "type": "array",
+      "description": "Children: abbreviated entries on /topic/{id}; full Topic/Video/Exercise objects on /topictree.",
+      "items": {
+        "type": "object"
       }
     }
   },
   "required": [
-    "kind",
     "id",
-    "slug",
-    "title"
-  ]
+    "kind"
+  ],
+  "example": {
+    "id": "addition-subtraction",
+    "kind": "Topic",
+    "title": "Addition and subtraction",
+    "standalone_title": "Addition and subtraction",
+    "description": "Adding and subtracting positive and negative whole numbers.",
+    "extended_slug": "math/arithmetic/addition-subtraction",
+    "hide": false,
+    "ka_url": "http://www.khanacademy.org/#addition-subtraction",
+    "relative_url": "/#addition-subtraction",
+    "topic_page_url": "/math/arithmetic/addition-subtraction",
+    "tags": [],
+    "children": [
+      {
+        "hide": false,
+        "id": "addition_3",
+        "kind": "Exercise",
+        "title": "Addition 3",
+        "url": "http://www.khanacademy.org/exercise/addition_3"
+      }
+    ]
+  }
 }

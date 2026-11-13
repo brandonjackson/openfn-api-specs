@@ -5,15 +5,27 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/IncrementalResultStats",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Statistics related to Incremental Query Results. Populated as part of JobStatistics2. This feature is not yet available.",
   "properties": {
-    "resultSetLastReplaceTime": {
+    "resultSetLastModifyTime": {
       "type": "string",
       "format": "google-datetime",
-      "description": "Output only. The time at which the result table's contents were completely replaced. May be absent if no results have been written or the query has completed.",
+      "description": "Output only. The time at which the result table's contents were modified. May be absent if no results have been written or the query has completed.",
+      "readOnly": true
+    },
+    "incrementalRowCount": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Number of rows that were in the latest result set before query completion.",
+      "readOnly": true
+    },
+    "lastIncrementalRowTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. The time at which the last incremental result was written. Does not include the final result written after query completion.",
       "readOnly": true
     },
     "disabledReason": {
@@ -26,10 +38,10 @@
       ],
       "readOnly": true
     },
-    "incrementalRowCount": {
+    "resultSetLastReplaceTime": {
       "type": "string",
-      "format": "int64",
-      "description": "Output only. Number of rows that were in the latest result set before query completion.",
+      "format": "google-datetime",
+      "description": "Output only. The time at which the result table's contents were completely replaced. May be absent if no results have been written or the query has completed.",
       "readOnly": true
     },
     "firstIncrementalRowTime": {
@@ -38,21 +50,9 @@
       "description": "Output only. The time at which the first incremental result was written. If the query needed to restart internally, this only describes the final attempt.",
       "readOnly": true
     },
-    "resultSetLastModifyTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The time at which the result table's contents were modified. May be absent if no results have been written or the query has completed.",
-      "readOnly": true
-    },
     "disabledReasonDetails": {
       "type": "string",
       "description": "Output only. Additional human-readable clarification, if available, for DisabledReason.",
-      "readOnly": true
-    },
-    "lastIncrementalRowTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The time at which the last incremental result was written. Does not include the final result written after query completion.",
       "readOnly": true
     }
   }

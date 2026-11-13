@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { classify, report } from '../src/report.js';
 import type { AdaptorInfo } from '../src/adaptors.js';
+import { readFileSync } from 'node:fs';
+import { sourcePath } from '../src/paths.js';
 
 const NOW = new Date('2026-07-06T00:00:00Z');
 const info = (name: string): AdaptorInfo => ({ name, npm: `@openfn/language-${name}`, rest: true });
@@ -29,9 +31,14 @@ test('a docs-derived (generated) spec is incomplete until it claims otherwise', 
 });
 
 test('a complete spec goes stale once its check date passes the threshold', () => {
-  // asana/twilio are found-openapi (complete); from far enough in the future
-  // their capturedAt clock exceeds the 90-day threshold.
-  const later = new Date('2027-01-01T00:00:00Z');
+  // asana/twilio are found-openapi (complete); 91+ days after the later of
+  // their check dates, the staleness clock exceeds the 90-day threshold. The
+  // dates are read from the registry so a routine re-check doesn't break this.
+  const checked = ['asana', 'twilio'].map((a) => {
+    const s = JSON.parse(readFileSync(sourcePath(a), 'utf8'));
+    return Date.parse(s.lastCheckedAt ?? s.capturedAt);
+  });
+  const later = new Date(Math.max(...checked) + 91 * 86_400_000);
   const rows = report([info('asana'), info('twilio')], later, 90);
   assert.equal(rows.length, 2);
   assert.ok(rows.every((r) => r.status === 'stale'), rows.map((r) => `${r.adaptor}:${r.status}`).join(', '));

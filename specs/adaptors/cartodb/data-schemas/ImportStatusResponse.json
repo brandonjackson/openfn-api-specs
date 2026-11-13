@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cartodb/ImportStatusResponse",
+  "title": "ImportStatusResponse",
+  "x-openfn-adaptor": "cartodb",
+  "x-source": {
+    "openapi": "#/components/schemas/ImportStatusResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "ID",
+      "description": "A unique identifier for the import process. It is the same as the `import_id` provided in the request"
+    },
+    "user_id": {
+      "type": "string",
+      "title": "User ID",
+      "description": "A unique alphanumeric element that identifies the CARTO account user in the internal database"
+    },
+    "table_id": {
+      "type": "string",
+      "title": "Table ID",
+      "description": "A unique alphanumeric element that identifies the created table in the internal CARTO database"
+    },
+    "data_type": {
+      "type": "string",
+      "enum": [
+        "file",
+        "url",
+        "external_table",
+        "query",
+        "table",
+        "datasource"
+      ],
+      "title": "Data type",
+      "description": "This element identifies the service type used to import the file"
+    },
+    "table_name": {
+      "type": "string",
+      "title": "Table name",
+      "description": "The final name of the created table in the targeted CARTO account. It usually has the same name as the uploaded file, unless there already exists a table with the same name (in this case, an integer number is appended to the table name)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "enqueued",
+        "pending",
+        "uploading",
+        "unpacking",
+        "importing",
+        "guessing",
+        "complete",
+        "failure"
+      ],
+      "title": "State",
+      "description": "A string value indicating the current state of the importing process"
+    },
+    "error_code": {
+      "type": "number",
+      "title": "Error code",
+      "description": "A number corresponding to the error code in case of failure during the import process, that is, when the `success` item has a `false` value"
+    },
+    "queue_id": {
+      "type": "string",
+      "title": "Queue ID",
+      "description": "A unique identifier for the import process in the importing queue. It is the same as the `import_id` provided in the request"
+    },
+    "tables_created_count": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "title": "Tables created counter",
+      "description": "The number of tables that the import process generated. For multi-file uploads, this value can be greater than one"
+    },
+    "synchronization_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "Synchronization ID",
+      "description": "This element has a `null` value when the import is not configured as a Sync Table"
+    },
+    "type_guessing": {
+      "type": "boolean",
+      "title": "Type guessing",
+      "description": "A boolean indicating whether field type guessing (for Excel and CSVs) is enabled or not"
+    },
+    "quoted_fields_guessing": {
+      "type": "boolean",
+      "title": "Quoted fields guessing",
+      "description": "A boolean indicating whether type guessing of CSV fields inside double quotes is enabled for the data import"
+    },
+    "content_guessing": {
+      "type": "boolean",
+      "title": "Content guessing",
+      "description": "A boolean indicating whether content guessing and automatic geocoding is enabled for the data import"
+    },
+    "create_visualization": {
+      "type": "boolean",
+      "title": "Create visualization",
+      "description": "A boolean indicating whether the import process will create a map automatically or not. Its value corresponds to the import option `create_vis` chosen by the user"
+    },
+    "visualization_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "Visualization ID",
+      "description": "A unique identifier for the map created in the import process. Only applies if `created_visualization` is set to `true`"
+    },
+    "get_error_text": {
+      "type": "string",
+      "title": "Get error text",
+      "description": "This element contains an error description to be outputted in case of a failure during the import process. It contains the error title and description, its source (`user` or `cartodb`), and troubleshooting details"
+    },
+    "display_name": {
+      "type": "string",
+      "title": "Display name",
+      "description": "Similar to `table_name`. For `url` uploads, it shows the name of the file. Otherwise, it shows the `import_id`"
+    },
+    "success": {
+      "type": "boolean",
+      "title": "Success",
+      "description": "A boolean value indicating whether the import process succeeded"
+    },
+    "warnings": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "Warnings",
+      "description": "A text field containing warning messages related to the import process, if applicable of the file. Otherwise, it shows the `import_id`"
+    },
+    "is_raster": {
+      "type": "boolean",
+      "title": "Is raster",
+      "description": "A boolean value indicating whether the imported table contains raster data or not"
+    }
+  }
+}

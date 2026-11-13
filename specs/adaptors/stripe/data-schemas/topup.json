@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "stripe/topup",
-  "title": "Topup",
+  "title": "Top-up",
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/topup",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "To top up your Stripe balance, you create a top-up object. You can retrieve\nindividual top-ups, as well as list all top-ups. Top-ups are identified by a\nunique, random ID.\n\nRelated guide: [Topping up your platform account](https://docs.stripe.com/connect/top-ups)",
   "properties": {
@@ -78,6 +78,17 @@
       "maxLength": 5000,
       "type": "string"
     },
+    "initiated_by": {
+      "description": "Indicates whether the top-up was initiated by Stripe or by the user.",
+      "enum": [
+        "stripe",
+        "user"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "livemode": {
       "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
       "type": "boolean"
@@ -96,6 +107,33 @@
         "topup"
       ],
       "type": "string"
+    },
+    "payment_method": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "payment_method.json"
+        }
+      ],
+      "description": "The ID of a PaymentMethod representing the payment method used for the top-up. A PaymentMethod of type `us_bank_account` can be used.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "payment_method.json"
+          }
+        ]
+      }
+    },
+    "payment_method_options": {
+      "anyOf": [
+        {
+          "$ref": "topup_resource_payment_method_options.json"
+        }
+      ],
+      "description": "Payment-method-specific configuration for this top-up."
     },
     "source": {
       "anyOf": [
@@ -146,6 +184,8 @@
   "type": "object",
   "x-expandableFields": [
     "balance_transaction",
+    "payment_method",
+    "payment_method_options",
     "source"
   ],
   "x-resourceId": "topup"

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaModelInfo",
+  "title": "ModelInfo",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaModelInfo",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "allowed_fallback_models": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Allowed Fallback Models",
+      "description": "Model IDs this model accepts as `fallbacks[i].model` on the Messages API. An empty list means the `fallbacks` parameter is not supported for this model as primary.",
+      "x-anthropic-beta-required": [
+        "server-side-fallback-2026-06-01",
+        "server-side-fallback-2026-07-01"
+      ]
+    },
+    "capabilities": {
+      "anyOf": [
+        {
+          "$ref": "BetaModelCapabilities.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Object mapping capability names to their support details. Keys are always present for all known capabilities."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "description": "RFC 3339 datetime string representing the time at which the model was released. May be set to an epoch value if the release date is unknown.",
+      "examples": [
+        "2026-09-21T00:00:00Z"
+      ]
+    },
+    "deprecated_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Deprecated At",
+      "description": "RFC 3339 datetime string representing the time of the model's most recent deprecation. Populated for `deprecated` and `retired` models; `null` while the model is `active`."
+    },
+    "display_name": {
+      "type": "string",
+      "title": "Display Name",
+      "description": "A human-readable name for the model.",
+      "examples": [
+        "Claude Opus 5.5"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Unique model identifier.",
+      "examples": [
+        "claude-opus-5-5"
+      ]
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": [
+        "active",
+        "deprecated",
+        "retired"
+      ],
+      "title": "Lifecycle",
+      "description": "The model's current lifecycle stage.\n\n- `active`: The model is available for use, open to new adopters, and not scheduled for retirement.\n- `deprecated`: The model remains callable for organizations with existing access, but is headed for retirement and closed to new adopters.\n- `retired`: The model is no longer available for use; inference requests naming it fail. It remains in the catalogue as the historical record of its retirement.",
+      "default": "active"
+    },
+    "line": {
+      "anyOf": [
+        {
+          "$ref": "BetaModelLine.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The model line this model belongs to, such as `opus` for both Claude Opus 4.5 and Claude Opus 4.6. More lines may be added. `null` when the model belongs to no line; do not infer a line from the `id`.",
+      "examples": [
+        "opus"
+      ]
+    },
+    "max_input_tokens": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Max Input Tokens",
+      "description": "Maximum input context window size in tokens for this model."
+    },
+    "max_tokens": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Max Tokens",
+      "description": "Maximum value for the `max_tokens` parameter when using this model."
+    },
+    "retires_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Retires At",
+      "description": "RFC 3339 datetime string representing the model's currently scheduled retirement date. The schedule can be revised until retirement occurs; `null` while the model is `active` or while no retirement is scheduled. A past date on a `deprecated` model means retirement is overdue, not that it has occurred: `lifecycle` is the retirement signal."
+    },
+    "type": {
+      "type": "string",
+      "const": "model",
+      "title": "Type",
+      "description": "Object type.\n\nFor Models, this is always `\"model\"`.",
+      "default": "model"
+    }
+  },
+  "type": "object",
+  "required": [
+    "allowed_fallback_models",
+    "capabilities",
+    "created_at",
+    "deprecated_at",
+    "display_name",
+    "id",
+    "lifecycle",
+    "line",
+    "max_input_tokens",
+    "max_tokens",
+    "retires_at",
+    "type"
+  ]
+}

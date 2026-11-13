@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index mailgun` — do not edit by hand -->
 
-base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic | 265 operations in 40 resources
+base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic | 267 operations in 40 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -65,13 +65,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /v3/{domain_name}/whitelists — DELETE-v3--domainID--whitelists: Clear allowlist
 
 ## Bounce Classification
-- GET /v1/bounce-classification/stats — GET-v1-bounce-classification-stats: List statistics, ordered by total bounces (deprecated)
-- GET /v1/bounce-classification/domains — GET-v1-bounce-classification-domains: List domains statistic per account (deprecated)
-- GET /v1/bounce-classification/domains/{domain}/entities — GET-v1-bounce-classification-domains--domain--entities: List statistic per domain (deprecated)
-- GET /v1/bounce-classification/domains/{domain}/entities/{entity-id}/rules — GET-v1-bounce-classification-domains--domain--entities--entity-id--rules: List statistic per entity (deprecated)
-- GET /v1/bounce-classification/domains/{domain}/events — GET-v1-bounce-classification-domains--domain--events: List Bounce Logs (deprecated)
-- GET /v1/bounce-classification/config/entities — GET-v1-bounce-classification-config-entities: List entities (deprecated)
-- GET /v1/bounce-classification/config/rules — GET-v1-bounce-classification-config-rules: List rules (deprecated)
 - POST /v2/bounce-classification/metrics — POST-v2-bounce-classification-metrics: List statistic v2
 
 ## Bounces
@@ -245,6 +238,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/thresholds/limits/{name} — GET-v1-thresholds-limits--name-: Get a limit threshold for an account
 - PUT /v1/thresholds/limits/{name} — PUT-v1-thresholds-limits--name-: Update a limit threshold for an account
 - DELETE /v1/thresholds/limits/{name} — DELETE-v1-thresholds-limits--name-: Delete a limit threshold for an account
+- GET /v2/thresholds/limits — GET-v2-thresholds-limits: List all limits for a given subaccount
+- POST /v2/thresholds/limits — POST-v2-thresholds-limits: Create a limit for an account or subaccount
+- GET /v2/thresholds/limits/{metric} — GET-v2-thresholds-limits--metric-: Get a limit for a subaccount for the given metric if it exists, otherwise returns 404. Takes the SubAccountID from the X-Mailgun-On-Behalf-Of header.
+- PUT /v2/thresholds/limits/{metric} — PUT-v2-thresholds-limits--metric-: Update a limit for an account given the metric name in the path
+- DELETE /v2/thresholds/limits/{metric} — DELETE-v2-thresholds-limits--metric-: Delete a limit for an account given the metric name in the path
+- GET /v2/thresholds/limits-primary — GET-v2-thresholds-limits-primary: Get parent-level limit warning settings for an account
+- POST /v2/thresholds/limits-primary — POST-v2-thresholds-limits-primary: Create parent-level limit warning settings for an account
+- PUT /v2/thresholds/limits-primary — PUT-v2-thresholds-limits-primary: Update parent-level limit warning settings for an account
+- DELETE /v2/thresholds/limits-primary — DELETE-v2-thresholds-limits-primary: Delete parent-level limit warning settings for an account
 
 ## Logs
 - POST /v1/analytics/logs — POST-v1-analytics-logs: List logs

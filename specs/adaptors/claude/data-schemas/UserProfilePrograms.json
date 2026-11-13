@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/UserProfilePrograms",
+  "title": "UserProfilePrograms",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/UserProfilePrograms",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A user profile's standing in each program. A program is a set of capabilities or exemptions that Anthropic approves for the entity the profile represents. A program reads `null` when the profile has no status in it, when the caller's organization is not entitled to read programs, or when the response does not report that program. Retrieving the profile reports every program. Anthropic may add programs; ignore a key you do not recognize.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cyber",
+    "efs"
+  ],
+  "properties": {
+    "cyber": {
+      "description": "The profile's standing in the Cyber Verification Program. `null` when the profile has no status in it. Only retrieving the profile gives the full answer: a list or update response can show `null`, or a status other than `active`, for a profile that reads `active` when retrieved.",
+      "anyOf": [
+        {
+          "$ref": "UserProfileCyberProgram.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        {
+          "status": "active",
+          "tiers": {
+            "a": {
+              "status": "inactive"
+            },
+            "b": {
+              "status": "active"
+            },
+            "c": {
+              "status": "inactive"
+            }
+          },
+          "requirements": {
+            "data_retention": true,
+            "human_review": true
+          }
+        }
+      ]
+    },
+    "efs": {
+      "description": "The profile's standing in Enterprise Frontier Safeguards. `null` unless the platform's attestation for the program is in place on this profile, or the entity it represents has applied to the program. A list of user profiles does not report this program: there it reads `null` for every profile, so retrieve the profile to read it.",
+      "anyOf": [
+        {
+          "$ref": "UserProfileEfsProgram.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        {
+          "status": "active",
+          "features": {
+            "data_retention_exemption": {
+              "status": "inactive"
+            },
+            "cmek": {
+              "status": "active"
+            },
+            "storage": {
+              "status": "inactive"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "example": {
+    "cyber": {
+      "status": "active",
+      "tiers": {
+        "a": {
+          "status": "inactive"
+        },
+        "b": {
+          "status": "active"
+        },
+        "c": {
+          "status": "inactive"
+        }
+      },
+      "requirements": {
+        "data_retention": true,
+        "human_review": true
+      }
+    },
+    "efs": {
+      "status": "active",
+      "features": {
+        "data_retention_exemption": {
+          "status": "inactive"
+        },
+        "cmek": {
+          "status": "active"
+        },
+        "storage": {
+          "status": "inactive"
+        }
+      }
+    }
+  }
+}

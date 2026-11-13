@@ -1,46 +1,547 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Mogli SMS Apex REST API (generated)",
-    "version": "v1",
-    "description": "Focused OpenAPI 3.0.3 for the Mogli SMS Salesforce Apex REST endpoint used by the OpenFn mogli adaptor. Mogli SMS is a managed package installed in a Salesforce org; the adaptor creates and updates SMS records via the custom Apex REST resource /services/apexrest/Mogli_SMS/v1/sms on the org instance URL.",
+    "title": "Mogli SMS for Salesforce (Apex REST and Mogli Message sObject)",
+    "version": "Mogli_SMS/v1",
+    "description": "Mogli SMS is a Salesforce managed package (namespace Mogli_SMS); it has no API of its own outside the customer's Salesforce org. The OpenFn mogli adaptor logs in to the org with jsforce (SOAP username + password + security token) and then calls the package's Apex REST resource /services/apexrest/Mogli_SMS/v1/sms (POST to record an inbound SMS, PUT to update a message's status). Mogli messages themselves are the custom object Mogli_SMS__SMS__c, reachable through the standard Salesforce REST sObject API of the same org; those routes are included so the object is modelled, but the mogli adaptor exposes no function that calls them (use the salesforce adaptor).",
     "x-openfn-adaptor": "mogli"
   },
-  "servers": [{ "url": "https://your-instance.my.salesforce.com" }],
+  "servers": [
+    {
+      "url": "https://{instance}.my.salesforce.com",
+      "description": "The org's instanceUrl returned by login.",
+      "variables": {
+        "instance": {
+          "default": "your-org",
+          "description": "My Domain of the Salesforce org with Mogli SMS installed."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "salesforceSession": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Login",
+      "description": "Salesforce SOAP login performed by jsforce."
+    },
+    {
+      "name": "Mogli SMS Apex REST",
+      "description": "Managed-package Apex REST resource Mogli_SMS/v1/sms."
+    },
+    {
+      "name": "Mogli Message",
+      "description": "Mogli_SMS__SMS__c records via the Salesforce sObject REST API."
+    }
+  ],
   "paths": {
-    "/services/apexrest/Mogli_SMS/v1/sms": {
+    "/services/Soap/u/{apiVersion}": {
       "post": {
-        "operationId": "createSMS",
-        "summary": "Create an inbound SMS record",
+        "tags": [
+          "Login"
+        ],
+        "operationId": "soapLogin",
+        "summary": "Log in to Salesforce (SOAP partner login)",
+        "description": "execute() runs jsforce Connection.login(username, password + securityToken) against configuration.loginUrl; with no OAuth client configured jsforce 1.x posts a SOAP <login> envelope here and reads sessionId and serverUrl (instanceUrl) from the XML response. Not JSON.",
+        "x-openfn-source": "adaptor source packages/mogli/src/Adaptor.js createConnection()/login() via jsforce ^1.11 (SOAP login)",
+        "servers": [
+          {
+            "url": "{loginUrl}",
+            "variables": {
+              "loginUrl": {
+                "default": "https://login.salesforce.com",
+                "description": "configuration.loginUrl (https://test.salesforce.com for sandboxes, or the org's My Domain)."
+              }
+            }
+          }
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "apiVersion",
+            "in": "path",
+            "required": true,
+            "description": "SOAP API version; jsforce 1.x defaults to 42.0.",
+            "schema": {
+              "type": "string",
+              "default": "42.0"
+            }
+          },
+          {
+            "name": "SOAPAction",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "\"\""
+              ]
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/SmsInput" } }
+            "text/xml": {
+              "schema": {
+                "type": "string",
+                "description": "SOAP envelope with <login><username/><password/></login> (password = password + securityToken)."
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The created SMS record",
+            "description": "SOAP loginResponse (sessionId, serverUrl, userId, userInfo).",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/SmsResult" } }
+              "text/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "SOAP fault (e.g. INVALID_LOGIN).",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/apexrest/Mogli_SMS/v1/sms": {
+      "post": {
+        "tags": [
+          "Mogli SMS Apex REST"
+        ],
+        "operationId": "createInboundSms",
+        "summary": "Record an inbound SMS in Mogli",
+        "description": "Adaptor operation createSMS(params). The adaptor sends the expanded params as JSON with `type` forced to 'Inbound', the session as a bearer token and configuration.secret as `x-api-key`. Any 200/201/202 counts as success; the adaptor ignores the response body and pushes its own request body onto state.references. The resource's payload contract is not published by Mogli; the fields below are the ones the adaptor README and logs use.",
+        "x-openfn-source": "adaptor source packages/mogli/src/Adaptor.js createSMS(); README example",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "description": "configuration.secret.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboundSmsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted (201 and 202 are also treated as success). Response body not documented (type not documented).",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
             }
           }
         }
       },
       "put": {
-        "operationId": "updateSMS",
-        "summary": "Update an existing SMS record",
+        "tags": [
+          "Mogli SMS Apex REST"
+        ],
+        "operationId": "updateSmsStatus",
+        "summary": "Update a Mogli message's status",
+        "description": "Adaptor operation updateSMS(params): PUTs {Id, status} (any expanded params) to the same resource with the session bearer token. The README marks the update process as unfinished ('TODO: determine update process'). Response body ignored by the adaptor.",
+        "x-openfn-source": "adaptor source packages/mogli/src/Adaptor.js updateSMS()",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/SmsUpdateInput" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmsStatusUpdateRequest"
+              }
+            }
           }
         },
         "responses": {
           "200": {
-            "description": "The updated SMS record",
+            "description": "Updated (201 and 202 also treated as success). Response body not documented (type not documented).",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/SmsResult" } }
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/data/v{apiVersion}/sobjects/Mogli_SMS__SMS__c": {
+      "post": {
+        "tags": [
+          "Mogli Message"
+        ],
+        "operationId": "createMogliMessage",
+        "summary": "Create a Mogli Message record",
+        "description": "Standard sObject create. Creating an Outgoing message with Status 'Queued' makes Mogli send it (Mogli docs, Automated Text Messages).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MogliMessage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/data/v{apiVersion}/sobjects/Mogli_SMS__SMS__c/describe": {
+      "get": {
+        "tags": [
+          "Mogli Message"
+        ],
+        "operationId": "describeMogliMessage",
+        "summary": "Describe the Mogli Message object",
+        "description": "Returns the org's full field list for Mogli_SMS__SMS__c, the authoritative source for field API names this document cannot list.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "sObject describe result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SObjectDescribe"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/data/v{apiVersion}/sobjects/Mogli_SMS__SMS__c/{id}": {
+      "get": {
+        "tags": [
+          "Mogli Message"
+        ],
+        "operationId": "getMogliMessage",
+        "summary": "Get a Mogli Message record",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          },
+          {
+            "$ref": "#/components/parameters/RecordId"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated field API names to return.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MogliMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Mogli Message"
+        ],
+        "operationId": "updateMogliMessage",
+        "summary": "Update a Mogli Message record",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          },
+          {
+            "$ref": "#/components/parameters/RecordId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MogliMessage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Mogli Message"
+        ],
+        "operationId": "deleteMogliMessage",
+        "summary": "Delete a Mogli Message record",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          },
+          {
+            "$ref": "#/components/parameters/RecordId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/data/v{apiVersion}/query": {
+      "get": {
+        "tags": [
+          "Mogli Message"
+        ],
+        "operationId": "queryMogliMessages",
+        "summary": "Query Mogli Message records with SOQL",
+        "description": "Standard SOQL query endpoint, shown here for Mogli_SMS__SMS__c (e.g. SELECT Id, Mogli_SMS__Status__c, Mogli_SMS__Phone_Number__c FROM Mogli_SMS__SMS__c WHERE Mogli_SMS__Status__c = 'Queued'). Pages via nextRecordsUrl.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "SOQL query.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "SELECT Id, Mogli_SMS__Status__c FROM Mogli_SMS__SMS__c LIMIT 10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Query result page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MogliMessageQueryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Salesforce error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesforceErrorList"
+                }
+              }
             }
           }
         }
@@ -48,31 +549,244 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "salesforceSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Salesforce session id (connection.accessToken) from the SOAP login."
+      }
+    },
+    "parameters": {
+      "ApiVersion": {
+        "name": "apiVersion",
+        "in": "path",
+        "required": true,
+        "description": "Salesforce REST API version without the 'v' (jsforce 1.x default 42.0).",
+        "schema": {
+          "type": "string",
+          "default": "42.0"
+        }
+      },
+      "RecordId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "18-character Salesforce record id.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
     "schemas": {
-      "SmsInput": {
+      "InboundSmsRequest": {
         "type": "object",
+        "description": "Body the adaptor sends; Mogli's Apex class may accept more (not published).",
+        "additionalProperties": true,
+        "required": [
+          "type"
+        ],
         "properties": {
-          "sender": { "type": "string", "example": "+15551234567" },
-          "receivedAt": { "type": "string", "format": "date-time" },
-          "message": { "type": "string", "example": "Hello from the field" }
+          "type": {
+            "type": "string",
+            "enum": [
+              "Inbound"
+            ],
+            "description": "Always set to 'Inbound' by the adaptor."
+          },
+          "sender": {
+            "type": "string",
+            "description": "Sender phone number."
+          },
+          "message": {
+            "type": "string",
+            "description": "Message text."
+          },
+          "receivedAt": {
+            "type": "string",
+            "description": "Time received (format not documented)."
+          }
+        },
+        "example": {
+          "type": "Inbound",
+          "sender": "+10000000000",
+          "message": "Example inbound text",
+          "receivedAt": "2026-01-01T00:00:00Z"
         }
       },
-      "SmsUpdateInput": {
+      "SmsStatusUpdateRequest": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
-          "Id": { "type": "string", "example": "a0B5f000000abcdEAA" },
-          "status": { "type": "string", "example": "Delivered" }
+          "Id": {
+            "type": "string",
+            "description": "Mogli message id."
+          },
+          "status": {
+            "type": "string",
+            "description": "New delivery status."
+          }
         }
       },
-      "SmsResult": {
+      "MogliMessage": {
+        "type": "object",
+        "description": "A Mogli_SMS__SMS__c record. Standard Salesforce system fields plus the Mogli fields whose API names Mogli documents; Mogli also documents, by label only, Direction (Incoming/Outgoing), Message, Scheduled Delivery, Gateway, Contact/Lead/Opportunity/Campaign lookups and Attachments, whose API names are org-visible via describeMogliMessage but not published, so they are left to additionalProperties.",
+        "additionalProperties": true,
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "readOnly": true,
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            }
+          },
+          "Id": {
+            "type": "string",
+            "readOnly": true
+          },
+          "Name": {
+            "type": "string",
+            "readOnly": true,
+            "description": "Auto-number record name."
+          },
+          "OwnerId": {
+            "type": "string"
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CreatedById": {
+            "type": "string"
+          },
+          "LastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "LastModifiedById": {
+            "type": "string"
+          },
+          "SystemModstamp": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "IsDeleted": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "Mogli_SMS__Status__c": {
+            "type": "string",
+            "description": "Picklist; documented values include Queued, Scheduled, Sent Successfully, Received Successfully."
+          },
+          "Mogli_SMS__Phone_Number__c": {
+            "type": "string",
+            "description": "Recipient/sender number in E.164 (+<country><number>)."
+          },
+          "Mogli_SMS__Mogli_Template__c": {
+            "type": "string",
+            "description": "Name of the Mogli Template used (string, since Grays Peak v5.171)."
+          }
+        },
+        "example": {
+          "Id": "a0X000000000000AAA",
+          "Mogli_SMS__Status__c": "Queued",
+          "Mogli_SMS__Phone_Number__c": "+10000000000"
+        }
+      },
+      "MogliMessageQueryResult": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "a0B5f000000abcdEAA" },
-          "success": { "type": "boolean", "example": true },
-          "sender": { "type": "string", "example": "+15551234567" },
-          "message": { "type": "string", "example": "Hello from the field" },
-          "status": { "type": "string", "example": "Received" },
-          "receivedAt": { "type": "string", "format": "date-time" }
+          "totalSize": {
+            "type": "integer"
+          },
+          "done": {
+            "type": "boolean"
+          },
+          "nextRecordsUrl": {
+            "type": "string"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MogliMessage"
+            }
+          }
+        }
+      },
+      "SaveResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "SObjectDescribe": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "custom": {
+            "type": "boolean"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SalesforceErrorList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "errorCode": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }

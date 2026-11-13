@@ -1,64 +1,514 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Hubtel Messaging API (mock subset)",
-    "version": "1.0.0",
-    "description": "Focused subset of the Hubtel messaging REST API used by the OpenFn hubtel adaptor: the Quick Send SMS endpoint (sendSMS) plus a generic request passthrough. Hubtel is a Ghanaian communications platform; messages are sent via POST /messages/send with clientId/clientSecret basic auth.",
+    "title": "Hubtel Messaging API (SMS and OTP)",
+    "version": "v1",
+    "description": "Hubtel's messaging APIs as documented on developers.hubtel.com: the SMS API (simple, batch and personalised sends, message and batch status) at sms.hubtel.com/v1 for business accounts and smsc.hubtel.com/v1 for personal accounts, and the OTP API at api-otp.hubtel.com. The OpenFn hubtel adaptor posts to {baseUrl}/messages/send with HTTP Basic auth (client id and secret); its request() can reach any path under the configured baseUrl.",
     "x-openfn-adaptor": "hubtel"
   },
-  "servers": [{ "url": "https://smsc.hubtel.com/v1" }],
+  "servers": [
+    {
+      "url": "https://sms.hubtel.com/v1",
+      "description": "SMS API, business accounts"
+    },
+    {
+      "url": "https://smsc.hubtel.com/v1",
+      "description": "SMS API, personal accounts (send and status-check endpoints only)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Messages"
+    },
+    {
+      "name": "Batches"
+    },
+    {
+      "name": "OTP"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
   "paths": {
     "/messages/send": {
+      "get": {
+        "operationId": "quickSendMessage",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send a message (quick send, URL authentication)",
+        "description": "Credentials are passed as query parameters instead of Basic auth.",
+        "security": [
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "clientid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API client id."
+          },
+          {
+            "name": "clientsecret",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API client secret."
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sender ID (max 11 characters)."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Recipient MSISDN."
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Message content."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (message too long, not routable, invalid delivery time)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request authorization failed"
+          },
+          "402": {
+            "description": "Not enough messaging credit"
+          },
+          "403": {
+            "description": "Forbidden: the recipient has not agreed to receive messages"
+          },
+          "500": {
+            "description": "The request failed on the server"
+          }
+        }
+      },
       "post": {
-        "operationId": "sendSMS",
-        "summary": "Send an SMS message (Quick Send)",
-        "description": "Send a single SMS message from a registered sender ID to a recipient.",
+        "operationId": "sendMessage",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send a message",
+        "description": "Used by the adaptor's sendSMS().",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/SendMessageRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Message accepted for delivery",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SentMessage"
+                }
               }
             }
           },
-          "200": {
-            "description": "Message accepted for delivery",
+          "201": {
+            "description": "Submitted; also returned with a non-zero status for invalid source/destination",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SentMessage"
+                }
               }
             }
+          },
+          "400": {
+            "description": "Bad request (message too long, not routable, invalid delivery time)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request authorization failed"
+          },
+          "402": {
+            "description": "Not enough messaging credit"
+          },
+          "403": {
+            "description": "Forbidden: the recipient has not agreed to receive messages"
+          },
+          "500": {
+            "description": "The request failed on the server"
+          }
+        }
+      }
+    },
+    "/messages/batch/simple/send": {
+      "post": {
+        "operationId": "sendBatchMessage",
+        "tags": [
+          "Batches"
+        ],
+        "summary": "Send one message to many recipients",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchSimpleSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentBatch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (message too long, not routable, invalid delivery time)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request authorization failed"
+          },
+          "402": {
+            "description": "Not enough messaging credit"
+          },
+          "403": {
+            "description": "Forbidden: the recipient has not agreed to receive messages"
+          },
+          "500": {
+            "description": "The request failed on the server"
+          }
+        }
+      }
+    },
+    "/messages/batch/personalized/send": {
+      "post": {
+        "operationId": "sendPersonalizedBatch",
+        "tags": [
+          "Batches"
+        ],
+        "summary": "Send personalised messages to many recipients",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchPersonalizedSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentBatch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (message too long, not routable, invalid delivery time)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request authorization failed"
+          },
+          "402": {
+            "description": "Not enough messaging credit"
+          },
+          "403": {
+            "description": "Forbidden: the recipient has not agreed to receive messages"
+          },
+          "500": {
+            "description": "The request failed on the server"
           }
         }
       }
     },
     "/messages/{messageId}": {
       "get": {
-        "operationId": "getMessageStatus",
-        "summary": "Get the delivery status of a sent message",
+        "operationId": "getMessage",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get the status of a message",
         "parameters": [
           {
             "name": "messageId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Message status",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/MessageStatus" }
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The specified message was not found"
+          },
+          "400": {
+            "description": "Bad request (message too long, not routable, invalid delivery time)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request authorization failed"
+          },
+          "402": {
+            "description": "Not enough messaging credit"
+          },
+          "403": {
+            "description": "Forbidden: the recipient has not agreed to receive messages"
+          },
+          "500": {
+            "description": "The request failed on the server"
+          }
+        }
+      }
+    },
+    "/messages/batch/{batchId}": {
+      "get": {
+        "operationId": "getMessageBatch",
+        "tags": [
+          "Batches"
+        ],
+        "summary": "Get the status of every message in a batch",
+        "parameters": [
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageBatch"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The specified batch was not found"
+          },
+          "400": {
+            "description": "Bad request (message too long, not routable, invalid delivery time)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request authorization failed"
+          },
+          "402": {
+            "description": "Not enough messaging credit"
+          },
+          "403": {
+            "description": "Forbidden: the recipient has not agreed to receive messages"
+          },
+          "500": {
+            "description": "The request failed on the server"
+          }
+        }
+      }
+    },
+    "/otp/send": {
+      "servers": [
+        {
+          "url": "https://api-otp.hubtel.com",
+          "description": "Hubtel OTP API"
+        }
+      ],
+      "post": {
+        "operationId": "sendOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Send a one-time password",
+        "description": "Rate-limited to 5 requests per minute.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/otp/verify": {
+      "servers": [
+        {
+          "url": "https://api-otp.hubtel.com",
+          "description": "Hubtel OTP API"
+        }
+      ],
+      "post": {
+        "operationId": "verifyOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Verify a one-time password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verified. The API returns no body; the HTTP status is the result."
+          },
+          "400": {
+            "description": "Verification failed"
+          }
+        }
+      }
+    },
+    "/otp/resend": {
+      "servers": [
+        {
+          "url": "https://api-otp.hubtel.com",
+          "description": "Hubtel OTP API"
+        }
+      ],
+      "post": {
+        "operationId": "resendOtp",
+        "tags": [
+          "OTP"
+        ],
+        "summary": "Resend a previously issued one-time password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpSession"
+                }
               }
             }
           }
@@ -67,59 +517,439 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Base64(ClientID:ClientSecret)."
+      }
+    },
     "schemas": {
-      "SendMessageRequest": {
+      "BatchMessage": {
         "type": "object",
-        "required": ["from", "to", "content"],
+        "description": "One message of a submitted batch.",
         "properties": {
-          "from": {
+          "recipient": {
             "type": "string",
-            "description": "Registered sender ID or short code",
-            "example": "OpenFn-Test-01"
-          },
-          "to": {
-            "type": "string",
-            "description": "Recipient MSISDN in international format",
-            "example": "233538675309"
+            "description": "MSISDN to receive the message."
           },
           "content": {
-            "type": "string",
-            "description": "The message text",
-            "example": "hi there, this is OpenFn using the Hubtel adaptor"
+            "type": "string"
           },
-          "registeredDelivery": {
-            "type": "boolean",
-            "description": "Request a delivery report"
+          "messageId": {
+            "type": "string",
+            "description": "Unique identifier of the message."
           }
         }
       },
-      "MessageResponse": {
+      "BatchPersonalizedSendRequest": {
         "type": "object",
+        "required": [
+          "From",
+          "personalizedRecipients"
+        ],
         "properties": {
-          "Status": {
-            "type": "integer",
-            "description": "0 indicates the message was accepted",
-            "example": 0
-          },
-          "MessageId": {
+          "From": {
             "type": "string",
-            "example": "43cceb19d2a242f58fb338692e12c0bb"
+            "maxLength": 11,
+            "description": "Sender ID or name recipients will see (max 11 characters)."
           },
-          "Rate": { "type": "number", "example": 0 },
-          "NetworkId": { "type": "string", "example": "0" }
+          "personalizedRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonalizedRecipient"
+            }
+          }
+        },
+        "example": {
+          "From": "MySenderId",
+          "personalizedRecipients": [
+            {
+              "To": "233200000000",
+              "Content": "Hi A, thank you for all you do"
+            },
+            {
+              "To": "233200000001",
+              "Content": "Hi B, thank you for all you do"
+            }
+          ]
         }
       },
-      "MessageStatus": {
+      "BatchSimpleSendRequest": {
         "type": "object",
+        "required": [
+          "From",
+          "Recipients",
+          "Content"
+        ],
         "properties": {
-          "MessageId": { "type": "string", "example": "43cceb19d2a242f58fb338692e12c0bb" },
-          "Status": { "type": "string", "example": "Delivered" },
-          "From": { "type": "string", "example": "OpenFn-Test-01" },
-          "To": { "type": "string", "example": "233538675309" },
-          "Content": { "type": "string" },
-          "Rate": { "type": "number", "example": 0.03 },
-          "NetworkId": { "type": "string", "example": "62001" },
-          "UpdatedAt": { "type": "string", "format": "date-time" }
+          "From": {
+            "type": "string",
+            "maxLength": 11,
+            "description": "Sender ID or name recipients will see (max 11 characters)."
+          },
+          "Recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "MSISDNs to receive the message."
+          },
+          "Content": {
+            "type": "string",
+            "description": "Content of the message."
+          }
+        },
+        "example": {
+          "From": "MySenderId",
+          "Recipients": [
+            "233200000000",
+            "233200000001"
+          ],
+          "Content": "Welcome to bulk SMS via API"
+        }
+      },
+      "Message": {
+        "type": "object",
+        "description": "Status of a sent message.",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "description": "Cost per SMS."
+          },
+          "units": {
+            "type": "integer",
+            "description": "Default value is 0 (personal-account API)."
+          },
+          "batchId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Batch the message belongs to, or null."
+          },
+          "messageId": {
+            "type": "string",
+            "description": "Unique identifier of the message."
+          },
+          "content": {
+            "type": "string",
+            "description": "Content of the message."
+          },
+          "status": {
+            "type": "string",
+            "description": "Delivery status from the telco DLR.",
+            "example": "Delivered",
+            "x-documented-values": [
+              "Delivered",
+              "Sent",
+              "Pending",
+              "Blacklisted",
+              "Undeliverable",
+              "Failed",
+              "Unrouteable",
+              "Error",
+              "Rejected",
+              "NACK/0x0000000b",
+              "NACK/0x0000000a"
+            ]
+          },
+          "clientReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "networkId": {
+            "type": "string",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "When the telco delivered the message."
+          },
+          "time": {
+            "type": "string",
+            "description": "When the message was sent."
+          },
+          "to": {
+            "type": "string",
+            "description": "Recipient MSISDN."
+          },
+          "from": {
+            "type": "string",
+            "description": "Sender ID."
+          }
+        },
+        "example": {
+          "rate": 0.0309,
+          "batchId": null,
+          "messageId": "eadbfcd0-94d1-438f-ad32-0013f34042c2",
+          "content": "The Job is the JOB",
+          "status": "Delivered",
+          "updateTime": "2023-05-30T16:43:15",
+          "time": "2023-05-30T16:43:13.7208383Z",
+          "to": "233200000000",
+          "from": "MySenderId"
+        }
+      },
+      "MessageBatch": {
+        "type": "object",
+        "description": "Status of every message in a batch.",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          }
+        },
+        "example": {
+          "batchId": "eadbfcd0-94d1-438f-ad32-0013f34042c2",
+          "data": [
+            {
+              "rate": 0.0309,
+              "messageId": "f58e7f2a-203a-4079-a518-7f6647099b5e",
+              "content": "Hi B, thank you",
+              "status": "Delivered",
+              "updateTime": "2023-03-21T12:54:43",
+              "time": "2023-03-21T12:50:27.893495Z",
+              "to": "233200000000",
+              "from": "MySenderId"
+            }
+          ]
+        }
+      },
+      "OtpSession": {
+        "type": "object",
+        "description": "OTP session returned by send and resend.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Status of the request."
+          },
+          "code": {
+            "type": "string",
+            "description": "Response code: 0000 success, 2001 OTP session may have expired."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "requestId": {
+                "type": "string",
+                "description": "Identifier of the OTP session."
+              },
+              "prefix": {
+                "type": "string",
+                "description": "4-character phrase shown with the code."
+              }
+            }
+          }
+        },
+        "example": {
+          "message": "success",
+          "code": "0000",
+          "data": {
+            "requestId": "707ebf1408f149ff826a556c5b2caba0",
+            "prefix": "ZDSQ"
+          }
+        }
+      },
+      "PersonalizedRecipient": {
+        "type": "object",
+        "required": [
+          "To",
+          "Content"
+        ],
+        "properties": {
+          "To": {
+            "type": "string",
+            "description": "MSISDN to receive the message."
+          },
+          "Content": {
+            "type": "string",
+            "description": "Content for this recipient."
+          }
+        }
+      },
+      "ResendOtpRequest": {
+        "type": "object",
+        "required": [
+          "requestId"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "requestId": "707ebf1408f149ff826a556c5b2caba0"
+        }
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "required": [
+          "From",
+          "To",
+          "Content"
+        ],
+        "properties": {
+          "From": {
+            "type": "string",
+            "maxLength": 11,
+            "description": "Sender ID or name recipients will see (max 11 characters)."
+          },
+          "To": {
+            "type": "string",
+            "description": "Mobile number of the recipient."
+          },
+          "Content": {
+            "type": "string",
+            "description": "Content of the message."
+          }
+        },
+        "example": {
+          "From": "MySenderId",
+          "To": "233200000000",
+          "Content": "This is a test. Kindly ignore."
+        }
+      },
+      "SendOtpRequest": {
+        "type": "object",
+        "required": [
+          "senderId",
+          "phoneNumber",
+          "countryCode"
+        ],
+        "properties": {
+          "senderId": {
+            "type": "string",
+            "maxLength": 11,
+            "description": "Approved Sender ID (11 alphanumeric characters or less)."
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Recipient's number in full international (E.164) format."
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code, e.g. GH."
+          }
+        },
+        "example": {
+          "senderId": "MySenderId",
+          "phoneNumber": "233200000000",
+          "countryCode": "GH"
+        }
+      },
+      "SentBatch": {
+        "type": "object",
+        "description": "Result of submitting a batch (simple or personalized).",
+        "properties": {
+          "batchId": {
+            "type": "string",
+            "description": "The id of the batch of messages."
+          },
+          "status": {
+            "type": "integer",
+            "description": "Hubtel request status code (0 = submitted). Other documented values: 1 invalid destination, 2 invalid source, 3 body too long, 4 not routable, 5 invalid delivery time, 6 content rejected, 7 parameter not allowed, 8 parameter invalid, 12 payment required, 100 general invalid request."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BatchMessage"
+            }
+          }
+        },
+        "example": {
+          "batchId": "165949ee-431b-4bf8-9eca-108058a8bc32",
+          "status": 0,
+          "data": [
+            {
+              "recipient": "233200000000",
+              "content": "Welcome to bulk SMS via API",
+              "messageId": "e80133f9-e822-457c-98fb-d217bc4a1f83"
+            }
+          ]
+        }
+      },
+      "SentMessage": {
+        "type": "object",
+        "description": "Result of submitting a single message.",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "description": "Cost per SMS."
+          },
+          "messageId": {
+            "type": "string",
+            "description": "Unique identifier of the message."
+          },
+          "status": {
+            "type": "integer",
+            "description": "Hubtel request status code (0 = submitted). Other documented values: 1 invalid destination, 2 invalid source, 3 body too long, 4 not routable, 5 invalid delivery time, 6 content rejected, 7 parameter not allowed, 8 parameter invalid, 12 payment required, 100 general invalid request."
+          },
+          "networkId": {
+            "type": "string",
+            "description": "Network id of the message."
+          },
+          "clientReference": {
+            "type": "string",
+            "nullable": true,
+            "description": "Client reference of the message. Can be null."
+          },
+          "statusDescription": {
+            "type": "string",
+            "nullable": true,
+            "description": "Brief description of the request status."
+          }
+        },
+        "example": {
+          "rate": 0.0246,
+          "messageId": "fab43849-6c5b-4334-a88b-d06520b1ace8",
+          "status": 0,
+          "networkId": "62002",
+          "clientReference": null,
+          "statusDescription": "request submitted successfully"
+        }
+      },
+      "SmsError": {
+        "type": "object",
+        "description": "Error body; the docs describe the fields of SentMessage (status code + statusDescription) without a separate sample.",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "statusDescription": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "required": [
+          "requestId",
+          "prefix",
+          "code"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "The 4-digit code entered by the user."
+          }
+        },
+        "example": {
+          "requestId": "707ebf1408f149ff826a556c5b2caba0",
+          "prefix": "ZDSQ",
+          "code": "0000"
         }
       }
     }

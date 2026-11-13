@@ -82,6 +82,40 @@ test('an OpenAPI 3.x upstream passes through, gaining only the adaptor stamp', (
   assert.equal(upstream.info['x-openfn-adaptor'], undefined);
 });
 
+test('a 3.0 upstream has tuple-form items rewritten to anyOf, leaving example data alone', () => {
+  const upstream = {
+    openapi: '3.0.0',
+    info: { title: 'T', version: '1' },
+    paths: {
+      '/caps': {
+        get: {
+          responses: {
+            '200': {
+              description: 'ok',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: [{ type: 'string' }, { type: 'number' }],
+                    example: { items: [1, 2] },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const { openapi, warnings } = buildOpenapi(upstream, 'demo', 'json');
+  const schema = openapi.paths['/caps'].get.responses['200'].content['application/json'].schema;
+  assert.deepEqual(schema.items, { anyOf: [{ type: 'string' }, { type: 'number' }] });
+  assert.deepEqual(schema.example, { items: [1, 2] });
+  assert.equal(warnings.length, 1);
+  // The verbatim upstream parse is untouched.
+  assert.ok(Array.isArray((upstream.paths['/caps'].get.responses['200'].content['application/json'].schema as any).items));
+});
+
 test('countOperations counts path+method pairs', () => {
   assert.equal(countOperations(JSON.parse(OPENAPI_31)), 1);
   assert.equal(countOperations({ paths: { '/a': { get: {}, post: {}, parameters: [] }, '/b': { put: {} } } }), 3);

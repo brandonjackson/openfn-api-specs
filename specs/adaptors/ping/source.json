@@ -3,12 +3,71 @@
   "npm": "@openfn/language-ping",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ping/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ping/types/index.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ping/dist/index.cjs",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/ping"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://msawe-primes-ping-bau-uat-apimgmt.azure-api.net/",
+      "result": "not-found",
+      "note": "APIM gateway is not reachable from here (proxy CONNECT 502), and APIM serves API definitions only to subscribed partners. The developer portal (msawe-primes-ping-bau-uat-apimgmt.developer.azure-api.net) is likewise unreachable."
+    },
+    {
+      "kind": "docs",
+      "url": "https://www.unhcr.org/us/primes-interoperability-gateway-ping-frequently-asked-questions",
+      "result": "not-found",
+      "note": "UNHCR PING FAQ (403 to automated fetch); per search snippets it describes on-demand API, scheduled file and partner-API transfers and partner authentication, but publishes no endpoint reference. The PING two-pager PDF (unhcr.org/sites/default/files/2024-07/ping_two_pager.pdf) also returns 403."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No UNHCR / PRIMES / PING entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/_api/ws/proxy (search-all: \"UNHCR PING\")",
+      "result": "not-found",
+      "note": "No public workspace or collection."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/unhcr",
+      "result": "not-found",
+      "note": "Web search for a UNHCR-published PING OpenAPI/Swagger or repo found none (the GitHub org listing API is not available in this session)."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.google.com/document/d/1Nh84EPAxt1EY2fAIGbZz2fh5Mq8nslq8",
+      "result": "used",
+      "note": "Unofficial integration requirements document (proGres interoperability referrals via PING and OpenFn). Its appendix gives example retrieval payloads (QueryParameters as ParameterName/Value) and an ingestion payload with an Attachments array on the BAU-UAT host; used only for request-body fields."
+    },
+    {
+      "kind": "source",
+      "url": "https://github.com/OpenFn/adaptors/tree/main/packages/ping",
+      "result": "used",
+      "note": "src/Utils.js (B2C token request, APIM headers), src/http.js (post JSDoc example), test/Adaptor.test.js (ingestion and paged-retrieval paths and fixture bodies) and configuration-schema.json (hosts, scope)."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The ping adaptor exposes no documented public operations (ast operations[] is empty); it is a thin HTTP client with generic get/post/request helpers plus Azure AD B2C OAuth. The dist source references an Azure B2C token host (primespingb2cuat.b2clogin.com) and an APIM scope (primespingb2cuat.onmicrosoft.com/apimurls/API.Read), i.e. a private 'SPING' API with no public vendor spec. Synthesized a minimal OpenAPI 3.0 from the adaptor surface: OAuth token endpoint, a connectivity probe, and generic record read/write paths mirroring the get/post/request helpers. Server URL is a placeholder; real host is instance-specific."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-tests"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ping/src/Utils.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ping/src/http.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ping/test/Adaptor.test.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ping/configuration-schema.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ping/ast.json",
+    "https://www.unhcr.org/us/primes-interoperability-gateway-ping-frequently-asked-questions",
+    "https://docs.google.com/document/d/1Nh84EPAxt1EY2fAIGbZz2fh5Mq8nslq8"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "ping is not a connectivity probe (the repo classification says so, wrongly): it targets UNHCR's PRIMES Interoperability Gateway (PING), the APIM-fronted API partners use to exchange data with proGres/PRIMES. The adaptor (1.1.3) authenticates against Azure AD B2C (ROPC password grant, hard-coded UAT user-flow path) and sends Bearer + Ocp-Apim-Subscription-Key to configuration.baseUrl via http.post/http.request; ast.json is empty because those live in the http namespace. PING's reference is shared only with partners under a Data Sharing Arrangement, so this models the three endpoints evidenced by the adaptor source and tests (token, POST /api/ingestion/v2/{partnerId}/data, POST /primes/fetch/paging/v3/retrievedatawithpaging); response bodies come from OpenFn's test fixtures, not vendor docs. Best-effort (private-api): http.request can reach any other PING route, which cannot be enumerated. The July stub's /ping, /records and /token paths were invented and are removed."
 }

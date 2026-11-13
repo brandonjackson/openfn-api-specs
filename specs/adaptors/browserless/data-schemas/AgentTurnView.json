@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "browserless/AgentTurnView",
+  "title": "AgentTurnView",
+  "x-openfn-adaptor": "browserless",
+  "x-source": {
+    "openapi": "#/components/schemas/AgentTurnView",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "turnId": {
+      "description": "Turn ID.",
+      "type": "string"
+    },
+    "query": {
+      "description": "The task submitted for this turn.",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "AgentRunStatus.json",
+      "description": "Turn status."
+    },
+    "data": {
+      "description": "The turn's result, same shape as the top-level `data`."
+    },
+    "steps": {
+      "description": "Step rationales for this turn.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "actions": {
+      "description": "Every tool call this turn made, appended as each finishes; seq gives call order.",
+      "type": "array",
+      "items": {
+        "$ref": "AgentActionView.json"
+      }
+    },
+    "units": {
+      "description": "Units derived from the model tokens this turn consumed. Informational only: runs are billed for browser time.",
+      "type": "number"
+    },
+    "replayError": {
+      "description": "Present only when `replay: true` was requested and the run couldn't provision a recordable session for this turn.",
+      "type": "string",
+      "const": "session_unavailable"
+    },
+    "replayId": {
+      "description": "Present when `replay: true` was requested and the recording was saved. Open it at `/account/session-replay/player?id=<replayId>`.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "actions",
+    "data",
+    "query",
+    "status",
+    "steps",
+    "turnId",
+    "units"
+  ]
+}

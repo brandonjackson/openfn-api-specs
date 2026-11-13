@@ -5,13 +5,38 @@
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/portal_subscription_cancellation_reason",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "",
   "properties": {
     "enabled": {
       "description": "Whether the feature is enabled.",
       "type": "boolean"
+    },
+    "feedback_options": {
+      "description": "The IDs of custom feedback options configured for this cancellation reason.",
+      "items": {
+        "anyOf": [
+          {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          {
+            "$ref": "billing.feedback_option.json"
+          }
+        ],
+        "x-expansionResources": {
+          "oneOf": [
+            {
+              "$ref": "billing.feedback_option.json"
+            }
+          ]
+        }
+      },
+      "type": [
+        "array",
+        "null"
+      ]
     },
     "options": {
       "description": "Which cancellation reasons will be given as options to the customer.",
@@ -36,5 +61,7 @@
     "options"
   ],
   "type": "object",
-  "x-expandableFields": []
+  "x-expandableFields": [
+    "feedback_options"
+  ]
 }

@@ -3,10 +3,63 @@
   "npm": "@openfn/language-ibipimo",
   "origin": "generated",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ibipimo/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-ibipimo/types/Adaptor.d.ts"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://demo.ibipimo.org/api/documentation",
+      "result": "not-found",
+      "note": "Laravel host behind ModSecurity; /api/documentation (l5-swagger), /docs, /docs.openapi, /docs.postman (Scribe), /swagger, /swagger.json, /api-docs, /v3/api-docs, /openapi.json, /openapi.yaml, /request-docs all 404."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://ibipimo.org/",
+      "result": "not-found",
+      "note": "Only ibipimo.org/www and demo exist (crt.sh); no developer portal."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenFn/adaptors/pull/1549",
+      "result": "rejected",
+      "note": "Adaptor PR: built against the demo API for Burundi's health system team; no docs link (the team does not control the IBIPIMO API)."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=ask-for-vl-results&type=code",
+      "result": "not-found",
+      "note": "Route names occur only in the OpenFn adaptor; no vendor org or SDK ('ibipimo' is a common Kirundi/Kinyarwanda word, other hits unrelated)."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Not listed."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=ibipimo",
+      "result": "not-found",
+      "note": "No public workspace, collection or API."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No public IBIPIMO API documentation or machine spec could be found (it is a private laboratory information system). Authored a focused OpenAPI 3.0.3 from the adaptor surface: exact POST paths /api/v1/post-viral-load-requests and /api/v1/ask-for-vl-results were confirmed in dist/index.cjs; GET /api/v1/samples/status and /api/v1/sites come from the get() JSDoc examples. Request bodies (siteid, samples[], sample_uids[]) match the documented examples. Response shapes are best-effort reconstructions from the processViralLoadResults/processViralLoadSubmission descriptions (savedSamples, errors, availableResults, pending, published) and should be treated as approximate."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-readme",
+    "adaptor-jobs"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/tree/main/packages/ibipimo",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/ibipimo/README.md",
+    "https://github.com/OpenFn/adaptors/pull/1549",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-ibipimo/ast.json",
+    "https://demo.ibipimo.org/"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "IBIPIMO is Burundi's HIV viral-load laboratory information system; its REST API is private, undocumented and fronted by ModSecurity (POSTs without the adaptor's User-Agent get 412). Modelled from the adaptor: the two named operations' routes POST /api/v1/post-viral-load-requests (201) and POST /api/v1/ask-for-vl-results (200), with request and response schemas taken from the live responses recorded in the adaptor README, plus GET /api/v1/samples/status and GET /api/v1/sites, which appear only as get() examples and in a test job and are flagged unverified (their response bodies are untyped). processViralLoadResults/processViralLoadSubmission are local helpers over these two responses and make no HTTP call. 'Full' means every route the adaptor surface evidences; the vendor's complete route list is unknown. Fixed from the July 2026 stub: response field names (saved_viral_load_samples/s_uid, not saved_samples/sample_uid), the 201 status for submissions, and invented Site/SampleStatus list shapes; real-looking patient names from the README example were not carried into examples."
 }

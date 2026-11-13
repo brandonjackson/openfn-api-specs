@@ -1,0 +1,282 @@
+FORMAT: 1A
+HOST: https://api.mementodatabase.com/v1/
+
+# Memento Cloud API Beta
+
+The Memento Cloud API is currently in a beta status. 
+
+
+### Authentication
+
+To use the API, you'll require the Memento Cloud Authentication Token from your account. 
+You must include it as a query parameter, token=$token for all requests to API.<br>
+
+##### Important
+* The Auth Token is user-specific and is a permanent token.
+* User Auth Token must be kept confidential.
+* Do NOT expose your Auth Token anywhere in public forums.
+* Exposing it to public may lead to data theft, loss or corruption.
+
+### API Limits
+
+The Memento Cloud API has a limit of **10 requests per minute**.
+
+In case, your application requires more than the upper limit, your additional API requests will not be processed. To avoid data transfer issues, please assess your API requirements well in advance. If you need any help, please contact our Support at support@mementodatabase.com
+
+## Libraries [/libraries]
+
+### List libraries [GET]
+
+- Attributes
+    + token (string, required) - Memento Cloud User Auth Token.
+
++ Response 200 (application/json)
+
+        {
+            "libraries": [
+                {
+                    "id" : "ht5dj7hqtey87",
+                    "name": "Library1",
+                    "owner" : "author",
+                    "createdTime" : "2015-08-05T08:40:51.620Z",
+                    "modifiedTime" : "2016-08-05T08:40:51.620Z"
+                }
+            ]
+        }
+        
+        
+## Library [/libraries/{libraryId}]
+- Parameters
+    - libraryId (string) - Internal id of the Library
+    
+### Get a library [GET]
+
+- Attributes
+    + token (string, required) - Memento Cloud User Auth Token.      
+
++ Response 200 (application/json)
+
+        {
+            "id" : "ht5dj7hqtey87",
+            "name": "Library1",
+            "owner" : "author",
+            "createdTime" : "2015-08-05T08:40:51.620Z",
+            "modifiedTime" : "2016-08-05T08:40:51.620Z",
+            "revision" : 10,
+            "size" : 1200,
+            "fields" : [
+                { 
+                    "id" : 1,
+                    "type" : "text",
+                    "name" : "Title",
+                    "role" : "name",
+                    "order" : 0
+                } , 
+                {
+                    "id" : 2,
+                    "type" : "int",
+                    "name" : "Count",
+                    "role" : "desc",
+                    "order" : 1
+                }
+            
+            ]
+        }
+    
+        
+## Entries [/libraries/{libraryId}/entries]
+- Parameters
+    - libraryId (string) - Internal id of the Library
+
+### List entries on a library [GET]
+
+- Attributes
+    - token (string, required) - Memento Cloud User Auth Token.      
+    - pageSize:50 (number, optional) - The maximum number of entries to return per page.
+    - pageToken (string, optional) - The token for continuing a previous list request on the next page.
+    - fields:1,2 (string, optional) - The comma-separated list of fields ids to include in the response. *all - include all fields.
+    - startRevision (number, optional) - Only entries updated/created at or after this revision are returned.
+
++ Response 200 (application/json)
+
+        {
+            "entries": [
+                {
+                    "id" : "frejf944jfnjsdf4",
+                    "author" : "author",
+                    "createdTime" : "2015-08-05T08:40:51.620Z",
+                    "modifiedTime" : "2016-08-05T08:40:51.620Z",
+                    "revision" : 10,
+                    "status" : "active",
+                    "size": 20,
+                    "fields": [
+                        { "id" : 1 , "value": "Record 1" } ,
+                        { "id" : 2 , "value": 1000 }
+                    ]
+                }
+            ],
+            "nextPageToken": "next_page_token",
+            "revision" : 10
+        }
+        
+### Create a new entry [POST]
+
+- Attributes
+    - token (string, required) - Memento Cloud User Auth Token.  
+
++ Request (application/json)
+
+        {
+            "fields": [
+                {
+                    "id": 1,
+                    "value" : "Record 1"
+                }, {
+                    "id": 2,
+                    "value" : 1000
+                }
+            ]
+        }
+
++ Response 201 
+
+    [Entry][]
+
+            
+## Entry [/libraries/{libraryId}/entries/{entryId}]
+- Parameters
+    - libraryId: ht5dj7hqtey87 (string) - Internal id of the library
+    - entryId: ht5dj7hq44ey87 (string) - Internal id of the entry
+    
++ Model (application/json)
+    
+    + Body
+    
+            {
+                "id": "feoijr485498ere",
+                "createdTime": "2015-08-05T08:40:51.620Z",
+                "modifiedTime" : "2016-08-05T08:40:51.620Z",
+                "status" : "active",
+                "author" : "author",
+                "revision": 100,
+                "size": 20,
+                "fields": [
+                    {
+                        "id": 1,
+                        "value" : "Record 1"
+                    }, {
+                        "id": 2,
+                        "value" : 1000
+                    }
+                ]
+            }    
+    
+### Get a single entry [GET]
+
+- Attributes
+    - token (string, required) - Memento Cloud User Auth Token.  
+
++ Response 200 
+
+    [Entry][]
+      
+        
+### Edit an entry [PATCH]
+
+- Attributes
+    - token (string, required) - Memento Cloud User Auth Token.  
+
++ Request (application/json)
+
+        {
+            "fields": [
+                {
+                    "id": 1,
+                    "value" : "Record 2"
+                }, {
+                    "id": 2,
+                    "value" : 2000
+                }
+            ]
+        }
+        
++ Response 200 
+
+    [Entry][]    
+            
+### Delete an entry [DELETE]
+
+- Attributes
+    - token (string, required) - Memento Cloud User Auth Token.    
+
++ Response 204
+
+
+
+## Search [/libraries/{libraryId}/search]
+- Parameters
+    - libraryId: ht5dj7hqtey87 (string) - Internal id of the library
+    
+### Search entries [GET]
+
+- Attributes
+    - q: query (string) - URL-encoded search query
+    - pageToken (string, optional) - The token for continuing a previous list request on the next page.
+    - fields:"1,2" (string, optional) - The comma-separated list of fields ids to include in the response. *all - include all fields.
+
++ Response 200 (application/json)
+
+        {
+            "entries": [
+                {
+                    "id" : "frejf944jfnjsdf4",
+                    "author" : "author",
+                    "createdTime" : "2015-08-05T08:40:51.620Z",
+                    "modifiedTime" : "2016-08-05T08:40:51.620Z",
+                    "revision" : 10,
+                    "status" : "active",
+                    "size": 20,
+                    "fields": [
+                        { "id" : 1 , "value": "Record 1" } ,
+                        { "id" : 2 , "value": 1000 }
+                    ]
+                }
+            ],
+            "nextPageToken": "next_page_token",
+            "total" : 1
+        }
+    
+
+## File [/libraries/{libraryId}/entries/{entryId}/files/{fieldId}]
+- Parameters
+    - libraryId: ht5dj7hqtey87 (string) - Internal id of the library
+    - entryId: ht5dj7hq44ey87 (string) - Internal id of the entry
+    - fieldId: 10 (number) - Image/File field Id.
+    
+### Upload one or more files [POST]
+
+- Attributes
+    - token (string, required) - Memento Cloud User Auth Token.    
+
++ Request (multipart/form-data; boundary=---BOUNDARY)
+    
+        -----BOUNDARY
+        Content-Disposition: form-data; name="image[file]"; filename="image.jpg"
+        Content-Type: image/jpeg
+        
+        [JPEG_DATA]
+        -----BOUNDARY
+
++ Response 200
+
+        [
+            {
+                    "file" : "image.jpg",
+                    "url": "http://api.mementodatabase.com/",
+                    "original_url" : "http://api.mementodatabase.com/",
+                    "size" : 12312
+                }
+        ]
+        
+        
+

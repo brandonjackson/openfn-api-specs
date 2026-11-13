@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/WorkspaceRateLimit",
+  "title": "WorkspaceRateLimit",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/WorkspaceRateLimit",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "group": {
+      "oneOf": [
+        {
+          "$ref": "RateLimitModelGroup.json"
+        },
+        {
+          "$ref": "RateLimitBatchGroup.json"
+        },
+        {
+          "$ref": "RateLimitTokenCountGroup.json"
+        },
+        {
+          "$ref": "RateLimitFilesGroup.json"
+        },
+        {
+          "$ref": "RateLimitSkillsGroup.json"
+        },
+        {
+          "$ref": "RateLimitWebSearchGroup.json"
+        }
+      ],
+      "title": "Group",
+      "description": "The rate-limit group this entry's limits apply to.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "batch": "#/components/schemas/RateLimitBatchGroup",
+          "files": "#/components/schemas/RateLimitFilesGroup",
+          "model_group": "#/components/schemas/RateLimitModelGroup",
+          "skills": "#/components/schemas/RateLimitSkillsGroup",
+          "token_count": "#/components/schemas/RateLimitTokenCountGroup",
+          "web_search": "#/components/schemas/RateLimitWebSearchGroup"
+        }
+      }
+    },
+    "limits": {
+      "items": {
+        "$ref": "WorkspaceRateLimitValue.json"
+      },
+      "type": "array",
+      "title": "Limits",
+      "description": "The workspace's limiter values for this group. By default only the limiter types with a workspace-level override are listed. With `include_inherited` set to `true`, the limiter types the workspace inherits from the organization are listed too, each marked by `source`."
+    },
+    "models": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Models",
+      "description": "Model names this entry's limits apply to, including aliases. `null` when `group.type` is not `\"model_group\"`. The list covers the models this workspace has access to, so it can differ between workspaces."
+    },
+    "rate_limit_id": {
+      "type": "string",
+      "title": "Rate Limit Id",
+      "description": "The `id` of the organization's RateLimit entry this entry applies to."
+    },
+    "type": {
+      "type": "string",
+      "const": "workspace_rate_limit",
+      "title": "Type",
+      "description": "Object type. Always `workspace_rate_limit` for workspace rate-limit entries.",
+      "default": "workspace_rate_limit"
+    },
+    "workspace_id": {
+      "type": "string",
+      "title": "Workspace Id",
+      "description": "ID of the Workspace this entry applies to."
+    }
+  },
+  "type": "object",
+  "required": [
+    "group",
+    "limits",
+    "models",
+    "rate_limit_id",
+    "type",
+    "workspace_id"
+  ]
+}

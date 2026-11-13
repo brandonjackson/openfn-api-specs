@@ -3,12 +3,99 @@
   "npm": "@openfn/language-flutterwave",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://developer.flutterwave.com/api/v3/openapi.json",
+      "result": "rejected",
+      "note": "Vendor-published OpenAPI 3.0.0 linked from llms.txt and every docs page ('the full API is described in /api/v3/openapi.json'), 74 paths / 88 ops, server https://api.flutterwave.com, every path under /v3/. It describes the v3 API, not the v4 API the adaptor calls (POST /customers, /payment-methods, /charges with no /v3 prefix and v4 bodies), so it is the wrong version for this adaptor."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developer.flutterwave.com/api/v4/openapi.json",
+      "result": "not-found",
+      "note": "404, as are /api/v4/openapi.yaml, /api/v4.0.0/openapi.json, /api/openapi.json, /openapi.json, /v4.0/openapi.json. The site's /api/ route only serves the v3 spec."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developer.flutterwave.com/v4/api",
+      "result": "not-found",
+      "note": "The v4 reference is a Next.js app (no longer ReadMe). Its pages are rendered from a spec server-side (field patterns, enums, oneOf options), but the HTML/RSC payload and all JS chunks carry no spec URL or embedded OpenAPI; the per-page .md variants 404 for v4 pages. The old ReadMe hub (flutterwave.readme.io) is inactive and the ReadMe-era /reference/*.md pages that embedded OpenAPI now 404; web.archive.org was unreachable from this environment."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developersandbox-api.flutterwave.com/openapi.json",
+      "result": "not-found",
+      "note": "API gateway answers 401 JSON for every path including /openapi.json and /v3/api-docs; nothing served without a token."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/Flutterwave",
+      "result": "not-found",
+      "note": "No v4 OpenAPI/Postman file found in the vendor org via web search; GitHub code search is not available from this session. The api-evangelist/flutterwave catalog repo is empty (README only)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://artifacts.apis.io/flutterwave/apis.yml",
+      "result": "rejected",
+      "note": "apis.io / API Evangelist publish per-area v4 OpenAPI files, but they are third-party, partly AI-generated, and use hosts (api.flutterwave.cloud/f4b/...) that do not match the vendor docs. A lead, not a source."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no flutterwave entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/",
+      "result": "not-found",
+      "note": "No Flutterwave-owned public Postman workspace with a v4 collection found; the vendor only documents a v3 Postman collection."
+    },
+    {
+      "kind": "docs",
+      "url": "https://developer.flutterwave.com/llms-full.txt",
+      "result": "used",
+      "note": "Vendor's own Markdown export of every docs page (2.6 MB). Its 58 v4 API reference sections (57 endpoints + the refund.completed webhook) carry every parameter, body field, type, enum, pattern, min/max and response field as structured drawers; these were parsed mechanically into this spec. Inventory = the 'v4/api' entries of https://developer.flutterwave.com/llms.txt and the v4 Introduction page's nav."
+    },
+    {
+      "kind": "adaptor-surface",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-flutterwave/ast.json",
+      "result": "used",
+      "note": "v1.0.8: createCustomer, initiatePayment, createPaymentMethod."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/flutterwave/src/Adaptor.js",
+      "result": "used",
+      "note": "POST /customers, POST /charges, POST /payment-methods via new URL(path, configuration.baseUrl) with Authorization: Bearer <secretKey>. All three are in openapi.json."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs"
+  ],
+  "modifications": [],
   "sources": [
-    "https://developer.flutterwave.com/",
-    "https://developer.flutterwave.com/reference",
+    "https://developer.flutterwave.com/v4/api",
     "https://developer.flutterwave.com/llms.txt",
+    "https://developer.flutterwave.com/llms-full.txt",
+    "https://developer.flutterwave.com/v4/api/customer/customers_create",
+    "https://developer.flutterwave.com/v4/api/charges/charges_post",
+    "https://developer.flutterwave.com/v4/api/payment-methods/payment_methods_post",
+    "https://developer.flutterwave.com/v4/api/transfers/transfers_post",
+    "https://developer.flutterwave.com/docs/authentication",
+    "https://dev.to/flutterwaveeng/a-quick-guide-to-developer-onboarding-in-v4-4dcj",
+    "https://developer.flutterwave.com/api/v3/openapi.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-flutterwave/ast.json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/flutterwave"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored from the Flutterwave v4 (Flutterwave for Business) API docs. Adaptor calls three endpoints confirmed from the compiled dist: POST /customers (createCustomer), POST /payment-methods (createPaymentMethod), POST /charges (initiatePayment). baseUrl is supplied via adaptor configuration; servers[] lists the v4 sandbox and production hosts. GET/list operations added so Customer/PaymentMethod/Charge seed as collections. Responses use the v4 { status, message, data } envelope; field details are representative, not exhaustively validated against the live reference."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The adaptor targets the Flutterwave v4 API (unprefixed /customers, /payment-methods, /charges; OAuth access token sent as Bearer), not v3. Flutterwave publishes a machine spec only for v3 (/api/v3/openapi.json, every path under /v3/), so that was rejected as the wrong version; no v4 spec is public. This OpenAPI 3.0.3 was generated by mechanically parsing the 57 v4 endpoint sections of the vendor's llms-full.txt export (the same structured data the v4 reference pages render), so every documented v4 endpoint is present: 39 paths / 57 operations across customers, charges, orchestrator charges/orders/transfers, orders, payment methods, refunds, chargebacks, settlements, transfers, transfer recipients/senders/rates, virtual accounts, wallets, banks, mobile networks, fees and webhook resend; the refund.completed webhook payload is a component schema. Caveats: (1) the two DELETE operations document no success response, so 204 is assumed; (2) the docs show only the sandbox host (developersandbox-api.flutterwave.com); the production host f4bexperience.flutterwave.com comes from the vendor's earlier Environments page and answers like the sandbox gateway (401 JSON) but is not shown in the current reference; (3) the previous stub listed api.flutterwave.cloud/{developersandbox,f4bexternal} servers, which now time out, and note the adaptor builds URLs with new URL('/path', baseUrl), which drops any path prefix on baseUrl; (4) doc example values (names, emails, phones) were deliberately not copied as examples."
 }

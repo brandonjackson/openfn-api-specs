@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaCloudConfig",
+  "title": "CloudConfig",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaCloudConfig",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "networking": {
+      "oneOf": [
+        {
+          "$ref": "BetaUnrestrictedNetwork.json"
+        },
+        {
+          "$ref": "BetaLimitedNetwork.json",
+          "x-anthropic-beta-required": [
+            "managed-agents-2026-04-01"
+          ]
+        }
+      ],
+      "title": "Networking",
+      "description": "Network configuration policy.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "limited": "#/components/schemas/BetaLimitedNetwork",
+          "unrestricted": "#/components/schemas/BetaUnrestrictedNetwork"
+        }
+      },
+      "examples": [
+        {
+          "type": "limited",
+          "allowed_hosts": [
+            "api.example.com"
+          ],
+          "allow_package_managers": true,
+          "allow_mcp_servers": false
+        }
+      ]
+    },
+    "packages": {
+      "$ref": "BetaPackages.json",
+      "description": "Package manager configuration.",
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        {
+          "type": "packages",
+          "pip": [
+            "pandas",
+            "numpy"
+          ],
+          "npm": [],
+          "apt": [],
+          "cargo": [],
+          "gem": [],
+          "go": []
+        }
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "cloud",
+      "title": "Type",
+      "description": "Environment type",
+      "examples": [
+        "cloud"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "networking",
+    "packages",
+    "type"
+  ],
+  "description": "`cloud` environment configuration.",
+  "example": {
+    "type": "cloud",
+    "networking": {
+      "type": "limited",
+      "allowed_hosts": [
+        "api.example.com"
+      ],
+      "allow_package_managers": true,
+      "allow_mcp_servers": false
+    },
+    "packages": {
+      "type": "packages",
+      "pip": [
+        "pandas",
+        "numpy"
+      ],
+      "npm": [],
+      "apt": [],
+      "cargo": [],
+      "gem": [],
+      "go": []
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaRateLimit",
+  "title": "RateLimit",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaRateLimit",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "group": {
+      "oneOf": [
+        {
+          "$ref": "BetaRateLimitModelGroup.json"
+        },
+        {
+          "$ref": "BetaRateLimitBatchGroup.json"
+        },
+        {
+          "$ref": "BetaRateLimitTokenCountGroup.json"
+        },
+        {
+          "$ref": "BetaRateLimitFilesGroup.json"
+        },
+        {
+          "$ref": "BetaRateLimitSkillsGroup.json"
+        },
+        {
+          "$ref": "BetaRateLimitWebSearchGroup.json"
+        }
+      ],
+      "title": "Group",
+      "description": "The rate-limit group this entry's limits apply to.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "batch": "#/components/schemas/BetaRateLimitBatchGroup",
+          "files": "#/components/schemas/BetaRateLimitFilesGroup",
+          "model_group": "#/components/schemas/BetaRateLimitModelGroup",
+          "skills": "#/components/schemas/BetaRateLimitSkillsGroup",
+          "token_count": "#/components/schemas/BetaRateLimitTokenCountGroup",
+          "web_search": "#/components/schemas/BetaRateLimitWebSearchGroup"
+        }
+      }
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Identifier of this rate-limit entry. It is stable within the organization and differs between organizations; the group's own identifier is `group.id`. Pass it as `rate_limit_id` to set a workspace's overrides for this group."
+    },
+    "limits": {
+      "items": {
+        "$ref": "BetaRateLimitValue.json"
+      },
+      "type": "array",
+      "title": "Limits",
+      "description": "The limiter values that apply to this group."
+    },
+    "models": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Models",
+      "description": "Model names this entry's limits apply to, including aliases. `null` when `group.type` is not `\"model_group\"`. The list covers the models your organization has access to, so it can differ between organizations."
+    },
+    "type": {
+      "type": "string",
+      "const": "rate_limit",
+      "title": "Type",
+      "description": "Object type. Always `rate_limit` for organization rate-limit entries.",
+      "default": "rate_limit"
+    }
+  },
+  "type": "object",
+  "required": [
+    "group",
+    "id",
+    "limits",
+    "models",
+    "type"
+  ]
+}

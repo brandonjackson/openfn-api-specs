@@ -1,14 +1,111 @@
 {
   "adaptor": "cartodb",
   "npm": "@openfn/language-cartodb",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://cartodb.github.io/developers/sql-api/",
-    "https://cartodb.github.io/developers/import-api/reference/",
-    "https://api-docs.carto.com/",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-cartodb/ast.json"
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "upstream": {
+    "specUrl": "https://cartodb.github.io/developers/sql-api/reference/swagger.yaml",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:df2b5dea22ecdb863ada5e23b343138ca771ef4be7de7ff03b33a2af162f7594",
+    "fetchedAt": "2026-11-13",
+    "note": "CARTO publishes one OpenAPI 3.0 reference per Engine API. specUrl/contentHash name the primary one, the SQL API the adaptor calls (upstream.yaml). The Maps, Import and Auth API references are committed verbatim as upstream-maps.yaml, upstream-import.yaml and upstream-auth.yaml; their URLs and sha256 hashes are in attempts[]."
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://cartodb.github.io/developers/sql-api/reference/swagger.yaml",
+      "result": "used",
+      "note": "Vendor-published SQL API reference (OpenAPI 3.0.0, the file the Redoc page at carto.com/developers/sql-api/reference/ loaded): 6 operations (GET/POST /sql, Batch Queries /sql/job CRUD), 17 schemas. Served from the gh-pages build of github.com/CartoDB/developers, last built 2018-04-17. Committed verbatim as upstream.yaml."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/CartoDB/developers/master/_app/maps-api/reference/swagger.yaml",
+      "result": "used",
+      "note": "Vendor Maps API reference from the developers repo master branch (14 operations: anonymous maps, named-map template CRUD/instantiate/JSONP, static maps; 23 schemas). Preferred over the 2018 gh-pages build at cartodb.github.io/developers/maps-api/reference/swagger.yaml, which has only the 4 anonymous-map operations. Committed verbatim as upstream-maps.yaml, sha256:35d2b59fee9ecf2e03fe6cd07a1cb1f51ad0e5f3e6191ef7e14c7ca2e1e389e7."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/CartoDB/developers/master/_app/import-api/reference/swagger.yaml",
+      "result": "used",
+      "note": "Vendor Import API reference from the developers repo master branch (10 operations: /v1/imports, /v1/synchronizations incl. sync_now, /v3/visualization_exports; 11 schemas). Committed verbatim as upstream-import.yaml, sha256:c1cfc63596e2ff35d4ea06349faf4a7654aa5d719b8a3b4b27436d5948e6253c."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://cartodb.github.io/developers/import-api/reference/swagger.yaml",
+      "result": "rejected",
+      "note": "Vendor publishing bug: this URL serves the Auth API document byte-for-byte (same sha256 as auth-api/reference/swagger.yaml), so the master-branch Import API file above was used instead."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://cartodb.github.io/developers/auth-api/reference/swagger.yaml",
+      "result": "used",
+      "note": "Vendor Auth API v3 reference (5 operations on /api_keys, 10 schemas). Its source (CartoDB/cartodb doc/developer-center/auth-api/reference) is no longer public, so the published build is the only vendor copy. Committed verbatim as upstream-auth.yaml, sha256:1c9cb9ac618eda3af557c3fda38396ad92756263228ec7f81d03bb6045516e9e."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/MiguelCgdl/CartoDB-SQL-API/master/docs/reference/swagger.yaml",
+      "result": "rejected",
+      "note": "Third-party 2024 snapshot of CartoDB-SQL-API (the vendor repo github.com/CartoDB/CartoDB-SQL-API is now private): a newer SQL API reference with 8 operations, adding POST /sql/copyfrom and GET /sql/copyto. Not a vendor source, so not committed as upstream; used only as evidence for those two COPY operations, which are in openapi.json flagged with x-openfn-source."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://carto.com/developers/federated-tables-api/reference/swagger.yaml",
+      "result": "not-found",
+      "note": "The Federated Tables API was the fifth Engine REST API with a Redoc reference (developers repo _app/federated-tables-api/reference/index.html points at ./swagger.yaml), but the yaml was never pushed to gh-pages, its source (CartoDB/cartodb) is private, and carto.com/developers/* now returns the CARTO 3 docs shell. Not covered. The Data Services API is a set of SQL functions called through /api/v2/sql, so it needs no paths of its own."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api-docs.carto.com/",
+      "result": "rejected",
+      "note": "CARTO 3 (the current platform) publishes OpenAPI at api-docs.carto.com, but it is a different API on different hosts ({region}.api.carto.com/v3/...); the adaptor hard-codes https://{account}.carto.com/api/v2/sql, which only the legacy CARTO 2 Engine serves (still answering on 2026-11-13: an unknown account gets the SQL API's JSON 404 error)."
+    },
+    {
+      "kind": "github-org",
+      "url": "https://github.com/CartoDB",
+      "result": "used",
+      "note": "Searched the org: CartoDB/developers (public, holds the reference yamls and the grunt config mapping each API to its source repo) and CartoDB/carto-python (public SDK). CartoDB-SQL-API, Windshaft-cartodb, cartodb and dataservices-api are no longer publicly readable (git ls-remote asks for credentials)."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/CartoDB/carto-python",
+      "result": "rejected",
+      "note": "The official Python SDK also calls internal/undocumented routes (api/v1/viz, api/v1/tables, api/v4/kuviz, api/v4/do/*); with no vendor reference for their shapes they are not modelled."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No CARTO entry among 2529 apis.guru APIs."
+    },
+    {
+      "kind": "postman",
+      "result": "not-found",
+      "note": "No vendor-owned Postman workspace or SwaggerHub API for the CARTO 2 Engine APIs."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "CARTO has no clean public machine-readable OpenAPI, so this spec was hand-authored from CARTO's SQL API and Import API developer docs. Scope: the adaptor exposes only two HTTP operations, sql() and addRow(), both of which issue a superagent GET to https://{account}.carto.com/api/v2/sql with q and api_key query params (addRow builds an INSERT via json-sql then sends it to the same endpoint). This spec models that SQL API GET plus the equivalent POST form, and additionally covers the CARTO Import API (create/list/get import jobs) which is part of the same platform surface, to provide useful seed collections. Response shapes (SqlResponse: rows/time/fields/total_rows; SqlError: error[]; async import job with item_queue_id/state) reflect documented CARTO behavior. Server uses an {account} subdomain variable defaulting to 'localhost'. Caveat: exact Import API job field set is approximated from CARTO docs and the carto-python client and may vary by CARTO version."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "upstream-*.yaml"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://cartodb.github.io/developers/sql-api/reference/swagger.yaml",
+    "https://raw.githubusercontent.com/CartoDB/developers/master/_app/maps-api/reference/swagger.yaml",
+    "https://raw.githubusercontent.com/CartoDB/developers/master/_app/import-api/reference/swagger.yaml",
+    "https://cartodb.github.io/developers/auth-api/reference/swagger.yaml",
+    "https://raw.githubusercontent.com/MiguelCgdl/CartoDB-SQL-API/master/docs/reference/swagger.yaml",
+    "https://github.com/CartoDB/developers/blob/master/grunt-tasks/config.js",
+    "https://cartodb.github.io/developers/sql-api/reference/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-cartodb/ast.json",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/cartodb/src/Adaptor.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/cartodb/src/Client.js"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The cartodb adaptor talks to CARTO's legacy CARTO 2 'Engine' platform: sql() and addRow() (which builds an INSERT with json-sql) both send GET https://{account}.carto.com/api/v2/sql?q=<statement>&api_key=<key> via superagent, and the adaptor exports no generic HTTP helper. CARTO published an OpenAPI 3.0 reference per Engine API, so this is a found-openapi capture of four vendor documents (SQL API v2, Maps API v1, Import API, Auth API v3), committed verbatim as upstream.yaml + upstream-{maps,import,auth}.yaml and merged into one openapi.json with mechanical transformations only: each document's paths are prefixed with its server base path (/api/v2, /api/v1, /api, /api/v3) under one server https://{user}.{domain}; components that clash with a different definition take the area prefix (MapsNotFound, MapsBadInput, MapsApiKeyQueryParam, AuthTimestamps, AuthUnauthorized); operations missing an operationId, or reusing one (the Maps reference gives 'instantiateAnonymousMap' to two operations), get one from method + path with the vendor's kept as x-upstream-operation-id; every operation carries x-carto-api naming its source document. Totals: 37 operations / 25 paths / 62 schemas = 6 SQL + 14 Maps + 10 Import + 5 Auth from the vendor files, plus POST /api/v2/sql/copyfrom and GET /api/v2/sql/copyto taken from a third-party snapshot of the newer (now private) SQL API reference and flagged with x-openfn-source. Completeness is best-effort, not complete, because the vendor's published SQL reference is a 2018 build that predates the COPY endpoints and the Federated Tables API reference was never published where it can still be fetched. CARTO 3 (api-docs.carto.com) is deliberately out of scope: different hosts and API, not reachable through this adaptor."
 }

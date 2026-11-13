@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "medicmobile/Document",
+  "title": "Document",
+  "x-openfn-adaptor": "medicmobile",
+  "x-source": {
+    "openapi": "#/components/schemas/Document",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "A CouchDB JSON document: the `_`-prefixed metadata fields plus any application fields. On a Community Health Toolkit (Medic) instance the `medic` database holds `data_record` (form submissions/reports), `person`, `clinic`/`health_center`/`district_hospital` contact and other application documents.",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "Document ID."
+    },
+    "_rev": {
+      "type": "string",
+      "description": "Revision MVCC token."
+    },
+    "_deleted": {
+      "type": "boolean",
+      "description": "Deletion flag."
+    },
+    "_attachments": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "AttachmentStub.json"
+      },
+      "description": "Attachment stubs (or inline Base64 data when `attachments=true`)."
+    },
+    "_conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Conflicted revisions (`conflicts=true`)."
+    },
+    "_deleted_conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Deleted conflicted revisions (`deleted_conflicts=true`)."
+    },
+    "_local_seq": {
+      "type": "string",
+      "description": "Document's update sequence in the current database (`local_seq=true`)."
+    },
+    "_revs_info": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rev": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Revision history with availability status (`revs_info=true`)."
+    },
+    "_revisions": {
+      "type": "object",
+      "description": "Revision history (`revs=true`).",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "start": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

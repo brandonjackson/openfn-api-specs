@@ -5,41 +5,35 @@
   "x-openfn-adaptor": "openfn",
   "x-source": {
     "openapi": "#/components/schemas/Job",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
+  "description": "A job (workflow step) as a JSON:API resource object. Only `name` is exposed as an attribute (LightningWeb.API.JobJSON).",
+  "required": [
+    "type",
+    "id",
+    "attributes"
+  ],
   "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "jobs"
+      ]
+    },
     "id": {
       "type": "string",
-      "example": "b3c4d5e6-0003-4a2b-9c3d-000000000003"
+      "format": "uuid"
     },
-    "name": {
-      "type": "string",
-      "example": "test job"
+    "attributes": {
+      "$ref": "JobAttributes.json"
     },
-    "body": {
-      "type": "string",
-      "example": "fn(state => state)"
+    "relationships": {
+      "type": "object",
+      "description": "Always empty."
     },
-    "adaptor": {
-      "type": "string",
-      "example": "@openfn/language-http@latest"
-    },
-    "trigger_id": {
-      "type": "string",
-      "example": "d5e6f7a8-0004-4a2b-9c3d-000000000004"
-    },
-    "project_id": {
-      "type": "string",
-      "example": "c1f2e3d4-0001-4a2b-9c3d-000000000001"
-    },
-    "workflow_id": {
-      "type": "string",
-      "example": "a2b3c4d5-0002-4a2b-9c3d-000000000002"
-    },
-    "enabled": {
-      "type": "boolean",
-      "example": true
+    "links": {
+      "$ref": "SelfLink.json"
     }
   }
 }

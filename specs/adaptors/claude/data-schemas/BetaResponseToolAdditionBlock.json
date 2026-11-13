@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseToolAdditionBlock",
+  "title": "ResponseToolAdditionBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseToolAdditionBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An entry of a `compaction` block's `tool_changes`: a tool the\ncompacted range made available, as a reference to a `tools` entry or\nMCP toolset, or as the tool definition in effect at the end of the\nrange, by value. Send it back unchanged.",
+  "properties": {
+    "tool": {
+      "description": "The tool made available: a reference to a `tools` entry or MCP toolset, or a `tool_definition` carrying the definition by value.",
+      "discriminator": {
+        "mapping": {
+          "mcp_tool_reference": "#/components/schemas/BetaResponseToolChangeMCPToolReference",
+          "mcp_toolset_reference": "#/components/schemas/BetaResponseToolChangeMCPToolsetReference",
+          "tool_definition": "#/components/schemas/BetaResponseToolChangeToolDefinition",
+          "tool_reference": "#/components/schemas/BetaResponseToolChangeToolReference"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaResponseToolChangeToolReference.json"
+        },
+        {
+          "$ref": "BetaResponseToolChangeMCPToolReference.json"
+        },
+        {
+          "$ref": "BetaResponseToolChangeMCPToolsetReference.json"
+        },
+        {
+          "$ref": "BetaResponseToolChangeToolDefinition.json"
+        }
+      ],
+      "title": "Tool"
+    },
+    "type": {
+      "const": "tool_addition",
+      "default": "tool_addition",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tool",
+    "type"
+  ],
+  "type": "object"
+}

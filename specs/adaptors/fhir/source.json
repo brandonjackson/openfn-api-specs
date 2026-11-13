@@ -1,23 +1,18 @@
 {
   "adaptor": "fhir",
   "npm": "@openfn/language-fhir",
-
   "origin": "converted",
   "upstreamFormat": "json-schema",
-
   "coverage": "full",
   "derivedFrom": null,
-
   "completeness": "complete",
   "completenessReason": null,
-
   "upstream": {
     "specUrl": "https://hl7.org/fhir/R4/fhir.schema.json",
     "format": "json-schema-draft-06",
     "contentHash": "sha256:2230406893b4cf002a4ee1e5e2bbeca22ac5d2d4931b3e9ef7b9594bbc376a01",
     "fetchedAt": "2026-09-13"
   },
-
   "attempts": [
     {
       "kind": "openapi",
@@ -74,11 +69,14 @@
       "note": "The normative RESTful API specification: URL shapes for each interaction, the patch interaction and the conditional create/update/delete forms, the _search POST form, and the GET-invocation rule for operations."
     }
   ],
-
-  "verifiedAgainst": ["ast.json", "adaptor-source", "configuration-schema.json", "hapi-openapi", "mocker-conformance"],
-
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "configuration-schema.json",
+    "hapi-openapi",
+    "mocker-conformance"
+  ],
   "modifications": [],
-
   "sources": [
     "https://hl7.org/fhir/R4/fhir.schema.json",
     "https://hl7.org/fhir/R4/capabilitystatement-base.json",
@@ -93,9 +91,7 @@
     "https://cdn.jsdelivr.net/npm/@openfn/language-fhir/configuration-schema.json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/fhir"
   ],
-
-  "capturedAt": "2026-09-13",
-  "lastCheckedAt": "2026-09-13",
-
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
   "notes": "HL7 FHIR Release 4 (v4.0.1) RESTful API. HL7 publishes no OpenAPI for FHIR, but it does publish the two machine-readable definitions this spec is converted from: fhir.schema.json (the complete R4 JSON Schema — committed verbatim as upstream.json and hashed) and the base CapabilityStatement, 'a server that provides the full set of functionality defined by FHIR' (committed verbatim as upstream-capabilities.json). 'Full' here means every one of the 145 R4 resource types with all eight interactions the base CapabilityStatement declares (read, vread, update, delete, history-instance, history-type, create, search-type) plus patch and the conditional create/update/delete forms from http.html; the four system-level interactions (transaction/batch on POST /, search-system, history-system) and capabilities on GET /metadata; and all 46 R4 operations at the levels their OperationDefinitions declare — 1872 operations over 944 paths, with all 680 upstream definitions carried across (660 named component schemas plus FHIR's 20 primitive types, inlined at their use sites). The adaptor is release-agnostic (state.configuration.apiPath picks the endpoint, e.g. baseR4/R3/R4) but its examples, its configuration-schema placeholder and OpenFn's FHIR deployments target R4, so R4 is what info.version declares. Conversion decisions: draft-06 `const` became a single-value `enum`; `type: object` was added to object definitions that only carried `properties`; FHIR's 20 primitive types (string, id, dateTime, ...) are inlined at each use site instead of being $ref'd, so they do not surface as data objects; every response and body is offered as both application/json and application/fhir+json; and the seven Resource-scoped operations ($validate, $meta, $meta-add, $meta-delete, $graph, $graphql, $convert) use a `{resourceType}` path template (enumerating all 145 types) rather than 1160 duplicated concrete paths. Operation inputs are typed as the `Parameters` resource — which is the FHIR wire format — with each OperationDefinition's parameters listed in the operation description; a GET form is emitted only where every required input parameter is primitive, per the GET-invocation rule in http.html, so $process-message, $submit, $submit-data, $convert, $transform, $match, $meta-add, $meta-delete and ChargeItemDefinition's $apply are POST-only here, as is $closure, whose own definition ('Closure Table Maintenance') says it changes server state. Not modelled: the XML/RDF/Turtle representations, server-proprietary endpoints (HAPI's $expunge, $hfql-execute and friends), bulk-data (the separate FHIR Bulk Data IG) and SMART/OAuth2 token endpoints; auth is declared as HTTP Bearer + Basic because that is what the adaptor sends (FHIR itself leaves authentication to the deployment). One extractor artifact worth knowing: every FHIR resource has a `meta` element, which the data-object extractor treats as a pagination hint, so data-schemas/index.json lists 266 second-level types (Bundle_Entry, Patient_Contact, Address, ...) as the 'resources' instead of the 145 resource types; the object set itself is complete — all 660 named schemas, including Patient, Observation and Bundle, are present as files."
 }

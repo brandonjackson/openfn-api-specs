@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "stripe/payment_link",
-  "title": "PaymentLink",
+  "title": "Payment Link",
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/payment_link",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "A payment link is a shareable URL that will take your customers to a hosted payment page. A payment link can be shared and used multiple times.\n\nWhen a customer opens a payment link it will open a new [checkout session](https://docs.stripe.com/api/checkout/sessions) to render the payment page. You can use [checkout session events](https://docs.stripe.com/api/events/types#event_types-checkout.session.completed) to track payments through payment links.\n\nRelated guide: [Payment Links API](https://docs.stripe.com/payment-links)",
   "properties": {
@@ -84,7 +84,7 @@
       "type": "string"
     },
     "custom_fields": {
-      "description": "Collect additional information from your customer using custom fields. Up to 3 fields are supported. You can't set this parameter if `ui_mode` is `custom`.",
+      "description": "Collect additional information from your customer using custom fields. Up to 3 fields are supported. You can't set this parameter if `ui_mode` is `elements`.",
       "items": {
         "$ref": "payment_links_resource_custom_fields.json"
       },
@@ -234,7 +234,8 @@
         "always",
         "if_required"
       ],
-      "type": "string"
+      "type": "string",
+      "x-stripeBypassValidation": true
     },
     "payment_method_options": {
       "anyOf": [
@@ -277,11 +278,13 @@
           "pay_by_bank",
           "paynow",
           "paypal",
+          "paypay",
           "payto",
           "pix",
           "promptpay",
           "satispay",
           "sepa_debit",
+          "sequra",
           "sofort",
           "sunbit",
           "swish",

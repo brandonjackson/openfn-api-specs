@@ -5,9 +5,9 @@
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/invoice",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
-  "description": "Invoices are statements of amounts owed by a customer, and are either\ngenerated one-off, or generated periodically from a subscription.\n\nThey contain [invoice items](https://api.stripe.com#invoiceitems), and proration adjustments\nthat may be caused by subscription upgrades/downgrades (if necessary).\n\nIf your invoice is configured to be billed through automatic charges,\nStripe automatically finalizes your invoice and attempts payment. Note\nthat finalizing the invoice,\n[when automatic](https://docs.stripe.com/invoicing/integration/automatic-advancement-collection), does\nnot happen immediately as the invoice is created. Stripe waits\nuntil one hour after the last webhook was successfully sent (or the last\nwebhook timed out after failing). If you (and the platforms you may have\nconnected to) have no webhooks configured, Stripe waits one hour after\ncreation to finalize the invoice.\n\nIf your invoice is configured to be billed by sending an email, then based on your\n[email settings](https://dashboard.stripe.com/account/billing/automatic),\nStripe will email the invoice to your customer and await payment. These\nemails can contain a link to a hosted page to pay the invoice.\n\nStripe applies any customer credit on the account before determining the\namount due for the invoice (i.e., the amount that will be actually\ncharged). If the amount due for the invoice is less than Stripe's [minimum allowed charge\nper currency](/docs/currencies#minimum-and-maximum-charge-amounts), the\ninvoice is automatically marked paid, and we add the amount due to the\ncustomer's credit balance which is applied to the next invoice.\n\nMore details on the customer's credit balance are\n[here](https://docs.stripe.com/billing/customer/balance).\n\nRelated guide: [Send invoices to customers](https://docs.stripe.com/billing/invoices/sending)",
+  "description": "Invoices are statements of amounts owed by a customer, and are either\ngenerated one-off, or generated periodically from a subscription.\n\nThey contain [invoice items](https://docs.stripe.com/api#invoiceitems), and proration adjustments\nthat may be caused by subscription upgrades/downgrades (if necessary).\n\nIf your invoice is configured to be billed through automatic charges,\nStripe automatically finalizes your invoice and attempts payment. Note\nthat finalizing the invoice,\n[when automatic](https://docs.stripe.com/invoicing/integration/automatic-advancement-collection), does\nnot happen immediately as the invoice is created. Stripe waits\nuntil one hour after the last webhook was successfully sent (or the last\nwebhook timed out after failing). If you (and the platforms you may have\nconnected to) have no webhooks configured, Stripe waits one hour after\ncreation to finalize the invoice.\n\nIf your invoice is configured to be billed by sending an email, then based on your\n[email settings](https://dashboard.stripe.com/account/billing/automatic),\nStripe will email the invoice to your customer and await payment. These\nemails can contain a link to a hosted page to pay the invoice.\n\nStripe applies any customer credit on the account before determining the\namount due for the invoice (i.e., the amount that will be actually\ncharged). If the amount due for the invoice is less than Stripe's [minimum allowed charge\nper currency](/docs/currencies#minimum-and-maximum-charge-amounts), the\ninvoice is automatically marked paid, and we add the amount due to the\ncustomer's credit balance which is applied to the next invoice.\n\nMore details on the customer's credit balance are\n[here](https://docs.stripe.com/billing/customer/balance).\n\nRelated guide: [Send invoices to customers](https://docs.stripe.com/billing/invoices/sending)",
   "properties": {
     "account_country": {
       "description": "The country of the business associated with this invoice, most often the business creating the invoice.",
@@ -639,7 +639,7 @@
           "$ref": "invoices_resource_invoice_rendering.json"
         }
       ],
-      "description": "The rendering-related settings that control how the invoice is displayed on customer-facing surfaces such as PDF and Hosted Invoice Page."
+      "description": "The rendering-related settings that control how invoices render in customer-facing interfaces such as the PDF or hosted invoice page."
     },
     "shipping_cost": {
       "anyOf": [
@@ -683,6 +683,9 @@
         "null"
       ],
       "x-stripeBypassValidation": true
+    },
+    "status_details": {
+      "$ref": "invoices_resource_status_details.json"
     },
     "status_transitions": {
       "$ref": "invoices_resource_status_transitions.json"
@@ -829,6 +832,7 @@
     "rendering",
     "shipping_cost",
     "shipping_details",
+    "status_details",
     "status_transitions",
     "test_clock",
     "threshold_reason",

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaWebSearchTool_20260209",
+  "title": "WebSearchTool_20260209",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaWebSearchTool_20260209",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowed_callers": {
+      "items": {
+        "$ref": "BetaAllowedCaller.json"
+      },
+      "title": "Allowed Callers",
+      "type": "array"
+    },
+    "allowed_domains": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "If provided, only these domains will be included in results. Cannot be used alongside `blocked_domains`.",
+      "title": "Allowed Domains"
+    },
+    "blocked_domains": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "If provided, these domains will never appear in results. Cannot be used alongside `allowed_domains`.",
+      "title": "Blocked Domains"
+    },
+    "cache_control": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Create a cache control breakpoint at this content block.",
+      "title": "Cache Control"
+    },
+    "defer_loading": {
+      "description": "If true, tool will not be included in initial system prompt. Only loaded when returned via tool_reference from tool search.",
+      "title": "Defer Loading",
+      "type": "boolean"
+    },
+    "max_uses": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Maximum number of times the tool can be used in the API request.",
+      "title": "Max Uses"
+    },
+    "name": {
+      "const": "web_search",
+      "description": "Name of the tool.\n\nThis is how the tool will be called by the model and in `tool_use` blocks.",
+      "title": "Name",
+      "type": "string"
+    },
+    "strict": {
+      "description": "When true, guarantees schema validation on tool names and inputs",
+      "title": "Strict",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "web_search_20260209",
+      "title": "Type",
+      "type": "string"
+    },
+    "user_location": {
+      "anyOf": [
+        {
+          "$ref": "BetaUserLocation.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Parameters for the user's location. Used to provide more relevant search results."
+    }
+  },
+  "required": [
+    "name",
+    "type"
+  ],
+  "type": "object"
+}
