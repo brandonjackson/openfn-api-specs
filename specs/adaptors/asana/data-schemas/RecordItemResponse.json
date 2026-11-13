@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/RecordItemResponse",
+  "title": "RecordItemResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/RecordItemResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "allOf": [
+    {
+      "$ref": "RecordItemBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "table": {
+          "allOf": [
+            {
+              "$ref": "TableCompact.json"
+            },
+            {
+              "readOnly": true,
+              "description": "The table that this record belongs to. Omitted if you don't have access to the table, or null if the record has no associated table."
+            }
+          ]
+        },
+        "workspace": {
+          "allOf": [
+            {
+              "$ref": "WorkspaceCompact.json"
+            },
+            {
+              "type": "object",
+              "readOnly": true,
+              "description": "The workspace this record belongs to."
+            }
+          ]
+        },
+        "custom_fields": {
+          "description": "Array of custom field values applied to the record.",
+          "type": "array",
+          "items": {
+            "$ref": "CustomFieldResponse.json"
+          }
+        },
+        "modified_at": {
+          "description": "The time at which this record was last modified.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "created_at": {
+          "description": "The time at which this resource was created.",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "example": "2012-02-22T02:06:58.147Z"
+        },
+        "deleted_at": {
+          "description": "The time at which this resource was deleted, or null if it has not been deleted.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "readOnly": true
+        },
+        "created_by": {
+          "$ref": "UserCompact.json"
+        },
+        "permalink_url": {
+          "description": "A url that points directly to the object within Asana.",
+          "type": "string",
+          "readOnly": true,
+          "example": "https://app.asana.com/0/resource/123"
+        },
+        "comment_count": {
+          "description": "The number of comments on the record.",
+          "type": "integer",
+          "readOnly": true,
+          "example": 3
+        },
+        "is_in_archived_table": {
+          "description": "True if the record's table is archived, false if not.",
+          "type": "boolean",
+          "readOnly": true,
+          "example": false
+        },
+        "default_access_level": {
+          "description": "The default access level for users who join or are added as members of the record. This isn't applied when the record is private.",
+          "type": "string",
+          "enum": [
+            "admin",
+            "editor",
+            "commenter",
+            "viewer"
+          ],
+          "example": "viewer"
+        }
+      }
+    }
+  ]
+}

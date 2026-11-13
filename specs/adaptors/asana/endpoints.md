@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index asana` — do not edit by hand -->
 
-base: https://app.asana.com/api/1.0 | auth: http/bearer, oauth2 (authorizationCode) | 249 operations in 49 resources
+base: https://app.asana.com/api/1.0 | auth: http/bearer, oauth2 (authorizationCode) | 271 operations in 52 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -104,6 +104,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /memberships/{membership_gid} — updateMembership: Update a membership
 - DELETE /memberships/{membership_gid} — deleteMembership: Delete a membership
 
+## Notifications
+- GET /users/{user_gid}/notifications — getNotificationsForUser: Get notifications for a user
+- POST /users/{user_gid}/notifications/markRead — markNotificationsReadForUser: Mark notifications as read
+- POST /users/{user_gid}/notifications/markUnread — markNotificationsUnreadForUser: Mark notifications as unread
+
 ## Ooo entries
 - GET /ooo_entries/{ooo_entry_gid} — getOooEntry: Get an OOO entry
 - PUT /ooo_entries/{ooo_entry_gid} — updateOooEntry: Update an OOO entry
@@ -185,6 +190,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /projects/{project_gid}/addFollowers — addFollowersForProject: Add followers to a project
 - POST /projects/{project_gid}/removeFollowers — removeFollowersForProject: Remove followers from a project
 - POST /projects/{project_gid}/saveAsTemplate — projectSaveAsTemplate: Create a project template from a project
+- POST /projects/{project_gid}/rollup — rollupProject: Roll up subtask dates for a project
 
 ## Rates
 - GET /rates — getRates: Get multiple rates
@@ -195,6 +201,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## Reactions
 - GET /reactions — getReactionsOnObject: Get reactions with an emoji base on an object.
+
+## Records
+- GET /tables/{table_gid}/records — getRecordsForTable: Get records in a table
+- GET /workspaces/{workspace_gid}/records/search — searchRecordsForWorkspace: Search records in a workspace
+- POST /records — createRecord: Create a record
+- GET /records/{record_gid} — getRecord: Get a record
+- PUT /records/{record_gid} — updateRecord: Update a record
+- DELETE /records/{record_gid} — deleteRecord: Delete a record
 
 ## Roles
 - GET /roles — getRoles: Get multiple roles
@@ -227,8 +241,21 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /stories/{story_gid} — deleteStory: Delete a story
 - GET /tasks/{task_gid}/stories — getStoriesForTask: Get stories from a task
 - POST /tasks/{task_gid}/stories — createStoryForTask: Create a story on a task
+- GET /records/{record_gid}/stories — getStoriesForRecord: Get stories from a record
+- POST /records/{record_gid}/stories — createStoryForRecord: Create a story on a record
 - GET /goals/{goal_gid}/stories — getStoriesForGoal: Get stories from a goal
 - POST /goals/{goal_gid}/stories — createStoryForGoal: Create a story on a goal
+
+## Tables
+- GET /workspaces/{workspace_gid}/tables — getTablesForWorkspace: Get tables in a workspace
+- POST /tables — createTable: Create a table
+- GET /tables/{table_gid} — getTable: Get a table
+- PUT /tables/{table_gid} — updateTable: Update a table
+- DELETE /tables/{table_gid} — deleteTable: Delete a table
+- POST /tables/{table_gid}/addCustomFieldSetting — addCustomFieldSettingForTable: Add a custom field to a table
+- POST /tables/{table_gid}/removeCustomFieldSetting — removeCustomFieldSettingForTable: Remove a custom field from a table
+- GET /tables/{table_gid}/getCustomFieldSettings — getCustomFieldSettingsForTableLegacy: Get a table's custom field settings (deprecated)
+- GET /tables/{table_gid}/custom_field_settings — getCustomFieldSettingsForTable: Get a table's custom field settings
 
 ## Tags
 - GET /tags — getTags: Get multiple tags
@@ -272,6 +299,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /tasks/{task_gid}/removeTag — removeTagForTask: Remove a tag from a task
 - POST /tasks/{task_gid}/addFollowers — addFollowersForTask: Add followers to a task
 - POST /tasks/{task_gid}/removeFollowers — removeFollowerForTask: Remove followers from a task
+- POST /tasks/{task_gid}/rollup — rollupTask: Roll up subtask dates for a task
 - GET /workspaces/{workspace_gid}/tasks/custom_id/{custom_id} — getTaskForCustomID: Get a task for a given custom ID
 - GET /workspaces/{workspace_gid}/tasks/search — searchTasksForWorkspace: Search tasks in a workspace
 

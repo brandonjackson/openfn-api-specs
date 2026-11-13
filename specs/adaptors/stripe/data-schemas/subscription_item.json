@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "stripe/subscription_item",
-  "title": "SubscriptionItem",
+  "title": "Subscription Item",
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/subscription_item",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "Subscription items allow you to create customer subscriptions with more than\none plan, making it easy to represent complex billing relationships.",
   "properties": {
@@ -35,6 +35,14 @@
       "description": "The start time of this subscription item's current billing period.",
       "format": "unix-time",
       "type": "integer"
+    },
+    "current_trial": {
+      "anyOf": [
+        {
+          "$ref": "subscriptions_trials_resource_current_trial.json"
+        }
+      ],
+      "description": "The current trial that is applied to this subscription item."
     },
     "discounts": {
       "description": "The discounts applied to the subscription item. Subscription item discounts are applied before subscription discounts. Use `expand[]=discounts` to expand each discount.",
@@ -115,6 +123,7 @@
   "type": "object",
   "x-expandableFields": [
     "billing_thresholds",
+    "current_trial",
     "discounts",
     "price",
     "tax_rates"

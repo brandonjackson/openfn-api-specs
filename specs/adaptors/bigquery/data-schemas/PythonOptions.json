@@ -5,21 +5,32 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/PythonOptions",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Options for a user-defined Python function.",
   "properties": {
+    "entryPoint": {
+      "type": "string",
+      "description": "Required. The name of the function defined in Python code as the entry point when the Python UDF is invoked."
+    },
+    "extraPackageRepositories": {
+      "type": "array",
+      "description": "Optional. The list of additional package repositories to search when resolving Python packages. These repositories are searched in addition to the default public PyPI. Only repositories hosted in Artifact Registry (.pkg.dev) are supported. Only pre-compiled Wheel (.whl) packages are supported from these repositories. E.g. ['https://my-region-python.pkg.dev/my-project/my-repo/simple']",
+      "items": {
+        "type": "string"
+      }
+    },
+    "buildConnection": {
+      "type": "string",
+      "description": "Optional. Fully qualified name of the connection whose service account will be used to authenticate to private package repositories during build-time. Format: \"projects/{project_id}/locations/{location_id}/connections/{connection_id}\""
+    },
     "packages": {
       "type": "array",
       "description": "Optional. A list of Python package names along with versions to be installed. Example: [\"pandas>=2.1\", \"google-cloud-translate==3.11\"]. For more information, see [Use third-party packages](https://cloud.google.com/bigquery/docs/user-defined-functions-python#third-party-packages).",
       "items": {
         "type": "string"
       }
-    },
-    "entryPoint": {
-      "type": "string",
-      "description": "Required. The name of the function defined in Python code as the entry point when the Python UDF is invoked."
     }
   }
 }

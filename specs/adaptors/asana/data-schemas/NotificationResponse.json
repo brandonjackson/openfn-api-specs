@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asana/NotificationResponse",
+  "title": "NotificationResponse",
+  "x-openfn-adaptor": "asana",
+  "x-source": {
+    "openapi": "#/components/schemas/NotificationResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "allOf": [
+    {
+      "$ref": "NotificationBase.json"
+    },
+    {
+      "type": "object",
+      "required": [
+        "priority_classification",
+        "story_resource_subtype",
+        "work_objects",
+        "story",
+        "created_by",
+        "created_at",
+        "is_read"
+      ],
+      "properties": {
+        "priority_classification": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The notification's Priority classification.",
+          "enum": [
+            "unclassified"
+          ],
+          "example": "unclassified"
+        },
+        "story_resource_subtype": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The stable public subtype of the Story that produced the notification.",
+          "example": "comment_added"
+        },
+        "work_objects": {
+          "type": "array",
+          "readOnly": true,
+          "description": "Work referenced by the notification. Each entry is a compact representation of the underlying Asana resource.",
+          "items": {
+            "$ref": "AsanaNamedResource.json"
+          }
+        },
+        "story": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "readOnly": true,
+          "description": "The Story that produced the notification. This is `null` when the activity is not exposed through the Stories API.",
+          "allOf": [
+            {
+              "$ref": "StoryCompact.json"
+            }
+          ]
+        },
+        "created_by": {
+          "allOf": [
+            {
+              "$ref": "AsanaNamedResource.json"
+            },
+            {
+              "type": [
+                "object",
+                "null"
+              ],
+              "readOnly": true,
+              "description": "The computed actor responsible for the underlying activity, or `null` when no actor is available."
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true,
+          "description": "The time at which the notification was created.",
+          "example": "2026-08-20T18:42:31.123Z"
+        },
+        "is_read": {
+          "type": "boolean",
+          "readOnly": true,
+          "description": "Whether the notification is effectively read in the user's Inbox.",
+          "example": false
+        }
+      }
+    }
+  ]
+}

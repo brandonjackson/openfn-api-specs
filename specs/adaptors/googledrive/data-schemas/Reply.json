@@ -5,15 +5,15 @@
   "x-openfn-adaptor": "googledrive",
   "x-source": {
     "openapi": "#/components/schemas/Reply",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "A reply to a comment on a file. Some resource methods (such as `replies.update`) require a `replyId`. Use the `replies.list` method to retrieve the ID for a reply.",
   "properties": {
-    "assigneeEmailAddress": {
+    "createdTime": {
       "type": "string",
-      "description": "Output only. The email address of the user assigned to this comment. If no user is assigned, the field is unset.",
-      "readOnly": true
+      "format": "date-time",
+      "description": "The time at which the reply was created (RFC 3339 date-time)."
     },
     "action": {
       "type": "string",
@@ -23,30 +23,23 @@
       "type": "string",
       "description": "Output only. The content of the reply with HTML formatting."
     },
-    "kind": {
+    "content": {
       "type": "string",
-      "description": "Output only. Identifies what kind of resource this is. Value: the fixed string `\"drive#reply\"`.",
-      "default": "drive#reply"
+      "description": "The plain text content of the reply. This field is used for setting the content, while `htmlContent` should be displayed. This field is required by the `create` method if no `action` value is specified."
+    },
+    "modifiedTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The last time the reply was modified (RFC 3339 date-time)."
+    },
+    "assigneeEmailAddress": {
+      "type": "string",
+      "description": "Output only. The email address of the user assigned to this comment. If no user is assigned, the field is unset.",
+      "readOnly": true
     },
     "id": {
       "type": "string",
       "description": "Output only. The ID of the reply."
-    },
-    "createdTime": {
-      "type": "string",
-      "format": "date-time",
-      "description": "The time at which the reply was created (RFC 3339 date-time)."
-    },
-    "author": {
-      "$ref": "User.json"
-    },
-    "deleted": {
-      "type": "boolean",
-      "description": "Output only. Whether the reply has been deleted. A deleted reply has no content."
-    },
-    "content": {
-      "type": "string",
-      "description": "The plain text content of the reply. This field is used for setting the content, while `htmlContent` should be displayed. This field is required by the `create` method if no `action` value is specified."
     },
     "mentionedEmailAddresses": {
       "type": "array",
@@ -56,10 +49,17 @@
         "type": "string"
       }
     },
-    "modifiedTime": {
+    "deleted": {
+      "type": "boolean",
+      "description": "Output only. Whether the reply has been deleted. A deleted reply has no content."
+    },
+    "kind": {
       "type": "string",
-      "format": "date-time",
-      "description": "The last time the reply was modified (RFC 3339 date-time)."
+      "description": "Output only. Identifies what kind of resource this is. Value: the fixed string `\"drive#reply\"`.",
+      "default": "drive#reply"
+    },
+    "author": {
+      "$ref": "User.json"
     }
   }
 }

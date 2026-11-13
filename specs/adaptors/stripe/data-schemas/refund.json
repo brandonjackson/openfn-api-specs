@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "stripe",
   "x-source": {
     "openapi": "#/components/schemas/refund",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "description": "Refund objects allow you to refund a previously created charge that isn't\nrefunded yet. Funds are refunded to the credit or debit card that's\ninitially charged.\n\nRelated guide: [Refunds](https://docs.stripe.com/refunds)",
   "properties": {
@@ -60,6 +60,39 @@
       "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
       "format": "currency",
       "type": "string"
+    },
+    "customer": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "customer.json"
+        },
+        {
+          "$ref": "deleted_customer.json"
+        }
+      ],
+      "description": "ID of the customer of this refund.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "customer.json"
+          },
+          {
+            "$ref": "deleted_customer.json"
+          }
+        ]
+      }
+    },
+    "customer_account": {
+      "description": "ID of the account of this refund.",
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "description": {
       "description": "An arbitrary string attached to the object. You can use this for displaying to users (available on non-card refunds only).",
@@ -139,6 +172,25 @@
         "oneOf": [
           {
             "$ref": "payment_intent.json"
+          }
+        ]
+      }
+    },
+    "payment_method": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "payment_method.json"
+        }
+      ],
+      "description": "ID of the payment method associated with this refund.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "payment_method.json"
           }
         ]
       }
@@ -235,10 +287,12 @@
   "x-expandableFields": [
     "balance_transaction",
     "charge",
+    "customer",
     "destination_details",
     "failure_balance_transaction",
     "next_action",
     "payment_intent",
+    "payment_method",
     "presentment_details",
     "source_transfer_reversal",
     "transfer_reversal"

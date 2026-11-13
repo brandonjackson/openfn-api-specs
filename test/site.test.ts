@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildRow, buildStatusData, renderSite, type StatusData } from '../src/site.js';
 import type { AdaptorInfo } from '../src/adaptors.js';
+import { readFileSync } from 'node:fs';
+import { sourcePath } from '../src/paths.js';
 
 const NOW = new Date('2026-07-06T00:00:00Z');
 const info = (name: string, rest = true, note?: string): AdaptorInfo => ({
@@ -32,8 +34,11 @@ test('buildRow maps a generated (docs) spec to the Documented tier + incomplete'
 });
 
 test('buildRow computes an age from the staleness clock', () => {
-  const r = buildRow(info('asana'), new Date('2026-07-16T00:00:00Z'), 90);
-  // asana was captured/checked 2026-07-06 → 10 days before this NOW.
+  // Ten days after asana's recorded check date (read from the registry, so a
+  // routine re-check doesn't break this) its age is 10.
+  const s = JSON.parse(readFileSync(sourcePath('asana'), 'utf8'));
+  const checked = Date.parse(s.lastCheckedAt ?? s.capturedAt);
+  const r = buildRow(info('asana'), new Date(checked + 10 * 86_400_000), 90);
   assert.equal(r.ageDays, 10);
 });
 

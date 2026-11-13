@@ -5,19 +5,22 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/AttributeDefinition",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "A client-defined consent attribute.",
   "properties": {
-    "category": {
+    "name": {
       "type": "string",
-      "description": "Required. The category of the attribute. The value of this field cannot be changed after creation.",
-      "enum": [
-        "CATEGORY_UNSPECIFIED",
-        "RESOURCE",
-        "REQUEST"
-      ]
+      "description": "Identifier. Resource name of the Attribute definition, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/attributeDefinitions/{attribute_definition_id}`. Cannot be changed after creation."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional. A description of the attribute."
+    },
+    "dataMappingDefaultValue": {
+      "type": "string",
+      "description": "Optional. Default value of the attribute in User data mappings. If no default value is specified, it defaults to an empty value. This field is only applicable to attributes of the category `RESOURCE`."
     },
     "consentDefaultValues": {
       "type": "array",
@@ -26,24 +29,21 @@
         "type": "string"
       }
     },
-    "name": {
-      "type": "string",
-      "description": "Identifier. Resource name of the Attribute definition, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/attributeDefinitions/{attribute_definition_id}`. Cannot be changed after creation."
-    },
-    "dataMappingDefaultValue": {
-      "type": "string",
-      "description": "Optional. Default value of the attribute in User data mappings. If no default value is specified, it defaults to an empty value. This field is only applicable to attributes of the category `RESOURCE`."
-    },
-    "description": {
-      "type": "string",
-      "description": "Optional. A description of the attribute."
-    },
     "allowedValues": {
       "type": "array",
       "description": "Required. Possible values for the attribute. The number of allowed values must not exceed 500. An empty list is invalid. The list can only be expanded after creation.",
       "items": {
         "type": "string"
       }
+    },
+    "category": {
+      "type": "string",
+      "description": "Required. The category of the attribute. The value of this field cannot be changed after creation.",
+      "enum": [
+        "CATEGORY_UNSPECIFIED",
+        "RESOURCE",
+        "REQUEST"
+      ]
     }
   }
 }

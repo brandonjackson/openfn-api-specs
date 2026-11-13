@@ -5,13 +5,41 @@
   "x-openfn-adaptor": "googledrive",
   "x-source": {
     "openapi": "#/components/schemas/Approval",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Metadata for an approval. An approval is a review or approve process for a Drive item.",
   "properties": {
-    "initiator": {
-      "$ref": "User.json"
+    "kind": {
+      "type": "string",
+      "description": "This is always drive#approval."
+    },
+    "fileContentChangeBehavior": {
+      "type": "string",
+      "description": "The behavior of the approval when the file content changes.",
+      "enum": [
+        "FILE_CONTENT_CHANGE_BEHAVIOR_UNSPECIFIED",
+        "RESET_APPROVAL",
+        "NO_APPROVAL_ACTION"
+      ]
+    },
+    "approvalId": {
+      "type": "string",
+      "description": "The approval ID."
+    },
+    "createTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "The time the approval was created."
+    },
+    "modifyTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "The most recent time the approval was modified."
+    },
+    "targetFileId": {
+      "type": "string",
+      "description": "Target file id of the approval."
     },
     "reviewerResponses": {
       "type": "array",
@@ -20,52 +48,33 @@
         "$ref": "ReviewerResponse.json"
       }
     },
-    "createTime": {
+    "dueTime": {
       "type": "string",
       "format": "google-datetime",
-      "description": "Output only. The time the approval was created.",
-      "readOnly": true
+      "description": "The time that the approval is due."
+    },
+    "initiator": {
+      "$ref": "User.json"
+    },
+    "approvedRevisionId": {
+      "type": "string",
+      "description": "The revision ID of the file when the approval completed successfully. This is only set when the approval status is APPROVED."
+    },
+    "completeTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "The time the approval was completed."
     },
     "status": {
       "type": "string",
-      "description": "Output only. The status of the approval at the time this resource was requested.",
+      "description": "The status of the approval at the time this resource was requested.",
       "enum": [
         "STATUS_UNSPECIFIED",
         "IN_PROGRESS",
         "APPROVED",
         "CANCELLED",
         "DECLINED"
-      ],
-      "readOnly": true
-    },
-    "targetFileId": {
-      "type": "string",
-      "description": "Target file id of the approval."
-    },
-    "modifyTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The most recent time the approval was modified.",
-      "readOnly": true
-    },
-    "dueTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "The time that the approval is due."
-    },
-    "completeTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The time the approval was completed.",
-      "readOnly": true
-    },
-    "kind": {
-      "type": "string",
-      "description": "This is always drive#approval."
-    },
-    "approvalId": {
-      "type": "string",
-      "description": "The approval ID."
+      ]
     }
   }
 }

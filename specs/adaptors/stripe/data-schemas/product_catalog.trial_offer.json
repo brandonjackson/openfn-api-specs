@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/product_catalog.trial_offer",
+  "title": "Trial Offer",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/product_catalog.trial_offer",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Trial offers let you define free or paid introductory pricing for a subscription item.\nA TrialOffer specifies the price to charge during the trial, how many billing intervals\nthe trial lasts, and what price the subscription item transitions to when the trial ends.\nYou attach a TrialOffer to a subscription item\nusing `items[current_trial][trial_offer]` when creating or updating a subscription.",
+  "properties": {
+    "active": {
+      "description": "Whether the trial offer is active. Set to false to archive the trial offer.",
+      "type": "boolean"
+    },
+    "duration": {
+      "$ref": "product_catalog_impl_endpoints_trial_offer_resource_trial_offer_duration.json"
+    },
+    "end_behavior": {
+      "$ref": "product_catalog_impl_endpoints_trial_offer_resource_trial_offer_end_behavior.json"
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "nickname": {
+      "description": "A brief description of the trial offer, hidden from customers.",
+      "maxLength": 255,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "product_catalog.trial_offer"
+      ],
+      "type": "string"
+    },
+    "price": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "price.json"
+        },
+        {
+          "$ref": "deleted_price.json"
+        }
+      ],
+      "description": "The price during the trial offer.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "price.json"
+          },
+          {
+            "$ref": "deleted_price.json"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "active",
+    "duration",
+    "end_behavior",
+    "id",
+    "livemode",
+    "object",
+    "price"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "duration",
+    "end_behavior",
+    "price"
+  ],
+  "x-resourceId": "product_catalog.trial_offer"
+}

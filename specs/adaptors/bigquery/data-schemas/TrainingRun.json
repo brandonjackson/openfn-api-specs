@@ -5,11 +5,31 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/TrainingRun",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "Information about a single training query run for the model.",
   "properties": {
+    "vertexAiModelId": {
+      "type": "string",
+      "description": "The model id in the [Vertex AI Model Registry](https://cloud.google.com/vertex-ai/docs/model-registry/introduction) for this training run."
+    },
+    "evaluationMetrics": {
+      "$ref": "EvaluationMetrics.json"
+    },
+    "trainingStartTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The start time of this training run, in milliseconds since epoch.",
+      "readOnly": true,
+      "deprecated": true
+    },
+    "modelLevelGlobalExplanation": {
+      "$ref": "GlobalExplanation.json"
+    },
+    "dataSplitResult": {
+      "$ref": "DataSplitResult.json"
+    },
     "classLevelGlobalExplanations": {
       "type": "array",
       "description": "Output only. Global explanation contains the explanation of top features on the class level. Applies to classification models only.",
@@ -17,17 +37,6 @@
       "items": {
         "$ref": "GlobalExplanation.json"
       }
-    },
-    "evaluationMetrics": {
-      "$ref": "EvaluationMetrics.json"
-    },
-    "vertexAiModelVersion": {
-      "type": "string",
-      "description": "Output only. The model version in the [Vertex AI Model Registry](https://cloud.google.com/vertex-ai/docs/model-registry/introduction) for this training run.",
-      "readOnly": true
-    },
-    "modelLevelGlobalExplanation": {
-      "$ref": "GlobalExplanation.json"
     },
     "results": {
       "type": "array",
@@ -43,22 +52,13 @@
       "description": "Output only. The start time of this training run.",
       "readOnly": true
     },
-    "trainingStartTime": {
+    "vertexAiModelVersion": {
       "type": "string",
-      "format": "int64",
-      "description": "Output only. The start time of this training run, in milliseconds since epoch.",
-      "readOnly": true,
-      "deprecated": true
+      "description": "Output only. The model version in the [Vertex AI Model Registry](https://cloud.google.com/vertex-ai/docs/model-registry/introduction) for this training run.",
+      "readOnly": true
     },
     "trainingOptions": {
       "$ref": "TrainingOptions.json"
-    },
-    "vertexAiModelId": {
-      "type": "string",
-      "description": "The model id in the [Vertex AI Model Registry](https://cloud.google.com/vertex-ai/docs/model-registry/introduction) for this training run."
-    },
-    "dataSplitResult": {
-      "$ref": "DataSplitResult.json"
     }
   }
 }

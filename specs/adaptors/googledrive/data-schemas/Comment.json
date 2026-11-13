@@ -5,14 +5,28 @@
   "x-openfn-adaptor": "googledrive",
   "x-source": {
     "openapi": "#/components/schemas/Comment",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "description": "A comment on a file. Some resource methods (such as `comments.update`) require a `commentId`. Use the `comments.list` method to retrieve the ID for a comment in a file.",
   "properties": {
-    "content": {
+    "anchor": {
       "type": "string",
-      "description": "The plain text content of the comment. This field is used for setting the content, while `htmlContent` should be displayed."
+      "description": "A region of the document represented as a JSON string. For details on defining anchor properties, refer to [Manage comments and replies](https://developers.google.com/workspace/drive/api/v3/manage-comments)."
+    },
+    "htmlContent": {
+      "type": "string",
+      "description": "Output only. The content of the comment with HTML formatting."
+    },
+    "createdTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time at which the comment was created (RFC 3339 date-time)."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Output only. Identifies what kind of resource this is. Value: the fixed string `\"drive#comment\"`.",
+      "default": "drive#comment"
     },
     "mentionedEmailAddresses": {
       "type": "array",
@@ -22,33 +36,23 @@
         "type": "string"
       }
     },
+    "resolved": {
+      "type": "boolean",
+      "description": "Output only. Whether the comment has been resolved by one of its replies."
+    },
     "modifiedTime": {
       "type": "string",
       "format": "date-time",
       "description": "The last time the comment or any of its replies was modified (RFC 3339 date-time)."
     },
-    "kind": {
+    "content": {
       "type": "string",
-      "description": "Output only. Identifies what kind of resource this is. Value: the fixed string `\"drive#comment\"`.",
-      "default": "drive#comment"
+      "description": "The plain text content of the comment. This field is used for setting the content, while `htmlContent` should be displayed."
     },
-    "htmlContent": {
+    "assigneeEmailAddress": {
       "type": "string",
-      "description": "Output only. The content of the comment with HTML formatting."
-    },
-    "quotedFileContent": {
-      "type": "object",
-      "description": "The file content to which the comment refers, typically within the anchor region. For a text file, for example, this would be the text at the location of the comment.",
-      "properties": {
-        "value": {
-          "type": "string",
-          "description": "The quoted content itself. This is interpreted as plain text if set through the API."
-        },
-        "mimeType": {
-          "type": "string",
-          "description": "The MIME type of the quoted content."
-        }
-      }
+      "description": "Output only. The email address of the user assigned to this comment. If no user is assigned, the field is unset.",
+      "readOnly": true
     },
     "author": {
       "$ref": "User.json"
@@ -57,34 +61,30 @@
       "type": "boolean",
       "description": "Output only. Whether the comment has been deleted. A deleted comment has no content."
     },
-    "id": {
-      "type": "string",
-      "description": "Output only. The ID of the comment."
-    },
-    "createdTime": {
-      "type": "string",
-      "format": "date-time",
-      "description": "The time at which the comment was created (RFC 3339 date-time)."
-    },
-    "assigneeEmailAddress": {
-      "type": "string",
-      "description": "Output only. The email address of the user assigned to this comment. If no user is assigned, the field is unset.",
-      "readOnly": true
-    },
-    "resolved": {
-      "type": "boolean",
-      "description": "Output only. Whether the comment has been resolved by one of its replies."
-    },
-    "anchor": {
-      "type": "string",
-      "description": "A region of the document represented as a JSON string. For details on defining anchor properties, refer to [Manage comments and replies](https://developers.google.com/workspace/drive/api/v3/manage-comments)."
-    },
     "replies": {
       "type": "array",
       "description": "Output only. The full list of replies to the comment in chronological order.",
       "items": {
         "$ref": "Reply.json"
       }
+    },
+    "quotedFileContent": {
+      "type": "object",
+      "description": "The file content to which the comment refers, typically within the anchor region. For a text file, for example, this would be the text at the location of the comment.",
+      "properties": {
+        "mimeType": {
+          "type": "string",
+          "description": "The MIME type of the quoted content."
+        },
+        "value": {
+          "type": "string",
+          "description": "The quoted content itself. This is interpreted as plain text if set through the API."
+        }
+      }
+    },
+    "id": {
+      "type": "string",
+      "description": "Output only. The ID of the comment."
     }
   }
 }

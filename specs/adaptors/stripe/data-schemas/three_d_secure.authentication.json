@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stripe/three_d_secure.authentication",
+  "title": "3DS Authentication",
+  "x-openfn-adaptor": "stripe",
+  "x-source": {
+    "openapi": "#/components/schemas/three_d_secure.authentication",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "The Standalone 3DS API allows you to run EMV 3D Secure (3DS) authentication using Stripe while authorizing the payment with any PSP.\n\nRelated guide: [Standalone 3DS](/payments/3d-secure/standalone-3d-secure)",
+  "properties": {
+    "acquirer_details": {
+      "$ref": "three_d_secure_standalone_resource_acquirer_details.json"
+    },
+    "amount": {
+      "description": "The amount for this 3DS Authentication.",
+      "type": "integer"
+    },
+    "challenge_url": {
+      "description": "The URL for presenting a challenge to your cardholder, present if status is requires_challenge.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "channel": {
+      "$ref": "three_d_secure_standalone_resource_channel.json"
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "format": "unix-time",
+      "type": "integer"
+    },
+    "currency": {
+      "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+      "format": "currency",
+      "type": "string"
+    },
+    "directory_server": {
+      "description": "The 3DS directory server with which this 3DS Authentication was processed.",
+      "enum": [
+        "american_express",
+        "cartes_bancaires",
+        "discover",
+        "mastercard",
+        "visa"
+      ],
+      "type": "string"
+    },
+    "fingerprinting_url": {
+      "description": "The URL for performing issuer fingerprinting, present if fingerprinting is supported for the given payment method.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "flow_preference": {
+      "$ref": "three_d_secure_standalone_resource_flow_preference.json"
+    },
+    "future_usage": {
+      "$ref": "three_d_secure_standalone_resource_future_usage.json"
+    },
+    "id": {
+      "description": "Unique identifier for the object.",
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "livemode": {
+      "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+      "type": "boolean"
+    },
+    "message_category": {
+      "description": "Indicates whether this 3DS Authentication is being performed for a payment or non-payment use case.",
+      "enum": [
+        "non_payment_authentication",
+        "payment_authentication"
+      ],
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "description": "Set of [key-value pairs](https://docs.stripe.com/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "enum": [
+        "three_d_secure.authentication"
+      ],
+      "type": "string"
+    },
+    "outcome": {
+      "description": "The outcome of this 3DS Authentication.",
+      "enum": [
+        "abandoned",
+        "attempt_acknowledged",
+        "authenticated",
+        "canceled",
+        "denied",
+        "informational",
+        "internal_error",
+        "not_supported",
+        "not_triggered",
+        "processing_error",
+        "rejected"
+      ],
+      "type": "string"
+    },
+    "outcome_details": {
+      "$ref": "three_d_secure_standalone_resource_outcome_details.json"
+    },
+    "payment_method": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "$ref": "payment_method.json"
+        }
+      ],
+      "description": "ID of the payment method (a PaymentMethod object) to attach to this 3DS Authentication.",
+      "x-expansionResources": {
+        "oneOf": [
+          {
+            "$ref": "payment_method.json"
+          }
+        ]
+      }
+    },
+    "reason": {
+      "description": "The reason for invoking this 3DS Authentication.",
+      "enum": [
+        "cardholder_authentication",
+        "issuer_requested",
+        "liability_shift",
+        "processing_costs",
+        "regulatory_compliance"
+      ],
+      "type": "string"
+    },
+    "shipping_address": {
+      "$ref": "three_d_secure_standalone_resource_shipping_address.json"
+    },
+    "status": {
+      "description": "Status of this Authentication.",
+      "enum": [
+        "canceled",
+        "error",
+        "failed",
+        "requires_challenge",
+        "requires_submission",
+        "succeeded"
+      ],
+      "type": "string",
+      "x-stripeBypassValidation": true
+    }
+  },
+  "required": [
+    "channel",
+    "created",
+    "directory_server",
+    "id",
+    "livemode",
+    "message_category",
+    "object",
+    "payment_method",
+    "status"
+  ],
+  "type": "object",
+  "x-expandableFields": [
+    "acquirer_details",
+    "channel",
+    "flow_preference",
+    "future_usage",
+    "outcome_details",
+    "payment_method",
+    "shipping_address"
+  ],
+  "x-resourceId": "three_d_secure.authentication"
+}
