@@ -106,7 +106,7 @@
           }
         ],
         "responses": {
-          "200 - OK": {
+          "200": {
             "description": "Successful response",
             "content": {
               "application/json": {
@@ -116,22 +116,19 @@
               }
             }
           },
-          "401 - Invalid Token": {
-            "description": "Failed Response due to Invalid Token",
+          "401": {
+            "description": "Failed Response due to Invalid Token / Failed Response due to no header provided",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponseError"
-                }
-              }
-            }
-          },
-          "401 - No header": {
-            "description": "Failed Response due to no header provided",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponseNoHeaderError"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthResponseError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AuthResponseNoHeaderError"
+                    }
+                  ]
                 }
               }
             }
@@ -902,6 +899,23 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "Successful response for merchants with OTP requirement (default) / Successful response for merchants who have disabled their OTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/InitiateTransferOTPResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InitiateTransferSuccessResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad request.",
             "content": {
@@ -918,26 +932,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200 (With OTP)": {
-            "description": "Successful response for merchants with OTP requirement (default)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InitiateTransferOTPResponse"
-                }
-              }
-            }
-          },
-          "200 (Without OTP)": {
-            "description": "Successful response for merchants who have disabled their OTP.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InitiateTransferSuccessResponse"
                 }
               }
             }

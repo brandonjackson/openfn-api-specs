@@ -116,6 +116,39 @@ test('a 3.0 upstream has tuple-form items rewritten to anyOf, leaving example da
   assert.ok(Array.isArray((upstream.paths['/caps'].get.responses['200'].content['application/json'].schema as any).items));
 });
 
+test('labelled response status keys are re-keyed to the bare code, variants merged', () => {
+  const env = (ref: string) => ({ 'application/json': { schema: { $ref: `#/components/schemas/${ref}` } } });
+  const upstream = {
+    openapi: '3.0.3',
+    info: { title: 'T', version: '1' },
+    paths: {
+      '/login': {
+        post: {
+          responses: {
+            '200 - OK': { description: 'OK', content: env('Ok') },
+            '401 - Invalid Token': { description: 'Invalid token', content: env('Bad') },
+            '401 - No header': { description: 'No header', content: env('Missing') },
+            '99': { description: 'Vendor business code', content: env('Fail') },
+          },
+        },
+      },
+    },
+  };
+  const { openapi, warnings } = buildOpenapi(upstream, 'demo', 'json');
+  const responses = openapi.paths['/login'].post.responses;
+  assert.deepEqual(Object.keys(responses).sort(), ['200', '401', '99']);
+  assert.equal(responses['200'].description, 'OK');
+  assert.equal(responses['401'].description, 'Invalid token / No header');
+  assert.deepEqual(responses['401'].content['application/json'].schema, {
+    oneOf: [{ $ref: '#/components/schemas/Bad' }, { $ref: '#/components/schemas/Missing' }],
+  });
+  // No evidence which HTTP status a bare vendor code rides on: left alone.
+  assert.ok(responses['99']);
+  assert.ok(warnings.some((w) => w.includes('re-keyed 3 labelled response status key(s)')));
+  // The verbatim upstream parse is untouched.
+  assert.ok(upstream.paths['/login'].post.responses['200 - OK']);
+});
+
 test('countOperations counts path+method pairs', () => {
   assert.equal(countOperations(JSON.parse(OPENAPI_31)), 1);
   assert.equal(countOperations({ paths: { '/a': { get: {}, post: {}, parameters: [] }, '/b': { put: {} } } }), 3);
