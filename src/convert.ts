@@ -126,6 +126,60 @@ export function rewriteTupleItems(node: any): number {
   return n;
 }
 
+const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+const STATUS_KEY = /^([1-5](?:\d\d|XX))\b\s*\S/;
+
+/**
+ * OpenAPI requires a Responses Object's keys to be an HTTP status code (`200`,
+ * `4XX`) or `default`, but some vendors label them (`"200 - OK"`,
+ * `"401 - No header"`, `"200 (With OTP)"`), which leaves the operation with no
+ * response for the status the API actually sends. A key that starts with a
+ * status code and then a label is re-keyed to the bare code; labelled variants
+ * of the same code are merged, their descriptions joined and each media type's
+ * schemas combined under `oneOf`. Keys that don't start with a status code
+ * (e.g. a vendor business code like `"99"`) are left alone: nothing says which
+ * HTTP status they ride on. Mutates `openapi` in place and returns the keys
+ * rewritten. The verbatim upstream is never touched.
+ */
+export function normalizeResponseCodes(openapi: any): string[] {
+  const rewritten: string[] = [];
+  for (const [path, item] of Object.entries<any>(openapi?.paths ?? {})) {
+    for (const method of HTTP_METHODS) {
+      const responses = item?.[method]?.responses;
+      if (!responses || typeof responses !== 'object') continue;
+      if (!Object.keys(responses).some((k) => STATUS_KEY.test(k))) continue;
+      const out: Record<string, any> = {};
+      for (const [key, response] of Object.entries<any>(responses)) {
+        const code = STATUS_KEY.exec(key)?.[1] ?? key;
+        if (code !== key) rewritten.push(`${method.toUpperCase()} ${path} "${key}" -> ${code}`);
+        const existing = out[code];
+        if (!existing) {
+          out[code] = code === key ? response : { ...response, description: response?.description ?? key };
+          continue;
+        }
+        // A second variant of the same status: merge it into the first.
+        const merged = { ...existing };
+        merged.description = [existing.description, response?.description ?? key].filter(Boolean).join(' / ');
+        if (existing.content || response?.content) {
+          merged.content = { ...(existing.content ?? {}) };
+          for (const [mt, media] of Object.entries<any>(response?.content ?? {})) {
+            const prior = merged.content[mt];
+            if (!prior?.schema || !media?.schema) {
+              merged.content[mt] = prior ?? media;
+              continue;
+            }
+            const variants = [...(prior.schema.oneOf && Object.keys(prior.schema).length === 1 ? prior.schema.oneOf : [prior.schema]), media.schema];
+            merged.content[mt] = { ...prior, schema: { oneOf: variants } };
+          }
+        }
+        out[code] = merged;
+      }
+      item[method].responses = out;
+    }
+  }
+  return rewritten;
+}
+
 export function buildOpenapi(doc: any, adaptor: string, ext: 'json' | 'yaml'): BuildResult {
   const detected = detect(doc, ext);
   switch (detected.kind) {
@@ -140,6 +194,8 @@ export function buildOpenapi(doc: any, adaptor: string, ext: 'json' | 'yaml'): B
         const n = rewriteTupleItems(openapi);
         if (n) warnings.push(`rewrote ${n} draft-07 tuple \`items: [..]\` array(s) as \`items: {anyOf: [..]}\` (array-valued items is invalid in OpenAPI 3.0)`);
       }
+      const codes = normalizeResponseCodes(openapi);
+      if (codes.length) warnings.push(`re-keyed ${codes.length} labelled response status key(s) to the bare code (a Responses Object key must be a status code): ${codes.join('; ')}`);
       return { detected, openapi, warnings };
     }
     case 'swagger': {
