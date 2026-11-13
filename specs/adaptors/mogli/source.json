@@ -3,11 +3,60 @@
   "npm": "@openfn/language-mogli",
   "origin": "generated",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-mogli/ast.json",
-    "https://github.com/OpenFn/adaptors/blob/main/packages/mogli/src/Adaptor.js",
-    "https://docs.openfn.org/adaptors/packages/mogli-docs"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+  "attempts": [
+    {
+      "kind": "docs",
+      "url": "https://guide.mogli.com/llms.txt",
+      "result": "used",
+      "note": "All 93 Mogli knowledge-base pages fetched as Markdown and grepped: no REST/Apex REST reference; object Mogli_SMS__SMS__c and fields Mogli_SMS__Status__c, Mogli_SMS__Phone_Number__c, Mogli_SMS__Mogli_Template__c are named in admin how-tos (Importing SMS, Automated Text Messages, Mass Delete, Blocking Unwanted Messages, Grays Peak release notes)."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/collections/26829827-50916401-de8b-40e7-8a6e-e9bd4ba04805",
+      "result": "rejected",
+      "note": "Vendor's public 'Mogli API' workspace, 'Mogli Admin' collection: X-API-KEY admin routes (/admin/organizations, /api_keys) of Mogli's cloud Messaging API layer, not the in-org Apex REST resource the adaptor calls."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://guide.mogli.com/docs/connected-app.md",
+      "result": "not-found",
+      "note": "Connected App page describes OAuth for Mogli's own cloud API; no spec published."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No Mogli entry (only salesforce.local:einstein)."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=Mogli_SMS&type=code",
+      "result": "not-found",
+      "note": "Managed-package Apex is not public; no vendor spec or SDK."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Mogli SMS is a Salesforce managed package with no published external API spec. The adaptor's only network operations (createSMS, updateSMS) POST/PUT to the custom Apex REST resource /services/apexrest/Mogli_SMS/v1/sms on the org's instanceUrl (confirmed in src/Adaptor.js). Generated a focused OpenAPI 3.0.3 from the adaptor surface and source; server URL is a Salesforce instance placeholder. Request/response field names are best-effort from the adaptor examples since the Apex REST payload schema is not publicly documented."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "jsforce-1.x-login"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/blob/main/packages/mogli/src/Adaptor.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/mogli/README.md",
+    "https://guide.mogli.com/llms.txt",
+    "https://guide.mogli.com/docs/importing-sms.md",
+    "https://guide.mogli.com/docs/automated-text-messages.md",
+    "https://guide.mogli.com/docs/mass-delete-sms-records.md",
+    "https://guide.mogli.com/docs/grays-peak-release-notes.md",
+    "https://www.postman.com/collections/26829827-50916401-de8b-40e7-8a6e-e9bd4ba04805",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-mogli/ast.json"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Mogli SMS is a Salesforce managed package, so its 'API' is the customer's Salesforce org: the adaptor (v0.7.4, jsforce ^1.11) does a SOAP login at configuration.loginUrl and then POSTs/PUTs JSON to the package's Apex REST resource /services/apexrest/Mogli_SMS/v1/sms (createSMS forces type 'Inbound' and sends configuration.secret as x-api-key; updateSMS sends {Id, status}). Those three calls are modelled from the adaptor source; Mogli publishes no contract for the Apex resource, so request bodies list only the fields the adaptor uses and responses are untyped (the adaptor never reads them). The Mogli Message object (Mogli_SMS__SMS__c) is also modelled through the standard Salesforce sObject REST routes (create/get/update/delete/describe and SOQL query), with only the system fields and the three Mogli field API names Mogli's docs publish; the mogli adaptor has no function that calls these (they are reached with the salesforce adaptor), and describeMogliMessage is the way to get the rest of the field list. Mogli's public Postman 'Mogli Admin' collection documents a different system (its cloud Messaging API admin routes) and was not used. Completeness is best-effort: the Apex REST payload, other Mogli objects (Gateway, Template, Form) and their field names are not public."
 }

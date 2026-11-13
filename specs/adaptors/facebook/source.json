@@ -3,11 +3,72 @@
   "npm": "@openfn/language-facebook",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://graph.facebook.com/openapi.json",
+      "result": "not-found",
+      "note": "Meta publishes no OpenAPI for the Graph API or the Messenger Platform. Tried /openapi.json, /openapi.yaml and /swagger.json on graph.facebook.com and developers.facebook.com; only the docs' markdown renderings exist."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No facebook.com / Graph API / Messenger entry on apis.guru."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/facebook/facebook-business-sdk-codegen/tree/main/api_specs/specs",
+      "result": "rejected",
+      "note": "Meta's Business SDK codegen specs are a proprietary node/edge format for the Marketing API; they carry no Messenger Platform Send API, handover or messenger_profile endpoints (same finding as the whatsapp spec)."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/meta",
+      "result": "not-found",
+      "note": "Meta's public Postman workspaces cover WhatsApp and the Marketing API; no Messenger Platform collection reachable without an API key."
+    },
+    {
+      "kind": "docs",
+      "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/llms.txt",
+      "result": "used",
+      "note": "Meta's machine-readable index of the 29 Messenger Platform reference pages. The 14 pages whose .md rendering resolves (generated from Meta's internal spec: base URL, method, path, parameter tables, request/response schemas) were parsed mechanically into 24 operations."
+    },
+    {
+      "kind": "docs",
+      "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/llms.txt",
+      "result": "used",
+      "note": "The other 15 reference pages (Send API, attachment upload, the five conversation-routing APIs, thread owner, page conversations, message attachments/reactions/shares, user conversations/threads, user custom labels) return Meta's 'Page Not Found' shell as .md and an empty client-rendered shell as HTML; those 17 operations were authored from Meta's guides (send-messages, conversation-routing, conversations, identity/custom-labels, identity/user-profile, personas, analytics/messaging-insights)."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
   "sources": [
-    "https://developers.facebook.com/docs/messenger-platform/reference/send-api/",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/llms.txt",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-profile.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/manage-custom-labels-for-a-page.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-personas-for-a-messenger-page.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-calls.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger/igv2-page-moderate-conversations.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/llms.txt",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/send-messages.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/conversation-routing.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/conversations.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/identity/custom-labels.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/identity/user-profile.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/send-messages/personas.md",
+    "https://developers.facebook.com/documentation/business-messaging/messenger-platform/analytics/messaging-insights.md",
     "https://cdn.jsdelivr.net/npm/@openfn/language-facebook/ast.json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/facebook"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The facebook adaptor exposes a single postMessage operation that POSTs to /me/messages on the Graph API (base graph.facebook.com/v2.6, confirmed from the compiled adaptor bundle). Request (recipient + message) and response (recipient_id, message_id) shapes taken from the Meta Messenger Platform Send API reference. Meta publishes no official OpenAPI document, so this was authored from the docs."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The facebook adaptor (v0.5.3) is a Messenger Platform adaptor, not a general Graph API client: its only operation, postMessage({recipient, message, headers}), POSTs a Send API body with messaging_type UPDATE to https://graph.facebook.com/v2.6/me/messages?access_token=<Page token>, and it exports no generic HTTP builder, so nothing else on the Graph API is reachable through it. The whole documented Messenger Platform API is therefore the right 'full' surface (the Graph API as a whole, Marketing API included, is far larger and unreachable from this adaptor). 41 operations over 31 paths and 113 schemas (was a 1-operation stub): Send API (/me/messages and /{page_id}/messages), attachment upload, Messenger profile, custom user settings, personas, custom and thread labels, the five handover (conversation routing) actions and thread owner, conversations and messages with their attachments/reactions/shares, moderation, page status, feature review and feature status, calling, user profile and messaging insights. Half the reference pages were parsed mechanically from Meta's generated markdown; the other half 404 and were authored from Meta's guides, hence best-effort/partial-docs. As in the whatsapp spec, Graph nodes are root paths (/{persona_id}, /{thread_label_id}, /{psid}, /{conversation_id}, /{message_id}) distinguished only by the kind of ID, which trips Redocly's no-identical-paths rule by design; GET /{id}/custom_labels serves both a Page's labels and a user's (PSID) labels. Findings: the adaptor pins Graph API v2.6 (2016), long outside Meta's two-year version support window, while the docs are at v26.0; webhook payloads are not modelled as paths."
 }
