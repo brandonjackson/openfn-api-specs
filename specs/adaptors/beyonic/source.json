@@ -3,12 +3,82 @@
   "npm": "@openfn/language-beyonic",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://api.beyonic.com/api/",
+      "result": "not-found",
+      "note": "The API is still live on 2026-11-13: the Django REST Framework root answers 200 with a router listing (resources under /api/v6/) and every resource answers 401 'Authentication credentials were not provided'. No schema is served: ?format=openapi and ?format=corejson 404 (JSON), /api/schema/, /api/docs/, /api/swagger/, /api/openapi.json and app.beyonic.com/api/swagger.json 404. OPTIONS metadata also requires a token."
+    },
+    {
+      "kind": "docs",
+      "url": "https://apidocs.beyonic.com/",
+      "result": "not-found",
+      "note": "Now 301-redirects to https://developers.onafriq.com/ (a Stoplight portal, workspace 'onafriq'). The Beyonic pages indexed there (/docs/collection-requests-api, /docs/payments-api, /docs/api-overview) return 404, as do /sitemap.xml, /llms.txt and /openapi.json; the Stoplight project API was not reachable anonymously. The legacy MFS Africa hub developer.mfsafrica.com does not resolve. web.archive.org was unreachable from this environment, so archived ReadMe-era copies could not be checked."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/beyonic/api-docs",
+      "result": "used",
+      "note": "Vendor's own Slate source for the Beyonic API reference (last commit 2021-03-02). No OpenAPI/Postman file in the repo. Every include was read; it is the inventory: payments, collection requests, collections, contacts, webhooks, networks, banks, accounts, transactions, events, currencies, plus pagination, filtering, ordering, metadata, versioning, duplicate-request and error conventions."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/beyonic/beyonic-python",
+      "result": "rejected",
+      "note": "Vendor SDK builds URLs from resource names at runtime; carries no spec and adds no endpoints beyond the docs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no beyonic / onafriq / mfs africa entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/",
+      "result": "not-found",
+      "note": "no Beyonic/Onafriq public Postman workspace found by web search."
+    },
+    {
+      "kind": "adaptor-surface",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-beyonic/ast.json",
+      "result": "used",
+      "note": "v0.4.3: createPayment, createContact, createCollectionRequest."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/beyonic/src/Adaptor.js",
+      "result": "used",
+      "note": "POST {apiUrl}/payments, /contacts, /collectionrequests (JSON, Authorization: Token <apiToken>, via Client.js). All three are in openapi.json."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs",
+    "live-api-root"
+  ],
+  "modifications": [],
   "sources": [
+    "https://github.com/beyonic/api-docs/tree/master/source/includes",
     "https://github.com/beyonic/api-docs/blob/master/source/includes/sending_funds/_payments.md",
     "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collection_requests.md",
+    "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collections.md",
+    "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_contacts.md",
+    "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_webhooks.md",
+    "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_events.md",
+    "https://api.beyonic.com/api/",
     "https://apidocs.beyonic.com/",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-beyonic/ast.json"
+    "https://developers.onafriq.com/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-beyonic/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/beyonic"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored by hand from the public Beyonic (now Onafriq) API docs. Covers the three POST endpoints the adaptor calls: /api/payments, /api/contacts and /api/collectionrequests. Request/response field names taken from the docs' example JSON payloads. Beyonic uses Token authentication (Authorization: Token <key>). Contact fields inferred from the contact object embedded in collection request responses since the dedicated contacts doc page was empty."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Beyonic was acquired by MFS Africa (now Onafriq). The API itself is NOT retired: on 2026-11-13 https://api.beyonic.com/api/ still serves its DRF router root (resources under /api/v6/) and every resource answers 401 without a token, but the public docs are gone (apidocs.beyonic.com redirects to the Onafriq Stoplight portal, where the Beyonic pages 404). The best surviving vendor evidence is the Slate source in github.com/beyonic/api-docs (2021), from which this spec was authored: 21 paths / 27 operations covering every documented resource (payments incl. bulk and bank payments, collection requests incl. recurring, collections incl. claiming, contacts, webhooks CRUD, accounts, transactions, events, networks, banks, currencies), DRF {count,next,previous,results} pagination, filters, ordering, Beyonic-Version and Duplicate-Check-Key headers; webhook and collection-verification payloads are component schemas. best-effort/partial-docs because the live router also exposes resources the 2021 docs never described (wallettransfer, reversals, paybill, validatebill, organizations, uploadkyc, senddocuments, collectionrequest-bank-account-ready, papitransactions, kibana_b2c/kibana_c2b); their methods and shapes are unknown, so they are not modelled. Decimal amounts are strings as in the doc samples; doc sample names and phone numbers were not copied as examples."
 }

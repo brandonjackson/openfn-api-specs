@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseCompactionBlock",
+  "title": "ResponseCompactionBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseCompactionBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A compaction block returned when autocompact is triggered.\n\nWhen content is None, it indicates the compaction failed to produce a valid\nsummary (e.g., malformed output from the model). Clients may round-trip\ncompaction blocks with null content; the server treats them as no-ops.",
+  "properties": {
+    "content": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Summary of compacted content, or null if compaction failed",
+      "title": "Content"
+    },
+    "encrypted_content": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Opaque metadata from prior compaction, to be round-tripped verbatim",
+      "title": "Encrypted Content",
+      "x-anthropic-beta-required": [
+        "task-budgets-2026-03-13"
+      ]
+    },
+    "signature": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Signature over the summary, to be sent back with the block verbatim",
+      "title": "Signature",
+      "x-anthropic-beta-required": [
+        "compact-2026-09-04"
+      ]
+    },
+    "tool_changes": {
+      "anyOf": [
+        {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "tool_addition": "#/components/schemas/BetaResponseToolAdditionBlock",
+                "tool_removal": "#/components/schemas/BetaResponseToolRemovalBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "BetaResponseToolAdditionBlock.json"
+              },
+              {
+                "$ref": "BetaResponseToolRemovalBlock.json"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The tool changes of the compacted range: the `tool_addition` and `tool_removal` blocks that take the request's `tools` to the tool set in effect at the end of the range, or `[]` when the range changed no tool. Absent when the server did not compute them. Send the block back unchanged.",
+      "title": "Tool Changes",
+      "x-anthropic-beta-required": [
+        "inline-tools-2026-09-15"
+      ]
+    },
+    "type": {
+      "const": "compaction",
+      "default": "compaction",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "content",
+    "encrypted_content",
+    "type"
+  ],
+  "type": "object"
+}

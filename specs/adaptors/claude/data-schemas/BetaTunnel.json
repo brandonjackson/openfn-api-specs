@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaTunnel",
+  "title": "BetaTunnel",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaTunnel",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An MCP tunnel.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "domain",
+    "display_name",
+    "created_at",
+    "archived_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "tunnel"
+    },
+    "id": {
+      "description": "Unique identifier for the tunnel, prefixed with `tnl_`.",
+      "type": "string"
+    },
+    "domain": {
+      "description": "Anthropic-assigned hostname for the tunnel. MCP server URLs whose host is a subdomain of this value are routed through the tunnel. Globally unique and never reused, even after the tunnel is archived.",
+      "type": "string"
+    },
+    "display_name": {
+      "description": "Human-readable name for the tunnel (1-255 characters). Null if unset.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "description": "RFC 3339 datetime string indicating when the tunnel was created.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "archived_at": {
+      "description": "RFC 3339 datetime string indicating when the tunnel was archived. Null if it is not archived.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

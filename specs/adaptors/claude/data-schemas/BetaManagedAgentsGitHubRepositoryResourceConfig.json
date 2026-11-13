@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsGitHubRepositoryResourceConfig",
+  "title": "BetaManagedAgentsGitHubRepositoryResourceConfig",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsGitHubRepositoryResourceConfig",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A GitHub repository mounted into each session's container. The authorization token is write-only and never returned.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "url"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "github_repository"
+    },
+    "url": {
+      "description": "Github URL of the repository",
+      "type": "string"
+    },
+    "mount_path": {
+      "description": "Mount path in the container. Defaults to `/workspace/<repo-name>`.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "checkout": {
+      "description": "Branch or commit to check out. Defaults to the repository's default branch.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsRepositoryCheckout.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

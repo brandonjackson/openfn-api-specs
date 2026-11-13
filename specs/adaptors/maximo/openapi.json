@@ -1,553 +1,5153 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "IBM Maximo REST API (maxrest)",
-    "version": "7.6.0",
-    "description": "Focused OpenAPI describing the endpoints of the legacy IBM Maximo Integration Framework REST API (the `maxrest/rest` service) that the OpenFn maximo adaptor talks to. The adaptor is a thin passthrough exposing three operations: `fetch` (GET against an object structure or MBO endpoint), `update` (POST with header `x-methodoverride: PATCH`, Maximo 7.6+) and `update75` (POST with header `x-methodoverride: PATCH`, Maximo 7.5). Resources are reached under two families: Object Structures (`/maxrest/rest/os/{objectStructure}`, e.g. mxinventory, mxwo, mxasset) and Maximo Business Objects (`/maxrest/rest/mbo/{mbo}`, e.g. workorder, asset, inventory, invbalances). Add `_format=json` to receive JSON.",
+    "title": "IBM Maximo REST API (Maximo Manage / Asset Management)",
+    "version": "7.6-8.x",
+    "description": "The REST/JSON API of IBM Maximo Asset Management 7.6 and Maximo Manage (MAS 8/9): the NextGen object-structure API under /maximo/oslc (session, maxauth or LDAP) and /maximo/api (API keys), its metadata, auth, attachments, lookups, services, automation-script, logging and Migration Manager routes, plus the legacy MIF REST API under /maxrest/rest (os, mbo, ss). Object structures are configured per installation, so record bodies are modelled generically. The OpenFn maximo adaptor resolves configuration.baseUrl + an arbitrary endpoint and sends the maxauth header: fetch() GETs it (then re-POSTs the body to postUrl), update() POSTs JSON with x-method-override: PATCH and patchtype: MERGE (the NextGen update convention), update75() POSTs a form body with the same headers.",
     "x-openfn-adaptor": "maximo"
   },
   "servers": [
     {
       "url": "https://{host}",
-      "description": "Maximo application server host",
+      "description": "Maximo server (the adaptor's configuration.baseUrl). MAS 8/9 Manage: https://<workspace>.manage.<domain>.",
       "variables": {
         "host": {
-          "default": "maximo.example.com",
-          "description": "Maximo host (baseUrl in the adaptor configuration)"
+          "default": "maximo.example.com"
         }
       }
     }
   ],
+  "security": [
+    {
+      "maxauth": []
+    },
+    {
+      "apikeyHeader": []
+    },
+    {
+      "basicAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "API home"
+    },
+    {
+      "name": "Metadata"
+    },
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "API keys"
+    },
+    {
+      "name": "Object structures"
+    },
+    {
+      "name": "Lookups"
+    },
+    {
+      "name": "Attachments"
+    },
+    {
+      "name": "Services"
+    },
+    {
+      "name": "Automation scripts"
+    },
+    {
+      "name": "Logging"
+    },
+    {
+      "name": "Migration Manager"
+    },
+    {
+      "name": "Legacy REST: object structures"
+    },
+    {
+      "name": "Legacy REST: business objects"
+    },
+    {
+      "name": "Legacy REST: standard services"
+    }
+  ],
   "paths": {
-    "/maxrest/rest/os/{objectStructure}": {
-      "parameters": [
-        { "$ref": "#/components/parameters/ObjectStructure" },
-        { "$ref": "#/components/parameters/Format" }
-      ],
+    "/maximo/{apiRoot}": {
       "get": {
-        "operationId": "queryObjectStructure",
-        "summary": "Query an object structure",
-        "description": "Query records of an integration object structure. Attribute names may be supplied as query parameters to filter (e.g. ITEMNUM=01226). Used by the adaptor `fetch` operation, e.g. endpoint `maxrest/rest/os/mxinventory`.",
+        "operationId": "getApiRoot",
+        "summary": "API home: links to systeminfo, whoami, products, members, license, apimeta",
+        "tags": [
+          "API home"
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Compact" },
-          { "$ref": "#/components/parameters/DropNulls" },
-          { "$ref": "#/components/parameters/RsStart" },
-          { "$ref": "#/components/parameters/MaxItems" }
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Query response set",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/QueryResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRoot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/whoami": {
+      "get": {
+        "operationId": "getWhoAmI",
+        "summary": "Profile of the logged-in user",
+        "tags": [
+          "API home"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhoAmI"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/systeminfo": {
+      "get": {
+        "operationId": "getSystemInfo",
+        "summary": "System information of the instance",
+        "tags": [
+          "API home"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/products": {
+      "get": {
+        "operationId": "listInstalledProducts",
+        "summary": "Installed products / add-ons",
+        "tags": [
+          "API home"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/members": {
+      "get": {
+        "operationId": "listServerMembers",
+        "summary": "Live Maximo servers (Maximo Management Interface root)",
+        "tags": [
+          "API home"
+        ],
+        "description": "Root of the Maximo Management Interface (MMI): links to drill into each server's memory, MBO counts, integration caches, threads and DB connections.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/license": {
+      "get": {
+        "operationId": "listLicenses",
+        "summary": "License keys of the deployed components",
+        "tags": [
+          "API home"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/apimeta": {
+      "get": {
+        "operationId": "listApiMeta",
+        "summary": "Metadata of every API-eligible object structure",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectStructureMeta"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/apimeta/{objectStructure}": {
+      "get": {
+        "operationId": "getApiMeta",
+        "summary": "Metadata of one object structure",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectStructureMeta"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/oas": {
+      "get": {
+        "operationId": "getOpenApiDocument",
+        "summary": "Instance-generated OpenAPI 3 document",
+        "tags": [
+          "Metadata"
+        ],
+        "description": "Generated from the instance's metadata (large and slow without filters). Query: lean=1, os=<OS>, module=<module>, includeactions=1, addinternal=1, primary=1.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "name": "os",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "module",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeactions",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "addinternal",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "primary",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/jsonschemas/{objectStructure}": {
+      "get": {
+        "operationId": "getObjectStructureJsonSchema",
+        "summary": "JSON schema of an object structure",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/jsonmboschemas/{mbo}": {
+      "get": {
+        "operationId": "getMboJsonSchema",
+        "summary": "JSON schema of a business object",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/mbo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/glcomp": {
+      "get": {
+        "operationId": "listGlComponents",
+        "summary": "General-ledger component hierarchy (segment by segment)",
+        "tags": [
+          "Metadata"
+        ],
+        "description": "Pass glcomp=<segments so far> (| separated) to get the next valid segments; responseInfo carries glsegmentcurrent, glsegmentcount and glcompsofar.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "name": "glcomp",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/oslc/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "Log in (native auth) and start a session",
+        "tags": [
+          "Authentication"
+        ],
+        "description": "Send the maxauth header (base64 user:password) — or Basic auth for LDAP — and keep the returned session cookie. Native (maxauth) and Basic auth are not supported on MAS Manage, which takes API keys or SAML.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
+      }
+    },
+    "/maximo/j_security_check": {
+      "post": {
+        "operationId": "formLogin",
+        "summary": "Form-based (app-server security) login",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "j_username": {
+                    "type": "string"
+                  },
+                  "j_password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "required": [
+                  "j_username",
+                  "j_password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/maximo/oslc/logout": {
+      "get": {
+        "operationId": "logout",
+        "summary": "End the session",
+        "tags": [
+          "Authentication"
+        ],
+        "description": "Ends a session started by /login; not needed for API-key calls (silent login). HTTP method not stated in the docs.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/apitoken/create": {
+      "post": {
+        "operationId": "createApiKey",
+        "summary": "Create (or regenerate) an API key for the logged-in user",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expiration": {
+                    "type": "integer",
+                    "description": "Minutes until expiry; -1 = never."
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/apitoken/revoke": {
+      "post": {
+        "operationId": "revokeApiKey",
+        "summary": "Revoke the logged-in user's API key",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}": {
+      "get": {
+        "operationId": "queryResources",
+        "summary": "Query an object structure (collection)",
+        "tags": [
+          "Object structures"
+        ],
+        "description": "Also serves action=listreports / action=genreport (BIRT; genreport returns the rendered file) and group-by (gbcols).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/where"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/pageno"
+          },
+          {
+            "$ref": "#/components/parameters/stablepaging"
+          },
+          {
+            "$ref": "#/components/parameters/collectioncount"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/savedQuery"
+          },
+          {
+            "$ref": "#/components/parameters/searchTerms"
+          },
+          {
+            "$ref": "#/components/parameters/searchAttributes"
+          },
+          {
+            "$ref": "#/components/parameters/querytemplate"
+          },
+          {
+            "$ref": "#/components/parameters/tlrange"
+          },
+          {
+            "$ref": "#/components/parameters/gbcols"
+          },
+          {
+            "$ref": "#/components/parameters/gbsortby"
+          },
+          {
+            "$ref": "#/components/parameters/gbfilter"
+          },
+          {
+            "$ref": "#/components/parameters/gbrange"
+          },
+          {
+            "$ref": "#/components/parameters/distinct"
+          },
+          {
+            "$ref": "#/components/parameters/relativeuri"
+          },
+          {
+            "$ref": "#/components/parameters/addschema"
+          },
+          {
+            "$ref": "#/components/parameters/action"
+          },
+          {
+            "$ref": "#/components/parameters/reportname"
+          },
+          {
+            "$ref": "#/components/parameters/apikeyQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       },
       "post": {
-        "operationId": "createObjectStructure",
-        "summary": "Create a record via an object structure",
-        "description": "Create a new record through an integration object structure.",
+        "operationId": "createResource",
+        "summary": "Create a record, or run a collection-level action / BULK / SYNC / import",
+        "tags": [
+          "Object structures"
+        ],
+        "description": "Plain POST creates (201 + Location; body only with the properties header). x-method-override: BULK processes an array of add/update/delete in one call (always 200, per-item _responsemeta). x-method-override: SYNC upserts via the collection URL. ?action=importfile imports CSV/XML/JSON (preview first, then commit). ?action=wsmethod:<m> with BULK runs an action on many records.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/action"
+          },
+          {
+            "$ref": "#/components/parameters/interactive"
+          },
+          {
+            "$ref": "#/components/parameters/checkesig"
+          },
+          {
+            "$ref": "#/components/parameters/properties"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "$ref": "#/components/parameters/patchtype"
+          },
+          {
+            "$ref": "#/components/parameters/transactionid"
+          },
+          {
+            "$ref": "#/components/parameters/esigauth"
+          },
+          {
+            "$ref": "#/components/parameters/esigreason"
+          },
+          {
+            "$ref": "#/components/parameters/apikeyQuery"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/GenericRecord" }
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Resource"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Resource"
+                    },
+                    "description": "x-method-override: BULK — each item carries _action Add|Update|Delete (Update/Delete need href)."
+                  }
+                ]
+              }
+            },
+            "text/csv": {
+              "schema": {
+                "type": "string"
+              },
+              "description": "action=importfile body (also XML/JSON with the import headers)."
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "BULK (array of per-item results) or a body when the properties header is set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Resource"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkResponseItem"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}/{restId}": {
+      "get": {
+        "operationId": "getResource",
+        "summary": "Get one record",
+        "tags": [
+          "Object structures"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/action"
+          },
+          {
+            "$ref": "#/components/parameters/reportname"
+          },
+          {
+            "$ref": "#/components/parameters/apikeyQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "updateResource",
+        "summary": "Update (x-method-override PATCH), delete (DELETE) or run an action on a record",
+        "tags": [
+          "Object structures"
+        ],
+        "description": "POST with x-method-override: PATCH (+ patchtype: MERGE) updates — this is what the OpenFn update() sends. x-method-override: DELETE deletes. ?action=wsmethod:<method> (e.g. changeStatus, approve, completeAssignment), ?action=workflow:<process> (initiate workflow) or ?action=system:addimage/deleteimage invoke actions.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/action"
+          },
+          {
+            "$ref": "#/components/parameters/interactive"
+          },
+          {
+            "$ref": "#/components/parameters/checkesig"
+          },
+          {
+            "$ref": "#/components/parameters/properties"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "$ref": "#/components/parameters/patchtype"
+          },
+          {
+            "$ref": "#/components/parameters/transactionid"
+          },
+          {
+            "$ref": "#/components/parameters/esigauth"
+          },
+          {
+            "$ref": "#/components/parameters/esigreason"
+          },
+          {
+            "$ref": "#/components/parameters/apikeyQuery"
+          },
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resource"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Created record",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/GenericRecord" }
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Updated/deleted, no body (no properties header)."
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteResource",
+        "summary": "Delete a record",
+        "tags": [
+          "Object structures"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/transactionid"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}/{restId}/{childRelation}": {
+      "get": {
+        "operationId": "queryChildCollection",
+        "summary": "Query a child object / related collection of a record",
+        "tags": [
+          "Object structures"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "name": "childRelation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Child object or relationship name, e.g. assetmeter, poline, doclinks."
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/where"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}/{restId}/getlist~{attribute}": {
+      "get": {
+        "operationId": "listAttributeValues",
+        "summary": "Lookup: valid values for an attribute of a record",
+        "tags": [
+          "Lookups"
+        ],
+        "description": "Use the literal 'zombie' (no record) or 'newmbo' (a new, unsaved record; pass setupdata={json} to pre-set attributes) in place of the rest id. Also works under a child path: /os/{os}/{id}/{child}/{childId}/getlist~{attr}.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "name": "attribute",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "setupdata",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domaininternalwhere",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}/{restId}/doclinks": {
+      "get": {
+        "operationId": "listAttachments",
+        "summary": "List a record's attachments (metadata)",
+        "tags": [
+          "Attachments"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAttachment",
+        "summary": "Upload an attachment",
+        "tags": [
+          "Attachments"
+        ],
+        "description": "Returns 201 with Location: …/doclinks/{id} and a Link header to …/doclinks/meta/{id}.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "name": "slug",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "encslug",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-document-meta",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-document-description",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-document-encdescription",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "custom-encoding",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "content-location",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Raw (or base64 with custom-encoding: base64) file content; metadata via headers slug/encslug, x-document-meta (DOCTYPES, e.g. FILE/Attachments), x-document-description/x-document-encdescription."
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}/{restId}/doclinks/{docId}": {
+      "get": {
+        "operationId": "getAttachmentContent",
+        "summary": "Download an attachment's file",
+        "tags": [
+          "Attachments"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "deleteAttachment",
+        "summary": "Delete an attachment (POST with x-method-override: DELETE)",
+        "tags": [
+          "Attachments"
+        ],
+        "description": "Attachments cannot be updated: delete and re-create.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/os/{objectStructure}/{restId}/doclinks/meta/{docId}": {
+      "get": {
+        "operationId": "getAttachmentMeta",
+        "summary": "Attachment metadata",
+        "tags": [
+          "Attachments"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "$ref": "#/components/parameters/objectStructure"
+          },
+          {
+            "$ref": "#/components/parameters/restId"
+          },
+          {
+            "$ref": "#/components/parameters/lean"
+          },
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/service/{serviceName}": {
+      "get": {
+        "operationId": "invokeServiceGet",
+        "summary": "Invoke a read-only MBO service method",
+        "tags": [
+          "Services"
+        ],
+        "description": "e.g. GET /service/system?action=wsmethod:getProperty&propName=… or wsmethod:getProperties&propNames=a,b.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "name": "serviceName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MBO service, e.g. system."
+          },
+          {
+            "$ref": "#/components/parameters/action"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "invokeServicePost",
+        "summary": "Invoke an MBO service method",
+        "tags": [
+          "Services"
+        ],
+        "description": "e.g. POST /service/system?action=wsmethod:setProperty with {propName, propValue}.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "name": "serviceName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MBO service, e.g. system."
+          },
+          {
+            "$ref": "#/components/parameters/action"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/script/{scriptName}": {
+      "get": {
+        "operationId": "runScriptGet",
+        "summary": "Run an automation script as an API",
+        "tags": [
+          "Automation scripts"
+        ],
+        "description": "Script receives request parameters (e.g. ?site=ABC) and writes the response body.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "name": "scriptName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "runScriptPost",
+        "summary": "Run an automation script with a request body",
+        "tags": [
+          "Automation scripts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "name": "scriptName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/log": {
+      "get": {
+        "operationId": "getLog",
+        "summary": "Read the calling user's correlated REST log",
+        "tags": [
+          "Logging"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/log/enablelogs": {
+      "post": {
+        "operationId": "enableLogs",
+        "summary": "Enable REST/integration logging for the calling user",
+        "tags": [
+          "Logging"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/log/enablealllogs": {
+      "post": {
+        "operationId": "enableAllLogs",
+        "summary": "Enable all loggers for the calling user",
+        "tags": [
+          "Logging"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/log/disablealllogs": {
+      "post": {
+        "operationId": "disableAllLogs",
+        "summary": "Disable the calling user's logging",
+        "tags": [
+          "Logging"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/{apiRoot}/error/messages/{messageId}": {
+      "get": {
+        "operationId": "getErrorMessage",
+        "summary": "Describe a BMXAA error message (extendedError.moreInfo target)",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiRoot"
+          },
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maximo/api/dm/create": {
+      "post": {
+        "operationId": "createMigrationPackage",
+        "summary": "Create a Migration Manager package from a package definition",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pkgdefname": {
+                    "type": "string"
+                  },
+                  "readme": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pkgdefname"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/distribute": {
+      "post": {
+        "operationId": "distributeMigrationPackage",
+        "summary": "Distribute (build) a package",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/download": {
+      "get": {
+        "operationId": "downloadMigrationPackage",
+        "summary": "Download a package zip",
+        "tags": [
+          "Migration Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dmpackagedef",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dmpackageid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/upload": {
+      "post": {
+        "operationId": "uploadMigrationPackage",
+        "summary": "Upload a package zip to the target instance",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/deploy": {
+      "post": {
+        "operationId": "deployMigrationPackage",
+        "summary": "Deploy an uploaded package",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/completedeploy": {
+      "post": {
+        "operationId": "completeDeployMigrationPackage",
+        "summary": "Complete a deployment (after admin mode)",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/reset": {
+      "post": {
+        "operationId": "resetMigrationPackage",
+        "summary": "Reset a package",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/toggleactive": {
+      "post": {
+        "operationId": "toggleActiveMigrationPackage",
+        "summary": "Toggle a package's active flag",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/close": {
+      "post": {
+        "operationId": "closeMigrationPackage",
+        "summary": "Close a package after download",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/dm/delete": {
+      "post": {
+        "operationId": "deleteMigrationPackage",
+        "summary": "Delete a package",
+        "tags": [
+          "Migration Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generic"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPackage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/adminmode/on": {
+      "post": {
+        "operationId": "enableAdminMode",
+        "summary": "Turn admin mode on",
+        "tags": [
+          "Migration Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminModeState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/adminmode/off": {
+      "post": {
+        "operationId": "disableAdminMode",
+        "summary": "Turn admin mode off",
+        "tags": [
+          "Migration Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminModeState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maximo/api/adminmode/state": {
+      "get": {
+        "operationId": "getAdminModeState",
+        "summary": "Admin mode state",
+        "tags": [
+          "Migration Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminModeState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyHeader": []
+          }
+        ]
+      }
+    },
+    "/maxrest/rest/os/{objectStructure}": {
+      "get": {
+        "operationId": "queryLegacyOS",
+        "summary": "Legacy: query an object structure",
+        "tags": [
+          "Legacy REST: object structures"
+        ],
+        "description": "Any attribute can be a filter parameter (wildcard match by default; prefix the value with ~eq~ / eq for exact). Used by the OpenFn fetch() example (maxrest/rest/os/mxinventory?ITEMNUM=…&_format=json).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legacyOs"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyCompact"
+          },
+          {
+            "$ref": "#/components/parameters/legacyDropNulls"
+          },
+          {
+            "$ref": "#/components/parameters/legacyRsStart"
+          },
+          {
+            "$ref": "#/components/parameters/legacyMaxItems"
+          },
+          {
+            "$ref": "#/components/parameters/legacyOrderBy"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createLegacyOS",
+        "summary": "Legacy: create through an object structure",
+        "tags": [
+          "Legacy REST: object structures"
+        ],
+        "description": "Also used by update75() (form body, x-methodoverride/patchtype headers), e.g. maxrest/rest/mbo/invbalances.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legacyOs"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyAction"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "$ref": "#/components/parameters/patchtype"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "description": "Attribute values (form fields or query parameters; child values with dotted names such as ASSETSPEC.1.ALNVALUE). update75() sends a form body; update() sends JSON."
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
       }
     },
     "/maxrest/rest/os/{objectStructure}/{id}": {
-      "parameters": [
-        { "$ref": "#/components/parameters/ObjectStructure" },
-        { "$ref": "#/components/parameters/Id" },
-        { "$ref": "#/components/parameters/Format" }
-      ],
       "get": {
-        "operationId": "getObjectStructureById",
-        "summary": "Get a single object structure record by unique id",
-        "parameters": [
-          { "$ref": "#/components/parameters/Compact" }
+        "operationId": "getLegacyOS",
+        "summary": "Legacy: get one record by unique id",
+        "tags": [
+          "Legacy REST: object structures"
         ],
-        "responses": {
-          "200": {
-            "description": "Single record",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/GenericRecord" }
-              }
-            }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legacyOs"
+          },
+          {
+            "$ref": "#/components/parameters/legacyId"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyCompact"
+          },
+          {
+            "$ref": "#/components/parameters/legacyDropNulls"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
           }
-        }
-      }
-    },
-    "/maxrest/rest/mbo/workorder": {
-      "parameters": [ { "$ref": "#/components/parameters/Format" } ],
-      "get": {
-        "operationId": "queryWorkOrders",
-        "summary": "Query work orders (WORKORDER MBO)",
-        "parameters": [
-          { "$ref": "#/components/parameters/Compact" },
-          { "$ref": "#/components/parameters/RsStart" },
-          { "$ref": "#/components/parameters/MaxItems" }
         ],
         "responses": {
           "200": {
-            "description": "Work order set",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rsStart": { "type": "integer" },
-                    "rsCount": { "type": "integer" },
-                    "rsTotal": { "type": "integer" },
-                    "member": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/WorkOrder" }
-                    }
-                  }
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
       },
       "post": {
-        "operationId": "createWorkOrder",
-        "summary": "Create a work order (WORKORDER MBO)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/WorkOrder" }
-            }
+        "operationId": "updateLegacyOS",
+        "summary": "Legacy: update a record (POST; _action=addchange)",
+        "tags": [
+          "Legacy REST: object structures"
+        ],
+        "description": "The OpenFn update() example posts JSON here (maxrest/rest/mbo/workorder/1234) with x-method-override: PATCH and patchtype: MERGE.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/legacyOs"
+          },
+          {
+            "$ref": "#/components/parameters/legacyId"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyAction"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "$ref": "#/components/parameters/patchtype"
           }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "description": "Attribute values (form fields or query parameters; child values with dotted names such as ASSETSPEC.1.ALNVALUE). update75() sends a form body; update() sends JSON."
         },
         "responses": {
           "200": {
-            "description": "Created work order",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/WorkOrder" }
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
       }
     },
-    "/maxrest/rest/mbo/workorder/{id}": {
-      "parameters": [
-        { "$ref": "#/components/parameters/Id" },
-        { "$ref": "#/components/parameters/Format" }
-      ],
+    "/maxrest/rest/mbo/{mbo}": {
       "get": {
-        "operationId": "getWorkOrderById",
-        "summary": "Get a work order by WORKORDERID",
+        "operationId": "queryLegacyMbo",
+        "summary": "Legacy: query a business object",
+        "tags": [
+          "Legacy REST: business objects"
+        ],
+        "description": "Any attribute can be a filter parameter (wildcard match by default; prefix the value with ~eq~ / eq for exact). Used by the OpenFn fetch() example (maxrest/rest/os/mxinventory?ITEMNUM=…&_format=json).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/mbo"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyCompact"
+          },
+          {
+            "$ref": "#/components/parameters/legacyDropNulls"
+          },
+          {
+            "$ref": "#/components/parameters/legacyRsStart"
+          },
+          {
+            "$ref": "#/components/parameters/legacyMaxItems"
+          },
+          {
+            "$ref": "#/components/parameters/legacyOrderBy"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Work order",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/WorkOrder" }
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
       },
       "post": {
-        "operationId": "updateWorkOrder",
-        "summary": "Update a work order (POST + x-methodoverride: PATCH)",
-        "description": "The adaptor `update` operation posts to an MBO instance endpoint with the header `x-methodoverride: PATCH` to update the record (Maximo 7.6+). Example endpoint: `maxrest/rest/mbo/workorder/1234`.",
-        "parameters": [ { "$ref": "#/components/parameters/MethodOverride" } ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/WorkOrder" }
-            }
+        "operationId": "createLegacyMbo",
+        "summary": "Legacy: create a business object record",
+        "tags": [
+          "Legacy REST: business objects"
+        ],
+        "description": "Also used by update75() (form body, x-methodoverride/patchtype headers), e.g. maxrest/rest/mbo/invbalances.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/mbo"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyAction"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "$ref": "#/components/parameters/patchtype"
           }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "description": "Attribute values (form fields or query parameters; child values with dotted names such as ASSETSPEC.1.ALNVALUE). update75() sends a form body; update() sends JSON."
         },
         "responses": {
           "200": {
-            "description": "Updated work order",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/WorkOrder" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/maxrest/rest/mbo/asset": {
-      "parameters": [ { "$ref": "#/components/parameters/Format" } ],
-      "get": {
-        "operationId": "queryAssets",
-        "summary": "Query assets (ASSET MBO)",
-        "parameters": [
-          { "$ref": "#/components/parameters/Compact" },
-          { "$ref": "#/components/parameters/RsStart" },
-          { "$ref": "#/components/parameters/MaxItems" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Asset set",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rsStart": { "type": "integer" },
-                    "rsCount": { "type": "integer" },
-                    "rsTotal": { "type": "integer" },
-                    "member": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/Asset" }
-                    }
-                  }
+                  "$ref": "#/components/schemas/LegacyResponse"
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/maxrest/rest/mbo/asset/{id}": {
-      "parameters": [
-        { "$ref": "#/components/parameters/Id" },
-        { "$ref": "#/components/parameters/Format" }
-      ],
-      "post": {
-        "operationId": "updateAsset",
-        "summary": "Update an asset (POST + x-methodoverride: PATCH)",
-        "parameters": [ { "$ref": "#/components/parameters/MethodOverride" } ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Asset" }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Updated asset",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Asset" }
-              }
-            }
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
           }
-        }
+        ]
       }
     },
-    "/maxrest/rest/mbo/inventory": {
-      "parameters": [ { "$ref": "#/components/parameters/Format" } ],
+    "/maxrest/rest/mbo/{mbo}/{id}": {
       "get": {
-        "operationId": "queryInventory",
-        "summary": "Query inventory items (INVENTORY MBO)",
+        "operationId": "getLegacyMbo",
+        "summary": "Legacy: get one record by unique id",
+        "tags": [
+          "Legacy REST: business objects"
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Compact" },
-          { "$ref": "#/components/parameters/RsStart" },
-          { "$ref": "#/components/parameters/MaxItems" }
+          {
+            "$ref": "#/components/parameters/mbo"
+          },
+          {
+            "$ref": "#/components/parameters/legacyId"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyCompact"
+          },
+          {
+            "$ref": "#/components/parameters/legacyDropNulls"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Inventory set",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rsStart": { "type": "integer" },
-                    "rsCount": { "type": "integer" },
-                    "rsTotal": { "type": "integer" },
-                    "member": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/InventoryItem" }
-                    }
-                  }
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/maxrest/rest/mbo/invbalances": {
-      "parameters": [ { "$ref": "#/components/parameters/Format" } ],
-      "get": {
-        "operationId": "queryInvBalances",
-        "summary": "Query inventory balances (INVBALANCES MBO)",
-        "responses": {
-          "200": {
-            "description": "Inventory balances set",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rsStart": { "type": "integer" },
-                    "rsCount": { "type": "integer" },
-                    "rsTotal": { "type": "integer" },
-                    "member": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/InvBalance" }
-                    }
-                  }
-                }
-              }
-            }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
           }
-        }
+        ]
       },
       "post": {
-        "operationId": "updateInvBalances",
-        "summary": "Update inventory balances (Maximo 7.5, POST + x-methodoverride: PATCH)",
-        "description": "The adaptor `update75` operation posts to an MBO collection endpoint with the header `x-methodoverride: PATCH`. Example endpoint: `maxrest/rest/mbo/invbalances`.",
-        "parameters": [ { "$ref": "#/components/parameters/MethodOverride" } ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/InvBalance" }
-            }
+        "operationId": "updateLegacyMbo",
+        "summary": "Legacy: update a record (POST; _action=addchange)",
+        "tags": [
+          "Legacy REST: business objects"
+        ],
+        "description": "The OpenFn update() example posts JSON here (maxrest/rest/mbo/workorder/1234) with x-method-override: PATCH and patchtype: MERGE.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/mbo"
+          },
+          {
+            "$ref": "#/components/parameters/legacyId"
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyAction"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          },
+          {
+            "$ref": "#/components/parameters/methodOverride"
+          },
+          {
+            "$ref": "#/components/parameters/patchtype"
           }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "description": "Attribute values (form fields or query parameters; child values with dotted names such as ASSETSPEC.1.ALNVALUE). update75() sends a form body; update() sends JSON."
         },
         "responses": {
           "200": {
-            "description": "Updated inventory balance",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/InvBalance" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/maxrest/rest/mbo/person": {
-      "parameters": [ { "$ref": "#/components/parameters/Format" } ],
-      "get": {
-        "operationId": "queryPersons",
-        "summary": "Query people (PERSON MBO)",
-        "parameters": [
-          { "$ref": "#/components/parameters/Compact" },
-          { "$ref": "#/components/parameters/RsStart" },
-          { "$ref": "#/components/parameters/MaxItems" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Person set",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rsStart": { "type": "integer" },
-                    "rsCount": { "type": "integer" },
-                    "rsTotal": { "type": "integer" },
-                    "member": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/Person" }
-                    }
-                  }
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
+      }
+    },
+    "/maxrest/rest/ss/{service}/{method}": {
+      "get": {
+        "operationId": "invokeLegacyStandardService",
+        "summary": "Legacy: invoke a standard service method",
+        "tags": [
+          "Legacy REST: standard services"
+        ],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/legacyFormat"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLid"
+          },
+          {
+            "$ref": "#/components/parameters/legacyLpwd"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Business-rule or request error (BMXAA… reason code).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorised for the object structure / action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "maxauth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ]
       }
     }
   },
   "components": {
-    "parameters": {
-      "ObjectStructure": {
-        "name": "objectStructure",
-        "in": "path",
-        "required": true,
-        "description": "Integration object structure name (e.g. mxinventory, mxwo, mxasset, mxperson).",
-        "schema": { "type": "string" }
-      },
-      "Id": {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "description": "Unique id of the record (e.g. WORKORDERID, ASSETID).",
-        "schema": { "type": "string" }
-      },
-      "Format": {
-        "name": "_format",
-        "in": "query",
-        "required": false,
-        "description": "Response payload format. Use `json` for JSON.",
-        "schema": { "type": "string", "enum": ["json", "xml"], "default": "json" }
-      },
-      "Compact": {
-        "name": "_compact",
-        "in": "query",
-        "required": false,
-        "description": "Set to 1 to serialize the resource in a compact JSON format.",
-        "schema": { "type": "integer", "enum": [0, 1] }
-      },
-      "DropNulls": {
-        "name": "_dropnulls",
-        "in": "query",
-        "required": false,
-        "description": "Set to 1/true to drop null-valued attributes from the response.",
-        "schema": { "type": "boolean" }
-      },
-      "RsStart": {
-        "name": "_rsStart",
-        "in": "query",
-        "required": false,
-        "description": "Zero-based index of the first record to return (paging).",
-        "schema": { "type": "integer", "default": 0 }
-      },
-      "MaxItems": {
-        "name": "_maxItems",
-        "in": "query",
-        "required": false,
-        "description": "Maximum number of records to return.",
-        "schema": { "type": "integer" }
-      },
-      "MethodOverride": {
-        "name": "x-methodoverride",
-        "in": "header",
-        "required": false,
-        "description": "Set to PATCH to instruct the server to update the addressed resource on a POST.",
-        "schema": { "type": "string", "enum": ["PATCH", "MERGE"] }
-      }
-    },
     "schemas": {
-      "QueryResponse": {
+      "Resource": {
         "type": "object",
-        "description": "Generic query response wrapper returned by object structure queries.",
+        "additionalProperties": true,
+        "description": "One Maximo record serialised through an object structure. Attribute names are the MBO attributes in lower case when lean=1 (prefixed with the spi:/rdf: namespaces when lean=0); child objects appear as nested arrays/objects and related collections as {href} links. Contents depend entirely on the object structure, which is configured per installation.",
         "properties": {
-          "rsStart": { "type": "integer", "description": "Index of the first returned record." },
-          "rsCount": { "type": "integer", "description": "Number of records in this response." },
-          "rsTotal": { "type": "integer", "description": "Total number of matching records." },
-          "member": {
-            "type": "array",
-            "description": "The returned records.",
-            "items": { "$ref": "#/components/schemas/GenericRecord" }
+          "href": {
+            "type": "string",
+            "description": "Canonical URI of the record (contains the rest id)."
+          },
+          "localref": {
+            "type": "string"
+          },
+          "_rowstamp": {
+            "type": "string",
+            "description": "Optimistic-locking row stamp; send back in the If-Match header to detect concurrent updates."
+          },
+          "doclinks": {
+            "type": "object",
+            "description": "Link to the record's attachments collection.",
+            "properties": {
+              "href": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "href": "oslc/os/mxapiasset/_MTAwMS9CRURGT1JE",
+          "_rowstamp": "1234567",
+          "assetnum": "1001",
+          "siteid": "BEDFORD",
+          "description": "Example asset",
+          "changedate": "1999-03-31T16:53:00-05:00",
+          "doclinks": {
+            "href": "oslc/os/mxapiasset/_MTAwMS9CRURGT1JE/doclinks"
           }
         }
       },
-      "GenericRecord": {
+      "ResponseInfo": {
         "type": "object",
-        "description": "A generic Maximo record. Attribute names are upper-case MBO field names; contents vary by object structure.",
+        "description": "Paging metadata of a collection response.",
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "nextPage": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string"
+              }
+            }
+          },
+          "previousPage": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string"
+              }
+            }
+          },
+          "pagenum": {
+            "type": "integer"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Present when collectioncount=1."
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Present when collectioncount=1."
+          }
+        }
+      },
+      "ResourceCollection": {
+        "type": "object",
+        "description": "Collection (query) response. With count=1 the body is only {totalCount}; with distinct=<attr> it is a bare array of values instead.",
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "member": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          },
+          "responseInfo": {
+            "$ref": "#/components/schemas/ResponseInfo"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Only in the count=1 form of the response."
+          }
+        }
+      },
+      "BulkResponseItem": {
+        "type": "object",
+        "description": "One entry of a BULK response, in request order.",
+        "properties": {
+          "_responsemeta": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "description": "Per-item HTTP status, e.g. 201, 204, 400."
+              },
+              "Location": {
+                "type": "string",
+                "description": "URI of a created resource."
+              }
+            }
+          },
+          "_responsedata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The item's body (the record when 'properties' was requested, or an {Error} object)."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Maximo REST error envelope.",
+        "properties": {
+          "Error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "reasonCode": {
+                "type": "string",
+                "description": "BMXAA message id."
+              },
+              "statusCode": {
+                "type": "string"
+              },
+              "errorattrname": {
+                "type": "string"
+              },
+              "errorobjpath": {
+                "type": "string"
+              },
+              "correlationid": {
+                "type": "string"
+              },
+              "extendedError": {
+                "type": "object",
+                "properties": {
+                  "moreInfo": {
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "attrerrors": {
+                "type": "array",
+                "description": "Batched attribute errors (when batch error reporting is enabled).",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "ApiRoot": {
+        "type": "object",
         "additionalProperties": true,
+        "description": "API home document: links (systeminfo, whoami, installedProducts, serverMembers, license, apimeta, …) plus current date-time, language and calendar."
+      },
+      "WhoAmI": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Profile of the logged-in user (personid, userid, displayname, defaultsite, insertOrg, langcode, …); exact fields vary by release.",
         "properties": {
-          "_rowstamp": { "type": "string", "description": "Optimistic-locking row stamp." },
-          "href": { "type": "string", "description": "Self reference URI of the record." }
+          "userName": {
+            "type": "string"
+          },
+          "personid": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "defaultSite": {
+            "type": "string"
+          },
+          "insertOrg": {
+            "type": "string"
+          },
+          "langcode": {
+            "type": "string"
+          }
         }
       },
-      "WorkOrder": {
+      "SystemInfo": {
         "type": "object",
-        "description": "Work order record (WORKORDER MBO / MXWO object structure).",
+        "additionalProperties": true,
+        "description": "System information of the deployed Maximo instance (application version, database, app server, …). Shape not documented field by field."
+      },
+      "ObjectStructureMeta": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Metadata of an API-eligible object structure: JSON schema, saved queries, creation API URL and the security application."
+      },
+      "ApiKeyToken": {
+        "type": "object",
+        "description": "Response of /apitoken/create.",
         "properties": {
-          "WORKORDERID": { "type": "integer", "description": "Unique numeric id of the work order." },
-          "WONUM": { "type": "string", "description": "Work order number." },
-          "DESCRIPTION": { "type": "string" },
-          "STATUS": { "type": "string", "description": "Work order status (e.g. WAPPR, APPR, COMP, CLOSE)." },
-          "STATUSDATE": { "type": "string", "format": "date-time" },
-          "SITEID": { "type": "string" },
-          "ORGID": { "type": "string" },
-          "ASSETNUM": { "type": "string" },
-          "LOCATION": { "type": "string" },
-          "WOPRIORITY": { "type": "integer" },
-          "WORKTYPE": { "type": "string" },
-          "REPORTDATE": { "type": "string", "format": "date-time" },
-          "SCHEDSTART": { "type": "string", "format": "date-time" },
-          "ESTDUR": { "type": "number" },
-          "_rowstamp": { "type": "string" },
-          "href": { "type": "string" }
+          "apikey": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "MigrationPackage": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Migration Manager package JSON (includes dmpackageid).",
+        "properties": {
+          "dmpackageid": {
+            "type": "integer"
+          },
+          "pkgdefname": {
+            "type": "string"
+          }
         }
       },
-      "Asset": {
+      "AdminModeState": {
         "type": "object",
-        "description": "Asset record (ASSET MBO / MXASSET object structure).",
-        "properties": {
-          "ASSETID": { "type": "integer", "description": "Unique numeric id of the asset." },
-          "ASSETNUM": { "type": "string" },
-          "DESCRIPTION": { "type": "string" },
-          "STATUS": { "type": "string", "description": "Asset status (e.g. OPERATING, DECOMMISSIONED)." },
-          "SITEID": { "type": "string" },
-          "ORGID": { "type": "string" },
-          "LOCATION": { "type": "string" },
-          "SERIALNUM": { "type": "string" },
-          "ASSETTYPE": { "type": "string" },
-          "PARENT": { "type": "string" },
-          "PRIORITY": { "type": "integer" },
-          "_rowstamp": { "type": "string" },
-          "href": { "type": "string" }
+        "additionalProperties": true,
+        "description": "Admin-mode state of the target instance."
+      },
+      "LegacyResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Legacy MIF REST (maxrest) JSON serialisation (_format=json). The serializer wraps records in a Query<OS>Response (os) or <MBO>MboSet (mbo) envelope carrying rsStart/rsCount/rsTotal; field names are upper-case MBO attributes. Exact nesting is serializer-configurable (mxe.rest.serializer.*) and not specified field by field here."
+      },
+      "Generic": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Response shape not documented field by field."
+      }
+    },
+    "parameters": {
+      "objectStructure": {
+        "name": "objectStructure",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Object structure name, e.g. mxapiasset, mxapiwodetail, mxapipo, mxapiperuser, mxapimeter, mxapiapikey (case-insensitive). Which object structures exist is installation-specific (see /apimeta)."
+      },
+      "restId": {
+        "name": "restId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Encoded rest id taken from a record's href (e.g. _MTAwMS9CRURGT1JE)."
+      },
+      "lean": {
+        "name": "lean",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "description": "1 = plain JSON without OSLC namespaces (recommended)."
+      },
+      "select": {
+        "name": "oslc.select",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Attributes to return, e.g. assetnum,status,location.description or *. Supports child objects (rel.name{attrs})."
+      },
+      "where": {
+        "name": "oslc.where",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter, e.g. status=\"OPERATING\" and siteid=\"BEDFORD\"."
+      },
+      "orderBy": {
+        "name": "oslc.orderBy",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Sort, e.g. -assetnum,+siteid."
+      },
+      "pageSize": {
+        "name": "oslc.pageSize",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Page size; responseInfo then carries nextPage/previousPage."
+      },
+      "pageno": {
+        "name": "pageno",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Page number to fetch."
+      },
+      "stablepaging": {
+        "name": "stablepaging",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
         }
       },
-      "InventoryItem": {
-        "type": "object",
-        "description": "Inventory record (INVENTORY MBO / MXINVENTORY object structure).",
-        "properties": {
-          "INVENTORYID": { "type": "integer" },
-          "ITEMNUM": { "type": "string", "description": "Item number." },
-          "ITEMSETID": { "type": "string" },
-          "DESCRIPTION": { "type": "string" },
-          "LOCATION": { "type": "string" },
-          "SITEID": { "type": "string" },
-          "STATUS": { "type": "string" },
-          "CURBAL": { "type": "number", "description": "Current balance." },
-          "ISSUEUNIT": { "type": "string" },
-          "ORDERUNIT": { "type": "string" },
-          "_rowstamp": { "type": "string" },
-          "href": { "type": "string" }
+      "collectioncount": {
+        "name": "collectioncount",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "description": "1 adds totalCount/totalPages to responseInfo."
+      },
+      "count": {
+        "name": "count",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "description": "1 returns only the record count."
+      },
+      "savedQuery": {
+        "name": "savedQuery",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Named (saved/KPI/app) query to apply."
+      },
+      "searchTerms": {
+        "name": "oslc.searchTerms",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Full-text style search terms (with searchAttributes)."
+      },
+      "searchAttributes": {
+        "name": "searchAttributes",
+        "in": "query",
+        "schema": {
+          "type": "string"
         }
       },
-      "InvBalance": {
-        "type": "object",
-        "description": "Inventory balance record (INVBALANCES MBO).",
-        "properties": {
-          "INVBALANCESID": { "type": "integer" },
-          "ITEMNUM": { "type": "string" },
-          "ITEMSETID": { "type": "string" },
-          "LOCATION": { "type": "string" },
-          "BINNUM": { "type": "string" },
-          "LOTNUM": { "type": "string" },
-          "SITEID": { "type": "string" },
-          "CURBAL": { "type": "number", "description": "Current balance." },
-          "PHYSCNT": { "type": "number", "description": "Physical count." },
-          "PHYSCNTDATE": { "type": "string", "format": "date-time" },
-          "_rowstamp": { "type": "string" },
-          "href": { "type": "string" }
+      "querytemplate": {
+        "name": "querytemplate",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Query template (MXAPIQUERYTEMPLATE) to apply."
+      },
+      "tlrange": {
+        "name": "tlrange",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Timeline range filter, e.g. -3M."
+      },
+      "gbcols": {
+        "name": "gbcols",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Group-by columns (with aggregate functions), e.g. status,count.*"
+      },
+      "gbsortby": {
+        "name": "gbsortby",
+        "in": "query",
+        "schema": {
+          "type": "string"
         }
       },
-      "Person": {
-        "type": "object",
-        "description": "Person record (PERSON MBO / MXPERSON object structure).",
-        "properties": {
-          "PERSONID": { "type": "string", "description": "Unique person id." },
-          "FIRSTNAME": { "type": "string" },
-          "LASTNAME": { "type": "string" },
-          "DISPLAYNAME": { "type": "string" },
-          "STATUS": { "type": "string" },
-          "PRIMARYEMAIL": { "type": "string", "format": "email" },
-          "PRIMARYPHONE": { "type": "string" },
-          "LOCATIONORG": { "type": "string" },
-          "_rowstamp": { "type": "string" },
-          "href": { "type": "string" }
+      "gbfilter": {
+        "name": "gbfilter",
+        "in": "query",
+        "schema": {
+          "type": "string"
         }
+      },
+      "gbrange": {
+        "name": "gbrange",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "distinct": {
+        "name": "distinct",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Attribute to return distinct values for."
+      },
+      "relativeuri": {
+        "name": "relativeuri",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "addschema": {
+        "name": "addschema",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "description": "Include the JSON schema in the response."
+      },
+      "action": {
+        "name": "action",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Action to invoke: wsmethod:<method> (e.g. wsmethod:changeStatus, wsmethod:approve), workflow:<processname>, system:addimage / system:deleteimage / system:candelete, importfile, listreports, genreport."
+      },
+      "reportname": {
+        "name": "reportname",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "BIRT report design for action=genreport (e.g. woprint.rptdesign)."
+      },
+      "interactive": {
+        "name": "interactive",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "description": "1 = interactive logic: yes/no/cancel prompts are returned to the client."
+      },
+      "checkesig": {
+        "name": "checkesig",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "description": "1 = fail with BMXAA9766E when an e-signature-enabled attribute changes."
+      },
+      "properties": {
+        "name": "properties",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Attributes to return in the response body of a create/update (* for all); without it a create returns 201 with only a Location header."
+      },
+      "methodOverride": {
+        "name": "x-method-override",
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "PATCH",
+            "DELETE",
+            "BULK",
+            "SYNC"
+          ]
+        },
+        "description": "Tunnel PATCH/DELETE over POST, process an array body as a BULK transaction, or SYNC (create-or-update on the collection URL)."
+      },
+      "patchtype": {
+        "name": "patchtype",
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "MERGE"
+          ]
+        },
+        "description": "MERGE = merge child objects instead of replacing them on PATCH (the OpenFn update()/update75() send this)."
+      },
+      "transactionid": {
+        "name": "transactionid",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Client-generated id; the server rejects a repeat within the OSLCTXN window (duplicate-request protection)."
+      },
+      "esigauth": {
+        "name": "esigauth",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Base64 e-signature password/key answering an esig challenge."
+      },
+      "esigreason": {
+        "name": "esigreason",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "ifMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "description": "_rowstamp/ETag for optimistic locking."
+      },
+      "apikeyQuery": {
+        "name": "apikey",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "API key as a query parameter (the apikey header is preferred)."
+      },
+      "legacyFormat": {
+        "name": "_format",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json",
+            "xml"
+          ]
+        },
+        "description": "Response format; XML is the default, so pass json."
+      },
+      "legacyCompact": {
+        "name": "_compact",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "legacyDropNulls": {
+        "name": "_dropnulls",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "legacyRsStart": {
+        "name": "_rsStart",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Zero-based index of the first record (paging)."
+      },
+      "legacyMaxItems": {
+        "name": "_maxItems",
+        "in": "query",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "legacyOrderBy": {
+        "name": "_orderby",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Comma-separated sort attributes (also _orderbyasc / _orderbydesc)."
+      },
+      "legacyAction": {
+        "name": "_action",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "e.g. addchange (create or update)."
+      },
+      "legacyLid": {
+        "name": "_lid",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Native-auth user id (legacy alternative to the maxauth header)."
+      },
+      "legacyLpwd": {
+        "name": "_lpwd",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "format": "password"
+        }
+      },
+      "mbo": {
+        "name": "mbo",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Business object name, e.g. workorder, asset, inventory, invbalances, person."
+      },
+      "legacyOs": {
+        "name": "objectStructure",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Integration object structure, e.g. mxinventory, mxwo, mxasset, mxperson."
+      },
+      "legacyId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Unique id of the record (e.g. WORKORDERID, PERSONUID)."
+      },
+      "apiRoot": {
+        "name": "apiRoot",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "oslc",
+            "api"
+          ]
+        },
+        "description": "oslc = session/maxauth/LDAP routes; api = API-key route (/maximo/api), needed for headless calls when SAML/OIDC is on."
+      }
+    },
+    "securitySchemes": {
+      "maxauth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "maxauth",
+        "description": "Maximo native authentication: base64(user:password). What the OpenFn adaptor sends."
+      },
+      "apikeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apikey",
+        "description": "API key (from /apitoken/create or the MXAPIAPIKEY object structure); use with the /maximo/api route."
+      },
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "HTTP Basic, for LDAP / app-server security."
       }
     }
   }

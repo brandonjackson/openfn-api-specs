@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaAnalyticsProjectActivity",
+  "title": "AnalyticsProjectActivity",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAnalyticsProjectActivity",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "created_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Created At",
+      "description": "Project creation timestamp in RFC 3339 format. Null if the project was deleted before attribution was recorded."
+    },
+    "created_by": {
+      "anyOf": [
+        {
+          "$ref": "BetaAnalyticsUser.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "User who created the project. Null if the project was deleted before attribution was recorded, or if the creator's account no longer exists."
+    },
+    "distinct_conversation_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Distinct Conversation Count",
+      "description": "Number of distinct conversations in the project. Null on aggregated rows where a distinct count cannot be computed."
+    },
+    "distinct_user_count": {
+      "type": "integer",
+      "title": "Distinct User Count",
+      "description": "Number of distinct users who used the project on the requested day, or, in date-range mode, over the requested window — recomputed as an exact distinct count over the window's per-member daily rows, never a sum of per-day values."
+    },
+    "message_count": {
+      "type": "integer",
+      "title": "Message Count",
+      "description": "Number of messages sent in the project on the requested day"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project Id",
+      "description": "Tagged project identifier (e.g. `claude_proj_...`)"
+    },
+    "project_name": {
+      "type": "string",
+      "title": "Project Name",
+      "description": "Name of the project"
+    },
+    "rbac_group_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rbac Group Id",
+      "description": "Tagged RBAC group identifier (`rbac_group_...`), matching the spend-limits API spelling. Present only when the request grouped by `rbac_group_id`."
+    },
+    "rbac_group_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rbac Group Name",
+      "description": "Resolved RBAC group display name, alongside `rbac_group_id` when name resolution is available. Null if the group has been deleted or its name could not be resolved; `rbac_group_id` remains the stable key."
+    },
+    "user_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "User Id",
+      "description": "Tagged user identifier (e.g. `user_...`). Present only when the request grouped by `user_id`."
+    }
+  },
+  "type": "object",
+  "required": [
+    "created_at",
+    "created_by",
+    "distinct_conversation_count",
+    "distinct_user_count",
+    "message_count",
+    "project_id",
+    "project_name"
+  ],
+  "description": "Per-project activity data for a given day."
+}

@@ -1,17 +1,86 @@
 {
   "adaptor": "siuben-rd",
   "npm": "@openfn/language-siuben-rd",
-  "origin": "synthesized",
+  "origin": "generated",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-siuben-rd/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-siuben-rd/types/index.d.ts",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-siuben-rd/dist/index.js",
-    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/siuben-rd/src/Adaptor.js",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/siuben-rd",
-    "https://siuben.gob.do/",
-    "https://siuben.gob.do/consultas/"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "private-api",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://siuben.gob.do/swagger",
+      "result": "not-found",
+      "note": "siuben.gob.do and its subdomains (datos., levantamiento.) reset or time out from outside the DR; /swagger, /swagger/v1/swagger.json, /api-docs, /v3/api-docs, /openapi.json all unreachable."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://sgi-api.siuben.gob.do/swagger/index.html",
+      "result": "not-found",
+      "note": "sgi-api.siuben.gob.do and sgi.siuben.gob.do (found via crt.sh certificate transparency) do not resolve publicly (proxy 502)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.siuben.gob.do/swagger",
+      "result": "not-found",
+      "note": "Host does not resolve."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenFn/adaptors/issues/1625",
+      "result": "rejected",
+      "note": "Adaptor request: API docs exist but were shared privately ('Lucy has the link'); only sample is get('/casos', {query:{id}}), the same placeholder used in the Punto Solidario issue, so it is not modelled."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/KillerMaker/Extech-Indotel-Api/tree/master/Services/Siuben",
+      "result": "used",
+      "note": "Independent public C# client of a SIUBEN API: POST /api/auth/login, GET /api/Data/get/{cedula}, PUT /api/Data/update/{cedula} with typed request/response models. Third-party evidence, not vendor docs; its login route differs from the adaptor's /authenticate."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=siuben&type=code",
+      "result": "not-found",
+      "note": "No SIUBEN GitHub org, SDK or spec; other hits are a backoffice UI and legal texts."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "Not listed."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=siuben",
+      "result": "not-found",
+      "note": "Public search returns no workspace, collection or API."
+    },
+    {
+      "kind": "web-search",
+      "url": "https://www.google.com/search?q=SIUBEN+API+swagger",
+      "result": "not-found",
+      "note": "Only institutional pages and open-data GIS hub; no developer docs."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "SIUBEN is the Dominican Republic's Sistema Único de Beneficiarios, a private government social-registry API with no public/machine-readable spec (web research found only the institutional site and open-data GIS hub, no developer docs). This OpenAPI 3.0.3 document is therefore synthesized from the adaptor surface. The adaptor is a thin HTTP wrapper: ast.json exposes no adaptor-specific operations, only re-exported language-common helpers plus an `http` namespace (http.get, http.request). The one CONFIRMED endpoint, read from src/Utils.js, is POST /authenticate — it takes {username, password} JSON and the adaptor stores response.body.Token as the bearer token for all subsequent calls. All other operations (listBeneficiarios, getBeneficiario, getHogar, getHogarMiembros, getIcv) are SYNTHESIZED/domain-plausible endpoints that the generic bearer-authenticated http.get would target, modeled from SIUBEN's documented public functions (cédula/beneficiary lookup, household 'hogar' records, and the Índice de Calidad de Vida 0–100 quality-of-life score). Paths, field names (Spanish) and shapes are best-effort inventions, not verified against the live API — suitable for mocking only. servers[0].url is a placeholder; the real base URL is provided per-connection via configuration.baseUrl. Common/utility exports (fn, each, field, cursor, etc.) are excluded as they make no external calls."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "adaptor-tests"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/tree/main/packages/siuben-rd",
+    "https://github.com/OpenFn/adaptors/issues/1625",
+    "https://github.com/OpenFn/adaptors/pull/1626",
+    "https://raw.githubusercontent.com/KillerMaker/Extech-Indotel-Api/master/Services/Siuben/SiubenApiProxy.cs",
+    "https://raw.githubusercontent.com/KillerMaker/Extech-Indotel-Api/master/Models/Siuben/GetBeneficiaryResponse.cs",
+    "https://raw.githubusercontent.com/KillerMaker/Extech-Indotel-Api/master/Models/Siuben/PutBeneficiaryRequest.cs",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-siuben-rd/ast.json",
+    "https://raw.githubusercontent.com/OpenFn/docs/main/adaptors/siuben-rd.md",
+    "https://siuben.gob.do/"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "SIUBEN (Sistema Único de Beneficiarios, Dominican Republic) exposes a private partner API: no public docs, no reachable Swagger, and its hosts are not reachable from outside the country; OpenFn's adaptor PR says the docs were shared privately. The adaptor is a thin wrapper: execute() POSTs {username,password} to {baseUrl}/authenticate and stores response.body.Token as a bearer token, then exposes only generic http.get/http.request (ast.json has no named API operations), so 'full' here means every route we can evidence, not a vendor inventory. Modelled: POST /authenticate (adaptor source, confirmed) and, from an independent public C# client, POST /api/auth/login, GET /api/Data/get/{cedula} and PUT /api/Data/update/{cedula} with that client's typed Beneficiario fields; each operation carries x-openfn-source. That client may target a different SIUBEN deployment or version (its login route and token casing differ from the adaptor's), so those three routes are best-effort. The July 2026 stub's /beneficiarios, /hogares, /hogares/{id}/miembros and /icv/{id} routes were invented and have been removed, as has the issue's placeholder GET /casos."
 }

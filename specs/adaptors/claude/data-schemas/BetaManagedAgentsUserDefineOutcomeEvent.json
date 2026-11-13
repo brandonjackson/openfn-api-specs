@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsUserDefineOutcomeEvent",
+  "title": "BetaManagedAgentsUserDefineOutcomeEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsUserDefineOutcomeEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Echo of a `user.define_outcome` input event. Carries the server-generated `outcome_id` that subsequent `span.outcome_evaluation_*` events reference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "outcome_id",
+    "description",
+    "max_iterations",
+    "rubric"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "user.define_outcome",
+      "examples": [
+        "user.define_outcome"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string",
+      "examples": [
+        "sevt_011CZkZSTx3mFgt7odUWmkyq"
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when the outcome was accepted.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:02:14Z"
+      ]
+    },
+    "outcome_id": {
+      "description": "Server-generated `outc_` ID for this outcome. Referenced by `span.outcome_evaluation_*` events and the session's `outcome_evaluations` list.",
+      "type": "string",
+      "examples": [
+        "outc_011CZkZRSw2kEfs6ncTVmjxP"
+      ]
+    },
+    "description": {
+      "description": "What the agent should produce. Copied from the input event.",
+      "type": "string",
+      "examples": [
+        "Produce a 2-page summary as summary.md"
+      ]
+    },
+    "max_iterations": {
+      "description": "Evaluate-then-revise cycles before giving up. Default 3, max 20.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int32"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        3
+      ]
+    },
+    "rubric": {
+      "description": "How to grade the outcome. File rubrics are currently resolved to their text content; clients should handle both variants.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsRubric.json"
+        }
+      ],
+      "examples": [
+        {
+          "type": "text",
+          "content": "Must cover all five sections; cite sources inline."
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "user.define_outcome",
+    "id": "sevt_011CZkZSTx3mFgt7odUWmkyq",
+    "processed_at": "2026-03-15T10:02:14Z",
+    "outcome_id": "outc_011CZkZRSw2kEfs6ncTVmjxP",
+    "description": "Produce a 2-page summary as summary.md",
+    "max_iterations": 3,
+    "rubric": {
+      "type": "text",
+      "content": "Must cover all five sections; cite sources inline."
+    }
+  }
+}

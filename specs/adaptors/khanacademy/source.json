@@ -3,11 +3,59 @@
   "npm": "@openfn/language-khanacademy",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://github.com/Khan/khan-api",
-    "https://github.com/Khan/khan-api/blob/master/README.md",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-khanacademy/ast.json"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://www.khanacademy.org/api/v1/topictree",
+      "result": "not-found",
+      "note": "The API itself is gone: on 2026-11-13 every /api/v1 route probed (topictree, topic/math, exercises, videos/x, badges, user) answers HTTP 410 'API removed. Please see https://github.com/Khan/khan-api for details', /api/auth2/request_token answers 404 'API removed.', and /api/auth2/access_token 400. No /openapi.json, /swagger.json or similar was ever served."
+    },
+    {
+      "kind": "api-descriptions",
+      "url": "http://api-explorer.khanacademy.org/api/v1/v1_api_descriptions",
+      "result": "not-found",
+      "note": "Khan's only machine-readable catalogue: the API Explorer (removed from Khan/khan-api in commit 5b848d8, 2019-11-07) loaded every endpoint's url/http_method/arguments/returns/access_control from /api/v1/v1_api_descriptions. The live host now serves a bot-challenge page; archive.org lists a 2014-08-06 snapshot (web.archive.org/web/20140806201106/...) but the Wayback host is unreachable from this environment (connection reset; WebFetch refuses web.archive.org). Re-capturing that snapshot would let this spec be cross-checked against the vendor's own list."
+    },
+    {
+      "kind": "github-org",
+      "url": "https://github.com/Khan/khan-api",
+      "result": "used",
+      "note": "Vendor repo. README gives the removal timetable. The wiki (github.com/Khan/khan-api.wiki.git) had its pages 'Destroyed' in 2020, but git history keeps them: Khan-Academy-API-Methods.md (last version before 8ecc3b8, 2013-07-18: every endpoint with parameters and example responses), Khan-Academy-API.md and Khan-Academy-API-Authentication.md (8ec30de: the OAuth 1.0a auth2 flow). These recovered pages are the source for all 26 /api/v1 operations' shapes and the 6 auth operations."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/jb-1980/khan-api-wrapper",
+      "result": "used",
+      "note": "Third-party Node wrapper by a khan-api contributor; used only to confirm the post-2013 surface (same endpoints plus /exercises/perseus_autocomplete, /user/exercises/progress_changes and the internal /api/internal/graphql, /api/internal/user/missions and /api/v2/topics/topictree). Those undocumented/internal routes are NOT modelled: no vendor documentation of their shapes exists."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No khanacademy entry among 2529 apis.guru APIs."
+    },
+    {
+      "kind": "postman",
+      "result": "not-found",
+      "note": "No vendor-owned Postman workspace or SwaggerHub API; third-party directories (apis.io, apitracker) only restate that the API was deprecated."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The adaptor exposes a single generic fetch({ getEndpoint, queryParams }) GET operation against the Khan Academy public REST API v1 (base https://www.khanacademy.org/api/v1). No official machine-readable spec exists, so this OpenAPI 3.0.3 document was authored by hand from the documented khan-api endpoints and response shapes. Covers 12 core operations: topictree, topic/{slug}, topic/{slug}/exercises, topic/{slug}/videos, exercises, exercises/{name}, videos, videos/{id}, badges, badges/categories, user, playlists, playlists/{slug}/videos. Reusable component schemas: Topic, Exercise, Video, Badge, BadgeCategory, User, Playlist. Caveat: Khan Academy deprecated and removed these public v1 endpoints during 2020 (badges/user in Jan 2020; remaining content endpoints by mid-2020), so responses are synthesized from historical documentation and are intended for mocking, not live traffic."
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "modifications": [],
+  "sources": [
+    "https://github.com/Khan/khan-api/blob/master/README.md",
+    "https://github.com/Khan/khan-api/wiki (git history: Khan-Academy-API-Methods.md @ 8ecc3b8^, Khan-Academy-API.md and Khan-Academy-API-Authentication.md @ 8ec30de)",
+    "https://github.com/Khan/khan-api/commit/5b848d8d0218575803bf924ad4b0549eb3357216",
+    "https://github.com/jb-1980/khan-api-wrapper",
+    "https://www.khanacademy.org/api/v1/topictree",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-khanacademy/ast.json",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/khanacademy/src/Adaptor.js"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Khan Academy's public REST API v1 no longer exists: Khan removed /badges, /user and /playlists on 2020-01-06 and the content routes (/topictree, /topic, /videos, /exercises) on 2020-07-29, and on 2026-11-13 every route returns 410 'API removed' (the auth2 request_token returns 404). The OpenFn adaptor's only operation, fetch(), still performs the auth2 request_token -> POST authorize (app owner's email/password) -> access_token flow and then GETs https://www.khanacademy.org/api/v1/<getEndpoint>, so every run of it fails; the adaptor is effectively dead and this spec is a historical record for mocks and for anyone retiring the adaptor. 'Full' here is the whole documented v1 surface as Khan last published it: 26 GET operations (topics, the topic tree, deprecated playlist aliases, videos, exercises, badges, the user and the user's video/exercise histories and logs) plus the 6 OAuth 1.0a operations of the v2 and legacy v1 flows, recovered from the git history of Khan's deleted khan-api wiki pages, with response schemas taken from the documented example responses (every list is a bare JSON array). It is best-effort/partial-docs because those pages date from 2013 and the API Explorer catalogue that superseded them (v1_api_descriptions) could not be retrieved; endpoints that only third-party wrappers show (perseus_autocomplete, progress_changes, internal GraphQL) are deliberately left out. Every operation is marked deprecated with x-khan-removed-on. Usage-time fields (total_seconds_watched etc.) were dropped by Khan on 2019-11-30 but are kept as documented. Examples use placeholder identities instead of the wiki's sample emails."
 }

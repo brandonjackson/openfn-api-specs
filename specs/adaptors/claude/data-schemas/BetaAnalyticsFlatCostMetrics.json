@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaAnalyticsFlatCostMetrics",
+  "title": "AnalyticsFlatCostMetrics",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAnalyticsFlatCostMetrics",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "amount": {
+      "type": "string",
+      "title": "Amount",
+      "description": "Amount (post-discount, pre-credit) in fractional cents (minor units).",
+      "examples": [
+        "41280.000000"
+      ]
+    },
+    "currency": {
+      "type": "string",
+      "title": "Currency",
+      "description": "Currency code for the cost amount. Currently always `\"USD\"`.",
+      "default": "USD",
+      "examples": [
+        "USD"
+      ]
+    },
+    "list_amount": {
+      "type": "string",
+      "title": "List Amount",
+      "description": "List-price amount (pre-discount) in fractional cents.",
+      "examples": [
+        "51600.000000"
+      ]
+    },
+    "requests": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Requests",
+      "description": "Number of API requests in this row's scope. Null when `group_by` includes `cost_type` or `token_type` (the count has no per-component attribution; read it from the ungrouped response). For sandbox / code-execution events, this counts execution spans rather than HTTP requests (these rows surface with `product: null`).",
+      "examples": [
+        128
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "amount",
+    "currency",
+    "list_amount",
+    "requests"
+  ],
+  "description": "The cost of one row."
+}

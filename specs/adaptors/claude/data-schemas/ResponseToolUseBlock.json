@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/ResponseToolUseBlock",
+  "title": "ResponseToolUseBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/ResponseToolUseBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "caller": {
+      "default": {
+        "type": "direct"
+      },
+      "discriminator": {
+        "mapping": {
+          "code_execution_20250825": "#/components/schemas/ServerToolCaller",
+          "code_execution_20260120": "#/components/schemas/ServerToolCaller_20260120",
+          "direct": "#/components/schemas/DirectCaller"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "DirectCaller.json"
+        },
+        {
+          "$ref": "ServerToolCaller.json"
+        },
+        {
+          "$ref": "ServerToolCaller_20260120.json"
+        }
+      ],
+      "title": "Caller"
+    },
+    "id": {
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "toolset_name": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "For a toolset member tool_use, the toolset family.",
+      "title": "Toolset Name"
+    },
+    "type": {
+      "const": "tool_use",
+      "default": "tool_use",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caller",
+    "id",
+    "input",
+    "name",
+    "type"
+  ],
+  "type": "object"
+}

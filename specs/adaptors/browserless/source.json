@@ -1,15 +1,73 @@
 {
   "adaptor": "browserless",
   "npm": "@openfn/language-browserless",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://docs.browserless.io/rest-apis/pdf",
-    "https://docs.browserless.io/rest-apis/screenshot",
-    "https://docs.browserless.io/rest-apis/content",
-    "https://docs.browserless.io/rest-apis/scrape",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-browserless/ast.json"
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.0",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://docs.browserless.io/openapi.json",
+    "format": "openapi-3.0",
+    "contentHash": "sha256:104eda8eb2b335567dbcd32fa80d7781fe8ca426d3d509d28980bdf40c52b508",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://docs.browserless.io/openapi.json",
+      "result": "used",
+      "note": "Vendor-published OpenAPI 3.0.0 behind the docs.browserless.io API reference (Browserless Enterprise and Cloud, v2.60.0): 92 paths / 106 operations / 88 schemas"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://production-sfo.browserless.io/docs",
+      "result": "rejected",
+      "note": "the running server's /docs and /openapi.json need a token (HTTP 401); the docs-site copy is the same vendor document without auth"
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/browserless/browserless",
+      "result": "not-found",
+      "note": "open-source repo generates static/docs/swagger.json at build time (scripts/build-open-api.js) and does not commit it; raw main-branch paths 404. The OSS container API is a subset of the Enterprise/Cloud spec used here"
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no browserless entry"
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=browserless",
+      "result": "not-found",
+      "note": "no vendor-owned API"
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.browserless.io/sitemap.xml",
+      "result": "used",
+      "note": "cross-check only: every /rest-apis/* reference page (pdf, screenshot, content, scrape, function, download, export, performance, unblock, crawl, map, search, smart-scrape, scrapers, batch-scrape, agent-run) maps to a path in the spec"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored from Browserless v2 REST API docs. The adaptor exposes createPDF (POST /pdf) plus a generic request(). Covered /pdf, /screenshot, /content and /scrape. The real /pdf and /screenshot endpoints return binary (application/pdf, image/png); to satisfy the JSON-response seed requirement they are modelled here as {base64,type} wrappers matching the base64 value the adaptor stores on state.data. Base URL production-sfo.browserless.io is the hosted region default; self-hosted deployments use their own host."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://docs.browserless.io/openapi.json",
+    "https://docs.browserless.io/api-reference",
+    "https://docs.browserless.io/rest-apis/intro",
+    "https://docs.browserless.io/rest-apis/pdf-api",
+    "https://github.com/browserless/browserless",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-browserless/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-browserless/dist/index.cjs",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/browserless"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Browserless is a hosted (and self-hostable) headless-browser service. upstream.json is the vendor's own OpenAPI 3.0.0 document served from docs.browserless.io (Browserless Enterprise and Cloud v2.60.0), saved verbatim; openapi.json equals it with only info.x-openfn-adaptor added. It replaces a 4-operation docs-authored stub and covers 106 operations: REST APIs (pdf, screenshot, content, scrape, function, download, export, performance, unblock, search, map, smart-scrape, crawl, batch-scrape, agent runs), profiles, sessions, 1Password integration, BrowserQL, and the WebSocket/CDP connect endpoints (documented as GET paths). The adaptor's createPDF calls POST /pdf (default base https://production-sfo.browserless.io, token as a query parameter, matching the tokenAuth scheme); it is present. The real /pdf and /screenshot responses are binary (application/pdf, image/*), as the upstream says; the adaptor base64-encodes the PDF onto state.data, which the spec does not model. Vendor paths use router globs (/browser/*, /kill/+([0-9a-zA-Z-_]), /chromium/bql?(/*)) rather than {param} templates and many operations lack operationId; kept as published."
 }

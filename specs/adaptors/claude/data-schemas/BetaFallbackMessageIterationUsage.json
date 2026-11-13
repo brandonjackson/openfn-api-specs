@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaFallbackMessageIterationUsage",
+  "title": "FallbackMessageIterationUsage",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaFallbackMessageIterationUsage",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Token usage for the fallback-model attempt of a server-side fallback request.\n\nThe terminal entry of a fallback-served turn: when a fallback hop's\noutput is the returned message, the entry for the iteration that\ncompleted it carries this type in place of `message`. A declined hop\nand the serving hop's earlier tool-loop iterations produce `message`\nentries. Whether a fallback model served the response is signalled by\nthe presence of this entry in `usage.iterations`.",
+  "properties": {
+    "cache_creation": {
+      "anyOf": [
+        {
+          "$ref": "BetaCacheCreation.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Breakdown of cached tokens by TTL"
+    },
+    "cache_creation_input_tokens": {
+      "default": 0,
+      "description": "The number of input tokens used to create the cache entry.",
+      "minimum": 0,
+      "title": "Cache Creation Input Tokens",
+      "type": "integer"
+    },
+    "cache_read_input_tokens": {
+      "default": 0,
+      "description": "The number of input tokens read from the cache.",
+      "minimum": 0,
+      "title": "Cache Read Input Tokens",
+      "type": "integer"
+    },
+    "input_tokens": {
+      "description": "The number of input tokens which were used.",
+      "minimum": 0,
+      "title": "Input Tokens",
+      "type": "integer"
+    },
+    "model": {
+      "$ref": "Model.json"
+    },
+    "output_tokens": {
+      "description": "The number of output tokens which were used.",
+      "minimum": 0,
+      "title": "Output Tokens",
+      "type": "integer"
+    },
+    "type": {
+      "const": "fallback_message",
+      "default": "fallback_message",
+      "description": "Usage for the fallback-model attempt that served the response",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "cache_creation",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+    "input_tokens",
+    "model",
+    "output_tokens",
+    "type"
+  ],
+  "type": "object"
+}

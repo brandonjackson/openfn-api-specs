@@ -1,16 +1,126 @@
 {
   "adaptor": "mtn-momo",
   "npm": "@openfn/language-mtn-momo",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-mtn-momo/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-mtn-momo/types/index.d.ts",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/mtn-momo",
-    "https://momodeveloper.mtn.com/api-documentation",
-    "https://momodeveloper.mtn.com/API-collections",
-    "https://www.postman.com/momoapis/momo-open-apis/documentation/0qcufs3/momo-open-apis-sandbox"
+  "origin": "converted",
+  "upstreamFormat": "azure-apim-data-api",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://momodeveloper.mtn.com/developer/apis?api-version=2022-04-01-preview",
+    "format": "azure-apim-data-api",
+    "fetchedAt": "2026-11-13",
+    "note": "The MoMo developer portal is Azure API Management; its anonymous data API publishes every API's operations and schema document as JSON, but its export endpoint returns the four APIs with empty paths. The machine description is therefore captured per API: the operations listing (upstream-<api>-operations.json, from /developer/apis/<api>/operations) and the OpenAPI components / Swagger definitions document (upstream-<api>-schemas.json, from /developer/apis/<api>/schemas/<id>), each verbatim and hashed in attempts[]. The 56 per-operation detail documents (/developer/apis/<api>/operations/<operationId>?api-version=2022-04-01-preview) were fetched too; the concatenation of their bodies in sorted <api>.<operationId> order hashed to sha256:37bfa7b87503dc78e4d5617f41e9725eb0fe445334ff0db36221430a8a3fb6a3. No single upstream.<ext>/contentHash is recorded because no single upstream file is the whole API (same approach as openlmis)."
+  },
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://momodeveloper.mtn.com/developer/apis/collection?export=true&format=openapi%2Bjson&api-version=2022-04-01-preview",
+      "result": "rejected",
+      "note": "APIM data-API export (also tried format=openapi, swagger, openapi-link, swagger-link, openapi+json-link and the linked blob downloads, plus other api-versions, which 400). Every anonymous export returns info/servers/securitySchemes with an empty paths object, for all four APIs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://momodeveloper.mtn.com/api-documentation/api-description-download?api=collection&format=swagger",
+      "result": "not-found",
+      "note": "legacy APIM portal download URL and /docs/services/collection/export?DocumentFormat=Swagger both 404 on the current portal."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis?api-version=2022-04-01-preview",
+      "result": "used",
+      "note": "lists 4 APIs: collection, disbursement, remittance, sandbox-provisioning-api. /developer/products lists a fifth product, Collection Widget (momowidget), with no APIs attached (a front-end widget)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/collection/operations?api-version=2022-04-01-preview&$top=200",
+      "result": "used",
+      "note": "23 operations; saved verbatim as upstream-collection-operations.json (sha256:2fe809589d649729be468c4300c5e3d778db044e46734f270a29c1fc05cb992f)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/collection/schemas/668d4753d54e6119240c675d?api-version=2022-04-01-preview",
+      "result": "used",
+      "note": "OpenAPI components document; saved verbatim as upstream-collection-schemas.json (sha256:b60c02a62fb53a8ace63f523b34f638a1a31a97e700608b3bd55a2bb14e4868a)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/disbursement/operations?api-version=2022-04-01-preview&$top=200",
+      "result": "used",
+      "note": "16 operations; saved verbatim as upstream-disbursement-operations.json (sha256:5ae90fff3f9fff0a91f6151234b15e69ecbfb436640fa4285b44f724694a2dc1)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/disbursement/schemas/668ef551d54e6119240c6821?api-version=2022-04-01-preview",
+      "result": "used",
+      "note": "saved verbatim as upstream-disbursement-schemas.json (sha256:1a8bd1a03bd8fae97b2b66c7474486d7da07c9337f3b7479a44ac9c161f60547)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/remittance/operations?api-version=2022-04-01-preview&$top=200",
+      "result": "used",
+      "note": "14 operations; saved verbatim as upstream-remittance-operations.json (sha256:911d62cdab3cafd6e55b4d145eaa817b45e87fc4e9034d19a6a0cd1d75d1b3ef)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/remittance/schemas/671b10e9fb426803749ff26e?api-version=2022-04-01-preview",
+      "result": "used",
+      "note": "saved verbatim as upstream-remittance-schemas.json (sha256:3f7987d3424bae8a814cf0c6c4d276e25788a7895d1e8105b1feb8bc7d9f9cda)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/sandbox-provisioning-api/operations?api-version=2022-04-01-preview&$top=200",
+      "result": "used",
+      "note": "3 operations; saved verbatim as upstream-sandbox-provisioning-operations.json (sha256:c35fada95c2171d1728c9b33175dccf34b0e743a33fe236f87431b455309cc2d)."
+    },
+    {
+      "kind": "apim-data-api",
+      "url": "https://momodeveloper.mtn.com/developer/apis/sandbox-provisioning-api/schemas/695e5fa3fb4268137c4e9bd8?api-version=2022-04-01-preview",
+      "result": "used",
+      "note": "Swagger 2.0 definitions document; saved verbatim as upstream-sandbox-provisioning-schemas.json (sha256:0e5565f47fda136304d94298f067ab42463d396d2ddc8ec91a2454ab14400d0a)."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/momoapis/momo-open-apis/documentation/0qcufs3/momo-open-apis-sandbox",
+      "result": "not-found",
+      "note": "MTN's public Postman workspace is a client-rendered page with no collection id or JSON export reachable without a Postman account/API key; the APIM data API is the primary source anyway."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=momo+openapi+mtn",
+      "result": "rejected",
+      "note": "no MTN-owned org or repo publishes a spec; only community SDKs, some carrying old third-party exports of the portal swagger (e.g. a disbursement.json in a community SDK). Third-party copies, not used."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no momodeveloper.mtn.com / MTN MoMo entry."
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://app.swaggerhub.com/search?query=momo",
+      "result": "not-found",
+      "note": "no MTN-owned SwaggerHub API."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The mtn-momo adaptor exposes only a single generic request(method, path, body, options) operation, so endpoint coverage is driven by the MTN MoMo Open API docs plus the concrete paths shown in the adaptor's ast.json examples (GET /collection/v1_0/accountholder/msisdn/{msisdn}/basicuserinfo and POST /collection/v2_0/invoice). MTN publishes interactive Swagger UI and a Postman collection on momodeveloper.mtn.com but does not expose a directly downloadable OpenAPI/Swagger JSON without portal auth, so the spec was authored by hand from documentation (origin=generated). 13 operations modeled: sandbox provisioning (create apiuser, get apiuser, create apikey), OAuth token issuance (collection + disbursement), Collection (requesttopay + status, account balance, account holder active validation, basic user info, v2_0 invoice), and Disbursement (transfer + status). Base URL is the sandbox host; production uses per-market hosts (e.g. proxy.momoapi.mtn.com) with the same paths. The 201/202 asynchronous endpoints (apiuser, requesttopay, invoice, transfer) return empty bodies in reality; an AcknowledgeResponse schema is used so the mocker returns JSON. Field names (amount/currency as strings, payer/payee partyIdType/partyId, availableBalance, financialTransactionId, status enum PENDING/SUCCESSFUL/FAILED) follow the MoMo docs."
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "modifications": [],
+  "sources": [
+    "https://momodeveloper.mtn.com/developer/apis?api-version=2022-04-01-preview",
+    "https://momodeveloper.mtn.com/developer/products?api-version=2022-04-01-preview",
+    "https://momodeveloper.mtn.com/developer/apis/collection/operations?api-version=2022-04-01-preview",
+    "https://momodeveloper.mtn.com/developer/apis/disbursement/operations?api-version=2022-04-01-preview",
+    "https://momodeveloper.mtn.com/developer/apis/remittance/operations?api-version=2022-04-01-preview",
+    "https://momodeveloper.mtn.com/developer/apis/sandbox-provisioning-api/operations?api-version=2022-04-01-preview",
+    "https://momodeveloper.mtn.com/API-collections",
+    "https://momodevelopercommunity.mtn.com/how-to-59/momo-api-production-configuration-101",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-mtn-momo/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-mtn-momo/dist/index.cjs",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/mtn-momo"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "MTN MoMo Open API (Collection, Disbursement, Remittance, Sandbox User Provisioning) as published on the MTN MoMo developer portal, an Azure API Management instance whose anonymous data API serves every operation and schema as JSON. openapi.json is a mechanical conversion of all 56 published operations (23 + 16 + 14 + 3) and their schema documents into one OpenAPI 3.0.3 document, with each product mounted under its gateway path prefix (/collection, /disbursement, /remittance; sandbox provisioning at the root), which is how the adaptor's request() paths are written. Conversion choices: APIM's misuse of response contentType as an example label ('ReferenceId already in use') became named application/json examples; untyped 202/201 acknowledgements stay bodiless (the API returns no body); four gaps were filled from the same API's own schema document (ValidateAccountHolderStatus 200 -> BooleanResult, GET apiuser 200 -> ApiUserResult, bc-authorize and oauth2/token form bodies -> bcauthorize / oauth2TokenRequest); schemas shared across products were merged (BasicUserInfo and ErrorReason as unions, dropping the remittance enum typo 'TRANSACTION_CANCELED.'); GetInvoiceStatus's {x-referenceId} was renamed {referenceId} to avoid an illegal duplicate templated path; MSISDN-like partyId example values were replaced with 0000000000. Two remittance operations are portal test clones (a /clone-671b0/ prefix and literal 999 padding round the MSISDN) and are kept but marked deprecated. Vendor quirks kept as published: PaymentServerUrl/TargetEnvironment schemas in sandbox provisioning carry an 'apiKey' property, and several example values are numbers where the schema says string. Production host proxy.momoapi.mtn.com comes from MTN's developer community go-live guidance, not from the APIM definitions (which name the sandbox host). Adaptor check: request() only, plus POST /collection/token/ for the token; both ast.json examples (GET /collection/v1_0/accountholder/MSISDN/{id}/basicuserinfo, POST /collection/v2_0/invoice) match."
 }

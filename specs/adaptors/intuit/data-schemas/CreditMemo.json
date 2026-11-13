@@ -1,0 +1,488 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intuit/CreditMemo",
+  "title": "CreditMemo",
+  "x-openfn-adaptor": "intuit",
+  "x-source": {
+    "openapi": "#/components/schemas/CreditMemo",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "Id": {
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
+    },
+    "SyncToken": {
+      "type": "string",
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
+    },
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
+    },
+    "DocNumber": {
+      "type": "string",
+      "description": "Product: ALL Description: QBO: Reference number for the transaction. If DocNumber is not provided, and the Custom Transaction Number is set to \"Off\", QBO assigns a document number using the next-in-sequence algorithm for Sales transactions. Otherwise the value will remaing null. Alternatively, you can also pass in \"AUTO_GENERATE\" in this field to force QBO to auto-sequence the document number f..."
+    },
+    "TxnDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: ALL Description: QBO: The date entered by the user when this transaction occurred. [br /]Often, it is the date when the transaction is created in the system. [br /]For \"posting\" transactions, this is the posting date that affects the financial statements. If the date is not supplied, the current date on the server is used. Description: QBW: The nominal, user entered, date of the transa..."
+    },
+    "TxnSubType": {
+      "allOf": [
+        {
+          "$ref": "TxnSubTypeEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Sub-type of the transaction. For information purposes only."
+    },
+    "DepartmentRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: Location of the transaction, as defined using location tracking in QuickBooks Online."
+    },
+    "CurrencyRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the Currency in which all amounts on the associated transaction are expressed.[br /] InputType: ReadWrite"
+    },
+    "ExchangeRate": {
+      "type": "number",
+      "description": "Product: ALL Description: Currency exchange rate. Valid only if the company file is set up to use Multi-Currency feature. In QuickBooks, exchange rates are always recorded as the number of home currency units it takes to equal one foreign currency unit. The foreign unit is always 1 and the amount of home units that equal that 1 foreign unit is what QuickBooks uses as the exchange rate. InputTyp..."
+    },
+    "PrivateNote": {
+      "type": "string",
+      "description": "Product: ALL Description: User entered, organization-private note about the transaction. This note will not appear on the transaction records by default. InputType: ReadWrite"
+    },
+    "TxnStatus": {
+      "type": "string",
+      "description": "Product: ALL Description: QBW: The status of the transaction. Depending on the transaction type it may have different values.[br /]For Sales Transactions acceptable values are defined in PaymentStatusEnum. For Estimate, the values accepted are defined in EstimateStatusEnum. Description: QBO: The status of the transaction. Depending on the transaction type it may have different values.[br /]For..."
+    },
+    "LinkedTxn": {
+      "type": "array",
+      "items": {
+        "$ref": "LinkedTxn.json"
+      },
+      "description": "Product: ALL Description: A linked (related) transaction. More than one transaction can be linked."
+    },
+    "Line": {
+      "type": "array",
+      "items": {
+        "$ref": "Line.json"
+      },
+      "description": "Product: QBW Description: A line item of a transaction. Product: QBO Description: A line item of a transaction. QuickBooks Online does not support tax lines in the main transaction body, only in the TxnTaxDetail section."
+    },
+    "TxnTaxDetail": {
+      "allOf": [
+        {
+          "$ref": "TxnTaxDetail.json"
+        }
+      ],
+      "description": "Product: ALL Description: Details of taxes charged on the transaction as a whole. For US versions of QuickBooks, tax rates used in the detail section must not be used in any tax line appearing in the main transaction body. For international versions of QuickBooks, the TxnTaxDetail should provide the details of all taxes (sales or purchase) calculated for the transaction based on the tax codes r..."
+    },
+    "TxnSource": {
+      "type": "string",
+      "description": "Product: QBO Description: Originating source of the Transaction. Valid values are defined in TxnSourceEnum: QBMobile."
+    },
+    "TaxFormType": {
+      "type": "string",
+      "description": "Description: refer TaxFormTypeEnum. Tax Form Type holds data related to Tax Information, values based on regional compliance laws. Applicable for IN Region and can be extended for other Regions."
+    },
+    "TaxFormNum": {
+      "type": "string",
+      "description": "Description: Tax Form Num holds data related to Tax Information based on Regional compliance laws.This is applicable for IN region and can be extended to other regions in future."
+    },
+    "TransactionLocationType": {
+      "type": "string",
+      "description": "Product: QBO Description: Location of the purchase or sale transaction. The applicable values are those exposed through the TransactionLocationTypeEnum. This is currently applicable only for the FR region."
+    },
+    "Tag": {
+      "type": "array",
+      "items": {
+        "$ref": "Tag.json"
+      },
+      "description": "Product: QBO Descripton: List of tags used to identify the transaction."
+    },
+    "TxnApprovalInfo": {
+      "allOf": [
+        {
+          "$ref": "TxnApprovalInfo.json"
+        }
+      ],
+      "description": "Product: QBO Description: Details of the Approval Status for current transaction in QBO workflows."
+    },
+    "RecurDataRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: Reference to the RecurTemplate which was used to create the Transaction InputType: Read"
+    },
+    "RecurringInfo": {
+      "allOf": [
+        {
+          "$ref": "RecurringInfo.json"
+        }
+      ],
+      "description": "Product: QBO Description: The Recurring Schedule information for the Transaction"
+    },
+    "ProjectRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Project identifier References to the project this transaction is associated with"
+    },
+    "TotalCostAmount": {
+      "type": "number",
+      "description": "Product: ALL Description: Project Estimate identifier The amount or equivalent paid or charged for a product/service"
+    },
+    "HomeTotalCostAmount": {
+      "type": "number",
+      "description": "Product: ALL Description: Project Estimate identifier The amount or equivalent paid or charged for a product/service when using multi-currency"
+    },
+    "AutoDocNumber": {
+      "type": "boolean",
+      "description": "Product: QBO Description: If AutoDocNumber is true, DocNumber is generated automatically. If false or null, the DocNumber is generated based on preference of the user."
+    },
+    "CustomerRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to a Customer or job. Filterable: QBW InputType: ReadWrite BusinessRules: QBW: CustomerRef is mandatory for some SalesTransactions like Invoice"
+    },
+    "CustomerMemo": {
+      "allOf": [
+        {
+          "$ref": "MemoRef.json"
+        }
+      ],
+      "description": "Product: ALL Description: QBO: For an Invoice, this is the user-entered message to the customer that does appear in the invoice, and does appear in the printed invoice. The maximum length for Invoice Msg is 1000 characters.[br /]For a Bill, this is the memo of the transaction to provide more detail, and does not appear in the printed message of the bill. The maximum length for Bill Msg is 4000..."
+    },
+    "BillAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: QBO: Bill-to address of the Invoice.[br]See [a href=\"http://ipp.developer.intuit.com/0010_Intuit_Partner_Platform/0060_Financial_Management_Services_(v3)/01000_Using_Data_Service_Entities#Addresses\"]Addresses[/a] Description: QBW: The physical (postal) address where the bill or invoice is sent.[br]See [a href=\"http://ipp.developer.intuit.com/0010_Intuit_Partner_Platfor..."
+    },
+    "ShipAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: QBO: Shipping address of the Invoice.[br]See [a href=\"http://ipp.developer.intuit.com/0010_Intuit_Partner_Platform/0060_Financial_Management_Services_(v3)/01000_Using_Data_Service_Entities#Addresses\"]Addresses[/a] Description: QBW: Identifies the address where the goods must be shipped. [br /]QuickBooks Note: If ShipAddr is not specified, and a default ship-to address..."
+    },
+    "FreeFormAddress": {
+      "type": "boolean",
+      "description": "Product: QBO Description: Specifies whether shipping address is in free-form or structured-form (city/state etc.)"
+    },
+    "ShipFromAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: QBO: Shipping from address of the Invoice.[br]See [a href=\"http://ipp.developer.intuit.com/0010_Intuit_Partner_Platform/0060_Financial_Management_Services_(v3)/01000_Using_Data_Service_Entities#Addresses\"]Addresses[/a] Description: QBW: Identifies the address where the goods are shipped from. For transactions without shipping, it represents the address where the sale t..."
+    },
+    "RemitToRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the party receiving payment. InputType: ReadOnly"
+    },
+    "ClassRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the Class associated with the transaction. InputType: ReadWrite"
+    },
+    "SalesTermRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the SalesTerm associated with the transaction. InputType: ReadWrite"
+    },
+    "DueDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: ALL Description: QBW: Date when the payment of the transaction is due. Description: QBO: Date when the invoice is to be paid, not including any early-payment discount incentives, or late payment penalties. If the date is not supplied, the current date on the server is used. Filterable: QBW InputType: ReadWrite BusinessRules: QBW: Following are the BusinessRules regarding DueDate of tra..."
+    },
+    "SalesRepRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the SalesRep associated with the transaction. InputType: ReadWrite"
+    },
+    "PONumber": {
+      "type": "string",
+      "description": "Product: ALL Description: Purchase Order number. ValidRange: QBW: max=25 ValidRange: QBO: max=15"
+    },
+    "FOB": {
+      "type": "string",
+      "description": "Product: ALL Description: \"Free On Board\", the terms between buyer and seller regarding transportation costs; does not have any bookkeeping implications. Description: \"Free On Board\", the terms between buyer and seller regarding transportation costs; does not have any bookkeeping implications. ValidRange: QBW: max=13 ValidRange: QBO: max=15"
+    },
+    "ShipMethodRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the ShipMethod associated with the transaction. InputType: ReadWrite"
+    },
+    "ShipDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: QBW Description: Date for delivery of goods or services. InputType: ReadWrite"
+    },
+    "TrackingNum": {
+      "type": "string",
+      "description": "Product: QBW Description: Shipping provider's tracking number for the delivery of the goods associated with the transaction."
+    },
+    "GlobalTaxCalculation": {
+      "allOf": [
+        {
+          "$ref": "GlobalTaxCalculationEnum.json"
+        }
+      ],
+      "description": "Product: QBO Description: Indicates the GlobalTax model if the model inclusive of tax, exclusive of taxes or not applicable"
+    },
+    "TotalAmt": {
+      "type": "number",
+      "description": "Product: All Description: QBO: Indicates the total amount of the transaction. This includes the total of all the charges, allowances and taxes. By default, this is recalculated based on sub items total and overridden. Description: QBW: Indicates the total amount of the transaction. This includes the total of all the charges, allowances and taxes.[br /]Calculated by QuickBooks business logic; ca..."
+    },
+    "HomeTotalAmt": {
+      "type": "number",
+      "description": "Product: ALL Description: QBW: Total amount of the transaction in the home currency for multi-currency enabled companies. Single currency companies will not have this field. Includes the total of all the charges, allowances and taxes. Calculated by QuickBooks business logic. Cannot be written to QuickBooks. InputType: QBW: ReadOnly"
+    },
+    "ApplyTaxAfterDiscount": {
+      "type": "boolean",
+      "description": "Product: QBO Description: If false or null, calculate the sales tax first, and then apply the discount. If true, subtract the discount first and then calculate the sales tax."
+    },
+    "ShippingTaxIncludedInTotalTax": {
+      "type": "boolean",
+      "description": "Product: QBO Description: During total tax override (when user specifies TxnTaxDetail.TotalTax), if this is set to true, system overrides all taxes including the shipping tax, otherwise (if false or null) only non shipping taxes are overridden and original shipping tax is added to the total tax."
+    },
+    "TemplateRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the Template for the invoice form. InputType: ReadWrite"
+    },
+    "PrintStatus": {
+      "allOf": [
+        {
+          "$ref": "PrintStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Printing status of the invoice.[br /] InputType: ReadWrite"
+    },
+    "EmailStatus": {
+      "allOf": [
+        {
+          "$ref": "EmailStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Email status of the invoice.[br /] InputType: ReadWrite"
+    },
+    "BillEmail": {
+      "allOf": [
+        {
+          "$ref": "EmailAddress.json"
+        }
+      ],
+      "description": "Product: QBO Description: Identifies the e-mail address where the invoice is sent. At present, you can provide only one e-mail address.[br /]If the ToBeEmailed attribute is true and the BillEmail attribute contains an e-mail address, the user can send an e-mail message to the e-mail address that is specified in the BillEmail attribute.[br /]If the BillEmail attribute contains an invalid e-mail..."
+    },
+    "BillEmailCc": {
+      "allOf": [
+        {
+          "$ref": "EmailAddress.json"
+        }
+      ],
+      "description": "Product: QBO Description: Identifies the cc e-mail address where the invoice is sent. If the ToBeEmailed attribute is true and the BillEmailCc attribute contains an e-mail address, the user can send an e-mail message to the e-mail address that is specified in the BillEmailCc attribute.[br /] If the BillEmailCc attribute contains an invalid e-mail address, QBO does not send the e-mail message to..."
+    },
+    "BillEmailBcc": {
+      "allOf": [
+        {
+          "$ref": "EmailAddress.json"
+        }
+      ],
+      "description": "Product: QBO Description: Identifies the bcc e-mail address where the invoice is sent. If the ToBeEmailed attribute is true and the BillEmailBcc attribute contains an e-mail address, the user can send an e-mail message to the e-mail address that is specified in the BillEmailBcc attribute.[br /] If the BillEmailCc attribute contains an invalid bcc e-mail address, QBO does not send the e-mail mes..."
+    },
+    "ARAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to the ARAccount (accounts receivable account) associated with the transaction. InputType: ReadWrite"
+    },
+    "Balance": {
+      "type": "number",
+      "description": "Product: QBO Description: The balance reflecting any payments made against the transaction. Initially this will be equal to the TotalAmt. Product: QBW Description: Indicates the unpaid amount of the transaction. Filterable: ALL Sortable: QBW InputType: ReadOnly"
+    },
+    "HomeBalance": {
+      "type": "number",
+      "description": "Product: QBO Description: The balance reflecting any payments made against the transaction in home currency. Initially this will be equal to the HomeTotalAmt.[br /]Read-only field. Product: QBW Description: Indicates the unpaid amount of the transaction in home currency.[br /]Cannot be written to QuickBooks. Filterable: ALL Sortable: QBW"
+    },
+    "FinanceCharge": {
+      "type": "boolean",
+      "description": "Product: ALL Description: Indicates whether the transaction is a finance charge. InputType: ReadWrite"
+    },
+    "PaymentMethodRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the PaymentMethod. InputType: ReadWrite"
+    },
+    "PaymentRefNum": {
+      "type": "string",
+      "description": "Product: QBO Description: The reference number for the payment received (I.e. Check # for a check, envelope # for a cash donation, CreditCardTransactionID for a credit card payment)"
+    },
+    "PaymentType": {
+      "allOf": [
+        {
+          "$ref": "PaymentTypeEnum.json"
+        }
+      ],
+      "description": "Product: QBO Description: Valid values are Cash, Check, CreditCard, or Other. No defaults. Cash based expense is not supported by QuickBooks Windows. NotApplicableTo: Estimate, SalesOrder"
+    },
+    "CheckPayment": {
+      "allOf": [
+        {
+          "$ref": "CheckPayment.json"
+        }
+      ],
+      "description": "Product: ALL Description Information about a check payment for the Invoice. NotApplicableTo: Estimate, SalesOrder"
+    },
+    "CreditCardPayment": {
+      "allOf": [
+        {
+          "$ref": "CreditCardPayment.json"
+        }
+      ],
+      "description": "Product: ALL Description Information about a credit card payment for the Invoice. NotApplicableTo: Estimate, SalesOrder"
+    },
+    "DepositToAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: QBW: Reference to the DepositToAccount entity. If not specified, the Undeposited Funds account will be used. Description: QBO: Asset account where the payment money is deposited. If you do not specify this account, QBO uses the Undeposited Funds account. Supported for Payment and SalesReceipt only. NotApplicableTo: QBW: Estimate, SalesOrder"
+    },
+    "DeliveryInfo": {
+      "allOf": [
+        {
+          "$ref": "TransactionDeliveryInfo.json"
+        }
+      ],
+      "description": "Product: QBO Description: Last delivery info of this transaction."
+    },
+    "DiscountRate": {
+      "type": "number",
+      "description": "Product: QBO Description: Indicates the discount rate that is applied on the transaction as a whole. This will be pro-rated through item lines for tax calculation."
+    },
+    "DiscountAmt": {
+      "type": "number",
+      "description": "Product: QBO Description: Indicates the discount amount that is applied on the transaction as a whole. This will be pro-rated through item lines for tax calculation."
+    },
+    "GovtTxnRefIdentifier": {
+      "type": "string",
+      "description": "Product: QBO Description: this is the reference to the NotaFiscal created for the salesTransaction. ValidRange: QBO: max=30"
+    },
+    "TaxExemptionRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the TaxExemptionId and TaxExemptionReason for this customer."
+    },
+    "RemainingCredit": {
+      "type": "number",
+      "description": "Indicates the total credit amount still available to apply towards the payment. [b]QuickBooks Notes[/b][br /] Non QB-writable."
+    },
+    "InvoiceRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: A credit memo needs to have an invoice number to save successfully Applicable for IN Region."
+    },
+    "CreditMemoEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Internal use only: extension place holder for CreditMemo"
+    }
+  },
+  "description": "Financial transaction representing a refund (or credit) of payment or part of a payment for goods or services that have been sold."
+}

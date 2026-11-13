@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "beyonic/Transaction",
+  "title": "Transaction",
+  "x-openfn-adaptor": "beyonic",
+  "x-source": {
+    "openapi": "#/components/schemas/Transaction",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "description": "A movement of funds on an account.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique object identifier."
+    },
+    "account": {
+      "description": "Account ID; expanded to an Account object when nested in a Collection (v4+).",
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "$ref": "Account.json"
+        }
+      ]
+    },
+    "amount": {
+      "type": "string",
+      "description": "Transaction amount. Decimal serialised as a string, e.g. \"3000.0000\"."
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code (present on the nested transaction in Collection samples)."
+    },
+    "description": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the transaction was created (UTC)."
+    },
+    "type": {
+      "type": "string",
+      "description": "admin_funds_update, mobile_funds_update, funds_deposit, funds_adjustment, mobile_collection, mobile_payment, airtime_topup, service_charge, mobile_withdrawal or bank_withdrawal."
+    },
+    "fee_transaction": {
+      "description": "Related fee transaction, if any (type not documented)."
+    }
+  },
+  "example": {
+    "id": 218,
+    "account": 12,
+    "amount": "228.0000",
+    "description": "Incoming payment from +401000000099",
+    "created": "2017-03-28T12:50:59Z",
+    "type": "mobile_collection"
+  }
+}

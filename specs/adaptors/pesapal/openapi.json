@@ -1,75 +1,182 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Pesapal API 3.0 (mock subset)",
+    "title": "Pesapal API 3.0",
     "version": "3.0",
-    "description": "Focused subset of the Pesapal API 3.0 used by the OpenFn pesapal adaptor. The adaptor exposes generic get()/post()/request() helpers against the Pesapal REST base; this spec models the concrete endpoints those helpers target: authentication (RequestToken), IPN URL registration and listing, order submission, transaction status, refunds and order cancellation.",
+    "description": "Pesapal API 3.0 (JSON) for e-commerce payments: authentication, IPN URL registration, order submission (including recurring/subscription and mobile-money STK orders), transaction status, refunds and order cancellation. Requests use a Bearer token from Auth/RequestToken. The OpenFn pesapal adaptor sends generic get/post/request calls to `<baseUrl>/<apiVersion>/api/<path>` after fetching a token.",
     "x-openfn-adaptor": "pesapal"
   },
+  "externalDocs": {
+    "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/api-reference"
+  },
   "servers": [
-    { "url": "https://pay.pesapal.com/pesapalv3", "description": "Live" },
-    { "url": "https://cybqa.pesapal.com/pesapalv3", "description": "Sandbox" }
+    {
+      "url": "https://pay.pesapal.com/v3",
+      "description": "Live"
+    },
+    {
+      "url": "https://cybqa.pesapal.com/pesapalv3",
+      "description": "Sandbox / demo"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "IPN"
+    },
+    {
+      "name": "Transactions"
+    },
+    {
+      "name": "Internal",
+      "description": "Undocumented endpoints listed in the live swagger.json."
+    }
   ],
   "paths": {
     "/api/Auth/RequestToken": {
       "post": {
         "operationId": "requestToken",
-        "summary": "Request a bearer auth token",
+        "summary": "Request an access token",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [],
+        "description": "Exchange the merchant consumer_key and consumer_secret for a Bearer token valid for about 5 minutes.",
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/authentication"
+        },
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AuthRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequestDTO"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Auth token",
+            "description": "OK",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessToken"
+                }
+              }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     },
     "/api/URLSetup/RegisterIPN": {
       "post": {
-        "operationId": "registerIPN",
-        "summary": "Register an Instant Payment Notification (IPN) URL",
+        "operationId": "registerIpnUrl",
+        "summary": "Register an IPN URL",
+        "tags": [
+          "IPN"
+        ],
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/registeripnurl"
+        },
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/IpnRegistrationRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/IPNCreateRequestDTO"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Registered IPN",
+            "description": "OK",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/IpnRegistration" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpnUrl"
+                }
+              }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     },
     "/api/URLSetup/GetIpnList": {
       "get": {
-        "operationId": "getIpnList",
+        "operationId": "listIpnUrls",
         "summary": "List registered IPN URLs",
+        "tags": [
+          "IPN"
+        ],
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/getregisteredipn"
+        },
         "responses": {
           "200": {
-            "description": "Registered IPNs",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/IpnRegistration" }
+                  "items": {
+                    "$ref": "#/components/schemas/IpnUrl"
+                  }
                 }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/URLSetup/RegisterCallBackUrl": {
+      "post": {
+        "operationId": "registerCallbackUrl",
+        "summary": "Register a callback URL",
+        "tags": [
+          "IPN"
+        ],
+        "description": "Present in the live swagger.json (URLSetup_RegisterCallBackUrl, same IPNCreateRequestDTO body as RegisterIPN) but not described in the docs.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPNCreateRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -77,21 +184,75 @@
     "/api/Transactions/SubmitOrderRequest": {
       "post": {
         "operationId": "submitOrderRequest",
-        "summary": "Submit an order for payment",
+        "summary": "Submit an order request",
+        "tags": [
+          "Transactions"
+        ],
+        "description": "Create a payment request and get a redirect_url for the hosted payment page. Also used for recurring payments (account_number, subscription_details).",
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/submitorderrequest"
+        },
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/OrderRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/TransactionOrderRequestDTO"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Order response with redirect URL",
+            "description": "OK",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/OrderResponse" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderSubmission"
+                }
+              }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/Transactions/stk": {
+      "post": {
+        "operationId": "submitMobileMoneyStk",
+        "summary": "Direct mobile money (STK push) order",
+        "tags": [
+          "Transactions"
+        ],
+        "description": "Listed only in the vendor Postman collection (DirectMobileMoneySTK); not in the docs or swagger.json.",
+        "externalDocs": {
+          "url": "https://documenter.getpostman.com/view/6715320/UyxepTv1"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectMobileMoneyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -99,43 +260,158 @@
     "/api/Transactions/GetTransactionStatus": {
       "get": {
         "operationId": "getTransactionStatus",
-        "summary": "Get the status of a transaction",
+        "summary": "Get transaction status",
+        "tags": [
+          "Transactions"
+        ],
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/gettransactionstatus"
+        },
         "parameters": [
           {
             "name": "orderTrackingId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            },
+            "description": "OrderTrackingId from SubmitOrderRequest, the callback or the IPN."
           }
         ],
         "responses": {
           "200": {
-            "description": "Transaction status",
+            "description": "OK",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TransactionStatus" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionStatus"
+                }
+              }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/Transactions/GetTransactionByMerchantReference": {
+      "get": {
+        "operationId": "getTransactionByMerchantReference",
+        "summary": "Get a transaction by merchant reference",
+        "tags": [
+          "Transactions"
+        ],
+        "description": "Present in the live swagger.json but not described in the docs.",
+        "parameters": [
+          {
+            "name": "merchantReference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/Transactions/QueryStatusByConfirmationCode": {
+      "get": {
+        "operationId": "queryStatusByConfirmationCode",
+        "summary": "Query transaction status by confirmation code",
+        "tags": [
+          "Transactions"
+        ],
+        "description": "Present in the live swagger.json but not described in the docs.",
+        "parameters": [
+          {
+            "name": "confirmationCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     },
     "/api/Transactions/RefundRequest": {
       "post": {
-        "operationId": "refundRequest",
-        "summary": "Request a refund for a confirmed payment",
+        "operationId": "requestRefund",
+        "summary": "Request a refund",
+        "tags": [
+          "Transactions"
+        ],
+        "description": "Request a full or partial refund of a COMPLETED payment, identified by its confirmation code. Status 200 means the request was received, not that the refund is done.",
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/refund-request"
+        },
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RefundRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequestDTO"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Refund response",
+            "description": "OK",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/RefundResponse" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Refund request acknowledgement.",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "\"200\" on success, \"500\" on rejection."
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  }
+                }
+              }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
@@ -143,169 +419,1026 @@
     "/api/Transactions/CancelOrder": {
       "post": {
         "operationId": "cancelOrder",
-        "summary": "Cancel a pending order",
+        "summary": "Cancel an order",
+        "tags": [
+          "Transactions"
+        ],
+        "description": "Cancel a failed or pending order by its order tracking ID (the swagger.json lists the route as /api/transactions/cancelorder; ASP.NET routing is case-insensitive).",
+        "externalDocs": {
+          "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/order-cancellation-api"
+        },
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CancelOrderRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/OrderCancellationRequestDTO"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Cancellation response",
+            "description": "OK",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/CancelOrderResponse" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Order cancellation result.",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "\"200\" on success, \"500\" on rejection."
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiError"
+                    }
+                  }
+                }
+              }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/tests/fx/convert": {
+      "get": {
+        "operationId": "convertFx",
+        "summary": "Convert an amount between currencies (test endpoint)",
+        "tags": [
+          "Internal"
+        ],
+        "deprecated": true,
+        "description": "Test endpoint present in the live swagger.json (Tests_ConvertFx); not documented and not for merchant use. Marked deprecated for that reason.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check (sandbox only)",
+        "tags": [
+          "Internal"
+        ],
+        "deprecated": true,
+        "security": [],
+        "description": "Listed only in the sandbox swagger.json (Transactions_HealthCheck); not documented. Marked deprecated as an internal endpoint.",
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/webhooks/fingerprintjs/blockFingerprint": {
+      "post": {
+        "operationId": "blockFingerprint",
+        "summary": "FingerprintJS webhook receiver",
+        "tags": [
+          "Internal"
+        ],
+        "deprecated": true,
+        "description": "Pesapal's inbound webhook for its fraud vendor, present in swagger.json; not a merchant API. Marked deprecated.",
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/webhooks/fingerprintjs/blockFingerprintBasicAuth": {
+      "post": {
+        "operationId": "blockFingerprintBasicAuth",
+        "summary": "FingerprintJS webhook receiver (basic auth)",
+        "tags": [
+          "Internal"
+        ],
+        "deprecated": true,
+        "description": "Pesapal's inbound webhook for its fraud vendor, present in swagger.json; not a merchant API. Marked deprecated.",
+        "responses": {
+          "200": {
+            "description": "OK (body not documented)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Response body not documented: the live swagger.json types every response as a file/stream and the docs do not describe this endpoint."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token from POST /api/Auth/RequestToken (valid ~5 minutes)."
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
     "schemas": {
-      "AuthRequest": {
+      "AccessToken": {
         "type": "object",
-        "required": ["consumer_key", "consumer_secret"],
+        "description": "Bearer token for all other API 3.0 calls; valid for about 5 minutes.",
         "properties": {
-          "consumer_key": { "type": "string" },
-          "consumer_secret": { "type": "string" }
+          "token": {
+            "type": "string",
+            "description": "The access token."
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC expiry time of the token."
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiError"
+          },
+          "status": {
+            "type": "string",
+            "description": "Response code, e.g. \"200\"."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "token": "<access-token>",
+          "expiryDate": "2021-08-26T12:29:30.5177702Z",
+          "error": null,
+          "status": "200",
+          "message": "Request processed successfully"
         }
       },
-      "AuthResponse": {
+      "ApiError": {
         "type": "object",
+        "nullable": true,
+        "description": "Error object; null when there is no error.",
         "properties": {
-          "token": { "type": "string" },
-          "expiryDate": { "type": "string", "format": "date-time" },
-          "error": { "$ref": "#/components/schemas/PesapalError" },
-          "status": { "type": "string", "example": "200" },
-          "message": { "type": "string" }
+          "error_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "call_back_url": {
+            "type": "string",
+            "nullable": true
+          }
         }
       },
-      "IpnRegistrationRequest": {
+      "DirectMobileMoneyRequest": {
         "type": "object",
-        "required": ["url", "ipn_notification_type"],
+        "required": [
+          "id",
+          "currency",
+          "amount",
+          "description",
+          "callback_url",
+          "notification_id"
+        ],
         "properties": {
-          "url": { "type": "string", "format": "uri" },
-          "ipn_notification_type": { "type": "string", "enum": ["GET", "POST"], "example": "GET" }
+          "msisdn": {
+            "type": "string",
+            "description": "Mobile number to push the STK prompt to."
+          },
+          "payment_method": {
+            "type": "string",
+            "description": "Mobile money method, e.g. MpesaKE."
+          },
+          "id": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 0,
+            "description": "Unique merchant reference for the order (alphanumerics, -, _, ., :). The docs cap it at 50 characters."
+          },
+          "account_number": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "description": "Customer account or invoice number; enables recurring (subscription) payments."
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 0,
+            "description": "ISO currency code to charge in."
+          },
+          "allowed_currencies": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount to be processed."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Order description (docs: maximum 100 characters)."
+          },
+          "callback_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "URL Pesapal redirects the customer to after payment; OrderTrackingId, OrderMerchantReference and OrderNotificationType=CALLBACKURL are appended."
+          },
+          "cancellation_url": {
+            "type": "string",
+            "description": "URL Pesapal redirects the customer to if they cancel on the payment page."
+          },
+          "notification_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 1,
+            "description": "ipn_id of a registered IPN URL (see RegisterIPN)."
+          },
+          "language": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 0,
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "terms_and_conditions_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/MerchantOrderBillingDetailsRequestDTO",
+            "description": "Customer address object. Required by the docs; phone_number or email_address must be set."
+          },
+          "other_data": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "settlement_instructions": {
+            "$ref": "#/components/schemas/SettlementInstructionsInfoDTO",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "flight_data": {
+            "$ref": "#/components/schemas/FlightDetailsDTO",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "app_id": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "order_type": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "payment_type": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "redirect_mode": {
+            "type": "string",
+            "description": "Where the callback URL is loaded. Defaults to TOP_WINDOW.",
+            "enum": [
+              "TOP_WINDOW",
+              "PARENT_WINDOW",
+              ""
+            ]
+          },
+          "branch": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 0,
+            "description": "Store / branch the payment is credited to."
+          },
+          "subscription_details": {
+            "$ref": "#/components/schemas/SubscriptionInfoItem",
+            "description": "Subscription to pre-fill on the payment page (recurring payments)."
+          },
+          "device_id": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "ip": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "device_fingerprint": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          }
+        },
+        "description": "SubmitOrderRequest body plus the mobile-money fields shown in the vendor Postman collection (DirectMobileMoneySTK). Only msisdn and payment_method are evidenced beyond the order fields."
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error envelope returned when an API call fails.",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
         }
       },
-      "IpnRegistration": {
+      "FlightDetailsDTO": {
         "type": "object",
         "properties": {
-          "url": { "type": "string", "format": "uri" },
-          "created_date": { "type": "string", "format": "date-time" },
-          "ipn_id": { "type": "string" },
-          "notification_type": { "type": "integer" },
-          "ipn_notification_type_description": { "type": "string" },
-          "ipn_status": { "type": "integer" },
-          "ipn_status_description": { "type": "string" },
-          "status": { "type": "string", "example": "200" },
-          "error": { "$ref": "#/components/schemas/PesapalError" }
+          "complete_route": {
+            "type": "string"
+          },
+          "journey_type": {
+            "type": "string"
+          },
+          "departure_date": {
+            "type": "string"
+          },
+          "passenger_details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PassengerDetailsDTO"
+            }
+          }
         }
       },
-      "BillingAddress": {
+      "IPNCreateRequestDTO": {
         "type": "object",
+        "required": [
+          "url"
+        ],
         "properties": {
-          "email_address": { "type": "string" },
-          "phone_number": { "type": "string" },
-          "country_code": { "type": "string" },
-          "first_name": { "type": "string" },
-          "middle_name": { "type": "string" },
-          "last_name": { "type": "string" },
-          "line_1": { "type": "string" },
-          "line_2": { "type": "string" },
-          "city": { "type": "string" },
-          "state": { "type": "string" },
-          "postal_code": { "type": "string" },
-          "zip_code": { "type": "string" }
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The notification URL Pesapal will send a status alert to."
+          },
+          "ipn_notification_type": {
+            "type": "string",
+            "maxLength": 4,
+            "description": "HTTP method Pesapal uses when triggering the IPN alert.",
+            "enum": [
+              "GET",
+              "POST"
+            ]
+          }
         }
       },
-      "OrderRequest": {
+      "IpnNotification": {
         "type": "object",
-        "required": ["id", "currency", "amount", "description", "callback_url", "notification_id"],
+        "description": "Body Pesapal POSTs to a POST-registered IPN URL (GET-registered URLs receive the same fields as query parameters). OrderNotificationType is IPNCHANGE or RECURRING.",
         "properties": {
-          "id": { "type": "string", "description": "Unique merchant reference" },
-          "currency": { "type": "string", "example": "KES" },
-          "amount": { "type": "number" },
-          "description": { "type": "string" },
-          "callback_url": { "type": "string", "format": "uri" },
-          "redirect_mode": { "type": "string" },
-          "notification_id": { "type": "string", "description": "The ipn_id from RegisterIPN" },
-          "branch": { "type": "string" },
-          "billing_address": { "$ref": "#/components/schemas/BillingAddress" }
+          "OrderNotificationType": {
+            "type": "string",
+            "enum": [
+              "IPNCHANGE",
+              "RECURRING"
+            ]
+          },
+          "OrderTrackingId": {
+            "type": "string"
+          },
+          "OrderMerchantReference": {
+            "type": "string"
+          }
         }
       },
-      "OrderResponse": {
+      "IpnUrl": {
+        "type": "object",
+        "description": "A registered IPN (Instant Payment Notification) URL.",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Notification URL Pesapal sends status alerts to."
+          },
+          "created_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the IPN URL was registered (UTC)."
+          },
+          "ipn_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier of the IPN endpoint; pass it as notification_id when submitting orders."
+          },
+          "notification_type": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Notification type (0 = GET, 1 = POST in the docs sample)."
+          },
+          "ipn_notification_type_description": {
+            "type": "string",
+            "description": "HTTP method the IPN URL was registered with."
+          },
+          "ipn_status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "1 = Active, 0 = Inactive."
+          },
+          "ipn_status_description": {
+            "type": "string",
+            "description": "Active or Inactive."
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiError"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "url": "https://example.com/ipn",
+          "created_date": "2024-06-14T07:50:22.2825997Z",
+          "ipn_id": "84740ab4-3cd9-47da-8a4f-dd1db53494b5",
+          "notification_type": 0,
+          "ipn_notification_type_description": "GET",
+          "ipn_status": 1,
+          "ipn_status_description": "Active",
+          "error": null,
+          "status": "200"
+        }
+      },
+      "MerchantOrderBillingDetailsRequestDTO": {
         "type": "object",
         "properties": {
-          "order_tracking_id": { "type": "string" },
-          "merchant_reference": { "type": "string" },
-          "redirect_url": { "type": "string", "format": "uri" },
-          "error": { "$ref": "#/components/schemas/PesapalError" },
-          "status": { "type": "string", "example": "200" }
+          "phone_number": {
+            "type": "string"
+          },
+          "email_address": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 0
+          },
+          "country_code": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 0
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0
+          },
+          "middle_name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0
+          },
+          "line_1": {
+            "type": "string"
+          },
+          "line_2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "zip_code": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderCancellationRequestDTO": {
+        "type": "object",
+        "required": [
+          "order_tracking_id"
+        ],
+        "properties": {
+          "order_tracking_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 1,
+            "description": "Pesapal order tracking ID returned by SubmitOrderRequest."
+          }
+        }
+      },
+      "OrderSubmission": {
+        "type": "object",
+        "description": "Result of SubmitOrderRequest: where to send the customer to pay.",
+        "properties": {
+          "order_tracking_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique order id generated by Pesapal."
+          },
+          "merchant_reference": {
+            "type": "string",
+            "description": "Your order id as sent in the request."
+          },
+          "redirect_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Payment page URL; redirect to it or load it in an iframe."
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiError"
+          },
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "order_tracking_id": "b945e4af-80a5-4ec1-8706-e03f8332fb04",
+          "merchant_reference": "TEST1515111119",
+          "redirect_url": "https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index/?OrderTrackingId=b945e4af-80a5-4ec1-8706-e03f8332fb04",
+          "error": null,
+          "status": "200"
+        }
+      },
+      "PassengerDetailsDTO": {
+        "type": "object",
+        "properties": {
+          "forename": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "passenger_type": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "RecepientMerchantSettlementInfoDTO": {
+        "type": "object",
+        "required": [
+          "settlement_token",
+          "settlement_amount"
+        ],
+        "properties": {
+          "settlement_token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "settlement_amount": {
+            "type": "number"
+          }
+        }
+      },
+      "RefundRequestDTO": {
+        "type": "object",
+        "required": [
+          "confirmation_code",
+          "amount",
+          "username",
+          "remarks"
+        ],
+        "properties": {
+          "confirmation_code": {
+            "type": "string",
+            "description": "Payment confirmation code returned by the processor (see GetTransactionStatus)."
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount to refund (the docs sample sends it as a string, e.g. \"100.00\")."
+          },
+          "username": {
+            "type": "string",
+            "description": "Identity of the user initiating the refund."
+          },
+          "remarks": {
+            "type": "string",
+            "description": "Reason for the refund."
+          }
+        }
+      },
+      "SettlementInstructionsInfoDTO": {
+        "type": "object",
+        "required": [
+          "merchant_amount"
+        ],
+        "properties": {
+          "merchant_amount": {
+            "type": "number"
+          },
+          "settlement_list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecepientMerchantSettlementInfoDTO"
+            }
+          }
+        }
+      },
+      "SubscriptionInfoItem": {
+        "type": "object",
+        "properties": {
+          "start_date": {
+            "type": "string",
+            "description": "Start date, format dd-MM-yyyy."
+          },
+          "end_date": {
+            "type": "string",
+            "description": "End date, format dd-MM-yyyy."
+          },
+          "frequency": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 0,
+            "description": "Billing frequency.",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "YEARLY"
+            ]
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "frequency"
+        ]
+      },
+      "SubscriptionTransactionInfo": {
+        "type": "object",
+        "description": "Recurring-payment data appended to GetTransactionStatus for RECURRING IPNs.",
+        "properties": {
+          "account_reference": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "correlation_id": {
+            "type": "integer",
+            "description": "Pesapal's recurring payment identifier."
+          }
+        }
+      },
+      "TokenRequestDTO": {
+        "type": "object",
+        "required": [
+          "consumer_key",
+          "consumer_secret"
+        ],
+        "properties": {
+          "consumer_key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Merchant consumer_key."
+          },
+          "consumer_secret": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Merchant consumer_secret."
+          }
+        }
+      },
+      "TransactionOrderRequestDTO": {
+        "type": "object",
+        "required": [
+          "id",
+          "currency",
+          "amount",
+          "description",
+          "callback_url",
+          "notification_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 0,
+            "description": "Unique merchant reference for the order (alphanumerics, -, _, ., :). The docs cap it at 50 characters."
+          },
+          "account_number": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "description": "Customer account or invoice number; enables recurring (subscription) payments."
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 0,
+            "description": "ISO currency code to charge in."
+          },
+          "allowed_currencies": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount to be processed."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Order description (docs: maximum 100 characters)."
+          },
+          "callback_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "URL Pesapal redirects the customer to after payment; OrderTrackingId, OrderMerchantReference and OrderNotificationType=CALLBACKURL are appended."
+          },
+          "cancellation_url": {
+            "type": "string",
+            "description": "URL Pesapal redirects the customer to if they cancel on the payment page."
+          },
+          "notification_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 1,
+            "description": "ipn_id of a registered IPN URL (see RegisterIPN)."
+          },
+          "language": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 0,
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "terms_and_conditions_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/MerchantOrderBillingDetailsRequestDTO",
+            "description": "Customer address object. Required by the docs; phone_number or email_address must be set."
+          },
+          "other_data": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "settlement_instructions": {
+            "$ref": "#/components/schemas/SettlementInstructionsInfoDTO",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "flight_data": {
+            "$ref": "#/components/schemas/FlightDetailsDTO",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "app_id": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "order_type": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "payment_type": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "redirect_mode": {
+            "type": "string",
+            "description": "Where the callback URL is loaded. Defaults to TOP_WINDOW.",
+            "enum": [
+              "TOP_WINDOW",
+              "PARENT_WINDOW",
+              ""
+            ]
+          },
+          "branch": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 0,
+            "description": "Store / branch the payment is credited to."
+          },
+          "subscription_details": {
+            "$ref": "#/components/schemas/SubscriptionInfoItem",
+            "description": "Subscription to pre-fill on the payment page (recurring payments)."
+          },
+          "device_id": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "ip": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          },
+          "device_fingerprint": {
+            "type": "string",
+            "description": "Accepted by the live API (swagger.json) but not described in the docs."
+          }
         }
       },
       "TransactionStatus": {
         "type": "object",
+        "description": "Payment status of an order.",
         "properties": {
-          "payment_method": { "type": "string" },
-          "amount": { "type": "number" },
-          "created_date": { "type": "string", "format": "date-time" },
-          "confirmation_code": { "type": "string" },
-          "payment_status_description": { "type": "string", "example": "Completed" },
-          "description": { "type": "string" },
-          "message": { "type": "string" },
-          "payment_account": { "type": "string" },
-          "call_back_url": { "type": "string", "format": "uri" },
-          "status_code": { "type": "integer" },
-          "merchant_reference": { "type": "string" },
-          "payment_status_code": { "type": "string" },
-          "currency": { "type": "string" },
-          "error": { "$ref": "#/components/schemas/PesapalError" },
-          "status": { "type": "string", "example": "200" }
-        }
-      },
-      "RefundRequest": {
-        "type": "object",
-        "required": ["confirmation_code", "amount", "username", "remarks"],
-        "properties": {
-          "confirmation_code": { "type": "string" },
-          "amount": { "type": "number" },
-          "username": { "type": "string" },
-          "remarks": { "type": "string" }
-        }
-      },
-      "RefundResponse": {
-        "type": "object",
-        "properties": {
-          "status": { "type": "string" },
-          "message": { "type": "string" }
-        }
-      },
-      "CancelOrderRequest": {
-        "type": "object",
-        "required": ["order_tracking_id"],
-        "properties": {
-          "order_tracking_id": { "type": "string" }
-        }
-      },
-      "CancelOrderResponse": {
-        "type": "object",
-        "properties": {
-          "status": { "type": "string" },
-          "message": { "type": "string" }
-        }
-      },
-      "PesapalError": {
-        "type": "object",
-        "nullable": true,
-        "properties": {
-          "error_type": { "type": "string", "nullable": true },
-          "code": { "type": "string", "nullable": true },
-          "message": { "type": "string", "nullable": true },
-          "call_back_url": { "type": "string", "nullable": true }
+          "payment_method": {
+            "type": "string",
+            "description": "e.g. Visa, MPESA, MTN."
+          },
+          "amount": {
+            "type": "number"
+          },
+          "created_date": {
+            "type": "string",
+            "description": "Date the payment was made."
+          },
+          "confirmation_code": {
+            "type": "string",
+            "description": "Confirmation code from the payment provider; used for refunds."
+          },
+          "payment_status_description": {
+            "type": "string",
+            "description": "INVALID, FAILED, COMPLETED or REVERSED."
+          },
+          "description": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "payment_account": {
+            "type": "string",
+            "description": "Masked card number or phone number used."
+          },
+          "call_back_url": {
+            "type": "string"
+          },
+          "status_code": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "description": "0 INVALID, 1 COMPLETED, 2 FAILED, 3 REVERSED."
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "payment_status_code": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "subscription_transaction_info": {
+            "$ref": "#/components/schemas/SubscriptionTransactionInfo"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiError"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "payment_method": "Visa",
+          "amount": 100,
+          "created_date": "2022-04-30T07:41:09.763",
+          "confirmation_code": "6513008693186320103009",
+          "payment_status_description": "Failed",
+          "description": "Unable to Authorize Transaction.Kindly contact your bank for assistance",
+          "message": "Request processed successfully",
+          "payment_account": "476173**0010",
+          "call_back_url": "https://example.com/?OrderTrackingId=7e6b62d9-883e-440f-a63e-e1105bbfadc3&OrderMerchantReference=1515111111",
+          "status_code": 2,
+          "merchant_reference": "1515111111",
+          "payment_status_code": "",
+          "currency": "KES",
+          "error": {
+            "error_type": null,
+            "code": null,
+            "message": null,
+            "call_back_url": null
+          },
+          "status": "200"
         }
       }
     }

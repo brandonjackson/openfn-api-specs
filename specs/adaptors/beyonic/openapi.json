@@ -1,198 +1,3266 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Beyonic API (OpenFn focused subset)",
-    "version": "1.0.0",
-    "description": "Focused OpenAPI description of the Beyonic (Onafriq) mobile-money API endpoints used by the OpenFn beyonic adaptor: payments, contacts and collection requests. Authored from the public Beyonic API docs.",
+    "title": "Beyonic API",
+    "version": "v6",
+    "description": "Beyonic (now Onafriq, formerly MFS Africa) REST API for mobile money: payments (mobile money, airtime, bank), collection requests, collections, contacts, webhooks, accounts, transactions, events, networks, banks and currencies. Token authentication; paginated lists use {count, next, previous, results}. The OpenFn beyonic adaptor POSTs JSON to <apiUrl>/payments, /contacts and /collectionrequests with \"Authorization: Token <apiToken>\".",
     "x-openfn-adaptor": "beyonic"
   },
+  "externalDocs": {
+    "url": "https://github.com/beyonic/api-docs"
+  },
   "servers": [
-    { "url": "https://api.beyonic.com/api" }
+    {
+      "url": "https://api.beyonic.com/api",
+      "description": "Production; resolves to the API version saved on the account (or the Beyonic-Version header). The API root currently links resources under /api/v6."
+    },
+    {
+      "url": "https://api.beyonic.com/api/{version}",
+      "description": "Explicitly versioned base",
+      "variables": {
+        "version": {
+          "default": "v6",
+          "enum": [
+            "v1",
+            "v2",
+            "v3",
+            "v4",
+            "v5",
+            "v6"
+          ]
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "tokenAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payments"
+    },
+    {
+      "name": "Collection Requests"
+    },
+    {
+      "name": "Collections"
+    },
+    {
+      "name": "Contacts"
+    },
+    {
+      "name": "Webhooks"
+    },
+    {
+      "name": "Accounts"
+    },
+    {
+      "name": "Transactions"
+    },
+    {
+      "name": "Events"
+    },
+    {
+      "name": "Networks"
+    },
+    {
+      "name": "Banks"
+    },
+    {
+      "name": "Currencies"
+    }
   ],
   "paths": {
     "/payments": {
+      "get": {
+        "operationId": "listPayments",
+        "summary": "List payments",
+        "tags": [
+          "Payments"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/sending_funds/_payments.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment amount."
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Currency code."
+          },
+          {
+            "name": "payment_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "money or airtime."
+          },
+          {
+            "name": "payment_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID."
+          },
+          {
+            "name": "phone_number",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Recipient phone number (international format)."
+          },
+          {
+            "name": "remote_transaction_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Network transaction ID."
+          },
+          {
+            "$ref": "#/components/parameters/CreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CreatedBefore"
+          },
+          {
+            "$ref": "#/components/parameters/ModifiedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/ModifiedBefore"
+          },
+          {
+            "name": "payment_state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Individual payment status: new, processing, pending_confirmation, complete, error, paused, parked, paused_for_admin_action, queued, aborted."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group payment status: new, validated, approval_needed, approval_requested, approved, rejected, scheduled, processed, processed_with_errors, cancelled."
+          },
+          {
+            "name": "paused_reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Paused reason text."
+          },
+          {
+            "name": "network",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mobile network."
+          },
+          {
+            "name": "first_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact first name."
+          },
+          {
+            "name": "last_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact last name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
       "post": {
         "operationId": "createPayment",
         "summary": "Create a payment",
+        "tags": [
+          "Payments"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/sending_funds/_payments.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/DuplicateCheckKey"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PaymentRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Payment created",
+            "description": "Created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Payment" }
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
           }
-        }
+        },
+        "description": "Send mobile money, airtime or (with account_number/account_name/bank or contact_bank_account) a bank payment. Use recipient_data for multiple recipients. The new payment has state \"new\"."
       }
     },
-    "/contacts": {
-      "post": {
-        "operationId": "createContact",
-        "summary": "Create a contact",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ContactRequest" }
-            }
-          }
+    "/payments/{id}": {
+      "get": {
+        "operationId": "getPayment",
+        "summary": "Retrieve a payment",
+        "tags": [
+          "Payments"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/sending_funds/_payments.md"
         },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
         "responses": {
-          "201": {
-            "description": "Contact created",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Contact" }
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     },
     "/collectionrequests": {
+      "get": {
+        "operationId": "listCollectionRequests",
+        "summary": "List collection requests",
+        "tags": [
+          "Collection Requests"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collection_requests.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Amount."
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Currency code."
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the matching collection."
+          },
+          {
+            "name": "phonenumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Phone number (international format)."
+          },
+          {
+            "name": "remote_transaction_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Network transaction ID."
+          },
+          {
+            "$ref": "#/components/parameters/CreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CreatedBefore"
+          },
+          {
+            "$ref": "#/components/parameters/ModifiedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/ModifiedBefore"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "pending, instructions_sent, successful, failed, expired, reversed."
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Reason text."
+          },
+          {
+            "name": "network",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mobile network."
+          },
+          {
+            "name": "contact_first_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact first name."
+          },
+          {
+            "name": "contact_last_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact last name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionRequestList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
       "post": {
         "operationId": "createCollectionRequest",
         "summary": "Create a collection request",
+        "tags": [
+          "Collection Requests"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collection_requests.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/DuplicateCheckKey"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CollectionRequestRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionRequestRequest"
+              }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Collection request created",
+            "description": "Created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CollectionRequest" }
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionRequest"
+                }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "description": "Ask a subscriber to pay you; set send_instructions=true to notify them. subscription_settings makes it recurring."
+      }
+    },
+    "/collectionrequests/{id}": {
+      "get": {
+        "operationId": "getCollectionRequest",
+        "summary": "Retrieve a collection request",
+        "tags": [
+          "Collection Requests"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collection_requests.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/collections": {
+      "get": {
+        "operationId": "listCollections",
+        "summary": "List collections",
+        "tags": [
+          "Collections"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collections.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Amount."
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Currency code."
+          },
+          {
+            "name": "phonenumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Phone number (international format)."
+          },
+          {
+            "name": "reference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Reference the customer sent."
+          },
+          {
+            "name": "remote_transaction_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Network transaction ID."
+          },
+          {
+            "name": "collection_request",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the matched collection request."
+          },
+          {
+            "$ref": "#/components/parameters/CreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CreatedBefore"
+          },
+          {
+            "$ref": "#/components/parameters/ModifiedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/ModifiedBefore"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "pending, reversed, reversed_on_network, successful, failed, cashed_out, expired."
+          },
+          {
+            "name": "network",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mobile network."
+          },
+          {
+            "name": "contact_first_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact first name."
+          },
+          {
+            "name": "contact_last_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Contact last name."
+          },
+          {
+            "name": "claim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "True to search unmatched collections (with phonenumber, remote_transaction_id and amount) and claim them for your organization."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/collections/{id}": {
+      "get": {
+        "operationId": "getCollection",
+        "summary": "Retrieve a collection",
+        "tags": [
+          "Collections"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/collecting_funds/_collections.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/contacts": {
+      "get": {
+        "operationId": "listContacts",
+        "summary": "List contacts",
+        "tags": [
+          "Contacts"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_contacts.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "first_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "First name."
+          },
+          {
+            "name": "last_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Last name."
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email."
+          },
+          {
+            "name": "phone_number",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Phone number (international format)."
+          },
+          {
+            "$ref": "#/components/parameters/CreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CreatedBefore"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createContact",
+        "summary": "Create a contact",
+        "tags": [
+          "Contacts"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_contacts.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/DuplicateCheckKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContactRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContactRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/contacts/{id}": {
+      "get": {
+        "operationId": "getContact",
+        "summary": "Retrieve a contact",
+        "tags": [
+          "Contacts"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_contacts.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "operationId": "listWebhooks",
+        "summary": "List webhooks",
+        "tags": [
+          "Webhooks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_webhooks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the user who created the webhook."
+          },
+          {
+            "name": "event",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Event type."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWebhook",
+        "summary": "Create a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_webhooks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/DuplicateCheckKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/webhooks/{id}": {
+      "get": {
+        "operationId": "getWebhook",
+        "summary": "Retrieve a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_webhooks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateWebhook",
+        "summary": "Update a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_webhooks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWebhook",
+        "summary": "Delete a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_webhooks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/networks": {
+      "get": {
+        "operationId": "listNetworks",
+        "summary": "List networks",
+        "tags": [
+          "Networks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_networks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/networks/{id}": {
+      "get": {
+        "operationId": "getNetwork",
+        "summary": "Retrieve a network",
+        "tags": [
+          "Networks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_networks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Network"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/banks": {
+      "get": {
+        "operationId": "listBanks",
+        "summary": "List banks",
+        "tags": [
+          "Banks"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_banks.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/accounts": {
+      "get": {
+        "operationId": "listAccounts",
+        "summary": "List accounts",
+        "tags": [
+          "Accounts"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_accounts.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Account currency."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "active or inactive."
+          },
+          {
+            "$ref": "#/components/parameters/CreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CreatedBefore"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/accounts/{id}": {
+      "get": {
+        "operationId": "getAccount",
+        "summary": "Retrieve an account",
+        "tags": [
+          "Accounts"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_accounts.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "operationId": "listTransactions",
+        "summary": "List transactions",
+        "tags": [
+          "Transactions"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_transactions.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "account",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Account ID."
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Transaction type."
+          },
+          {
+            "$ref": "#/components/parameters/CreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CreatedBefore"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Earliest date to include (inclusive)."
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Latest date to include (inclusive)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "operationId": "getTransaction",
+        "summary": "Retrieve a transaction",
+        "tags": [
+          "Transactions"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_transactions.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "listEvents",
+        "summary": "List events",
+        "tags": [
+          "Events"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_events.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Event type."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/events/{id}": {
+      "get": {
+        "operationId": "getEvent",
+        "summary": "Retrieve an event",
+        "tags": [
+          "Events"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_events.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/currencies": {
+      "get": {
+        "operationId": "listCurrencies",
+        "summary": "List currencies",
+        "tags": [
+          "Currencies"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_currencies.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Ordering"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/currencies/{id}": {
+      "get": {
+        "operationId": "getCurrency",
+        "summary": "Retrieve a currency",
+        "tags": [
+          "Currencies"
+        ],
+        "externalDocs": {
+          "url": "https://github.com/beyonic/api-docs/blob/master/source/includes/methods/_currencies.md"
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BeyonicVersion"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Currency"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "tokenAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Send \"Token <api_key>\"."
+      }
+    },
+    "parameters": {
+      "BeyonicVersion": {
+        "name": "Beyonic-Version",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Pin the API version (e.g. v1 ... v6); defaults to the version saved on your account."
+      },
+      "DuplicateCheckKey": {
+        "name": "Duplicate-Check-Key",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Idempotency key; a repeat request with the same key returns 409."
+      },
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Object ID."
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Records per page (default 10)."
+      },
+      "Offset": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Index to start from."
+      },
+      "Ordering": {
+        "name": "ordering",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Field to order by; prefix with - for descending (e.g. -created)."
+      },
+      "CreatedAfter": {
+        "name": "created_after",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Only records created after this date (e.g. 2017-01-01 00:00)."
+      },
+      "CreatedBefore": {
+        "name": "created_before",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Only records created before this date."
+      },
+      "ModifiedAfter": {
+        "name": "modified_after",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Only records modified after this date."
+      },
+      "ModifiedBefore": {
+        "name": "modified_before",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Only records modified before this date."
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
     "schemas": {
-      "PaymentRequest": {
+      "Account": {
         "type": "object",
+        "description": "A Beyonic account (balance per currency).",
         "properties": {
-          "phonenumber": { "type": "string", "example": "+256773712831" },
-          "first_name": { "type": "string" },
-          "last_name": { "type": "string" },
-          "amount": { "type": "string", "example": "1200" },
-          "currency": { "type": "string", "example": "UGX" },
-          "description": { "type": "string" },
-          "payment_type": { "type": "string", "example": "money" },
-          "callback_url": { "type": "string" },
-          "send_sms_message": { "type": "boolean" },
-          "metadata": { "type": "object", "additionalProperties": true }
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "organization": {
+            "type": "integer",
+            "description": "ID of the organization the account belongs to."
+          },
+          "balance": {
+            "type": "number",
+            "description": "Current balance."
+          },
+          "currency": {
+            "description": "Currency code (e.g. KES); the nested account inside a Collection transaction shows a currency ID instead.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "active or inactive."
+          },
+          "label": {
+            "type": "string",
+            "description": "Account label (seen on the nested account in Collection samples)."
+          },
+          "description": {
+            "type": "string"
+          },
+          "low_balance_threshold": {
+            "type": "number",
+            "nullable": true
+          },
+          "low_balance_notification_last_send_time": {
+            "type": "string",
+            "nullable": true,
+            "description": "Last low-balance notification time."
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was created (UTC)."
+          },
+          "author": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who created the object."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was last modified (UTC)."
+          },
+          "updated_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who last updated the object."
+          }
         },
-        "required": ["amount", "currency"]
-      },
-      "Payment": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "organization": { "type": "integer" },
-          "amount": { "type": "string" },
-          "currency": { "type": "string" },
-          "description": { "type": "string" },
-          "payment_type": { "type": "string" },
-          "state": { "type": "string", "example": "processed" },
-          "start_date": { "type": "string", "format": "date-time" },
-          "account": { "type": "integer", "nullable": true },
-          "charged_fee": { "type": "number" },
-          "last_error": { "type": "string", "nullable": true },
-          "remote_transaction_id": { "type": "string", "nullable": true },
-          "send_sms_message": { "type": "boolean" },
-          "metadata": { "type": "object", "additionalProperties": true, "nullable": true },
-          "author": { "type": "integer" },
-          "created": { "type": "string", "format": "date-time" },
-          "modified": { "type": "string", "format": "date-time" }
+        "example": {
+          "id": 1146,
+          "organization": 1,
+          "balance": 200.0,
+          "currency": "KES",
+          "status": "active",
+          "created": "2015-02-13T04:22:31Z",
+          "author": 7,
+          "modified": "2015-02-26T13:00:35Z",
+          "updated_by": 1
         }
       },
-      "ContactRequest": {
+      "AccountList": {
         "type": "object",
+        "description": "Paginated list of Account objects.",
         "properties": {
-          "first_name": { "type": "string" },
-          "last_name": { "type": "string" },
-          "email": { "type": "string", "nullable": true },
-          "phone_number": { "type": "string", "example": "+256773712831" },
-          "type": { "type": "string", "example": "employee" },
-          "status": { "type": "string", "example": "active" },
-          "metadata": { "type": "object", "additionalProperties": true }
-        },
-        "required": ["phone_number"]
-      },
-      "Contact": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "organization": { "type": "integer" },
-          "first_name": { "type": "string" },
-          "last_name": { "type": "string" },
-          "email": { "type": "string", "nullable": true },
-          "phone_number": { "type": "string" },
-          "type": { "type": "string" },
-          "status": { "type": "string" },
-          "metadata": { "type": "object", "additionalProperties": true },
-          "phone_is_supported": { "type": "string" },
-          "phone_is_mm_registered": { "type": "string" },
-          "network_name": { "type": "string" },
-          "created": { "type": "string", "format": "date-time" },
-          "author": { "type": "integer" },
-          "modified": { "type": "string", "format": "date-time" },
-          "updated_by": { "type": "integer" }
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Account"
+            }
+          }
         }
       },
-      "CollectionRequestRequest": {
+      "Bank": {
         "type": "object",
+        "description": "A bank supported for bank payments.",
         "properties": {
-          "phonenumber": { "type": "string", "example": "+256773712831" },
-          "amount": { "type": "string", "example": "3000" },
-          "currency": { "type": "string", "example": "UGX" },
-          "contact": { "type": "integer", "description": "Contact id" },
-          "reason": { "type": "string" },
-          "send_instructions": { "type": "boolean" },
-          "success_message": { "type": "string" },
-          "metadata": { "type": "object", "additionalProperties": true }
-        },
-        "required": ["amount", "currency", "phonenumber"]
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "name": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "swift_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "SWIFT code."
+          }
+        }
+      },
+      "BankList": {
+        "type": "object",
+        "description": "Paginated list of Bank objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bank"
+            }
+          }
+        }
+      },
+      "Collection": {
+        "type": "object",
+        "description": "Funds received (collected) from a mobile subscriber.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "remote_transaction_id": {
+            "type": "string",
+            "description": "Transaction ID from the mobile network operator."
+          },
+          "organization": {
+            "type": "integer",
+            "description": "ID of the organization the collection was matched to."
+          },
+          "amount": {
+            "type": "string",
+            "description": "The collection amount. Decimal serialised as a string, e.g. \"3000.0000\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code."
+          },
+          "phonenumber": {
+            "type": "string",
+            "description": "Phone number the collection came from, international format."
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the collection was made (UTC)."
+          },
+          "reference": {
+            "type": "string",
+            "description": "Reference the subscriber sent with the collection."
+          },
+          "status": {
+            "type": "string",
+            "description": "successful, failed, pending or cashed_out (filters also accept reversed, reversed_on_network, expired)."
+          },
+          "contact": {
+            "$ref": "#/components/schemas/Contact"
+          },
+          "collection_request": {
+            "$ref": "#/components/schemas/CollectionRequest"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/Transaction"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was created (UTC)."
+          },
+          "author": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who created the object."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was last modified (UTC)."
+          },
+          "updated_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who last updated the object."
+          }
+        }
+      },
+      "CollectionList": {
+        "type": "object",
+        "description": "Paginated list of Collection objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          }
+        }
       },
       "CollectionRequest": {
         "type": "object",
+        "description": "A request asking a mobile subscriber to send funds to you.",
         "properties": {
-          "id": { "type": "integer" },
-          "organization": { "type": "integer" },
-          "amount": { "type": "string" },
-          "currency": { "type": "string" },
-          "phonenumber": { "type": "string" },
-          "contact": { "$ref": "#/components/schemas/Contact" },
-          "reason": { "type": "string" },
-          "status": { "type": "string", "example": "pending" },
-          "collection": { "type": "integer", "nullable": true },
-          "account": { "type": "integer", "nullable": true },
-          "success_message": { "type": "string" },
-          "instructions": { "type": "string", "nullable": true },
-          "send_instructions": { "type": "boolean" },
-          "error_message": { "type": "string", "nullable": true },
-          "metadata": { "type": "object", "additionalProperties": true },
-          "created": { "type": "string", "format": "date-time" },
-          "author": { "type": "integer" },
-          "modified": { "type": "string", "format": "date-time" },
-          "updated_by": { "type": "integer" }
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "organization": {
+            "type": "integer",
+            "description": "ID of the organization that owns the request."
+          },
+          "amount": {
+            "type": "string",
+            "description": "The collection request amount. Decimal serialised as a string, e.g. \"3000.0000\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code (BXC is the Beyonic test currency)."
+          },
+          "account": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the account the collection will be sent to."
+          },
+          "phonenumber": {
+            "type": "string",
+            "description": "Phone number the request is for, international format."
+          },
+          "contact": {
+            "$ref": "#/components/schemas/Contact"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Internal description or reason."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom key/value metadata (up to 10 string attributes)."
+          },
+          "collection": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the collection that fulfilled the request, if any."
+          },
+          "success_message": {
+            "type": "string",
+            "nullable": true,
+            "description": "Confirmation SMS sent on successful payment."
+          },
+          "send_instructions": {
+            "type": "boolean",
+            "description": "Whether payment instructions are sent to the subscriber (defaults to false)."
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "Override for the default instructions; \"skip\" sends none."
+          },
+          "status": {
+            "type": "string",
+            "description": "pending, pending_dispatched, processing_started, successful, failed, expired or reversed (filters also accept instructions_sent)."
+          },
+          "error_message": {
+            "type": "string",
+            "nullable": true,
+            "description": "Error description, if any."
+          },
+          "error_details": {
+            "type": "string",
+            "nullable": true,
+            "description": "Additional error details."
+          },
+          "expiry_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the request expires (default 24 hours)."
+          },
+          "start_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "Scheduled start for future-dated requests."
+          },
+          "max_attempts": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Configurable retry attempts (max 3, 0 disables)."
+          },
+          "retry_interval_minutes": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Minutes between retries (minimum 10)."
+          },
+          "subscription_settings": {
+            "$ref": "#/components/schemas/SubscriptionSettings"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was created (UTC)."
+          },
+          "author": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who created the object."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was last modified (UTC)."
+          },
+          "updated_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who last updated the object."
+          }
+        }
+      },
+      "CollectionRequestList": {
+        "type": "object",
+        "description": "Paginated list of CollectionRequest objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollectionRequest"
+            }
+          }
+        }
+      },
+      "CollectionVerificationRequest": {
+        "type": "object",
+        "description": "JSON Beyonic POSTs to your Collection Verification URL; reply 200 with text \"ACCEPT <remote_transaction_id>\" or \"REJECT <remote_transaction_id> [reason]\" within 60 s.",
+        "properties": {
+          "remote_transaction_id": {
+            "type": "string"
+          },
+          "phonenumber": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency_code": {
+            "type": "string"
+          }
+        }
+      },
+      "Contact": {
+        "type": "object",
+        "description": "A person you pay or collect from. Created automatically for new phone numbers.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "organization": {
+            "type": "integer",
+            "description": "ID of the organization that owns the contact."
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "description": "The contact's email address."
+          },
+          "phone_number": {
+            "type": "string",
+            "description": "Phone number in international format, starting with +."
+          },
+          "type": {
+            "type": "string",
+            "description": "One of employee, beneficiary, vendor, other, or a custom string."
+          },
+          "status": {
+            "type": "string",
+            "description": "active or inactive.",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom key/value metadata (up to 10 string attributes)."
+          },
+          "phone_is_supported": {
+            "type": "string",
+            "description": "Whether the phone network is supported (yes/no)."
+          },
+          "phone_is_mm_registered": {
+            "type": "string",
+            "description": "Whether the phone is registered for mobile money (yes/no)."
+          },
+          "name_on_network": {
+            "type": "string",
+            "description": "Name registered with the network, when available."
+          },
+          "name_matches_network_status": {
+            "type": "string",
+            "description": "Status of the name-match check."
+          },
+          "name_matches_network_score": {
+            "type": "number",
+            "description": "Name-match score (0-100)."
+          },
+          "network_name": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was created (UTC)."
+          },
+          "author": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who created the object."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was last modified (UTC)."
+          },
+          "updated_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who last updated the object."
+          }
+        }
+      },
+      "ContactList": {
+        "type": "object",
+        "description": "Paginated list of Contact objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            }
+          }
+        }
+      },
+      "Country": {
+        "type": "object",
+        "description": "Expanded country object.",
+        "properties": {
+          "iso": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code."
+          },
+          "iso3": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-3 code."
+          },
+          "iso_numeric": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ISO numeric code."
+          },
+          "name": {
+            "type": "string"
+          },
+          "printable_name": {
+            "type": "string"
+          },
+          "phone_prefix": {
+            "type": "string",
+            "description": "International dialling prefix."
+          },
+          "supported": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateCollectionRequestRequest": {
+        "type": "object",
+        "required": [
+          "phonenumber",
+          "amount",
+          "currency"
+        ],
+        "properties": {
+          "phonenumber": {
+            "type": "string",
+            "description": "International format."
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "amount": {
+            "description": "Amount without thousands separators.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code."
+          },
+          "account": {
+            "type": "integer",
+            "description": "Account to receive the collection."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason sent with the instructions (keep under 20 characters)."
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "success_message": {
+            "type": "string",
+            "description": "SMS sent on payment (max 140 characters)."
+          },
+          "send_instructions": {
+            "type": "boolean"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Override instructions (max 140), or \"skip\"."
+          },
+          "expiry_date": {
+            "type": "string",
+            "description": "e.g. \"24 hours\", \"tomorrow\", \"24/05/2019 13:24:12\"."
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Schedule for a future date."
+          },
+          "retry_interval_minutes": {
+            "type": "integer",
+            "description": "Minimum 10."
+          },
+          "max_attempts": {
+            "type": "integer",
+            "description": "0 to 3."
+          },
+          "subscription_settings": {
+            "description": "Recurring settings (JSON string or object).",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/SubscriptionSettings"
+              }
+            ]
+          }
+        }
+      },
+      "CreateContactRequest": {
+        "type": "object",
+        "required": [
+          "phone_number",
+          "first_name",
+          "last_name"
+        ],
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "description": "International format."
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "metadata": {
+            "description": "Custom attributes; metadata.sync=1 requests instant contact verification (Uganda: Airtel, MTN, Msente; charged).",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          }
+        }
+      },
+      "CreatePaymentRequest": {
+        "type": "object",
+        "required": [
+          "amount",
+          "description"
+        ],
+        "properties": {
+          "phonenumber": {
+            "type": "string",
+            "description": "Recipient phone, international format. Required unless recipient_data is set."
+          },
+          "payment_type": {
+            "type": "string",
+            "description": "money (default) or airtime.",
+            "enum": [
+              "money",
+              "airtime"
+            ]
+          },
+          "amount": {
+            "description": "Amount without thousands separators (string, integer or decimal).",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code. One of currency or account is required."
+          },
+          "account": {
+            "type": "integer",
+            "description": "ID of the account to pay from. One of currency or account is required."
+          },
+          "description": {
+            "type": "string",
+            "description": "Sent to the recipient; keep to about 140 characters."
+          },
+          "callback_url": {
+            "type": "string",
+            "description": "Ignored from v5; only exists for older versions.",
+            "deprecated": true
+          },
+          "metadata": {
+            "description": "Custom attributes (JSON string or object).",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "first_name": {
+            "type": "string",
+            "description": "First name for a new contact."
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Last name for a new contact."
+          },
+          "national_id": {
+            "description": "National ID used to register the phone (set national_id_type too).",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "national_id_type": {
+            "type": "string",
+            "description": "passport, military or national.",
+            "enum": [
+              "passport",
+              "military",
+              "national"
+            ]
+          },
+          "recipient_data": {
+            "description": "Multiple payments in one request: JSON list of {phonenumber, amount, first_name?, last_name?, description?}.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "send_sms_message": {
+            "type": "boolean"
+          },
+          "account_number": {
+            "type": "string",
+            "description": "Bank payments: recipient bank account number."
+          },
+          "account_name": {
+            "type": "string",
+            "description": "Bank payments: name on the bank account."
+          },
+          "bank": {
+            "type": "integer",
+            "description": "Bank payments: Beyonic bank ID (see /banks)."
+          },
+          "contact_bank_account": {
+            "type": "integer",
+            "description": "Bank payments: existing contact bank account ID."
+          }
+        }
+      },
+      "Currency": {
+        "type": "object",
+        "description": "A supported currency.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Currency code, e.g. KES."
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "usd_rate": {
+            "type": "number",
+            "description": "Latest USD exchange rate."
+          }
+        },
+        "example": {
+          "id": 7,
+          "name": "Rwandan Francs",
+          "code": "RWF",
+          "country": {
+            "iso": "RW",
+            "iso3": "RWA",
+            "iso_numeric": 646,
+            "name": "RWANDA",
+            "printable_name": "Rwanda",
+            "phone_prefix": "250",
+            "supported": true
+          },
+          "usd_rate": 897.5
+        }
+      },
+      "CurrencyList": {
+        "type": "object",
+        "description": "Paginated list of Currency objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Currency"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error body: usually {\"detail\": \"...\"}; validation errors map each field to a list of messages.",
+        "properties": {
+          "detail": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "description": "Something that happened in your organization.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "organization": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string",
+            "description": "Event type.",
+            "enum": [
+              "payment.status.changed",
+              "collection.received",
+              "contact.created",
+              "collectionrequest.status.changed"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The object that triggered the event (Payment, Collection, Contact or CollectionRequest)."
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was created (UTC)."
+          },
+          "author": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who created the object."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was last modified (UTC)."
+          },
+          "updated_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who last updated the object."
+          }
+        }
+      },
+      "EventList": {
+        "type": "object",
+        "description": "Paginated list of Event objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        }
+      },
+      "Network": {
+        "type": "object",
+        "description": "A supported mobile network.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "name": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "phone_regex": {
+            "type": "string",
+            "description": "POSIX regex for phone numbers on the network."
+          }
+        },
+        "example": {
+          "id": 15,
+          "name": "HALOTEL",
+          "country": {
+            "iso": "TZ",
+            "iso3": "TZA",
+            "iso_numeric": 834,
+            "name": "TANZANIA, UNITED REPUBLIC OF",
+            "printable_name": "Tanzania, United Republic of",
+            "phone_prefix": "255",
+            "supported": true
+          },
+          "phone_regex": "^[[.plus-sign.]]25562[0-9]{7}"
+        }
+      },
+      "NetworkList": {
+        "type": "object",
+        "description": "Paginated list of Network objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Network"
+            }
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "description": "A mobile money, airtime or bank payment sent from your account.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "organization": {
+            "type": "integer",
+            "description": "ID of the organization the payment belongs to."
+          },
+          "payment_type": {
+            "type": "string",
+            "description": "money (default) or airtime.",
+            "enum": [
+              "money",
+              "airtime"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "description": "The payment amount. Decimal serialised as a string, e.g. \"3000.0000\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code."
+          },
+          "account": {
+            "type": "integer",
+            "description": "ID of the account the payment is made from."
+          },
+          "description": {
+            "type": "string",
+            "description": "Payment description sent to the recipient."
+          },
+          "phone_nos": {
+            "type": "array",
+            "description": "Recipients and amounts (v5+; before v5 a list of phone-number strings).",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRecipient"
+            }
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the payment is scheduled to be delivered (UTC)."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom key/value metadata (up to 10 string attributes)."
+          },
+          "state": {
+            "type": "string",
+            "description": "new, validated, approval_needed, approval_requested, approved, rejected, scheduled, processed, processed_with_errors or cancelled."
+          },
+          "last_error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latest error, if any."
+          },
+          "rejected_reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the payment was rejected."
+          },
+          "rejected_time": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the payment was rejected."
+          },
+          "rejected_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "User who rejected the payment."
+          },
+          "cancelled_reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the payment was cancelled."
+          },
+          "cancelled_time": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the payment was cancelled."
+          },
+          "cancelled_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "User who cancelled the payment."
+          },
+          "remote_transaction_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Network transaction ID once completed."
+          },
+          "send_sms_message": {
+            "type": "boolean",
+            "description": "Whether the description is also sent as an SMS."
+          },
+          "charged_fee": {
+            "type": "number",
+            "description": "Fee charged (completed payments only)."
+          },
+          "transactions": {
+            "type": "array",
+            "description": "Related transactions.",
+            "items": {}
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was created (UTC)."
+          },
+          "author": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who created the object."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the object was last modified (UTC)."
+          },
+          "updated_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of the user who last updated the object."
+          }
+        }
+      },
+      "PaymentList": {
+        "type": "object",
+        "description": "Paginated list of Payment objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            }
+          }
+        }
+      },
+      "PaymentRecipient": {
+        "type": "object",
+        "description": "One recipient of a payment (v5+ phone_nos entry).",
+        "properties": {
+          "phonenumber": {
+            "type": "string",
+            "description": "Recipient phone number, international format."
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount sent to this recipient. Decimal serialised as a string, e.g. \"3000.0000\"."
+          },
+          "description": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "description": "Individual payment state: new, processing, pending_confirmation, complete, error, paused, parked, paused_for_admin_action, queued, aborted."
+          },
+          "last_error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latest error for this recipient."
+          },
+          "contact": {
+            "type": "string",
+            "description": "Contact ID."
+          },
+          "batch_id": {
+            "type": "integer"
+          },
+          "payment_id": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "SubscriptionSettings": {
+        "type": "object",
+        "nullable": true,
+        "description": "Recurring collection request settings. Dates use DD/MM/YYYY HH:MM:SS (UTC).",
+        "properties": {
+          "start_date": {
+            "type": "string",
+            "description": "Subscription start."
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Subscription end; must be after start_date."
+          },
+          "weekdays": {
+            "type": "string",
+            "description": "Comma-separated weekdays, e.g. \"Monday, Tuesday\"."
+          },
+          "months": {
+            "type": "string",
+            "description": "Comma-separated months, e.g. \"January, February\"."
+          },
+          "frequency": {
+            "type": "string",
+            "description": "Comma-separated: yearly, monthly, weekly, daily, hourly, minutely."
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "description": "A movement of funds on an account.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "account": {
+            "description": "Account ID; expanded to an Account object when nested in a Collection (v4+).",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "$ref": "#/components/schemas/Account"
+              }
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "description": "Transaction amount. Decimal serialised as a string, e.g. \"3000.0000\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (present on the nested transaction in Collection samples)."
+          },
+          "description": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the transaction was created (UTC)."
+          },
+          "type": {
+            "type": "string",
+            "description": "admin_funds_update, mobile_funds_update, funds_deposit, funds_adjustment, mobile_collection, mobile_payment, airtime_topup, service_charge, mobile_withdrawal or bank_withdrawal."
+          },
+          "fee_transaction": {
+            "description": "Related fee transaction, if any (type not documented).",
+            "nullable": true
+          }
+        },
+        "example": {
+          "id": 218,
+          "account": 12,
+          "amount": "228.0000",
+          "description": "Incoming payment from +401000000099",
+          "created": "2017-03-28T12:50:59Z",
+          "type": "mobile_collection"
+        }
+      },
+      "TransactionList": {
+        "type": "object",
+        "description": "Paginated list of Transaction objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            }
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "description": "A callback URL subscribed to one event type.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique object identifier."
+          },
+          "user": {
+            "type": "integer",
+            "description": "ID of the user who created the webhook."
+          },
+          "event": {
+            "type": "string",
+            "description": "Event type.",
+            "enum": [
+              "payment.status.changed",
+              "collection.received",
+              "contact.created",
+              "collectionrequest.status.changed"
+            ]
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the webhook was created (UTC)."
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the webhook was last modified (UTC)."
+          },
+          "target": {
+            "type": "string",
+            "description": "HTTPS URL events are POSTed to.",
+            "format": "uri"
+          }
+        },
+        "example": {
+          "id": 53,
+          "created": "2015-08-01T16:56:29Z",
+          "updated": "2015-08-01T16:56:29Z",
+          "event": "payment.status.changed",
+          "target": "https://example.com/callback",
+          "user": 42
+        }
+      },
+      "WebhookList": {
+        "type": "object",
+        "description": "Paginated list of Webhook objects.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of records."
+          },
+          "next": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the next page."
+          },
+          "previous": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL of the previous page."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            }
+          }
+        }
+      },
+      "WebhookNotification": {
+        "type": "object",
+        "description": "Body Beyonic POSTs to a webhook target when an event fires.",
+        "properties": {
+          "hook": {
+            "$ref": "#/components/schemas/Webhook"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The object that triggered the event."
+          }
+        }
+      },
+      "WebhookRequest": {
+        "type": "object",
+        "required": [
+          "event",
+          "target"
+        ],
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "A supported event type.",
+            "enum": [
+              "payment.status.changed",
+              "collection.received",
+              "contact.created",
+              "collectionrequest.status.changed"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "description": "HTTPS callback URL.",
+            "format": "uri"
+          }
         }
       }
     }

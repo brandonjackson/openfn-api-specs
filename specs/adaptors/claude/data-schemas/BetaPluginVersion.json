@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaPluginVersion",
+  "title": "PluginVersion",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaPluginVersion",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "components": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "BetaPluginComponent.json"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Components",
+      "description": "What the version contains; null when not enumerated."
+    },
+    "content_scan": {
+      "anyOf": [
+        {
+          "$ref": "BetaPluginContentScan.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "This version's content scan; null when it has not been scanned."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "description": "RFC 3339.",
+      "examples": [
+        "2026-03-14T09:26:53.589793Z"
+      ]
+    },
+    "created_by": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "$ref": "BetaPluginUserActor.json"
+            },
+            {
+              "$ref": "BetaPluginApiActor.json"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "api_actor": "#/components/schemas/BetaPluginApiActor",
+              "user_actor": "#/components/schemas/BetaPluginUserActor"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Created By",
+      "description": "Who uploaded this version; null when not recorded."
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Description",
+      "description": "The manifest's description; null when it declares none. The value can be longer than 500 characters, the limit on `description` in an uploaded manifest. A description that the manifest takes from a `SKILL.md` is cut to its first 500 characters. So if the manifest's description is the first 500 characters of exactly one distinct skill `description` in `components`, that skill `description` is returned instead.",
+      "examples": [
+        "Reviews pull requests against your team's conventions."
+      ]
+    },
+    "display_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Display Name",
+      "description": "The manifest's display name; null when it declares none.",
+      "examples": [
+        "Code Review Helper"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "The version's ID.",
+      "examples": [
+        "pluginver_01KaZmQpRsTuVwXyZ2b4c6d8"
+      ]
+    },
+    "manifest_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Manifest Version",
+      "description": "The manifest's `version`, normalized for display: one leading `v` or `V` is dropped, and the result is returned only if it is 1 to 64 characters, starts with a digit, and uses only ASCII letters, digits, `.`, `+`, and `-`; otherwise `null`. For example, `\"v1.4.0\"` is returned as `\"1.4.0\"`, and `\"latest\"` as `null`. For a synchronized plugin, the `version` of its `marketplace.json` entry can take the place of the manifest's `version`. It is also `null` for a version stored before claude.ai began recording this field (August 2026).",
+      "examples": [
+        "1.2.0"
+      ]
+    },
+    "plugin_id": {
+      "type": "string",
+      "title": "Plugin Id",
+      "description": "The Plugin's ID.",
+      "examples": [
+        "plugin_01JyHfbRkZvD1gW7oTqXc3Ne"
+      ]
+    },
+    "reach": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "contained",
+            "privileged",
+            "remote"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Reach",
+      "description": "How far the version reaches: `remote`, `privileged`, `contained`, or `null`, as defined on the Plugin's `reach`."
+    },
+    "release_notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Release Notes",
+      "description": "As supplied with the upload; null when none were supplied.",
+      "examples": [
+        "Adds a review checklist for database migrations."
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "plugin_version",
+      "title": "Type",
+      "description": "Always `plugin_version`.",
+      "default": "plugin_version"
+    }
+  },
+  "type": "object",
+  "required": [
+    "components",
+    "content_scan",
+    "created_at",
+    "created_by",
+    "description",
+    "display_name",
+    "id",
+    "manifest_version",
+    "plugin_id",
+    "reach",
+    "release_notes",
+    "type"
+  ]
+}

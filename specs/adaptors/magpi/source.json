@@ -3,13 +3,87 @@
   "npm": "@openfn/language-magpi",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "vendor-defunct",
+  "attempts": [
+    {
+      "kind": "docs",
+      "url": "https://support.magpi.com/support/solutions/articles/4865-magpi-outbound-api",
+      "result": "used",
+      "note": "legacy Outbound API (Get Surveys, Get Survey Data v1/v2). Host no longer resolves (ENOTFOUND / proxy 502); content recovered only from search-engine excerpts. Wayback snapshot exists (20250315) but web.archive.org is blocked by this session's egress policy"
+    },
+    {
+      "kind": "docs",
+      "url": "https://support.magpi.com/support/solutions/articles/6000253635-new-magpi-rest-outbound-api",
+      "result": "used",
+      "note": "REST Outbound API on api.magpi.com (forms, questions, answers, sub-form answers); recovered from search-engine excerpts only"
+    },
+    {
+      "kind": "docs",
+      "url": "https://support.magpi.com/support/solutions/articles/4839-magpi-inbound-api",
+      "result": "used",
+      "note": "Inbound API ($server_root/GetSurveyForm, $server_root/UploadRecordsNew, Java DataOutputStream framing); recovered from search-engine excerpts only"
+    },
+    {
+      "kind": "live-instance",
+      "url": "https://www.magpi.com/api/surveydata/v3",
+      "result": "not-found",
+      "note": "www.magpi.com and magpi.com serve a Squarespace 'Website Expired' page (404 for every path); api.magpi.com, app.magpi.com, home.magpi.com and support.magpi.com are unreachable. Magpi discontinued operations in February 2025"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.magpi.com/{swagger.json,swagger/v1/swagger.json,openapi.json,api-docs,v3/api-docs}",
+      "result": "not-found",
+      "note": "host unreachable; no spec URL ever referenced from the docs excerpts"
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no magpi entry"
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=magpi",
+      "result": "not-found",
+      "note": "45 hits, none owned by Magpi or describing its API"
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/search?q=magpi.com%2Fapi",
+      "result": "not-found",
+      "note": "no vendor GitHub org or SDK found; only OpenFn's own adaptor references the API"
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=magpi",
+      "result": "not-found",
+      "note": "no vendor workspace surfaced in search"
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-magpi/dist/index.cjs",
+      "result": "used",
+      "note": "source of /api/surveydata/v3 and /mobileApi/uploadData, which the recoverable docs do not mention"
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
   "sources": [
+    "https://support.magpi.com/support/solutions/articles/4865-magpi-outbound-api",
+    "https://support.magpi.com/support/solutions/articles/6000253635-new-magpi-rest-outbound-api",
+    "https://support.magpi.com/support/solutions/articles/4839-magpi-inbound-api",
+    "https://www.surveycto.com/events-trends/transitioning-from-magpi",
     "https://cdn.jsdelivr.net/npm/@openfn/language-magpi/ast.json",
     "https://cdn.jsdelivr.net/npm/@openfn/language-magpi/dist/index.cjs",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/magpi",
-    "https://support.magpi.com/support/solutions/articles/4865-magpi-outbound-api",
-    "https://support.magpi.com/support/solutions/articles/4839-magpi-inbound-api"
+    "https://github.com/OpenFn/adaptors/tree/main/packages/magpi"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No official machine-readable spec exists for Magpi. Authored by hand from the adaptor's compiled source (which hard-codes the real endpoints) plus Magpi Outbound/Inbound API support docs. The adaptor calls two endpoints: fetchSurveyData -> POST https://www.magpi.com/api/surveydata/v3 (form-encoded credentials; XML SurveyDataList response), and submitRecord -> POST {apiUrl}/mobileApi/uploadData (XML <form> body). The closely-related real v2 (sub-form data) and v1 Get Survey Data variants are also included for coverage. The upstream API is XML-based; response schemas model the JSON shape the adaptor produces after xml2js conversion (SurveyDataList.SurveyData, with dynamic per-form answer fields). SurveyData.additionalProperties captures form-specific answers. Auth (username + accesstoken for outbound, username/password for inbound) is not modelled as securitySchemes since it is passed inline in the form/config."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Magpi (formerly DataDyne) was a mobile data-collection service; it discontinued operations in February 2025 and every Magpi host is now down or parked, so this spec is a historical record and the adaptor cannot currently work. No machine spec ever existed. The spec covers the whole documented surface recoverable today: legacy XML Outbound API (Get Surveys, Get Survey Data v1 and v2), the v3 URL the adaptor hard-codes, the JSON REST Outbound API on api.magpi.com (list forms, list questions, answers with start/limit/searchQuery, sub-form answers), and the Inbound API (GetSurveyForm, UploadRecordsNew), plus the adaptor-only /mobileApi/uploadData that submitRecord builds but never sends (marked deprecated). The support docs were readable only through search-engine excerpts (support host gone, Wayback blocked here), so response field lists are NOT known: Form, Question and Answer are open objects, legacy Get Surveys is an opaque XML string, and SurveyData evidences only LastSubmissionDate (from the adaptor). Legacy XML data responses are modelled as the JSON array of records the adaptor produces after XML conversion. The earlier stub's invented fields (UploadResponse, start/limit on legacy calls, a real-looking token example) were removed. If a Wayback copy of the three support articles becomes reachable, fill in the field lists and the Inbound status-code table."
 }

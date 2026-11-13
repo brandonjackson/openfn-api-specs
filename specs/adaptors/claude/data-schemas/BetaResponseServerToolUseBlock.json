@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseServerToolUseBlock",
+  "title": "ResponseServerToolUseBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseServerToolUseBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "caller": {
+      "discriminator": {
+        "mapping": {
+          "code_execution_20250825": "#/components/schemas/BetaServerToolCaller",
+          "code_execution_20260120": "#/components/schemas/BetaServerToolCaller_20260120",
+          "direct": "#/components/schemas/BetaDirectCaller"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaDirectCaller.json"
+        },
+        {
+          "$ref": "BetaServerToolCaller.json"
+        },
+        {
+          "$ref": "BetaServerToolCaller_20260120.json"
+        }
+      ],
+      "title": "Caller"
+    },
+    "id": {
+      "pattern": "^srvtoolu_[a-zA-Z0-9_]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    },
+    "name": {
+      "enum": [
+        "advisor",
+        "web_search",
+        "web_fetch",
+        "code_execution",
+        "bash_code_execution",
+        "text_editor_code_execution",
+        "tool_search_tool_regex",
+        "tool_search_tool_bm25"
+      ],
+      "title": "Name",
+      "type": "string",
+      "x-anthropic-beta-required-values": {
+        "advisor": [
+          "advisor-tool-2026-03-01"
+        ]
+      }
+    },
+    "type": {
+      "const": "server_tool_use",
+      "default": "server_tool_use",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "input",
+    "name",
+    "type"
+  ],
+  "type": "object"
+}

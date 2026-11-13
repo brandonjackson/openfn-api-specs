@@ -3,13 +3,86 @@
   "npm": "@openfn/language-pesapal",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "partial-docs",
+  "attempts": [
+    {
+      "kind": "swagger",
+      "url": "https://pay.pesapal.com/v3/swagger/v1/swagger.json",
+      "result": "rejected",
+      "note": "Vendor-served Swagger 2.0 behind the live API's Swagger UI (/v3/swagger/index.html; sandbox twin at https://cybqa.pesapal.com/pesapalv3/swagger/v1/swagger.json, which adds /api/health). info.title is the placeholder 'My Title'; 11 operations; no securityDefinitions; every response is typed {type: file}, so it carries no response shapes; and it omits two documented endpoints (GET /api/URLSetup/GetIpnList, POST /api/Transactions/RefundRequest). Incomplete vendor spec: used as the starting point for request DTOs and for the undocumented endpoints, not as the source of truth."
+    },
+    {
+      "kind": "postman",
+      "url": "https://documenter.getpostman.com/view/6715320/UyxepTv1",
+      "result": "rejected",
+      "note": "Vendor Postman collection 'Pesapal API 3.0 original' (linked from the API reference; JSON via documenter.gw.postman.com/api/collections/6715320/UyxepTv1). 9 requests / 8 distinct endpoints, no saved responses; adds POST /api/Transactions/stk (DirectMobileMoneySTK) not found elsewhere. Too thin to convert as the source of truth; used as evidence."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developer.pesapal.com/openapi.json",
+      "result": "not-found",
+      "note": "the docs site (a CMS) returns its HTML shell for /openapi.json; /sitemap.xml 404. pay.pesapal.com/pesapalv3/swagger/v1/swagger.json 404 (live uses /v3)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no pesapal entry."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/pesapal",
+      "result": "not-found",
+      "note": "web search found no vendor GitHub org or spec repo, only community SDKs (e.g. musale/pesapal, katorymnd/pesapal-php-sdk) that wrap the same documented endpoints; no SwaggerHub listing."
+    },
+    {
+      "kind": "docs",
+      "url": "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/api-reference",
+      "result": "used",
+      "note": "Inventory = the API 3.0 - JSON nav: Authentication, RegisterIPNURL, GetIPNList, SubmitOrderRequest, GetTransactionStatus, RecurringPayments, RefundRequest, OrderCancellation, AdditionalEndpoints. Every page read; AdditionalEndpoints (a customer-transaction query API) is login-restricted and could not be modelled."
+    },
+    {
+      "kind": "adaptor-surface",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-pesapal/ast.json",
+      "result": "used",
+      "note": "v1.2.3: generic get, post, request; examples use URLSetup/GetIpnList, URLSetup/RegisterIPN, Transactions/SubmitOrderRequest and GetTransactionStatus."
+    },
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/pesapal/src/Utils.js",
+      "result": "used",
+      "note": "token: POST {baseUrl}/{apiVersion||'v3'}/api/Auth/RequestToken; calls: {baseUrl}/{apiVersion||'pesapalv3'}/api/{path} with Bearer token. All example paths are in openapi.json."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "vendor-docs",
+    "swagger.json",
+    "postman"
+  ],
+  "modifications": [],
   "sources": [
     "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/api-reference",
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/authentication",
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/registeripnurl",
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/getregisteredipn",
     "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/submitorderrequest",
     "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/gettransactionstatus",
-    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/authentication",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-pesapal/ast.json"
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/recurringpayments",
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/refund-request",
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/order-cancellation-api",
+    "https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/additional-api3-endpoints",
+    "https://pay.pesapal.com/v3/swagger/v1/swagger.json",
+    "https://cybqa.pesapal.com/pesapalv3/swagger/v1/swagger.json",
+    "https://documenter.getpostman.com/view/6715320/UyxepTv1",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-pesapal/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/pesapal"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Pesapal publishes no machine spec, only a developer portal + Postman docs. Authored OpenAPI 3.0 by hand from the API 3.0 JSON reference. The adaptor itself exposes generic get()/post()/request() helpers over the Pesapal base URL (https://pay.pesapal.com/pesapalv3/api); the concrete Auth/URLSetup/Transactions endpoints modeled here are the ones those helpers call in practice. Field lists for SubmitOrderRequest and GetTransactionStatus confirmed against vendor docs."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Pesapal API 3.0 (JSON). Pesapal has two partial machine descriptions, neither complete: the live API's Swagger 2.0 (11 ops, no response schemas, no auth, missing GetIpnList and RefundRequest) and a Postman collection (8 endpoints, no responses). This spec unions all three sources: every documented endpoint (token, RegisterIPN, GetIpnList, SubmitOrderRequest incl. recurring fields, GetTransactionStatus, RefundRequest, CancelOrder), the swagger-only endpoints (RegisterCallBackUrl, GetTransactionByMerchantReference, QueryStatusByConfirmationCode; the test/health/FingerprintJS-webhook routes are kept but marked deprecated as internal) and the Postman-only Transactions/stk, 15 operations in all. Request bodies use the swagger DTOs verbatim (they expose more fields than the docs, e.g. settlement_instructions, flight_data) with doc descriptions layered on; response schemas come from the docs' sample responses, and the five undocumented endpoints have no response schema. best-effort/partial-docs because the login-restricted 'Additional API3 Endpoints' page (customer transaction query by phone/email) could not be read. Servers corrected: live is https://pay.pesapal.com/v3 (the old stub used /pesapalv3, which 404s on live). Adaptor caveat for the coordinator: Utils.js defaults apiVersion to 'v3' for the token call but 'pesapalv3' for every other call, so on the live host the default config gets a token then 404s on data calls unless apiVersion is set to 'v3'."
 }

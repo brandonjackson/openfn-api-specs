@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intuit/JournalEntry",
+  "title": "JournalEntry",
+  "x-openfn-adaptor": "intuit",
+  "x-source": {
+    "openapi": "#/components/schemas/JournalEntry",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "Id": {
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
+    },
+    "SyncToken": {
+      "type": "string",
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
+    },
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
+    },
+    "DocNumber": {
+      "type": "string",
+      "description": "Product: ALL Description: QBO: Reference number for the transaction. If DocNumber is not provided, and the Custom Transaction Number is set to \"Off\", QBO assigns a document number using the next-in-sequence algorithm for Sales transactions. Otherwise the value will remaing null. Alternatively, you can also pass in \"AUTO_GENERATE\" in this field to force QBO to auto-sequence the document number f..."
+    },
+    "TxnDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: ALL Description: QBO: The date entered by the user when this transaction occurred. [br /]Often, it is the date when the transaction is created in the system. [br /]For \"posting\" transactions, this is the posting date that affects the financial statements. If the date is not supplied, the current date on the server is used. Description: QBW: The nominal, user entered, date of the transa..."
+    },
+    "TxnSubType": {
+      "allOf": [
+        {
+          "$ref": "TxnSubTypeEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Sub-type of the transaction. For information purposes only."
+    },
+    "DepartmentRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: Location of the transaction, as defined using location tracking in QuickBooks Online."
+    },
+    "CurrencyRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the Currency in which all amounts on the associated transaction are expressed.[br /] InputType: ReadWrite"
+    },
+    "ExchangeRate": {
+      "type": "number",
+      "description": "Product: ALL Description: Currency exchange rate. Valid only if the company file is set up to use Multi-Currency feature. In QuickBooks, exchange rates are always recorded as the number of home currency units it takes to equal one foreign currency unit. The foreign unit is always 1 and the amount of home units that equal that 1 foreign unit is what QuickBooks uses as the exchange rate. InputTyp..."
+    },
+    "PrivateNote": {
+      "type": "string",
+      "description": "Product: ALL Description: User entered, organization-private note about the transaction. This note will not appear on the transaction records by default. InputType: ReadWrite"
+    },
+    "TxnStatus": {
+      "type": "string",
+      "description": "Product: ALL Description: QBW: The status of the transaction. Depending on the transaction type it may have different values.[br /]For Sales Transactions acceptable values are defined in PaymentStatusEnum. For Estimate, the values accepted are defined in EstimateStatusEnum. Description: QBO: The status of the transaction. Depending on the transaction type it may have different values.[br /]For..."
+    },
+    "LinkedTxn": {
+      "type": "array",
+      "items": {
+        "$ref": "LinkedTxn.json"
+      },
+      "description": "Product: ALL Description: A linked (related) transaction. More than one transaction can be linked."
+    },
+    "Line": {
+      "type": "array",
+      "items": {
+        "$ref": "Line.json"
+      },
+      "description": "Product: QBW Description: A line item of a transaction. Product: QBO Description: A line item of a transaction. QuickBooks Online does not support tax lines in the main transaction body, only in the TxnTaxDetail section."
+    },
+    "TxnTaxDetail": {
+      "allOf": [
+        {
+          "$ref": "TxnTaxDetail.json"
+        }
+      ],
+      "description": "Product: ALL Description: Details of taxes charged on the transaction as a whole. For US versions of QuickBooks, tax rates used in the detail section must not be used in any tax line appearing in the main transaction body. For international versions of QuickBooks, the TxnTaxDetail should provide the details of all taxes (sales or purchase) calculated for the transaction based on the tax codes r..."
+    },
+    "TxnSource": {
+      "type": "string",
+      "description": "Product: QBO Description: Originating source of the Transaction. Valid values are defined in TxnSourceEnum: QBMobile."
+    },
+    "TaxFormType": {
+      "type": "string",
+      "description": "Description: refer TaxFormTypeEnum. Tax Form Type holds data related to Tax Information, values based on regional compliance laws. Applicable for IN Region and can be extended for other Regions."
+    },
+    "TaxFormNum": {
+      "type": "string",
+      "description": "Description: Tax Form Num holds data related to Tax Information based on Regional compliance laws.This is applicable for IN region and can be extended to other regions in future."
+    },
+    "TransactionLocationType": {
+      "type": "string",
+      "description": "Product: QBO Description: Location of the purchase or sale transaction. The applicable values are those exposed through the TransactionLocationTypeEnum. This is currently applicable only for the FR region."
+    },
+    "Tag": {
+      "type": "array",
+      "items": {
+        "$ref": "Tag.json"
+      },
+      "description": "Product: QBO Descripton: List of tags used to identify the transaction."
+    },
+    "TxnApprovalInfo": {
+      "allOf": [
+        {
+          "$ref": "TxnApprovalInfo.json"
+        }
+      ],
+      "description": "Product: QBO Description: Details of the Approval Status for current transaction in QBO workflows."
+    },
+    "RecurDataRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: Reference to the RecurTemplate which was used to create the Transaction InputType: Read"
+    },
+    "RecurringInfo": {
+      "allOf": [
+        {
+          "$ref": "RecurringInfo.json"
+        }
+      ],
+      "description": "Product: QBO Description: The Recurring Schedule information for the Transaction"
+    },
+    "ProjectRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Project identifier References to the project this transaction is associated with"
+    },
+    "TotalCostAmount": {
+      "type": "number",
+      "description": "Product: ALL Description: Project Estimate identifier The amount or equivalent paid or charged for a product/service"
+    },
+    "HomeTotalCostAmount": {
+      "type": "number",
+      "description": "Product: ALL Description: Project Estimate identifier The amount or equivalent paid or charged for a product/service when using multi-currency"
+    },
+    "Adjustment": {
+      "type": "boolean",
+      "description": "Indicates that the Journal Entry is after-the-fact entry to make changes to specific accounts."
+    },
+    "HomeCurrencyAdjustment": {
+      "type": "boolean",
+      "description": "Valid only if the company file is set up to use Multi-Currency feature. [b]QuickBooks Notes[/b][br /] At the end of a reporting period, when financial reports need to reflect a current home currency value of the foreign balances, enter a home currency adjustment. Until the home currency value of the foreign balances is recalculated using current exchange rates, reports reflect the home currency..."
+    },
+    "EnteredInHomeCurrency": {
+      "type": "boolean",
+      "description": "Valid only if the company file is set up to use Multi-Currency feature. [b]QuickBooks Notes[/b][br /] Amounts are always entered in home currency for a HomeCurrencyAdjustment JournalEntry."
+    },
+    "GlobalTaxCalculation": {
+      "allOf": [
+        {
+          "$ref": "GlobalTaxCalculationEnum.json"
+        }
+      ],
+      "description": "Product: QBO Description: Indicates the GlobalTax model if the model inclusive of tax, exclusive of taxes or not applicable"
+    },
+    "TotalAmt": {
+      "type": "number",
+      "description": "Product: All Description: Indicates the total amount of the transaction. This includes the total of all the charges, allowances and taxes. By default, this is recalculated based on sub items total and overridden. Product: QBW Description: Indicates the total amount of the transaction. This includes the total of all the charges, allowances and taxes.[br /]Calculated by QuickBooks business logic;..."
+    },
+    "HomeTotalAmt": {
+      "type": "number",
+      "description": "Product: ALL Description: Total amount of the transaction in the home currency for multi-currency enabled companies. Single currency companies will not have this field. Includes the total of all the charges, allowances and taxes. Calculated by QuickBooks business logic. Cannot be written to QuickBooks."
+    },
+    "JournalEntryEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Internal use only: extension place holder for JournalEntry"
+    }
+  },
+  "description": "Accounting transaction, consists of journal lines, each of which is either a debit or a credit. The total of the debits must equal the total of the credits."
+}

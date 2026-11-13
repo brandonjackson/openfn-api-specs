@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/SpendSummary",
+  "title": "SpendSummary",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/SpendSummary",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "actor": {
+      "oneOf": [
+        {
+          "$ref": "UserActorSchema.json"
+        },
+        {
+          "$ref": "ScopedApiKeyActorSchema.json"
+        }
+      ],
+      "title": "Actor",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "scoped_api_key_actor": "#/components/schemas/ScopedApiKeyActorSchema",
+          "user_actor": "#/components/schemas/UserActorSchema"
+        }
+      }
+    },
+    "amount": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Amount",
+      "description": "Effective limit amount as a non-negative integer decimal string in the minor unit of `currency` (cents for USD). `null` means no limit applies for this row's `period` — each period resolves independently, so another period may still cap this member.",
+      "examples": [
+        "50000"
+      ]
+    },
+    "currency": {
+      "type": "string",
+      "title": "Currency",
+      "description": "ISO 4217 code of the organization's billing currency; the unit for `amount` and `period_to_date_spend`.",
+      "examples": [
+        "USD"
+      ]
+    },
+    "period": {
+      "$ref": "SpendLimitPeriod.json",
+      "description": "Period this row's effective limit and spend are reported for.",
+      "examples": [
+        "monthly"
+      ]
+    },
+    "period_to_date_spend": {
+      "type": "string",
+      "title": "Period To Date Spend",
+      "description": "The member's spend so far in the current period, as a non-negative decimal string in the minor unit of `currency` (cents for USD). May carry fractional minor units up to three decimal places (e.g. `\"12050.5\"`) — metered usage is not rounded to whole cents. Reads as `\"0\"` when the spend reading is temporarily unavailable.",
+      "examples": [
+        "12050.5"
+      ]
+    },
+    "scope": {
+      "oneOf": [
+        {
+          "$ref": "UserScope.json"
+        },
+        {
+          "$ref": "SeatTierScope.json"
+        },
+        {
+          "$ref": "RbacGroupScope.json"
+        },
+        {
+          "$ref": "OrgServiceScope.json"
+        },
+        {
+          "$ref": "OrganizationScope.json"
+        },
+        {
+          "$ref": "WorkspaceScope.json"
+        },
+        {
+          "$ref": "UsageTierScope.json"
+        }
+      ],
+      "title": "Scope",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/OrganizationScope",
+          "organization_service": "#/components/schemas/OrgServiceScope",
+          "rbac_group": "#/components/schemas/RbacGroupScope",
+          "seat_tier": "#/components/schemas/SeatTierScope",
+          "usage_tier": "#/components/schemas/UsageTierScope",
+          "user": "#/components/schemas/UserScope",
+          "workspace": "#/components/schemas/WorkspaceScope"
+        }
+      }
+    },
+    "source": {
+      "oneOf": [
+        {
+          "$ref": "UserScope.json"
+        },
+        {
+          "$ref": "SeatTierScope.json"
+        },
+        {
+          "$ref": "RbacGroupScope.json"
+        },
+        {
+          "$ref": "OrgServiceScope.json"
+        },
+        {
+          "$ref": "OrganizationScope.json"
+        },
+        {
+          "$ref": "WorkspaceScope.json"
+        },
+        {
+          "$ref": "UsageTierScope.json"
+        }
+      ],
+      "title": "Source",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/OrganizationScope",
+          "organization_service": "#/components/schemas/OrgServiceScope",
+          "rbac_group": "#/components/schemas/RbacGroupScope",
+          "seat_tier": "#/components/schemas/SeatTierScope",
+          "usage_tier": "#/components/schemas/UsageTierScope",
+          "user": "#/components/schemas/UserScope",
+          "workspace": "#/components/schemas/WorkspaceScope"
+        }
+      }
+    },
+    "spend_limit_id": {
+      "type": "string",
+      "title": "Spend Limit Id"
+    }
+  },
+  "type": "object",
+  "required": [
+    "actor",
+    "amount",
+    "currency",
+    "period",
+    "period_to_date_spend",
+    "scope",
+    "source",
+    "spend_limit_id"
+  ],
+  "description": "Per-member effective-limit report row (`GET /spend_limits/effective`)."
+}

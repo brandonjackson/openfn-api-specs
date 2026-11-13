@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaWebFetchUrlSources",
+  "title": "WebFetchUrlSources",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaWebFetchUrlSources",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "description": "Which sources contribute to the set of URLs web fetch may fetch.\n\nEach key is a tagged variant: ``user_input`` is ``all`` or ``none``; the\ntwo tool filters are ``all``, ``none``, ``only`` (only the named tools'\nresults) or ``except`` (every result but the named tools'). A named tool\nmust be declared in this request's ``tools[]``.",
+  "properties": {
+    "client_tool_results": {
+      "description": "Which client tools' results contribute fetchable URLs: \"all\", \"none\", or an only or except list of client tool names from tools[].",
+      "discriminator": {
+        "mapping": {
+          "all": "#/components/schemas/BetaWebFetchUrlSourceAll",
+          "except": "#/components/schemas/BetaWebFetchUrlSourceExcept",
+          "none": "#/components/schemas/BetaWebFetchUrlSourceNone",
+          "only": "#/components/schemas/BetaWebFetchUrlSourceOnly"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaWebFetchUrlSourceAll.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceNone.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceOnly.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceExcept.json"
+        }
+      ],
+      "title": "Client Tool Results"
+    },
+    "server_tool_results": {
+      "description": "Which server tools' results contribute fetchable URLs: \"all\", \"none\", or an only or except list of server tool names from tools[]; only web_search and web_fetch results ever contribute.",
+      "discriminator": {
+        "mapping": {
+          "all": "#/components/schemas/BetaWebFetchUrlSourceAll",
+          "except": "#/components/schemas/BetaWebFetchUrlSourceExcept",
+          "none": "#/components/schemas/BetaWebFetchUrlSourceNone",
+          "only": "#/components/schemas/BetaWebFetchUrlSourceOnly"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaWebFetchUrlSourceAll.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceNone.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceOnly.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceExcept.json"
+        }
+      ],
+      "title": "Server Tool Results"
+    },
+    "user_input": {
+      "description": "Whether URLs in user messages are fetchable: \"all\" or \"none\".",
+      "discriminator": {
+        "mapping": {
+          "all": "#/components/schemas/BetaWebFetchUrlSourceAll",
+          "none": "#/components/schemas/BetaWebFetchUrlSourceNone"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaWebFetchUrlSourceAll.json"
+        },
+        {
+          "$ref": "BetaWebFetchUrlSourceNone.json"
+        }
+      ],
+      "title": "User Input"
+    }
+  },
+  "type": "object"
+}

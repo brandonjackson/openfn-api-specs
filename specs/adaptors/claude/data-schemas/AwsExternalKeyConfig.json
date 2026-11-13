@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/AwsExternalKeyConfig",
+  "title": "AwsExternalKeyConfig",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/AwsExternalKeyConfig",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "kms_arn": {
+      "type": "string",
+      "maxLength": 2048,
+      "title": "Kms Arn",
+      "description": "Full ARN of the AWS KMS key. On Claude Platform on AWS, alias ARNs are rejected, and your organization's own key must be a single-Region key in your organization's AWS account.",
+      "examples": [
+        "arn:aws:kms:us-east-1:111122223333:key/abcd1234-5678-90ab-cdef-000011112222"
+      ]
+    },
+    "region": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Region",
+      "description": "AWS region. Derived from `kms_arn` if omitted.",
+      "examples": [
+        "us-east-1"
+      ]
+    },
+    "role_arn": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Role Arn",
+      "description": "IAM role ARN. Deprecated; this field is ignored.",
+      "deprecated": true,
+      "examples": [
+        "arn:aws:iam::111122223333:role/anthropic-cmek"
+      ],
+      "x-stainless-only": [
+        "http",
+        "openapi"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "aws",
+      "title": "Type"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "kms_arn",
+    "type"
+  ]
+}

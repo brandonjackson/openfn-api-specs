@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsModelConfig",
+  "title": "BetaManagedAgentsModelConfig",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsModelConfig",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Model identifier and configuration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "BetaManagedAgentsModel.json"
+    },
+    "speed": {
+      "description": "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Defaults to `standard`. Not all models support `fast`; invalid combinations are rejected at create time.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsSpeed.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        "standard"
+      ]
+    },
+    "effort": {
+      "description": "How hard Claude works on each inference call. One of `low`, `medium`, `high`, `xhigh`, `max`. Always present; resolved to the per-model default at save time when not supplied.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsEffort.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    },
+    "inference_geo": {
+      "description": "Geographic region for model inference. When unset, requests fall through to the workspace's default_inference_geo.",
+      "type": "string",
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  },
+  "example": {
+    "id": "claude-opus-5-5",
+    "speed": "standard"
+  }
+}

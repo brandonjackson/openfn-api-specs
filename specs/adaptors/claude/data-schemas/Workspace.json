@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/Workspace",
+  "title": "Workspace",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/Workspace",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "archived_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Archived At",
+      "description": "RFC 3339 datetime string indicating when the Workspace was archived, or `null` if the Workspace is not archived.",
+      "examples": [
+        "2024-11-01T23:59:27.427722Z"
+      ]
+    },
+    "compartment_id": {
+      "type": "string",
+      "title": "Compartment Id",
+      "description": "Identifier for this Workspace's encryption compartment. When you configure an\nAWS KMS customer-managed encryption key (CMEK) that isn't bound to a user\nprofile, reference this value in your KMS key-policy condition so the key is\nscoped to this compartment. On GCP and Azure, Anthropic enforces the compartment\nbinding automatically; you do not need to reference this value in your key\nconfiguration. See the CMEK integration guide for the required key\nconfiguration; unless your organization is on Claude Platform on AWS, it\nincludes a separate value used during key validation. On Claude Platform on AWS\nthere is no separate validation value: your organization's own key is validated\nagainst this Workspace's own value when it is attached, so if its key policy\nuses the compartment condition, add this value to it before attaching the key.",
+      "examples": [
+        "f8a7b6c5-4d3e-4f1a-8b9c-0d1e2f3a4b5c"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "description": "RFC 3339 datetime string indicating when the Workspace was created.",
+      "examples": [
+        "2024-10-30T23:58:27.427722Z"
+      ]
+    },
+    "data_residency": {
+      "$ref": "DataResidency.json",
+      "description": "Data residency configuration."
+    },
+    "display_color": {
+      "type": "string",
+      "title": "Display Color",
+      "description": "Hex color code representing the Workspace in the Anthropic Console.",
+      "examples": [
+        "#6C5BB9"
+      ]
+    },
+    "external_key_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "External Key Id",
+      "description": "ID of the customer-managed encryption key (CMEK) configuration to use for this\nWorkspace. Setting this field requires CMEK to be enabled for your\norganization. When set, data stored for this Workspace is encrypted with the\nreferenced key. Create key configurations with the External Keys API. On\nClaude Platform on AWS the value for an AWS KMS key is the key's ARN, and your\norganization's own key must be a single-Region key in the same AWS account and\nRegion as the Workspace. On that platform the key is validated against this\nWorkspace when it is attached, so a key-policy problem is reported as an error\non this request. This field is write-once: once a key is attached to a Workspace\nit cannot be detached or replaced. To rotate key material, rotate the underlying\nkey on your cloud KMS; the `external_key_id` stays the same.",
+      "examples": [
+        "ekey_01SDCCSbTxrXDpWc1phhtcfK"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "ID of the Workspace.",
+      "examples": [
+        "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Name of the Workspace.",
+      "examples": [
+        "Workspace Name"
+      ]
+    },
+    "tags": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object",
+      "title": "Tags",
+      "description": "User-defined tags as string key-value pairs. Keys may not begin with `anthropic`.",
+      "examples": [
+        {
+          "env": "prod",
+          "team": "platform"
+        }
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "workspace",
+      "title": "Type",
+      "description": "Object type.\n\nFor Workspaces, this is always `\"workspace\"`.",
+      "default": "workspace"
+    },
+    "user_profile_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "User Profile Id",
+      "description": "ID of the user profile attached to the Workspace, or null if it has none. Every inference request through a Workspace that has a user profile must name that profile.",
+      "examples": [
+        "uprof_01SDCCSbTxrXDpWc1phhtcfK"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "archived_at",
+    "compartment_id",
+    "created_at",
+    "data_residency",
+    "display_color",
+    "external_key_id",
+    "id",
+    "name",
+    "tags",
+    "type",
+    "user_profile_id"
+  ]
+}

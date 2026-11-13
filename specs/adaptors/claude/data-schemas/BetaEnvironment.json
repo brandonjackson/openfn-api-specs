@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaEnvironment",
+  "title": "Environment",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaEnvironment",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "archived_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Archived At",
+      "description": "RFC 3339 timestamp when environment was archived, or null if not archived",
+      "examples": [
+        null
+      ]
+    },
+    "config": {
+      "oneOf": [
+        {
+          "$ref": "BetaCloudConfig.json"
+        },
+        {
+          "$ref": "BetaSelfHostedConfig.json",
+          "x-anthropic-beta-required": [
+            "managed-agents-2026-04-01"
+          ]
+        }
+      ],
+      "title": "Config",
+      "description": "Environment configuration (either Anthropic Cloud or self-hosted)",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "cloud": "#/components/schemas/BetaCloudConfig",
+          "self_hosted": "#/components/schemas/BetaSelfHostedConfig"
+        }
+      },
+      "examples": [
+        {
+          "type": "cloud",
+          "networking": {
+            "type": "limited",
+            "allowed_hosts": [
+              "api.example.com"
+            ],
+            "allow_package_managers": true,
+            "allow_mcp_servers": false
+          },
+          "packages": {
+            "type": "packages",
+            "pip": [
+              "pandas",
+              "numpy"
+            ],
+            "npm": [],
+            "apt": [],
+            "cargo": [],
+            "gem": [],
+            "go": []
+          }
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "title": "Created At",
+      "description": "RFC 3339 timestamp when environment was created",
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Description",
+      "description": "User-provided description for the environment; null when unset",
+      "examples": [
+        "Python environment with data-analysis packages."
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Environment identifier (e.g., 'env_...')",
+      "examples": [
+        "env_011CZkZ9X2dpNyB7HsEFoRfW"
+      ]
+    },
+    "metadata": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object",
+      "title": "Metadata",
+      "description": "User-provided metadata key-value pairs",
+      "examples": [
+        {}
+      ]
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Human-readable name for the environment",
+      "examples": [
+        "python-data-analysis"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "organization",
+        "account"
+      ],
+      "title": "Scope",
+      "description": "The visibility scope for this environment. 'organization' means visible to all accounts. 'account' means visible only to the owning account.",
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "environment",
+      "title": "Type",
+      "description": "The type of object (always 'environment')",
+      "default": "environment",
+      "examples": [
+        "environment"
+      ]
+    },
+    "updated_at": {
+      "type": "string",
+      "title": "Updated At",
+      "description": "RFC 3339 timestamp when environment was last updated",
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "archived_at",
+    "config",
+    "created_at",
+    "description",
+    "id",
+    "metadata",
+    "name",
+    "type",
+    "updated_at"
+  ],
+  "description": "Unified Environment resource for both cloud and self-hosted environments.",
+  "example": {
+    "type": "environment",
+    "id": "env_011CZkZ9X2dpNyB7HsEFoRfW",
+    "name": "python-data-analysis",
+    "description": "Python environment with data-analysis packages.",
+    "config": {
+      "type": "cloud",
+      "networking": {
+        "type": "limited",
+        "allowed_hosts": [
+          "api.example.com"
+        ],
+        "allow_package_managers": true,
+        "allow_mcp_servers": false
+      },
+      "packages": {
+        "type": "packages",
+        "pip": [
+          "pandas",
+          "numpy"
+        ],
+        "npm": [],
+        "apt": [],
+        "cargo": [],
+        "gem": [],
+        "go": []
+      }
+    },
+    "metadata": {},
+    "archived_at": null,
+    "created_at": "2026-03-15T10:00:00Z",
+    "updated_at": "2026-03-15T10:00:00Z"
+  }
+}

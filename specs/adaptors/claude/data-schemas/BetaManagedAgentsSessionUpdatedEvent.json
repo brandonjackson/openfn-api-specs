@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionUpdatedEvent",
+  "title": "BetaManagedAgentsSessionUpdatedEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionUpdatedEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Emitted when an UpdateSession request changed at least one field. Carries only the fields that changed; absent fields were not part of the update. The new configuration applies from the next turn.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "session.updated"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "processed_at": {
+      "description": "Timestamp when the update was applied.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "title": {
+      "description": "The session's new title. Present only when the update changed it.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata": {
+      "description": "The session's full metadata bag after the update. Present when the update set non-empty metadata; absent when metadata was unchanged or cleared to empty.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "agent": {
+      "description": "The session's effective agent configuration after the update. Present only when the update changed `agent` (tools or mcp_servers); when present it is the full materialised snapshot, not a diff.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionAgent.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "budget": {
+      "description": "The session's budget after the update: the new budget when set or replaced, or null when the update removed it. Present only when the update changed the budget.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsBudget.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

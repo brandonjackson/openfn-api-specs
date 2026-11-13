@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionThreadStatusIdleEvent",
+  "title": "BetaManagedAgentsSessionThreadStatusIdleEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionThreadStatusIdleEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A session thread has yielded and is awaiting input. Emitted on the thread's own stream and cross-posted to the primary stream for child threads.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "session_thread_id",
+    "processed_at",
+    "agent_name",
+    "stop_details",
+    "stop_reason"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "session.thread_status_idle",
+      "examples": [
+        "session.thread_status_idle"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string",
+      "examples": [
+        "sevt_011CZkZXYc8qKmy2tiZbrpDv"
+      ]
+    },
+    "session_thread_id": {
+      "description": "Public sthr_ ID of the thread that went idle.",
+      "type": "string",
+      "examples": [
+        "sthr_011CZkZVWa6oJjw1rgXZpnBt"
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp of the status transition.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:00:00Z"
+      ]
+    },
+    "agent_name": {
+      "description": "Name of the agent the thread runs.",
+      "type": "string",
+      "examples": [
+        "Researcher"
+      ]
+    },
+    "stop_details": {
+      "description": "Structured information about why the thread stopped. `null` when there is nothing more to report.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionStopDetails.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "stop_reason": {
+      "type": "object",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "end_turn": "#/components/schemas/BetaManagedAgentsSessionEndTurn",
+          "requires_action": "#/components/schemas/BetaManagedAgentsSessionRequiresAction",
+          "retries_exhausted": "#/components/schemas/BetaManagedAgentsSessionRetriesExhausted",
+          "budget_reached": "#/components/schemas/BetaManagedAgentsSessionBudgetReached",
+          "refusal": "#/components/schemas/BetaManagedAgentsSessionRefusal"
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaManagedAgentsSessionEndTurn.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionRequiresAction.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionRetriesExhausted.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionBudgetReached.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsSessionRefusal.json"
+        }
+      ],
+      "examples": [
+        {
+          "type": "end_turn"
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "session.thread_status_idle",
+    "id": "sevt_011CZkZXYc8qKmy2tiZbrpDv",
+    "session_thread_id": "sthr_011CZkZVWa6oJjw1rgXZpnBt",
+    "processed_at": "2026-03-15T10:00:00Z",
+    "agent_name": "Researcher",
+    "stop_reason": {
+      "type": "end_turn"
+    },
+    "stop_details": null
+  }
+}

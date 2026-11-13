@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/UserProfileEnforcementActionBan",
+  "title": "UserProfileEnforcementActionBan",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/UserProfileEnforcementActionBan",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Anthropic has stopped serving the end user where the ban applies and does not plan to serve them there again.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "reason",
+    "action",
+    "opened_at",
+    "expires_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "ban",
+      "examples": [
+        "ban"
+      ]
+    },
+    "id": {
+      "description": "The action's ID (`enac_...`), stable while the action is open.",
+      "type": "string",
+      "examples": [
+        "enac_011CZkZCu8hGbp5mYRQgUmz9"
+      ]
+    },
+    "reason": {
+      "description": "Why Anthropic placed the limit: `unsupported_region`, `fraud_or_abuse`, `high_harm`, `usage_policy_violation`, `account_compromise` or `unspecified`.",
+      "allOf": [
+        {
+          "$ref": "UserProfileEnforcementActionReason.json"
+        }
+      ],
+      "examples": [
+        "usage_policy_violation"
+      ]
+    },
+    "action": {
+      "description": "Always `null`: the end user cannot clear a ban.",
+      "anyOf": [
+        {
+          "$ref": "UserProfileEnforcementActionNextStep.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    },
+    "opened_at": {
+      "description": "When Anthropic opened the action, in RFC 3339 format.",
+      "allOf": [
+        {
+          "$ref": "Timestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-10-02T19:30:00Z"
+      ]
+    },
+    "expires_at": {
+      "description": "Always `null`: a ban has no end date.",
+      "anyOf": [
+        {
+          "$ref": "Timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    }
+  },
+  "example": {
+    "type": "ban",
+    "id": "enac_011CZkZCu8hGbp5mYRQgUmz9",
+    "reason": "usage_policy_violation",
+    "action": null,
+    "opened_at": "2026-10-02T19:30:00Z",
+    "expires_at": null
+  }
+}

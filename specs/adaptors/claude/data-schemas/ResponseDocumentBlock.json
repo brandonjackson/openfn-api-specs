@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/ResponseDocumentBlock",
+  "title": "ResponseDocumentBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/ResponseDocumentBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "citations": {
+      "anyOf": [
+        {
+          "$ref": "ResponseCitationsConfig.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Citation configuration for the document"
+    },
+    "source": {
+      "discriminator": {
+        "mapping": {
+          "base64": "#/components/schemas/Base64PDFSource",
+          "text": "#/components/schemas/PlainTextSource"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "Base64PDFSource.json"
+        },
+        {
+          "$ref": "PlainTextSource.json"
+        }
+      ],
+      "title": "Source"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The title of the document",
+      "title": "Title"
+    },
+    "type": {
+      "const": "document",
+      "default": "document",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "citations",
+    "source",
+    "title",
+    "type"
+  ],
+  "type": "object"
+}

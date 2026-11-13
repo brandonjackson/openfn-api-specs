@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsAgentMcpToolUseEvent",
+  "title": "BetaManagedAgentsAgentMcpToolUseEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsAgentMcpToolUseEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Event emitted when the agent invokes a tool provided by an MCP server.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "name",
+    "mcp_server_name",
+    "input",
+    "processed_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "agent.mcp_tool_use"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the MCP tool being used.",
+      "type": "string"
+    },
+    "mcp_server_name": {
+      "description": "Name of the MCP server providing the tool.",
+      "type": "string"
+    },
+    "input": {
+      "description": "Input parameters for the tool call.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsStruct.json"
+        }
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when this event was processed.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "evaluated_permission": {
+      "description": "The evaluated permission policy for this tool invocation.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsAgentEvaluatedPermission.json"
+        }
+      ]
+    },
+    "session_thread_id": {
+      "description": "When set, this event was cross-posted from a subagent's thread to surface its permission request on the primary thread's stream. Empty on the thread's own events. Informational only: the server routes the matching `user.tool_confirmation` by `tool_use_id`, so clients do not send it back.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    },
+    "evaluation": {
+      "description": "Which resolved permission_policy produced evaluated_permission: always_allow, always_ask, or auto (with the server's per-invocation judgement). Absent only when the server refused the call before any policy applied (for example, the named tool is not enabled in the session); such a refusal has evaluated_permission deny. An event recorded before this field existed reads as the arm its evaluated_permission implies (always_allow for allow, always_ask for ask).",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsAgentToolEvaluation.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

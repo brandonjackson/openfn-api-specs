@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsEnvironmentVariableAuthResponse",
+  "title": "BetaManagedAgentsEnvironmentVariableAuthResponse",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsEnvironmentVariableAuthResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Environment variable credential details. The secret value is never returned.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "secret_name",
+    "networking",
+    "injection_location"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "environment_variable"
+    },
+    "secret_name": {
+      "description": "Name of the environment variable.",
+      "type": "string"
+    },
+    "networking": {
+      "description": "Outbound hosts the secret value is substituted on.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsCredentialNetworkingResponse.json"
+        }
+      ]
+    },
+    "injection_location": {
+      "description": "Where in the outbound request the secret value is substituted.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsInjectionLocationResponse.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

@@ -1,13 +1,101 @@
 {
   "adaptor": "fhir-4",
   "npm": "@openfn/language-fhir-4",
-  "origin": "generated",
-  "upstreamFormat": "docs",
+  "origin": "converted",
+  "upstreamFormat": "json-schema",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://hl7.org/fhir/R4B/fhir.schema.json",
+    "format": "json-schema-draft-06",
+    "contentHash": "sha256:f43c80efbe39f184f0561a11b480ea4338a9c46c935c5020ef3ea8271c64ff74",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/fhir-4/package.json",
+      "result": "used",
+      "note": "Decides the release: package.json `fhir.specUrl` is https://hl7.org/fhir/R4B/definitions.json.zip (generator 0.7.8, generated 2026-04-17) and src/profiles carries R4B-only types (ClinicalUseDefinition, NutritionProduct, PackagedProductDefinition, RegulatedAuthorization, ...); Adaptor.ts comments link hl7.org/fhir/R4B. So this spec is R4B (4.3.0), not R4 (4.0.1) like specs/adaptors/fhir."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://hapi.fhir.org/baseR4B/api-docs",
+      "result": "rejected",
+      "note": "HAPI's public R4B endpoint serves a generated OpenAPI 3.0.1 (7.3 MB YAML, HAPI 8.13.10-SNAPSHOT) with only two opaque schemas (FHIR-JSON-RESOURCE/FHIR-XML-RESOURCE), no application/json content and HAPI-proprietary operations. One server's rendering, not HL7's, and it carries no resource schemas."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://hl7.org/fhir/R4B/fhir.openapi.json",
+      "result": "not-found",
+      "note": "HL7 publishes no OpenAPI for R4B: fhir.openapi.json returns Apache's 300 'similar names' page; /openapi.json, /openapi.yaml, /swagger.json and /openapi/ on hl7.org/fhir/R4B all 404 (re-probed 2026-11-13)."
+    },
+    {
+      "kind": "docs",
+      "url": "https://hl7.org/fhir/R4B/downloads.html",
+      "result": "rejected",
+      "note": "The R4B downloads page offers definitions.json.zip, fhir.schema.json and the core package — machine-readable, but no OpenAPI/Swagger artifact."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "apis.guru (2529 APIs) lists no HL7/FHIR API; the only health entries are amazonaws.com:comprehendmedical and infermedica.com."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/gotidy/fhir-to-openapi",
+      "result": "rejected",
+      "note": "Community FHIR-to-OpenAPI generators exist but are not vendor-published (SKILL.md §2); followed back to HL7's own machine-readable definitions."
+    },
+    {
+      "kind": "json-schema",
+      "url": "https://hl7.org/fhir/R4B/fhir.schema.json",
+      "result": "used",
+      "note": "HL7's own complete R4B (v4.3.0) JSON Schema (draft-06): 699 definitions covering all 140 resource types, datatypes and backbone elements. Saved verbatim as upstream.json (sha256:f43c80efbe39f184f0561a11b480ea4338a9c46c935c5020ef3ea8271c64ff74) and converted to components.schemas."
+    },
+    {
+      "kind": "capability-statement",
+      "url": "https://hl7.org/fhir/R4B/capabilitystatement-base.json",
+      "result": "used",
+      "note": "HL7's base CapabilityStatement for R4B ('a server that provides the full set of functionality defined by FHIR'): 140 resource types, their interactions, 1731 resource search parameters, the system interactions and the 46-entry operation list. Saved verbatim as upstream-capabilities.json (sha256:ceb34b92f08f11299f3c8a25413a40bd5954704331addd6ce407f02dd304fcb0) and converted to the path surface."
+    },
+    {
+      "kind": "operation-definitions",
+      "url": "https://hl7.org/fhir/R4B/operationslist.html",
+      "result": "used",
+      "note": "All 46 R4B OperationDefinitions fetched individually (https://hl7.org/fhir/R4B/operation-<resource>-<code>.json) for the $-operation paths, levels, input/output parameters and response resource."
+    },
+    {
+      "kind": "docs",
+      "url": "https://hl7.org/fhir/R4B/http.html",
+      "result": "used",
+      "note": "The normative RESTful API specification: URL shapes per interaction, patch, the conditional create/update/delete forms, the _search POST form and the GET-invocation rule for operations."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "configuration-schema.json",
+    "fhir-r4-regeneration"
+  ],
+  "modifications": [],
   "sources": [
-    "https://www.hl7.org/fhir/R4/http.html",
-    "https://www.hl7.org/fhir/R4/resourcelist.html",
+    "https://hl7.org/fhir/R4B/fhir.schema.json",
+    "https://hl7.org/fhir/R4B/capabilitystatement-base.json",
+    "https://hl7.org/fhir/R4B/operationslist.html",
+    "https://hl7.org/fhir/R4B/http.html",
+    "https://hl7.org/fhir/R4B/search.html",
+    "https://hl7.org/fhir/R4B/operations.html",
+    "https://hl7.org/fhir/R4B/downloads.html",
+    "https://hl7.org/fhir/R4B/definitions.json.zip",
+    "https://hapi.fhir.org/baseR4B/api-docs",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-fhir-4/ast.json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/fhir-4"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Authored from the HL7 FHIR R4 (4.0.1) RESTful API specification. The fhir-4 adaptor exposes read/search/create/update/delete plus createBundle/addToBundle/uploadBundle (transaction Bundle POST to base). Modelled core resources (Patient, Observation, Encounter, Organization, Practitioner, Condition) that the adaptor's resource builders produce; the real server accepts any FHIR R4 resourceType. servers[0] points at the public HAPI test server as a representative R4 base."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "HL7 FHIR Release 4B (v4.3.0) RESTful API. The fhir-4 adaptor (npm label 'FHIR r4') is generated from HL7's R4B definitions, so its builders, types and docs links are R4B; R4B shares R4's RESTful API and is wire-compatible for the 127 resource types the releases share, but drops 18 R4 types (MedicinalProduct*, Substance{NucleicAcid,Polymer,Protein,ReferenceInformation,SourceMaterial,Specification}, Effect/RiskEvidenceSynthesis) and adds 13 (AdministrableProductDefinition, Citation, ClinicalUseDefinition, EvidenceReport, Ingredient, ManufacturedItemDefinition, MedicinalProductDefinition, NutritionProduct, PackagedProductDefinition, RegulatedAuthorization, SubscriptionStatus, SubscriptionTopic, SubstanceDefinition). HL7 publishes no OpenAPI; this spec is converted from HL7's own R4B fhir.schema.json (upstream.json, verbatim) and base CapabilityStatement (upstream-capabilities.json, verbatim) plus the 46 R4B OperationDefinitions. 'Full' means every one of the 140 R4B resource types with all eight base-CapabilityStatement interactions plus patch and the conditional create/update/delete forms, the four system interactions and /metadata, and all 46 operations at their declared levels: 1810 operations over 914 paths, all 699 upstream definitions carried across (679 component schemas plus 20 primitives inlined). Conversion: the same derivation as specs/adaptors/fhir (a converter that regenerates that adaptor's committed openapi.json byte-for-byte from the same R4 inputs, validated first and then run on the R4B inputs was used, so the two specs share every path, operationId, parameter and schema): draft-06 `const` became a single-value `enum`; `type: object` was added to object definitions; FHIR's 20 primitive types are inlined at their use sites; every body and response is offered as application/json and application/fhir+json; operations take a `Parameters` body, and a GET form is emitted only when every required input is primitive and the operation does not change state. One deliberate difference from specs/adaptors/fhir: the system-level operations (/$meta, /$versions, /$graphql, /$data-requirements, /$closure, /$process-message, /$convert) do not carry the `resourceType` path parameter, which the fhir spec declares on those paths although they have no `{resourceType}` segment. R4B OperationDefinitions carry `affectsState`, which drives the GET-form rule here (so $snapshot, $apply on ChargeItemDefinition, $submit, $closure, $process-message, $meta-add and $meta-delete are POST-only), and R4B's $everything is on MedicinalProductDefinition. Adaptor surface checked against adaptor source (ast.json lists no operations for this TypeScript package): read GET /{type}/{id}, search GET /{type}, create POST /{type}, update PUT /{type}/{id}, delete DELETE /{type}/{id}, uploadBundle POST / — all present; the `http` namespace is empty stubs, so no generic builders reach other paths. Not modelled: XML/Turtle representations, server-proprietary endpoints (HAPI's $expunge etc.), Bulk Data and SMART/OAuth token endpoints. As with specs/adaptors/fhir, the extractor treats each resource's `meta` element as a pagination hint, so data-schemas/index.json lists second-level types as the 'resources'; every named schema is present as a file."
 }

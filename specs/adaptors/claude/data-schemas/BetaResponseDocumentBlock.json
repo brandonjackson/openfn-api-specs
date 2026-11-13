@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseDocumentBlock",
+  "title": "ResponseDocumentBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseDocumentBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "citations": {
+      "anyOf": [
+        {
+          "$ref": "BetaResponseCitationsConfig.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Citation configuration for the document"
+    },
+    "source": {
+      "discriminator": {
+        "mapping": {
+          "base64": "#/components/schemas/BetaBase64PDFSource",
+          "text": "#/components/schemas/BetaPlainTextSource"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaBase64PDFSource.json"
+        },
+        {
+          "$ref": "BetaPlainTextSource.json"
+        }
+      ],
+      "title": "Source"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The title of the document",
+      "title": "Title"
+    },
+    "type": {
+      "const": "document",
+      "default": "document",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "citations",
+    "source",
+    "title",
+    "type"
+  ],
+  "type": "object"
+}

@@ -3,17 +3,64 @@
   "npm": "@openfn/language-wigal-sms",
   "origin": "generated",
   "upstreamFormat": "docs",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "docs-site",
+      "url": "https://frogdocs.wigal.com.gh/",
+      "result": "used",
+      "note": "static hand-written HTML site (no Redoc/Swagger UI); all 17 pages linked from the menu were fetched: SMS send general/personalised, history, SMS OTP generate/verify, account balance, voice send/interactive, voice OTP generate/verify, callback, Smart USSD intro/v1/v2, intro and request-API pages."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://frogapi.wigal.com.gh/swagger/v1/swagger.json",
+      "result": "not-found",
+      "note": "404, as are /openapi.json, /api-docs, /swagger, /docs and /api/documentation on frogapi.wigal.com.gh."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/wigalgh",
+      "result": "not-found",
+      "note": "the docs link only wigalgh/smartussd_api and smartussd_api_v2 (sample PHP USSD handlers, not specs); no OpenAPI or Postman file is linked."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no wigal / frog entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/search?q=wigal",
+      "result": "not-found",
+      "note": "no Wigal-owned public workspace referenced by the docs."
+    }
+  ],
+  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "modifications": [],
   "sources": [
     "https://frogdocs.wigal.com.gh/",
     "https://frogdocs.wigal.com.gh/send_general.html",
     "https://frogdocs.wigal.com.gh/send_personalized.html",
+    "https://frogdocs.wigal.com.gh/history.html",
     "https://frogdocs.wigal.com.gh/otp_generate.html",
     "https://frogdocs.wigal.com.gh/otp_verify.html",
     "https://frogdocs.wigal.com.gh/get_account_balance.html",
-    "https://frogdocs.wigal.com.gh/history.html",
+    "https://frogdocs.wigal.com.gh/voice_send.html",
+    "https://frogdocs.wigal.com.gh/voice_send_interactive.html",
+    "https://frogdocs.wigal.com.gh/voice_generate.html",
+    "https://frogdocs.wigal.com.gh/voice_verify.html",
+    "https://frogdocs.wigal.com.gh/callback.html",
+    "https://frogdocs.wigal.com.gh/ussdv1.html",
+    "https://frogdocs.wigal.com.gh/ussdv2.html",
     "https://cdn.jsdelivr.net/npm/@openfn/language-wigal-sms/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-wigal-sms/types/Adaptor.d.ts"
+    "https://cdn.jsdelivr.net/npm/@openfn/language-wigal-sms/dist/index.cjs",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/wigal-sms"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No official OpenAPI spec published by Wigal. Authored an OpenAPI 3.0.3 description from the Frog vendor documentation (frogdocs.wigal.com.gh). The adaptor itself exposes a single operation, sendSms, which POSTs to /api/v3/sms/send; the spec covers that endpoint plus closely related Frog SMS operations (OTP generate/verify, account balance, message history) that share the same API-KEY/USERNAME header auth. Request/response shapes and example values were taken from the vendor docs; error-response bodies use the shared {status,message} shape documented for each endpoint. Voice and USSD endpoints exist in the vendor docs but were omitted as out of scope for the SMS adaptor and because detailed request/response shapes were not available."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Wigal's Frog API (frogapi.wigal.com.gh/api/v3) authored from the vendor's docs site, the only published description. All 9 documented REST operations are modelled: SMS send (general and personalised share POST /api/v3/sms/send and differ only in where message/smstype sit, shown as two request examples), SMS history, SMS OTP generate/verify, account balance, voice send, interactive voice send, and voice OTP generate/verify. The July stub left out the voice endpoints; they are now included. Delivery reports (DeliveryReport), interactive-voice events and actions (VoiceCallEvent/VoiceCallAction) and Smart USSD v1/v2 sessions (UssdSession) are calls Frog makes to the customer's own URLs, so they appear as components.schemas, not paths. Known doc ambiguities: history is labelled POST with a JSON filter body while its cURL sample uses -G; balance field names differ between the field table (camelCase) and the sample (lowercase), and the sample is followed here. Auth is the API-KEY and USERNAME header pair. The adaptor's only operation, sendSms, POSTs to /api/v3/sms/send, which is modelled. Phone numbers and sender IDs in samples are replaced with placeholders."
 }

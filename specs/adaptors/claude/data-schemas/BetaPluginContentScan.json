@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaPluginContentScan",
+  "title": "PluginContentScan",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaPluginContentScan",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "assessment": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "fail",
+            "pass",
+            "unknown",
+            "warn"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Assessment",
+      "description": "The scan's verdict; set only when `status` is `completed`. A `warn` can mean a `fail` that was allowed in claude.ai.",
+      "examples": [
+        "warn"
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Reason",
+      "description": "The primary mechanism behind a `warn` or `fail`, such as `credential-exposure` or `guardrail-tampering`; a mechanism this API does not yet name reads as `other`. Null on a `pass`, whenever `assessment` is null, and when no mechanism is reported for the verdict.",
+      "examples": [
+        "credential-exposure"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "errored",
+        "processing"
+      ],
+      "title": "Status",
+      "description": "`processing` while a scan runs, `completed` when it ran to completion, `errored` when it could not run. Once a scan of the version has completed, `content_scan` describes the newest completed scan, even while a later scan runs. While the scan outcome cannot be read, `status` is `errored` instead.",
+      "examples": [
+        "completed"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "assessment",
+    "reason",
+    "status"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaAnalyticsUserActor",
+  "title": "AnalyticsUserActor",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaAnalyticsUserActor",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "deleted": {
+      "type": "boolean",
+      "title": "Deleted",
+      "description": "True when the account has been deleted, or when the user is no longer a member of the organization or its associated organizations (for example, their membership was removed or they were deprovisioned via your identity provider). `email_address` stays populated for removed users and is null when the account has been deleted. `name` follows the rules described on that field. The `user_id` is still populated for reconciliation."
+    },
+    "email_address": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Email Address",
+      "description": "The user's email address, including for users who are no longer members of the organization or its associated organizations. Null when the account has been deleted (check `deleted`) and for system-minted service accounts, which have no person's mailbox behind them (check `name`).",
+      "examples": [
+        "jane@example.com"
+      ]
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Name",
+      "description": "The user's full name. Null when the user has not set a name. Returns `\"Deleted User\"` when the account itself has been deleted, or when the user is no longer a member of the organization or its associated organizations and the organization has chosen to hide the names of removed users. Otherwise, the name stays populated for removed users. Rows for system-minted service accounts render the service name (for example, `\"Claude Security\"`) or null.",
+      "examples": [
+        "Jane Smith"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "const": "user_actor",
+      "title": "Type",
+      "description": "Actor type. Always `\"user_actor\"`."
+    },
+    "user_id": {
+      "type": "string",
+      "title": "User Id",
+      "description": "Tagged user ID.",
+      "examples": [
+        "user_01AbCdEfGhIjKlMnOpQrSt"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "deleted",
+    "email_address",
+    "name",
+    "type",
+    "user_id"
+  ]
+}

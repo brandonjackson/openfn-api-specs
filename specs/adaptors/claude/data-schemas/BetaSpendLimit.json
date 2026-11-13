@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaSpendLimit",
+  "title": "SpendLimit",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaSpendLimit",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "amount": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Amount",
+      "description": "Limit amount as a non-negative integer decimal string in the minor unit of `currency` (cents for USD): \"50000\" is $500.00. `null` means no numeric cap is configured at this scope — see the effective report for whether a limit applies.",
+      "examples": [
+        "50000"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "description": "RFC 3339 datetime at which the spend limit was created."
+    },
+    "currency": {
+      "type": "string",
+      "title": "Currency",
+      "description": "ISO 4217 code of the organization's billing currency; the unit for `amount`.",
+      "examples": [
+        "USD"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Unique tagged ID of the spend limit (`spl_...`)."
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "title": "Is Enabled",
+      "description": "Read-only. `false` when extra usage is switched off for this organization (`organization` limit); `amount` is kept and applies again when it's switched back on. Always `true` for other limits."
+    },
+    "period": {
+      "$ref": "BetaSpendLimitPeriod.json",
+      "description": "Length of the window the limit resets over. `amount` caps spend within each period.",
+      "examples": [
+        "monthly"
+      ]
+    },
+    "scope": {
+      "oneOf": [
+        {
+          "$ref": "BetaUserScope.json"
+        },
+        {
+          "$ref": "BetaSeatTierScope.json"
+        },
+        {
+          "$ref": "BetaRbacGroupScope.json"
+        },
+        {
+          "$ref": "BetaOrgServiceScope.json"
+        },
+        {
+          "$ref": "BetaOrganizationScope.json"
+        },
+        {
+          "$ref": "BetaWorkspaceScope.json"
+        },
+        {
+          "$ref": "BetaUsageTierScope.json"
+        }
+      ],
+      "title": "Scope",
+      "description": "What the limit applies to. A tagged union on `type`; each variant carries the identifier for its scope.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/BetaOrganizationScope",
+          "organization_service": "#/components/schemas/BetaOrgServiceScope",
+          "rbac_group": "#/components/schemas/BetaRbacGroupScope",
+          "seat_tier": "#/components/schemas/BetaSeatTierScope",
+          "usage_tier": "#/components/schemas/BetaUsageTierScope",
+          "user": "#/components/schemas/BetaUserScope",
+          "workspace": "#/components/schemas/BetaWorkspaceScope"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "const": "spend_limit",
+      "title": "Type",
+      "description": "Object type. Always `spend_limit`.",
+      "default": "spend_limit"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At",
+      "description": "RFC 3339 datetime at which the spend limit was last modified."
+    }
+  },
+  "type": "object",
+  "required": [
+    "amount",
+    "created_at",
+    "currency",
+    "id",
+    "is_enabled",
+    "period",
+    "scope",
+    "type",
+    "updated_at"
+  ],
+  "description": "A configured spend limit: a cap on metered spend for one scope and period."
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "flutterwave/TransferSender",
+  "title": "TransferSender",
+  "x-openfn-adaptor": "flutterwave",
+  "x-source": {
+    "openapi": "#/components/schemas/TransferSender",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the transfer sender"
+    },
+    "name": {
+      "type": "object",
+      "properties": {
+        "first": {
+          "type": "string",
+          "description": "The Customer's first name",
+          "pattern": "^(?![ ,.'-]*$)[A-Za-z ,.'-]{2,50}$"
+        },
+        "middle": {
+          "type": "string",
+          "description": "The Customer's middle name",
+          "pattern": "^(?![ ,.'-]*$)[A-Za-z ,.'-]{2,50}$"
+        },
+        "last": {
+          "type": "string",
+          "description": "The Customer's last name",
+          "pattern": "^(?![ ,.'-]*$)[A-Za-z ,.'-]{2,50}$"
+        }
+      },
+      "description": "The Sender's full name"
+    },
+    "national_identification": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "PASSPORT",
+            "DRIVERS_LICENSE",
+            "NATIONAL_ID"
+          ]
+        },
+        "identifier": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 40
+        },
+        "expiration_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+        }
+      },
+      "description": "The Sender's government identification"
+    },
+    "phone": {
+      "type": "object",
+      "properties": {
+        "country_code": {
+          "type": "string",
+          "description": "The dialling country code e.g. 234 for NG",
+          "pattern": "^[0-9]{1,3}$"
+        },
+        "number": {
+          "type": "string",
+          "description": "Unformatted 7-10-digit phone number without the country code",
+          "pattern": "^[0-9]{7,10}$"
+        }
+      },
+      "required": [
+        "country_code",
+        "number"
+      ],
+      "description": "The Sender's mobile number"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "description": "The Sender's date of birth"
+    },
+    "email": {
+      "type": "string",
+      "description": "The Sender's email address",
+      "pattern": "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "The name of the city",
+          "pattern": "^.+$"
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO2 country code",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "line1": {
+          "type": "string",
+          "description": "The first line of the Customer's address",
+          "pattern": "^.+$"
+        },
+        "line2": {
+          "type": "string",
+          "description": "The second line of the Customer's address",
+          "pattern": "^.+$"
+        },
+        "postal_code": {
+          "type": "string",
+          "pattern": "^.+$"
+        },
+        "state": {
+          "type": "string",
+          "description": "The state or region",
+          "pattern": "^.+$"
+        }
+      },
+      "required": [
+        "city",
+        "country",
+        "line1",
+        "postal_code",
+        "state"
+      ],
+      "description": "The Sender's residential address"
+    }
+  }
+}

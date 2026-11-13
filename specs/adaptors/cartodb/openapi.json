@@ -1,390 +1,4511 @@
 {
-  "openapi": "3.0.3",
+  "openapi": "3.0.0",
   "info": {
-    "title": "CARTO Platform API (mock subset)",
+    "title": "CARTO Engine APIs (SQL, Maps, Import, Auth)",
     "version": "2.0.0",
-    "description": "Focused subset of the CARTO platform APIs used by the OpenFn cartodb adaptor. The adaptor's sql() and addRow() operations both call the SQL API (GET https://{account}.carto.com/api/v2/sql with q and api_key query params). This spec models the SQL API (GET and POST) plus the CARTO Import API (create/list/get import jobs) so the mock can serve realistic SQL result sets and asynchronous import job responses.",
+    "description": "CARTO's legacy (CARTO 2 / 'CARTO Engine') platform APIs, served per account at https://{user}.carto.com: the SQL API v2 (/api/v2/sql, batch jobs and COPY), the Maps API v1 (anonymous, named and static maps), the Import API (/api/v1/imports, /api/v1/synchronizations, /api/v3/visualization_exports) and the Auth API v3 (/api/v3/api_keys). This is a mechanical merge of CARTO's four published OpenAPI 3.0 references (each mounted at its own server base path) — see source.json. The OpenFn cartodb adaptor's sql() and addRow() both send GET https://{account}.carto.com/api/v2/sql?q=<statement>&api_key=<key>.\n\n# Introduction\nCARTO’s SQL API allows you to interact with your tables and data inside CARTO, as if you were running SQL statements against a normal database.\n\nYou can execute single SQL statements or even a batch of long-running ones.  Refer to the SQL API guide to learn more.\n# Authorization\nIn order to access SQL API you must provide an API key. The CARTO Authorization guide explains how these keys are sent (TLDR: _HTTP basic auth_ or _query string param_ with the API key token). Depending on the permissions granted to the provided API key, the request will be authorized or not.\n",
+    "contact": {
+      "name": "Have you found an error? Github issues",
+      "url": "https://github.com/CartoDB/CartoDB-SQL-API/issues"
+    },
     "x-openfn-adaptor": "cartodb"
   },
   "servers": [
     {
-      "url": "https://{account}.carto.com",
-      "description": "CARTO account-scoped base URL. {account} is the CARTO username/organization subdomain.",
+      "url": "https://{user}.{domain}",
+      "description": "Account host (CARTO cloud: {user}.carto.com; organisation users: {org}.carto.com/u/{user}; on-premises: your domain).",
       "variables": {
-        "account": {
-          "default": "localhost",
-          "description": "CARTO account name (subdomain)."
+        "user": {
+          "default": "username",
+          "description": "CARTO account (username) — the adaptor's configuration.account"
+        },
+        "domain": {
+          "default": "carto.com",
+          "description": "carto.com, or your on-premises domain"
         }
       }
     }
   ],
+  "tags": [
+    {
+      "name": "Single SQL Statement"
+    },
+    {
+      "name": "Batch Queries"
+    },
+    {
+      "name": "Anonymous Maps"
+    },
+    {
+      "name": "Named Maps"
+    },
+    {
+      "name": "Static Maps"
+    },
+    {
+      "name": "Standard Tables"
+    },
+    {
+      "name": "CARTO Map Visualizations"
+    },
+    {
+      "name": "Sync Tables"
+    },
+    {
+      "name": "API Keys"
+    },
+    {
+      "name": "Single COPY command"
+    }
+  ],
   "paths": {
+    "/api/v1/imports": {
+      "post": {
+        "summary": "Create import",
+        "description": "Upload File\n",
+        "tags": [
+          "Standard Tables"
+        ],
+        "operationId": "createImport",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateImport"
+              },
+              "examples": {
+                "url": {
+                  "$ref": "#/components/examples/CreateImportUrl"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                },
+                "example": {
+                  "item_queue_id": "9906bce0-f1a3-4b07-be71-818f4bfd7673",
+                  "success": true
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v -F file=@/path/to/local/file \"https://{account}\n.carto.com/api/v1/imports/?api_key={account API Key}\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      },
+      "get": {
+        "summary": "List current import processes",
+        "description": "Lists the import identifiers of the files that are being imported in the targeted CARTO account",
+        "tags": [
+          "Standard Tables"
+        ],
+        "operationId": "getImports",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imports": {
+                      "type": "array",
+                      "description": "A list of unique alphanumeric identifiers referencing the import processes in the targeted CARTO account",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "description": "A boolean value indicating if the request was successful"
+                    }
+                  }
+                },
+                "example": {
+                  "imports": [
+                    "1234abcd-1234-1a2b-3c4d-4321dcba5678"
+                  ],
+                  "success": true
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v \"https://{account}.carto.com/api/v1/imports/?api_key={account API Key}\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      }
+    },
+    "/api/v1/imports/{import_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "description": "A unique alphanumeric element that identifies the import process to be retrieved. It is the `item_queue_id` element returned after running the upload request successfully.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Check import status",
+        "description": "Returns the Import's status and its associated metadata.\n",
+        "tags": [
+          "Standard Tables"
+        ],
+        "operationId": "getImportStatus",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportStatusResponse"
+                },
+                "example": {
+                  "id": "029a6053-b2fb-43dd-baa6-805d679c404f",
+                  "user_id": "ca8c5ace-d573-450b-8a43-6c7eafadd80e",
+                  "table_id": null,
+                  "data_type": "url",
+                  "table_name": null,
+                  "state": "failure",
+                  "error_code": 1002,
+                  "queue_id": "029a6053-b2fb-43dd-baa6-805d679c404f",
+                  "tables_created_count": null,
+                  "synchronization_id": null,
+                  "type_guessing": true,
+                  "quoted_fields_guessing": true,
+                  "content_guessing": false,
+                  "create_visualization": false,
+                  "visualization_id": null,
+                  "user_defined_limits": "{twitter_credits_limit:0}",
+                  "get_error_text": {
+                    "title": "Unsupported/Unrecognized file type",
+                    "what_about": "Should we support this filetype? Let us know in our <a href='mailto:support@carto.com'>support email</a>!",
+                    "source": "user"
+                  },
+                  "display_name": "shapefile_streets.cpg",
+                  "success": false,
+                  "warnings": null,
+                  "is_raster": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v \"https://{account}.carto.com/api/v1/imports/{import_id}?api_key={account API Key}\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      }
+    },
+    "/api/v1/map": {
+      "post": {
+        "summary": "Create map",
+        "description": "",
+        "tags": [
+          "Anonymous Maps"
+        ],
+        "operationId": "instantiateAnonymousMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapConfig"
+              },
+              "example": {
+                "version": "1.3.0",
+                "layers": [
+                  {
+                    "type": "mapnik",
+                    "options": {
+                      "cartocss_version": "2.1.1",
+                      "cartocss": "#layer { polygon-fill: #FFF; }",
+                      "sql": "select * from european_countries_e",
+                      "interactivity": [
+                        "cartodb_id",
+                        "iso3"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "# body.json\n{\n  \"version\": \"1.3.0\",\n  \"layers\": [\n    {\n      \"type\": \"mapnik\",\n      \"options\": {\n        \"cartocss_version\": \"2.1.1\",\n        \"cartocss\": \"#layer { polygon-fill: #FFF; }\",\n        \"sql\": \"select * from european_countries_e\",\n        \"interactivity\": [\n          \"cartodb_id\",\n          \"iso3\"\n        ]\n      }\n    }\n  ]\n}\n\ncurl -X POST -H \"Content-Type: application/json\" -d @body.json \"https://username.carto.com/api/v2/sql\"\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/named": {
+      "post": {
+        "summary": "Upload template",
+        "description": "Upload template\n",
+        "tags": [
+          "Named Maps"
+        ],
+        "operationId": "postMapsMapNamed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Template"
+              },
+              "example": {
+                "version": "0.0.1",
+                "name": "template_name",
+                "auth": {
+                  "method": "token",
+                  "valid_tokens": [
+                    "auth_token1",
+                    "auth_token2"
+                  ]
+                },
+                "placeholders": {
+                  "color": {
+                    "type": "css_color",
+                    "default": "red"
+                  },
+                  "cartodb_id": {
+                    "type": "number",
+                    "default": 1
+                  }
+                },
+                "layergroup": {
+                  "version": "1.7.0",
+                  "layers": [
+                    {
+                      "type": "mapnik",
+                      "options": {
+                        "cartocss_version": "2.1.1",
+                        "cartocss": "#layer { polygon-fill: #FFF; }",
+                        "sql": "select * from european_countries_e",
+                        "interactivity": [
+                          "cartodb_id",
+                          "iso3"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NamedMapResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "MapsApiKeyQueryParam": []
+          },
+          {
+            "ApiKeyHTTPBasicAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "# body.json\n{\n  \"version\": \"0.0.1\",\n  \"name\": \"template_name\",\n  \"auth\": {\n    \"method\": \"token\",\n    \"valid_tokens\": [\n      \"auth_token1\",\n      \"auth_token2\"\n    ]\n  },\n  \"placeholders\": {\n    \"color\": {\n      \"type\": \"css_color\",\n      \"default\": \"red\"\n    },\n    \"cartodb_id\": {\n      \"type\": \"number\",\n      \"default\": 1\n    }\n  },\n  \"layergroup\": {\n    \"version\": \"1.7.0\",\n    \"layers\": [\n      {\n        \"type\": \"cartodb\",\n        \"options\": {\n          \"cartocss_version\": \"2.3.0\",\n          \"cartocss\": \"#layer { polygon-fill: <%= color %>; }\",\n          \"sql\": \"select * from european_countries_e WHERE cartodb_id = <%= cartodb_id %>\"\n        }\n      }\n    ]\n  },\n  \"view\": {\n    \"zoom\": 4,\n    \"center\": {\n      \"lng\": 0,\n      \"lat\": 0\n    },\n    \"bounds\": {\n      \"west\": -45,\n      \"south\": -45,\n      \"east\": 45,\n      \"north\": 45\n    },\n    \"preview_layers\": {\n      \"0\": true,\n      \"layer1\": false\n    }\n  }\n}\n\ncurl -X POST -H \"Content-Type: application/json\" -d @body.json \"https://{username}.carto.com/api/v1/map/named?api_key={api_key}\"\n"
+          }
+        ],
+        "x-upstream-operation-id": "instantiateAnonymousMap",
+        "x-carto-api": "Maps API"
+      },
+      "get": {
+        "summary": "List user's templates",
+        "description": "List user's templates\n",
+        "tags": [
+          "Named Maps"
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NamedMapResponseList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "MapsApiKeyQueryParam": []
+          },
+          {
+            "ApiKeyHTTPBasicAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET 'https://{username}.carto.com/api/v1/map/named?api_key={api_key}'\n"
+          }
+        ],
+        "operationId": "getMapsMapNamed",
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/named/{template_name}": {
+      "get": {
+        "summary": "Get template definition",
+        "description": "Get the definition of a requested template",
+        "tags": [
+          "Named Maps"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/templateName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Template"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "MapsApiKeyQueryParam": []
+          },
+          {
+            "ApiKeyHTTPBasicAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET 'https://{username}.carto.com/api/v1/map/named/{template_name}?api_key={api_key}'\n"
+          }
+        ],
+        "operationId": "getMapsMapNamedTemplateName",
+        "x-carto-api": "Maps API"
+      },
+      "put": {
+        "summary": "Update template definition",
+        "description": "Update the definition of the template",
+        "tags": [
+          "Named Maps"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/templateName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NamedMapResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "MapsApiKeyQueryParam": []
+          },
+          {
+            "ApiKeyHTTPBasicAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "# body.json\n{\n  \"version\": \"0.0.1\",\n  \"name\": \"template_name\",\n  \"auth\": {\n    \"method\": \"token\",\n    \"valid_tokens\": [\n      \"auth_token1\",\n      \"auth_token2\"\n    ]\n  },\n  \"placeholders\": {\n    \"color\": {\n      \"type\": \"css_color\",\n      \"default\": \"red\"\n    },\n    \"cartodb_id\": {\n      \"type\": \"number\",\n      \"default\": 1\n    }\n  },\n  \"layergroup\": {\n    \"version\": \"1.7.0\",\n    \"layers\": [\n      {\n        \"type\": \"cartodb\",\n        \"options\": {\n          \"cartocss_version\": \"2.3.0\",\n          \"cartocss\": \"#layer { polygon-fill: <%= color %>; }\",\n          \"sql\": \"select * from european_countries_e WHERE cartodb_id = <%= cartodb_id %>\"\n        }\n      }\n    ]\n  },\n  \"view\": {\n    \"zoom\": 4,\n    \"center\": {\n      \"lng\": 0,\n      \"lat\": 0\n    },\n    \"bounds\": {\n      \"west\": -45,\n      \"south\": -45,\n      \"east\": 45,\n      \"north\": 45\n    },\n    \"preview_layers\": {\n      \"0\": true,\n      \"layer1\": false\n    }\n  }\n}\n\ncurl -X PUT \\\n  -H 'Content-Type: application/json' \\\n  -d @body.json\n  'https://{username}.carto.com/api/v1/map/named/{template_name}?api_key={api_key}'\n"
+          }
+        ],
+        "operationId": "putMapsMapNamedTemplateName",
+        "x-carto-api": "Maps API"
+      },
+      "delete": {
+        "summary": "Delete template",
+        "description": "Deletes the specified template map from the server, and disables any previously initialized versions of the map.",
+        "tags": [
+          "Named Maps"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/templateName"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "MapsApiKeyQueryParam": []
+          },
+          {
+            "ApiKeyHTTPBasicAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X DELETE 'https://{username}.carto.com/api/v1/map/named/{template_name}?api_key={api_key}'\n"
+          }
+        ],
+        "operationId": "deleteMapsMapNamedTemplateName",
+        "x-carto-api": "Maps API"
+      },
+      "post": {
+        "summary": "Instantiate a Named Map",
+        "description": "Instantiating a Named Map allows you to fetch the map tiles. The result is an Anonymous Map",
+        "tags": [
+          "Named Maps"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/templateName"
+          },
+          {
+            "in": "query",
+            "name": "auth_token",
+            "description": "`\"token\"` or `\"open\"` (\"open\" is the default if not specified. Use \"token\" to password-protect your map)\n",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "instantiateNamedMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateParams"
+              },
+              "example": {
+                "color": "#ff0000",
+                "cartodb_id": 3
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok. You can then use the layergroupid for fetching tiles and grids as you would normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "# body.json\n{\n  \"color\": \"#ff0000\",\n  \"cartodb_id\": 3\n}\n\ncurl -X POST \\\n  -H 'Content-Type: application/json' \\\n  -d @body.json\n  'https://{username}.carto.com/api/v1/map/named/{template_name}?auth_token={auth_token}'\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/named/{template_name}/jsonp": {
+      "get": {
+        "summary": "Instantiate a Named Map using JSONP",
+        "description": "Instantiating a Named Map allows you to fetch the map tiles. The result is an Anonymous Map",
+        "tags": [
+          "Named Maps"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/templateName"
+          },
+          {
+            "in": "query",
+            "name": "auth_token",
+            "description": "`\"token\"` or `\"open\"` (\"open\" is the default if not specified. Use \"token\" to password-protect your map)\n",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "config",
+            "description": "Encoded JSON with the params (variables) needed for the Named Map\n",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "callback",
+            "description": "JSON callback name\n",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok. You can then use the layergroupid for fetching tiles and grids as you would normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\\n'https://{username}.carto.com/api/v1/map/named/{template_name}/jsonp?auth_token={auth_token}&callback=callback&config={\"color\":  \"#ff0000\", \"cartodb_id\": 3}'\n"
+          }
+        ],
+        "operationId": "getMapsMapNamedTemplateNameJsonp",
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/static/bbox/{layergroupid}/{west},{south},{east},{north}/{width}/{height}.{format}": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/layergroupId"
+          },
+          {
+            "$ref": "#/components/parameters/west"
+          },
+          {
+            "$ref": "#/components/parameters/south"
+          },
+          {
+            "$ref": "#/components/parameters/east"
+          },
+          {
+            "$ref": "#/components/parameters/north"
+          },
+          {
+            "$ref": "#/components/parameters/width"
+          },
+          {
+            "$ref": "#/components/parameters/height"
+          },
+          {
+            "$ref": "#/components/parameters/format"
+          },
+          {
+            "$ref": "#/components/parameters/layersQueryParam"
+          }
+        ],
+        "summary": "Bounding Box",
+        "description": "Get static image by defining bounding box in WGS 84 (EPSG:4326), comma separated values\n",
+        "tags": [
+          "Static Maps"
+        ],
+        "operationId": "getStaticBoundingBox",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\ https://{username}.carto.com/api/map/static/bbox/{layergroupid}/{west},{south},{east},{north}/{width}/{height}.{format}?layer=all\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/static/center/{layergroupid}/{z}/{lat}/{lng}/{width}/{height}.{format}": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/layergroupId"
+          },
+          {
+            "$ref": "#/components/parameters/z"
+          },
+          {
+            "$ref": "#/components/parameters/lat"
+          },
+          {
+            "$ref": "#/components/parameters/lng"
+          },
+          {
+            "$ref": "#/components/parameters/width"
+          },
+          {
+            "$ref": "#/components/parameters/height"
+          },
+          {
+            "$ref": "#/components/parameters/format"
+          },
+          {
+            "$ref": "#/components/parameters/layersQueryParam"
+          }
+        ],
+        "summary": "Zoom + center",
+        "description": "Get static image by defining both the zoom level and geographic center (longitude & latitude)\n",
+        "tags": [
+          "Static Maps"
+        ],
+        "operationId": "getStaticZoomCenter",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\ https://{username}.carto.com/api/v1/map/static/center/{layergroupid}/{z}/{lat}/{lng}/{width}/{height}.{format}?layer=all\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/static/named/{name}/{width}/{height}.{format}": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/width"
+          },
+          {
+            "$ref": "#/components/parameters/height"
+          },
+          {
+            "$ref": "#/components/parameters/format"
+          }
+        ],
+        "summary": "Named map",
+        "description": "Get the static image of a Named Map by defining width, height and, format. It will use the default vaules defined in the template\n",
+        "tags": [
+          "Static Maps"
+        ],
+        "operationId": "getStaticNamedMap",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\ https://{username}.carto.com/api/map/static/named/{name}/{width}/{height}.{format}\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/{layergroupid}/{layers_filter}/{z}/{x}/{y}.png": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/layergroupId"
+          },
+          {
+            "$ref": "#/components/parameters/layersFilter"
+          },
+          {
+            "$ref": "#/components/parameters/z"
+          },
+          {
+            "$ref": "#/components/parameters/x"
+          },
+          {
+            "$ref": "#/components/parameters/y"
+          }
+        ],
+        "summary": "Get tile - Layer filter",
+        "description": "",
+        "tags": [
+          "Anonymous Maps"
+        ],
+        "operationId": "getTileWithLayerFilter",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\\nhttps://username.carto.com/api/v1/map/c01a54877c62831bb51720263f91fb33:0/2/3/4.png\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/{layergroupid}/{layer}/{z}/{x}/{y}.torque.json": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/layergroupId"
+          },
+          {
+            "$ref": "#/components/parameters/layerIndex"
+          },
+          {
+            "$ref": "#/components/parameters/z"
+          },
+          {
+            "$ref": "#/components/parameters/x"
+          },
+          {
+            "$ref": "#/components/parameters/y"
+          }
+        ],
+        "summary": "Get Torque layer",
+        "description": "If the MapConfig had a Torque layer it could be possible to request it\n",
+        "tags": [
+          "Anonymous Maps"
+        ],
+        "operationId": "getTorqueLayer",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\\nhttps://username.carto.com/api/v1/map/c01a54877c62831bb51720263f91fb33:0/2/3/4.png\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/map/{layergroupid}/{z}/{x}/{y}.png": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/layergroupId"
+          },
+          {
+            "$ref": "#/components/parameters/z"
+          },
+          {
+            "$ref": "#/components/parameters/x"
+          },
+          {
+            "$ref": "#/components/parameters/y"
+          }
+        ],
+        "summary": "Get tile",
+        "description": "Get a tile\n",
+        "tags": [
+          "Anonymous Maps"
+        ],
+        "operationId": "getTile",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/MapsNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "MapsApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\\nhttps://username.carto.com/api/v1/map/c01a54877c62831bb51720263f91fb33:0/2/3/4.png\n"
+          }
+        ],
+        "x-carto-api": "Maps API"
+      }
+    },
+    "/api/v1/synchronizations": {
+      "get": {
+        "summary": "List current sync tables",
+        "description": "List current sync tables",
+        "tags": [
+          "Sync Tables"
+        ],
+        "operationId": "getSyncTables",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSyncTablesResponse"
+                },
+                "example": {
+                  "synchronizations": [
+                    {
+                      "id": "246dae5e-5302-1ae5-af51-0e85ad047bba",
+                      "name": "barrios_5",
+                      "interval": 2592000,
+                      "url": "https://common-data.carto.com/api/v2/sql?q=select+*+from+%22barrios%22&format=shp&filename=barrios",
+                      "state": "success",
+                      "created_at": "2015-09-04T12:40:37+00:00",
+                      "updated_at": "2016-02-01T12:45:07+00:00",
+                      "run_at": "2016-03-02T12:45:07+00:00",
+                      "retried_times": 0,
+                      "log_id": "2d9b4a52-1daa-429b-b425-6ad561609cb1",
+                      "error_code": null,
+                      "error_message": null,
+                      "ran_at": "2016-02-01T12:45:07+00:00",
+                      "modified_at": "2015-04-22T12:17:50+00:00",
+                      "etag": null,
+                      "checksum": null,
+                      "user_id": "cf8a5cce-d573-4a0b-8c43-6caeaf1dd80e",
+                      "service_name": null,
+                      "service_item_id": "https://common-data.carto.com/api/v2/sql?q=select+*+from+%22barrios%22&format=shp&filename=barrios",
+                      "type_guessing": true,
+                      "quoted_fields_guessing": true,
+                      "content_guessing": true,
+                      "visualization_id": "2954fa60-5a02-11e5-888a-0e5e07bb5d8a",
+                      "from_external_source": false
+                    }
+                  ],
+                  "total_entries": 1
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v \"https://{username}.carto.com/api/v1/synchronizations/?api_key={account API Key}\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      },
+      "post": {
+        "summary": "Sync a file from a URL",
+        "description": "Desc\n",
+        "tags": [
+          "Sync Tables"
+        ],
+        "operationId": "syncTable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSyncTablesPayload"
+              },
+              "example": {
+                "url": "https://public.url.to.file/sample_file",
+                "interval": 3600
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSyncTablesResponse"
+                },
+                "example": {
+                  "data_import": {
+                    "endpoint": "/api/v1/imports",
+                    "item_queue_id": "1234abcd-1234-1a2b-3c4d-4321dcba5678"
+                  },
+                  "id": "abcd1234-a5b6-c7d8-1a2b-efgh5678abcd",
+                  "name": null,
+                  "interval": 3600,
+                  "url": "https://public.url.to.file/sample_file",
+                  "state": "created",
+                  "user_id": "aaaabbbb-1234-5678-dcba-abcd1234efgh",
+                  "created_at": "2014-08-05T13:39:15+00:00",
+                  "updated_at": "2014-08-05T13:39:15+00:00",
+                  "run_at": "2014-08-05T14:39:15+00:00",
+                  "ran_at": "2014-08-05T13:39:15+00:00",
+                  "modified_at": null,
+                  "etag": null,
+                  "checksum": "",
+                  "log_id": "06fafab8-3502-11e4-9514-0e230854a1cb",
+                  "error_code": null,
+                  "error_message": null,
+                  "retried_times": 0,
+                  "service_name": null,
+                  "service_item_id": null,
+                  "type_guessing": true,
+                  "quoted_fields_guessing": true,
+                  "content_guessing": false,
+                  "visualization_id": null,
+                  "from_external_source": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v -H \"Content-Type: application/json\" -d '{\"url\":\"https://public.url.to.file/sample_file\", \"interval\":\"3600\"}' \"https://{username}.carto.com/api/v1/synchronizations/?api_key={account API Key}\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      }
+    },
+    "/api/v1/synchronizations/{import_id}": {
+      "delete": {
+        "summary": "Remove sync feature from table",
+        "description": "A sync table can be converted to a standard dataset (a dataset that never gets synced)",
+        "tags": [
+          "Sync Tables"
+        ],
+        "operationId": "removeSyncTables",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "description": "The unique alphanumeric identifier of the target sync dataset",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v -X \"DELETE\" https://{username}.carto.com/api/v1/synchronizations/{import_id}?api_key={account API Key}\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      }
+    },
+    "/api/v1/synchronizations/{import_id}/sync_now": {
+      "get": {
+        "summary": "Check whether a sync table is syncing or not",
+        "description": "A large synced table may take some time to get fully synced. In the meantime, it could be useful to check whether it finished refreshing its contents",
+        "tags": [
+          "Sync Tables"
+        ],
+        "operationId": "checkSyncTables",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "description": "The unique alphanumeric identifier of the target sync dataset",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "created",
+                        "queued",
+                        "syncing",
+                        "success",
+                        "failure"
+                      ],
+                      "title": "State",
+                      "description": "A string value indicating the status of the synchronization"
+                    }
+                  }
+                },
+                "example": {
+                  "state": "syncing"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v -X \"GET\" \"https://{username}.carto.com/api/v1/synchronizations/{import_id}/sync_now?api_key={account API Key}\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      },
+      "put": {
+        "summary": "Force a synchronization action on a sync table",
+        "description": "Sync tables have their contents synchronized with the source file in periodic time intervals as specified by the user during the creation process. However, a dataset can be synchronized at an arbitrary moment in time if desired. Note: Forcing a synchronization can only be performed when the last synchronization attempt occurred at least 900 seconds (15 minutes) before.\n",
+        "tags": [
+          "Sync Tables"
+        ],
+        "operationId": "forceSyncTable",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "description": "The unique alphanumeric identifier of the target sync dataset",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enqueued": {
+                      "type": "boolean",
+                      "title": "Enqueued",
+                      "description": "A boolean value indicating whether the request has been successfully appended to the processing queue"
+                    },
+                    "synchronization_id": {
+                      "type": "string",
+                      "title": "Synchronization ID",
+                      "description": "A unique alphanumeric identifier referring to the queue element just added"
+                    }
+                  }
+                },
+                "example": {
+                  "enqueued": false,
+                  "synchronization_id": "1234abcd-aaaa-2222-4444-dcba4321a1b2"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v -X \"PUT\" \"https://{username}.carto.com/api/v1/synchronizations/<import_id>/sync_now?api_key={account API Key}\" -H \"Content-Length:0\"\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      }
+    },
     "/api/v2/sql": {
       "get": {
-        "operationId": "runSqlQueryGet",
-        "summary": "Run an SQL query (GET)",
-        "description": "Executes an SQL statement against the account's CARTO/PostGIS database. This is the exact call made by the adaptor's sql() and addRow() operations (superagent GET with q and api_key query params).",
+        "summary": "Runs a single SQL statement",
+        "description": "Runs a single SQL statement: \n- SELECT, INSERT, UPDATE, DELETE, \n- CREATE TABLE, ALTER TABLE, DROP TABLE\n- CREATE INDEX\n",
+        "tags": [
+          "Single SQL Statement"
+        ],
+        "operationId": "getSQLStatement",
         "parameters": [
           {
+            "in": "query",
             "name": "q",
-            "in": "query",
-            "required": true,
-            "description": "The SQL statement to execute.",
-            "schema": { "type": "string" },
-            "example": "SELECT * FROM table WHERE ST_DWithin(geom, ST_Point(-73,40), 1000)"
+            "description": "SQL statement",
+            "schema": {
+              "$ref": "#/components/schemas/SQLStatementString"
+            },
+            "required": true
           },
           {
-            "name": "api_key",
             "in": "query",
-            "required": false,
-            "description": "CARTO API key. Required for write queries and access to private datasets.",
-            "schema": { "type": "string" }
+            "name": "filename",
+            "description": "Output filename",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
           },
           {
+            "in": "query",
             "name": "format",
+            "schema": {
+              "$ref": "#/components/schemas/OutputFormat"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\\nhttps://username.carto.com/api/v2/sql?q=SELECT count(*) FROM cities\n"
+          }
+        ],
+        "x-carto-api": "SQL API"
+      },
+      "post": {
+        "summary": "Runs a single SQL statement.",
+        "description": "Runs a single SQL statement: \n- SELECT, INSERT, UPDATE, DELETE, \n- CREATE TABLE, ALTER TABLE, DROP TABLE\n- CREATE INDEX\n\nOffers the same functionality as the GET endpoint. This version may come handy when dealing with complex/long statments.\n",
+        "tags": [
+          "Single SQL Statement"
+        ],
+        "operationId": "postSQLStatement",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "$ref": "#/components/schemas/SQLStatementString"
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "Output filename"
+                  },
+                  "format": {
+                    "$ref": "#/components/schemas/OutputFormat"
+                  }
+                },
+                "required": [
+                  "q"
+                ]
+              },
+              "example": {
+                "q": "SELECT count(*) FROM cities",
+                "filename": "number_of_cities.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -d '{ \\\n  \"query\": \"SELECT count(*) FROM cities\", \\\n  \"filename\": \"number_of_cities.json\" \\\n}' \"https://username.carto.com/api/v2/sql\"\n"
+          }
+        ],
+        "x-carto-api": "SQL API"
+      }
+    },
+    "/api/v2/sql/copyfrom": {
+      "post": {
+        "summary": "Runs a copy command to ingest data",
+        "description": "Runs a single COPY command:\n- COPY mytable (col1, col2) FROM stdin WITH (FORMAT CSV)\n",
+        "tags": [
+          "Single COPY command"
+        ],
+        "operationId": "postCopyFromStatement",
+        "parameters": [
+          {
             "in": "query",
-            "required": false,
-            "description": "Output format. Defaults to JSON.",
+            "name": "q",
+            "description": "COPY statement",
+            "schema": {
+              "$ref": "#/components/schemas/SQLStatementString"
+            },
+            "required": true,
+            "example": "COPY upload_example (the_geom,name,age) FROM stdin WITH (FORMAT csv,HEADER true)"
+          },
+          {
+            "in": "header",
+            "name": "Transfer-Encoding",
             "schema": {
               "type": "string",
-              "enum": ["json", "geojson", "csv"],
-              "default": "json"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Query result set",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/SqlResponse" }
-              }
-            }
-          },
-          "400": {
-            "description": "SQL or request error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/SqlError" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "runSqlQueryPost",
-        "summary": "Run an SQL query (POST)",
-        "description": "Executes an SQL statement via POST. Useful for large queries that exceed URL length limits. Accepts either application/json or application/x-www-form-urlencoded bodies containing the query.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/SqlRequest" }
+              "enum": [
+                "chunked"
+              ]
             },
-            "application/x-www-form-urlencoded": {
-              "schema": { "$ref": "#/components/schemas/SqlRequest" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Query result set",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/SqlResponse" }
-              }
-            }
+            "required": true
           },
-          "400": {
-            "description": "SQL or request error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/SqlError" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/imports": {
-      "get": {
-        "operationId": "listImports",
-        "summary": "List import jobs",
-        "description": "Returns the identifiers of all import jobs for the account.",
-        "parameters": [
           {
-            "name": "api_key",
-            "in": "query",
-            "required": true,
-            "description": "CARTO API key.",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of import job ids",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ImportList" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "createImport",
-        "summary": "Create an import job",
-        "description": "Uploads a file (or references a remote URL) to import as a new dataset. The import runs asynchronously; poll the returned item_queue_id via getImport to track progress.",
-        "parameters": [
-          {
-            "name": "api_key",
-            "in": "query",
-            "required": true,
-            "description": "CARTO API key.",
-            "schema": { "type": "string" }
+            "in": "header",
+            "name": "Content-Encoding",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "gzip"
+              ]
+            },
+            "required": false
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
-              "schema": { "$ref": "#/components/schemas/ImportRequest" }
-            },
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ImportRequest" }
+            "application/octet-stream": {
+              "schema": {
+                "type": "string"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Import job accepted",
+            "description": "Ok",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ImportCreatedResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/CopyFromStatement"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/PlatformLimits"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X POST -H 'Content-Encoding: gzip' -H 'Transfer-Encoding: chunked' -H 'Content-Type: application/octet-stream' --data-binary @upload_example.csv.gz 'https://{username}.carto.com/api/v2/sql/copyfrom?q=COPY upload_example (the_geom,name,age) FROM stdin WITH (FORMAT csv,HEADER true)&api_key={api_key}'\n"
+          }
+        ],
+        "x-carto-api": "SQL API",
+        "x-openfn-source": "third-party mirror of CartoDB-SQL-API docs/reference/swagger.yaml (github.com/MiguelCgdl/CartoDB-SQL-API); absent from the vendor's 2018 published build"
+      }
+    },
+    "/api/v2/sql/copyto": {
+      "get": {
+        "summary": "Runs a copy command to extract data",
+        "description": "Runs a single COPY command:\n- COPY mytable TO stdout WITH (FORMAT CSV)\n",
+        "tags": [
+          "Single COPY command"
+        ],
+        "operationId": "getCopyToStatement",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "description": "COPY statement",
+            "schema": {
+              "$ref": "#/components/schemas/SQLStatementString"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "filename",
+            "description": "Sets the content-disposition file name header",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/PlatformLimits"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl --output upload_example_dl.csv --compressed  \"https://{username}.carto.com/api/v2/sql/copyto?q=COPY upload_example (the_geom,name,age) TO stdout WITH(FORMAT csv,HEADER true)&api_key={api_key}\"\n"
+          }
+        ],
+        "x-carto-api": "SQL API",
+        "x-openfn-source": "third-party mirror of CartoDB-SQL-API docs/reference/swagger.yaml (github.com/MiguelCgdl/CartoDB-SQL-API); absent from the vendor's 2018 published build"
+      }
+    },
+    "/api/v2/sql/job": {
+      "post": {
+        "summary": "Create a Job",
+        "description": "Creates a Batch Queries Job",
+        "tags": [
+          "Batch Queries"
+        ],
+        "operationId": "createJob",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobQueryField"
               }
             }
           }
-        }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                },
+                "example": {
+                  "job_id": "de305d54-75b4-431b-adb2-eb6b9e546014",
+                  "user": "username",
+                  "status": "pending",
+                  "query": "UPDATE nasdaq SET price = '$101.00' WHERE company = 'CARTO'",
+                  "created_at": "2017-12-15T07:36:25Z",
+                  "updated_at": "2017-12-15T07:36:25Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -d '{ \\\n  \"query\": \"UPDATE nasdaq SET price = '$101.00' WHERE company = 'CARTO'\", \\\n}' \"https://username.carto.com/api/v2/sql/job\"\n  \n"
+          }
+        ],
+        "x-carto-api": "SQL API"
       }
     },
-    "/api/v1/imports/{item_queue_id}": {
+    "/api/v2/sql/job/{job_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/jobId"
+        }
+      ],
       "get": {
-        "operationId": "getImport",
-        "summary": "Get an import job status",
-        "description": "Returns the current state of an asynchronous import job.",
+        "summary": "Get a Job",
+        "description": "Returns a Batch Queries Job based on it's ID.",
+        "tags": [
+          "Batch Queries"
+        ],
+        "operationId": "getJob",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                },
+                "example": {
+                  "job_id": "de305d54-75b4-431b-adb2-eb6b9e546014",
+                  "user": "username",
+                  "status": "pending",
+                  "query": "UPDATE nasdaq SET price = '$101.00' WHERE company = 'CARTO'",
+                  "created_at": "2017-12-15T07:36:25Z",
+                  "updated_at": "2017-12-15T07:36:25Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X GET \\\nhttps://username.carto.com/api/v2/sql/job/de305d54-75b4-431b-adb2-eb6b9e546014\n"
+          }
+        ],
+        "x-carto-api": "SQL API"
+      },
+      "put": {
+        "summary": "Update a Job",
+        "description": "Updates the query of a Batch Queries Job.\n\n**Notice:** Only the _query_ property can be updated\n",
+        "tags": [
+          "Batch Queries"
+        ],
+        "operationId": "updateJob",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobQueryField"
+              },
+              "example": {
+                "q": "UPDATE nasdaq SET price = '$999.00' WHERE company = 'CARTO'"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                },
+                "example": {
+                  "job_id": "de305d54-75b4-431b-adb2-eb6b9e546014",
+                  "user": "username",
+                  "status": "pending",
+                  "query": "UPDATE nasdaq SET price = '999.00' WHERE company = 'CARTO'",
+                  "created_at": "2017-12-15T07:36:25Z",
+                  "updated_at": "2017-12-16T12:52:13Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X PUT -H \"Content-Type: application/json\" -d '{ \\\n  \"query\": \"UPDATE nasdaq SET price = '$999.00' WHERE company = 'CARTO'\", \\\n}' \"https://username.carto.com/api/v2/sql/job/de305d54-75b4-431b-adb2-eb6b9e546014\"\n"
+          }
+        ],
+        "x-carto-api": "SQL API"
+      },
+      "delete": {
+        "summary": "Cancel a Job",
+        "description": "Canceles a Batch Queries Job based on it's ID. The Job doesn't get deleted, just it's status is set as _canceled_.\n        \nOnly jobs whose status are _pending_ or _running_ can be canceled.\n* **pending**: the job will never be executed\n* **running**: the job will be terminated immediately\n",
+        "tags": [
+          "Batch Queries"
+        ],
+        "operationId": "cancelJob",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                },
+                "example": {
+                  "job_id": "de305d54-75b4-431b-adb2-eb6b9e546014",
+                  "user": "username",
+                  "status": "canceled",
+                  "query": "UPDATE nasdaq SET price = '999.00' WHERE company = 'CARTO'",
+                  "created_at": "2017-12-15T07:36:25Z",
+                  "updated_at": "2017-12-16T12:52:13Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -X DELETE \\\nhttps://username.carto.com/api/v2/sql/job/de305d54-75b4-431b-adb2-eb6b9e546014\n"
+          }
+        ],
+        "x-carto-api": "SQL API"
+      }
+    },
+    "/api/v3/api_keys": {
+      "get": {
+        "summary": "List API keys",
+        "description": "Returns the API keys list.",
+        "tags": [
+          "API Keys"
+        ],
+        "operationId": "getApiKeys",
         "parameters": [
           {
-            "name": "item_queue_id",
+            "in": "query",
+            "name": "per_page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Limits number of API Keys listed",
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Defines what page to fetch",
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Its used to define the critera by which API Keys are listed. It can be any of the attributes",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiKeys"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthUnauthorized"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-carto-api": "Auth API"
+      },
+      "post": {
+        "summary": "Create API key",
+        "description": "Creates a `regular` API key. `master` and `default_public` API Keys are automatically generated on user's creation.",
+        "tags": [
+          "API Keys"
+        ],
+        "operationId": "createApiKey",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKeyCreation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthUnauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/BadInput"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-carto-api": "Auth API"
+      }
+    },
+    "/api/v3/api_keys/{name}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/apiKeyName"
+        }
+      ],
+      "get": {
+        "summary": "Get API key",
+        "description": "Returns an API key based on its `name`.",
+        "tags": [
+          "API Keys"
+        ],
+        "operationId": "getApiKeyById",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthUnauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-carto-api": "Auth API"
+      },
+      "delete": {
+        "summary": "Delete API key",
+        "description": "Deletes an API key based on it's `name`. Only `regular` API keys can be deleted.",
+        "tags": [
+          "API Keys"
+        ],
+        "operationId": "deleteApiKeyById",
+        "responses": {
+          "200": {
+            "description": "The resource was deleted successfully."
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthUnauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": null,
+        "x-carto-api": "Auth API"
+      }
+    },
+    "/api/v3/api_keys/{name}/regenerate": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/apiKeyName"
+        }
+      ],
+      "post": {
+        "summary": "Regenerate API key token",
+        "description": "Regenerates the API key token. The rest of the fields remain the same.",
+        "tags": [
+          "API Keys"
+        ],
+        "operationId": "regenerateApiKeyById",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthUnauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": null,
+        "x-carto-api": "Auth API"
+      }
+    },
+    "/api/v3/visualization_exports": {
+      "post": {
+        "summary": "Export as .carto file",
+        "description": "The Export map option enables you to download a map, \nand the connected dataset, as a .carto file. This .carto\nfile includes the dataset and visualization definition,\nwhich contains any SQL queries, CartoCSS, basemaps,\nattributions, metadata, and styling that was applied to a\nmap. This is useful for downloading complete CARTO\nvisualizations that you can share or import.\n\nNote: The Import API export visualization command only works for maps created from `Your maps` dashboard.\n",
+        "tags": [
+          "CARTO Map Visualizations"
+        ],
+        "operationId": "exportCarto",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportCarto"
+              },
+              "example": {
+                "visualization_id": "ace62506-brc8-6570-2p91-8vf3af3ftc44"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportCartoResponse"
+                },
+                "example": {
+                  "id": "b94c26f3-fa16-4f13-b672-45ebbd5a9c95",
+                  "visualization_id": "ace62506-brc8-6570-2p91-8vf3af3ftc44",
+                  "user_id": "42b78090-6a11-475a-8060-0a90322752af2b",
+                  "state": "pending",
+                  "url": null,
+                  "created_at": "2016-05-05T09:36:09+00:00",
+                  "updated_at": "2016-05-05T09:36:09+00:00"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v -H 'Content-Type: application/json' https://{username}.carto.com/api/v3/visualization_exports\\?api_key\\={api_key} -X POST --data '{\"visualization_id\":\"9a0f4384-afe3-412a-8b09-136b7d9a4013\"}'\n"
+          }
+        ],
+        "x-carto-api": "Import API"
+      }
+    },
+    "/api/v3/visualization_exports/{visualization_export_id}": {
+      "get": {
+        "parameters": [
+          {
             "in": "path",
-            "required": true,
-            "description": "The import job id returned by createImport.",
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "api_key",
-            "in": "query",
-            "required": true,
-            "description": "CARTO API key.",
-            "schema": { "type": "string" }
+            "name": "visualization_export_id",
+            "description": "A unique alphanumeric element that identifies the export process to be retrieved. It is the `id` element returned after running the export request successfully.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
           }
         ],
+        "summary": "Check .carto export status",
+        "description": "After making the POST request to create the export, it is expected that the request will take some time. You must poll the server by making a GET request, until state becomes complete. Once completed, the response status changes to `complete` and displays the upload url location of the .carto visualization file\n",
+        "tags": [
+          "CARTO Map Visualizations"
+        ],
+        "operationId": "getExportStatus",
         "responses": {
           "200": {
-            "description": "Import job status",
+            "description": "Ok",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ImportJob" }
+                "schema": {
+                  "$ref": "#/components/schemas/ExportCartoResponse"
+                },
+                "example": {
+                  "id": "b94c26f3-fa16-4f13-b672-45ebbd5a9c95",
+                  "visualization_id": "ace62506-brc8-6570-2p91-8vf3af3ftc44",
+                  "user_id": "42b78090-6a11-475a-8060-0a90322752af2b",
+                  "state": "complete",
+                  "url": "/uploads/6a2b6fbd86e2c750160a/ace62506-brc8-6570-2p91-8vf3af3ftc44.carto",
+                  "created_at": "2016-05-05T09:36:09+00:00",
+                  "updated_at": "2016-05-05T09:36:13+00:00"
+                }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        }
+        },
+        "security": [
+          {
+            "ApiKeyHTTPBasicAuth": []
+          },
+          {
+            "ApiKeyQueryParam": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Curl",
+            "source": "curl -v \"https://{account}.carto.com/api/v3/visualization_exports/{visualization_export_id}?api_key={account API Key}\n"
+          }
+        ],
+        "x-carto-api": "Import API"
       }
     }
   },
   "components": {
     "schemas": {
-      "SqlRequest": {
-        "type": "object",
-        "required": ["q"],
-        "properties": {
-          "q": {
-            "type": "string",
-            "description": "SQL statement to execute.",
-            "example": "INSERT INTO users (name, age, city) VALUES ('Alice', 25, 'New York')"
-          },
-          "api_key": {
-            "type": "string",
-            "description": "CARTO API key."
-          },
-          "format": {
-            "type": "string",
-            "enum": ["json", "geojson", "csv"],
-            "default": "json"
-          }
-        }
+      "Affected_tables": {
+        "type": "string",
+        "title": "Affected Tables",
+        "description": "A string of values containing the tables that the Mapnik layer SQL configuration is using. This value is used if there is a problem guessing what the affected tables are from the SQL configuration (i.e. when using PL/SQL functions).\n"
       },
-      "SqlResponse": {
-        "type": "object",
-        "description": "Standard JSON result of an SQL API query.",
-        "properties": {
-          "rows": {
-            "type": "array",
-            "description": "The rows returned by the query. Each row is an object keyed by column name.",
-            "items": { "$ref": "#/components/schemas/SqlRow" }
-          },
-          "time": {
-            "type": "number",
-            "format": "float",
-            "description": "Query execution time in seconds.",
-            "example": 0.006
-          },
-          "fields": {
+      "ApiKey": {
+        "allOf": [
+          {
             "type": "object",
-            "description": "Map of column name to its type descriptor.",
-            "additionalProperties": { "$ref": "#/components/schemas/SqlField" },
-            "example": {
-              "cartodb_id": { "type": "number" },
-              "name": { "type": "string" },
-              "the_geom": { "type": "geometry" }
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "user": {
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              },
+              "type": {
+                "$ref": "#/components/schemas/ApiKeysTypes"
+              },
+              "token": {
+                "type": "string"
+              },
+              "grants": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApisGrant"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GrantDatabase"
+                    }
+                  ]
+                }
+              },
+              "_links": {
+                "type": "object",
+                "properties": {
+                  "self": {
+                    "$ref": "#/components/schemas/Links",
+                    "description": "Link to the resource"
+                  }
+                }
+              }
             }
           },
-          "total_rows": {
-            "type": "integer",
-            "description": "Number of rows affected or returned.",
-            "example": 1
+          {
+            "$ref": "#/components/schemas/AuthTimestamps"
+          }
+        ],
+        "required": [
+          "name",
+          "type",
+          "grants"
+        ],
+        "example": {
+          "name": "MyTableApi",
+          "user": {
+            "username": "amartin"
+          },
+          "type": "regular",
+          "token": "moLv8B-kotcjUL-uxMhbGg",
+          "grants": [
+            {
+              "type": "apis",
+              "apis": [
+                "maps"
+              ]
+            },
+            {
+              "type": "database",
+              "tables": [
+                {
+                  "schema": "public",
+                  "name": "my_table",
+                  "permissions": [
+                    "insert",
+                    "select",
+                    "update"
+                  ]
+                }
+              ]
+            }
+          ],
+          "created_at": "2018-02-14 13:23:12 +0000",
+          "updated_at": "2018-02-14 13:23:12 +0000",
+          "_links": {
+            "self": {
+              "href": "http://amartin.carto.com/api/v3/api_keys/MyTableApi"
+            }
           }
         }
       },
-      "SqlRow": {
+      "ApiKeyCreation": {
         "type": "object",
-        "description": "A single result row keyed by column name.",
-        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "For identifying your API Key"
+          },
+          "grants": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/GrantDatabase"
+                },
+                {
+                  "$ref": "#/components/schemas/ApisGrant"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type"
+              }
+            }
+          }
+        },
+        "required": [
+          "name",
+          "grants"
+        ],
         "example": {
-          "cartodb_id": 1,
-          "name": "Alice",
-          "age": 25,
-          "city": "New York"
+          "name": "MyTableApi",
+          "grants": [
+            {
+              "type": "apis",
+              "apis": [
+                "maps"
+              ]
+            },
+            {
+              "type": "database",
+              "tables": [
+                {
+                  "schema": "public",
+                  "name": "my_table",
+                  "permissions": [
+                    "select",
+                    "update",
+                    "insert"
+                  ]
+                }
+              ]
+            }
+          ]
         }
       },
-      "SqlField": {
+      "ApiKeys": {
         "type": "object",
-        "description": "Type descriptor for a returned column.",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of API Keys"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of returned API Keys"
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKey"
+            }
+          },
+          "_links": {
+            "type": "object",
+            "properties": {
+              "first": {
+                "$ref": "#/components/schemas/Links",
+                "description": "Link to the first page"
+              },
+              "prev": {
+                "$ref": "#/components/schemas/Links",
+                "description": "Link to the previous page"
+              },
+              "next": {
+                "$ref": "#/components/schemas/Links",
+                "description": "Link to the next page"
+              },
+              "last": {
+                "$ref": "#/components/schemas/Links",
+                "description": "Link to the last page"
+              }
+            }
+          }
+        },
+        "example": {
+          "total": 3,
+          "count": 3,
+          "result": [
+            {
+              "name": "Master",
+              "user": {
+                "username": "amartin"
+              },
+              "type": "master",
+              "token": "slxIYwIDyEGGS2W9W-uEKw",
+              "grants": [
+                {
+                  "type": "apis",
+                  "apis": [
+                    "sql",
+                    "maps"
+                  ]
+                },
+                {
+                  "type": "database",
+                  "tables": []
+                }
+              ],
+              "created_at": "2018-02-08 14:24:41 +0000",
+              "updated_at": "2018-02-08 14:24:41 +0000",
+              "_links": {
+                "self": "https://carto.com/api/v3/api_keys/Master"
+              }
+            },
+            {
+              "name": "MyTableApi",
+              "user": {
+                "username": "amartin"
+              },
+              "type": "regular",
+              "token": "moLv8B-kotcjUL-uxMhbGg",
+              "grants": [
+                {
+                  "type": "apis",
+                  "apis": [
+                    "maps"
+                  ]
+                },
+                {
+                  "type": "database",
+                  "tables": [
+                    {
+                      "schema": "public",
+                      "name": "my_table",
+                      "permissions": [
+                        "insert",
+                        "select",
+                        "update"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "created_at": "2018-02-14 13:23:12 +0000",
+              "updated_at": "2018-02-14 13:23:12 +0000",
+              "_links": {
+                "self": "https://carto.com/api/v3/api_keys/MyTableApi"
+              }
+            },
+            {
+              "name": "Default public",
+              "user": {
+                "username": "amartin"
+              },
+              "type": "default",
+              "token": "default_public",
+              "grants": [
+                {
+                  "type": "apis",
+                  "apis": [
+                    "sql",
+                    "maps"
+                  ]
+                },
+                {
+                  "type": "database",
+                  "tables": []
+                }
+              ],
+              "created_at": "2018-02-15 13:50:36 +0000",
+              "updated_at": "2018-02-15 13:50:36 +0000",
+              "_links": {
+                "self": "https://carto.com/api/v3/api_keys/Default%20public"
+              }
+            }
+          ],
+          "_links": {
+            "first": {
+              "href": "https://carto.com/api/v3/api_keys?order=updated_at&page=1&per_page=20"
+            },
+            "last": {
+              "href": "https://carto.com/api/v3/api_keys?order=updated_at&page=1&per_page=20"
+            }
+          }
+        }
+      },
+      "ApiKeysTypes": {
+        "type": "string",
+        "enum": [
+          "master",
+          "default",
+          "regular"
+        ]
+      },
+      "Apis": {
+        "type": "string",
+        "enum": [
+          "sql",
+          "maps"
+        ]
+      },
+      "ApisGrant": {
+        "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "description": "PostgreSQL/CARTO column type family.",
-            "example": "string"
+            "enum": [
+              "apis"
+            ]
           },
-          "pgtype": {
-            "type": "string",
-            "description": "Underlying PostgreSQL type name.",
-            "example": "text"
-          }
-        }
-      },
-      "SqlError": {
-        "type": "object",
-        "description": "Error response from the SQL API. Contains the full PostgreSQL error text.",
-        "properties": {
-          "error": {
+          "apis": {
             "type": "array",
-            "items": { "type": "string" },
-            "example": ["syntax error at or near \"SELECt\""]
-          },
-          "hint": {
+            "items": {
+              "$ref": "#/components/schemas/Apis"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "type",
+          "apis"
+        ]
+      },
+      "ArrayOfSQLStatements": {
+        "title": "Array of SQL statements",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/SQLStatementString"
+        }
+      },
+      "AuthTimestamps": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
             "type": "string",
-            "description": "Optional PostgreSQL hint."
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
-      "ImportRequest": {
+      "CartoCSS": {
+        "type": "string",
+        "title": "cartocss",
+        "description": "Specifies the CartoCSS style to render the tiles.\n\n**Note:** The CartoCSS specification is dependent on the layer type. For details, see mapnik-reference.json.\n"
+      },
+      "CartoCSSVersion": {
+        "type": "string",
+        "title": "cartocss version",
+        "description": "A string value, specifying the CartoCSS style version of the CartoCSS attribute.\n\n**Note:** The CartoCSS version is specific to the layer type.\n"
+      },
+      "CopyFromStatement": {
         "type": "object",
-        "description": "Payload for creating an import. Provide either an uploaded file or a remote url.",
+        "properties": {
+          "time": {
+            "type": "number",
+            "format": "float",
+            "description": "time in seconds it has taken to run the statement"
+          },
+          "total_rows": {
+            "type": "number",
+            "format": "integer",
+            "description": "number of rows copied into the database"
+          }
+        },
+        "example": {
+          "time": 2.3,
+          "total_rows": 142012
+        }
+      },
+      "CreateImport": {
+        "type": "object",
         "properties": {
           "file": {
-            "type": "string",
-            "format": "binary",
-            "description": "The dataset file to upload (CSV, GeoJSON, SHP zip, etc.)."
+            "$ref": "#/components/schemas/File"
           },
           "url": {
+            "$ref": "#/components/schemas/Url"
+          },
+          "type_guessing": {
+            "type": "boolean",
+            "default": true,
+            "title": "Type guessing",
+            "description": "If set to `false` disables field type guessing (for Excel and CSVs)"
+          },
+          "quoted_fields_guessing": {
+            "type": "boolean",
+            "default": false,
+            "title": "Quoted fields guessing",
+            "description": "If set to `false` disables type guessing of CSV fields that come inside double quotes"
+          },
+          "content_guessing": {
+            "type": "boolean",
+            "default": false,
+            "title": "Content guessing",
+            "description": "Set to `true` to enable content guessing and automatic geocoding based on results. Currently, this only implements geocoding of countries, cities and IP addresses"
+          },
+          "create_vis": {
+            "type": "boolean",
+            "default": false,
+            "title": "Create Vis",
+            "description": "Set to `true` to flag the import so that when it finishes, it creates a Map automatically after importing the Dataset"
+          },
+          "collision_strategy": {
             "type": "string",
-            "description": "Remote URL of the dataset to import."
+            "enum": [
+              "skip",
+              "overwrite"
+            ],
+            "title": "Collision strategy",
+            "description": "Determines the behavior when importing a dataset  that has the same name as an existing table. By default, it is imported and renamed with a sequential number (*mytable*, *mytable_1*…).\n- `skip`: the table with the matching name will not be imported.\n- `overwrite`: it will replace the table with the matching name, but only if the new dataset table includes the same columns and data types as the original table. The new table can also include additional columns, but not fewer than the original table. \n"
+          },
+          "privacy": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "link"
+            ],
+            "title": "Collision strategy",
+            "description": "Used to set the privacy settings of the table or tables resulting from the import. If `create_vis` is set to true, the resulting visualization privacy settings will also be  determined by this parameter. \n`privacy` can be set to:\n- `public`: The resulting table or visualization can be viewed by anyone\n- `private`: The resulting table or visualization can only be viewed by the uploader\n- `link`: The resulting table or visualization can only be viewed through a private link shared by the uploader\n"
           },
           "table_name": {
             "type": "string",
-            "description": "Optional target table name for the imported dataset."
-          }
-        }
-      },
-      "ImportCreatedResponse": {
-        "type": "object",
-        "description": "Acknowledgement returned when an import job is queued.",
-        "properties": {
-          "success": { "type": "boolean", "example": true },
-          "item_queue_id": {
+            "title": "Table name",
+            "description": "Used to duplicate one of your existing tables. **Do not mix with File/URL imports**"
+          },
+          "sql": {
             "type": "string",
-            "description": "Identifier used to poll the import job.",
-            "example": "5e35bbec-4a48-4bf0-b95a-99a67cb0d6f2"
+            "title": "SQL",
+            "description": "Used to create a new table from a SQL query applied to one of your tables. **Do not mix with File/URL imports**"
           }
         }
       },
-      "ImportList": {
+      "CreateJobQueryField": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean", "example": true },
-          "imports": {
-            "type": "array",
-            "description": "Identifiers of import jobs.",
-            "items": { "type": "string" },
-            "example": ["5e35bbec-4a48-4bf0-b95a-99a67cb0d6f2"]
+          "query": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SQLStatementString"
+              },
+              {
+                "$ref": "#/components/schemas/ArrayOfSQLStatements"
+              },
+              {
+                "$ref": "#/components/schemas/CreateJobQueryFieldWithFallbacks"
+              }
+            ],
+            "description": "long-running SQL statement(s)."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "example": {
+          "query": "UPDATE nasdaq SET price = '$101.00' WHERE company = 'CARTO'"
+        }
+      },
+      "CreateJobQueryFieldWithFallbacks": {
+        "title": "Array of SQL statements with Fallbacks",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Fallbacks"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "query": {
+                          "$ref": "#/components/schemas/SQLStatementString"
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/Fallbacks"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "required": [
+          "query"
+        ]
+      },
+      "CreateSyncTablesPayload": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "URL",
+            "description": "The **public** URL address where the file to be imported is located"
+          },
+          "interval": {
+            "type": "integer",
+            "title": "Interval",
+            "minimum": 900,
+            "description": "The number of seconds for the synchronization period. Note: Sync interval must be at least 900 (15 minutes)"
+          },
+          "type_guessing": {
+            "type": "boolean",
+            "title": "Type guessing",
+            "default": true,
+            "description": "If set to `false` disables field type guessing (for Excel and CSVs)"
+          },
+          "quoted_fields_guessing": {
+            "type": "boolean",
+            "title": "Quoted fields guessing",
+            "default": true,
+            "description": "If set to `false` disables type guessing of CSV fields that come inside double quotes"
+          },
+          "content_guessing": {
+            "type": "boolean",
+            "title": "Content guessing",
+            "default": false,
+            "description": "Set to `true` to enable content guessing and automatic geocoding based on results. Currently, this only implements geocoding of countries, cities and IP addresses"
           }
         }
       },
-      "ImportJob": {
+      "CreateSyncTablesResponse": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "data_import": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "title": "Endpoint",
+                    "description": "This item refers to the internal CARTO controller code responsible for performing the import"
+                  },
+                  "item_queue_id": {
+                    "type": "string",
+                    "title": "Item queue ID",
+                    "description": "A unique alphanumeric identifier that refers to the import process. It can be used to retrieve data related to the created table"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "$ref": "#/components/schemas/SyncTablesResponseItem"
+          }
+        ]
+      },
+      "ExportCarto": {
         "type": "object",
-        "description": "State of an asynchronous import job.",
+        "properties": {
+          "visualization_id": {
+            "type": "string",
+            "title": "Visualization ID",
+            "description": "A unique identifier for the map created in the export process. Only applies if `created_visualization` is set to `true` when the map was created."
+          }
+        }
+      },
+      "ExportCartoResponse": {
+        "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "example": "5e35bbec-4a48-4bf0-b95a-99a67cb0d6f2"
+            "title": "ID",
+            "description": "A unique identifier for the export process. It is the same as the _export id_ provided in the request"
           },
-          "item_queue_id": {
+          "visualization_id": {
             "type": "string",
-            "example": "5e35bbec-4a48-4bf0-b95a-99a67cb0d6f2"
+            "title": "Visualization ID",
+            "description": "A unique identifier for the map created in the export process. Only applies if `created_visualization` is set to `true` when the map was created"
           },
-          "user_id": { "type": "string", "example": "0d3f0dfa-1e12-4b2a-9b1a-000000000000" },
-          "table_id": { "type": "string", "nullable": true },
+          "user_id": {
+            "type": "string",
+            "title": "User ID",
+            "description": "A unique alphanumeric element that identifies the CARTO account user in the internal database"
+          },
           "state": {
             "type": "string",
-            "description": "Job lifecycle state.",
-            "enum": ["enqueued", "pending", "uploading", "importing", "complete", "failure"],
-            "example": "complete"
+            "enum": [
+              "enqueued",
+              "pending",
+              "uploading",
+              "unpacking",
+              "importing",
+              "guessing",
+              "complete",
+              "failure"
+            ],
+            "title": "State",
+            "description": "A string value indicating the current state of the export process"
           },
-          "success": { "type": "boolean", "example": true },
+          "url": {
+            "type": "string",
+            "title": "URL",
+            "description": "The **public** URL address where the file to be exported is located",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created at",
+            "description": "The date time at which the visualization was created in the CARTO database"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated at",
+            "description": "The date time at which the visualization had its contents modified"
+          }
+        }
+      },
+      "Fallbacks": {
+        "type": "object",
+        "properties": {
+          "onsuccess": {
+            "$ref": "#/components/schemas/SQLStatementString"
+          },
+          "onerror": {
+            "$ref": "#/components/schemas/SQLStatementString"
+          }
+        }
+      },
+      "File": {
+        "type": "string",
+        "title": "file",
+        "description": "When importing local files, you need to perform a POST with a file"
+      },
+      "GrantDatabase": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "database"
+            ]
+          },
+          "tables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TableGrant"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "tables"
+        ]
+      },
+      "ImportStatusResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "ID",
+            "description": "A unique identifier for the import process. It is the same as the `import_id` provided in the request"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User ID",
+            "description": "A unique alphanumeric element that identifies the CARTO account user in the internal database"
+          },
+          "table_id": {
+            "type": "string",
+            "title": "Table ID",
+            "description": "A unique alphanumeric element that identifies the created table in the internal CARTO database"
+          },
+          "data_type": {
+            "type": "string",
+            "enum": [
+              "file",
+              "url",
+              "external_table",
+              "query",
+              "table",
+              "datasource"
+            ],
+            "title": "Data type",
+            "description": "This element identifies the service type used to import the file"
+          },
           "table_name": {
             "type": "string",
-            "nullable": true,
-            "example": "my_dataset"
+            "title": "Table name",
+            "description": "The final name of the created table in the targeted CARTO account. It usually has the same name as the uploaded file, unless there already exists a table with the same name (in this case, an integer number is appended to the table name)"
           },
-          "tables_created_count": { "type": "integer", "example": 1 },
+          "status": {
+            "type": "string",
+            "enum": [
+              "enqueued",
+              "pending",
+              "uploading",
+              "unpacking",
+              "importing",
+              "guessing",
+              "complete",
+              "failure"
+            ],
+            "title": "State",
+            "description": "A string value indicating the current state of the importing process"
+          },
+          "error_code": {
+            "type": "number",
+            "title": "Error code",
+            "description": "A number corresponding to the error code in case of failure during the import process, that is, when the `success` item has a `false` value"
+          },
           "queue_id": {
             "type": "string",
-            "example": "5e35bbec-4a48-4bf0-b95a-99a67cb0d6f2"
+            "title": "Queue ID",
+            "description": "A unique identifier for the import process in the importing queue. It is the same as the `import_id` provided in the request"
           },
-          "error_code": { "type": "integer", "nullable": true, "example": null },
+          "tables_created_count": {
+            "type": "number",
+            "title": "Tables created counter",
+            "description": "The number of tables that the import process generated. For multi-file uploads, this value can be greater than one",
+            "nullable": true
+          },
+          "synchronization_id": {
+            "type": "string",
+            "title": "Synchronization ID",
+            "description": "This element has a `null` value when the import is not configured as a Sync Table",
+            "nullable": true
+          },
+          "type_guessing": {
+            "type": "boolean",
+            "title": "Type guessing",
+            "description": "A boolean indicating whether field type guessing (for Excel and CSVs) is enabled or not"
+          },
+          "quoted_fields_guessing": {
+            "type": "boolean",
+            "title": "Quoted fields guessing",
+            "description": "A boolean indicating whether type guessing of CSV fields inside double quotes is enabled for the data import"
+          },
+          "content_guessing": {
+            "type": "boolean",
+            "title": "Content guessing",
+            "description": "A boolean indicating whether content guessing and automatic geocoding is enabled for the data import"
+          },
+          "create_visualization": {
+            "type": "boolean",
+            "title": "Create visualization",
+            "description": "A boolean indicating whether the import process will create a map automatically or not. Its value corresponds to the import option `create_vis` chosen by the user"
+          },
+          "visualization_id": {
+            "type": "string",
+            "title": "Visualization ID",
+            "description": "A unique identifier for the map created in the import process. Only applies if `created_visualization` is set to `true`",
+            "nullable": true
+          },
           "get_error_text": {
+            "type": "string",
+            "title": "Get error text",
+            "description": "This element contains an error description to be outputted in case of a failure during the import process. It contains the error title and description, its source (`user` or `cartodb`), and troubleshooting details"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display name",
+            "description": "Similar to `table_name`. For `url` uploads, it shows the name of the file. Otherwise, it shows the `import_id`"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "A boolean value indicating whether the import process succeeded"
+          },
+          "warnings": {
+            "type": "string",
+            "title": "Warnings",
+            "description": "A text field containing warning messages related to the import process, if applicable of the file. Otherwise, it shows the `import_id`",
+            "nullable": true
+          },
+          "is_raster": {
+            "type": "boolean",
+            "title": "Is raster",
+            "description": "A boolean value indicating whether the imported table contains raster data or not"
+          }
+        }
+      },
+      "Job": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SQLGeneralStatment"
+          },
+          {
             "type": "object",
-            "nullable": true,
             "properties": {
-              "title": { "type": "string" },
-              "what_about": { "type": "string" },
-              "source": { "type": "string" }
+              "job_id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "a Job's universally unique identifier (uuid)."
+              },
+              "user": {
+                "type": "string",
+                "description": "user identifier, as displayed by the username."
+              },
+              "status": {
+                "$ref": "#/components/schemas/JobStatus"
+              },
+              "failed_reason": {
+                "description": "displays the database error message, if something went wrong.",
+                "type": "string"
+              }
             }
           },
-          "warnings": { "type": "string", "nullable": true },
-          "created_at": { "type": "string", "format": "date-time" },
-          "updated_at": { "type": "string", "format": "date-time" }
+          {
+            "$ref": "#/components/schemas/Timestamps"
+          }
+        ],
+        "example": {
+          "job_id": "de305d54-75b4-431b-adb2-eb6b9e546014",
+          "user": "username",
+          "status": "pending",
+          "query": "UPDATE nasdaq SET price = '$101.00' WHERE company = 'CARTO'",
+          "created_at": "2017-12-15T07:36:25Z",
+          "updated_at": "2017-12-15T07:36:25Z"
         }
+      },
+      "JobQueryField": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SQLStatementString"
+              },
+              {
+                "$ref": "#/components/schemas/SQLMultipleStatements"
+              }
+            ]
+          }
+        }
+      },
+      "JobStatus": {
+        "title": "Job status",
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "done",
+          "failed",
+          "canceled",
+          "unknown"
+        ],
+        "description": "displays the result of the long-running statement"
+      },
+      "Layer": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/LayerType"
+          },
+          "options": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LayerOptionsMapnik"
+              },
+              {
+                "$ref": "#/components/schemas/LayerOptionsTorque"
+              },
+              {
+                "$ref": "#/components/schemas/LayerOptionsHTTP"
+              },
+              {
+                "$ref": "#/components/schemas/LayerOptionsPlain"
+              },
+              {
+                "$ref": "#/components/schemas/LayerOptionsNamedMap"
+              }
+            ],
+            "description": "Sets different options for each layer type."
+          }
+        },
+        "required": [
+          "type",
+          "options"
+        ]
+      },
+      "LayerOptionsHTTP": {
+        "title": "Layer options HTTP",
+        "type": "object",
+        "properties": {
+          "urlTemplate": {
+            "type": "string",
+            "description": "URL from where the tile data is retrieved. _URLs must be included in the configuration whitelist to be valid._\n\n**Note:** It includes\n* ```{z}``` as the zoom level\n* ```{x} ```and ```{y}``` as the tile coordinates\n* Optionally, the subdomain ```{s}``` may be included as part of the ```urlTemplate``` configuration. Otherwise, you can define the ```subdomains``` separately, as shown below.\n"
+          },
+          "subdomains": {
+            "type": "string",
+            "description": "A string of values used to retrieve tiles from different subdomains.  The default value is [```a```, ```b```, ```c```] when ```{s}``` is defined in the urlTemplate configuration. Otherwise, the default value is ```[ ]```.\n\n**Note:** The subdomains value will consistently replace the ```{s}``` value defined in the ```urlTemplate```.\n"
+          },
+          "tms": {
+            "type": "boolean",
+            "description": "Specifies whether the tile is using Tile Map Service format\n\n**Note:** If the value is ```true```, the TMS inverses the Y axis numbering for tiles.\n",
+            "default": true
+          },
+          "tms2": {
+            "type": "boolean",
+            "description": "Specifies whether the tile is using Tile Map Service format\n\n**Note:** If the value is ```true```, the TMS inverses the Y axis numbering for tiles.\n",
+            "default": false
+          }
+        },
+        "required": [
+          "urlTemplate"
+        ]
+      },
+      "LayerOptionsMapnik": {
+        "type": "object",
+        "title": "Layer options Mapnik",
+        "description": "If you are using Mapnik as a layer resource, the following configurations are required in your MapConfig file.\n",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "description": "The SQL request to the user database that will fetch the rendered data.\n\n**Tip:** The SQL request should include the following Mapnik layer configurations:\n  * ```geom_column```\n  * ```interactivity```\n  * ```attributes```\n\n\n**Note:** The SQL request may contain substitutions tokens, such as ```!bbox!```, ```!pixel_width!``` and ```!pixel_height!```. It is suggested to define the layergroup ```minzoom``` and ```extent``` variables to prevent errors.\n"
+          },
+          "cartocss": {
+            "$ref": "#/components/schemas/CartoCSS"
+          },
+          "cartocss_version": {
+            "$ref": "#/components/schemas/CartoCSSVersion"
+          },
+          "geom_column": {
+            "type": "string",
+            "description": "The name of the column containing the geometry.\n\n*You **must** specify this value as part of the Mapnik layer SQLconfiguration.\n",
+            "default": "the_geom_webmercator"
+          },
+          "geom_type": {
+            "type": "string",
+            "enum": [
+              "geometry",
+              "raster"
+            ],
+            "description": "Defines the type of column as either _geometry_ or _raster_.\n\n**Note:** ```geom_type``` is not compatible with the Mapnik layer interactivity option.\n",
+            "default": "geometry"
+          },
+          "raster_band": {
+            "type": "string",
+            "description": "Defines the raster band (this option is only applicable when the ```geom_type=raster```.\n\n**Note:** If the default, or no value is specified, raster bands are interpreted as either:\n  * grayscale (for single bands)\n  * RGB (for 3 bands)\n  * RGBA (for 4 bands).\n",
+            "default": 0
+          },
+          "srid": {
+            "$ref": "#/components/schemas/Srid"
+          },
+          "affected_tables": {
+            "$ref": "#/components/schemas/Affected_tables"
+          },
+          "interactivity": {
+            "type": "string",
+            "description": "A string of values that contains the fields rendered inside grid.json.  All the parameters should be exposed as a result of executing the Mapnik layer SQL query.\n\n**Note:** interactivity is not compatible with the Mapnik layer ```geom_type``` option.  For example, you cannot create a layergroup instance with a raster layer by defining the ```geom_type=raster```.\n*You **must** specify this value as part of the Mapnik layer SQL configuration.\n"
+          },
+          "attributes": {
+            "description": "The id and column values returned by the Mapnik attributes service. (This option is disabled if no configuration is defined).\n*You **must** specify this value as part of the Mapnik layer SQL configuration.\n",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The key value used to fetch columns."
+                },
+                "columns": {
+                  "type": "string",
+                  "description": "A string of values (columns) returned by the Mapnik attribute service."
+                }
+              },
+              "required": [
+                "id",
+                "columns"
+              ]
+            }
+          }
+        },
+        "required": [
+          "sql",
+          "cartocss",
+          "cartocss_version"
+        ]
+      },
+      "LayerOptionsNamedMap": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "A string value, the name for the Named Map to use."
+          },
+          "config": {
+            "type": "object",
+            "description": "An object, the replacement values for the Named Map’s template placeholders."
+          },
+          "auth_tokens": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "token"
+            },
+            "description": "Strings array, the authorized tokens in case the Named Map has auth method set to ```token```."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "LayerOptionsPlain": {
+        "title": "Layer options Plain",
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Numbers that define the valid colors to include. Valid colors:\n\n  - A string value that includes CSS colors (i.e. ```blue```) or a hex color string (i.e. ```#0000ff```)\n\n  - An integer array of r,g,b values (i.e. ```[255,0,0]```)\n\n  - An integer array of r,g,b,a values (i.e. ```[255,0,0,128]```)\n\n\n\nIf **only** the ```color``` value is used for a plain layer, this value is Required.\n\nIf **both** ```color``` and ```imageUrl``` are defined, only the color value is used for the plain layer configuration.\n",
+            "default": null
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "URL from where the image is retrieved\n* If **only** the ```imageUrl``` value is used for a plain layer, this value is Required.\n* If ```color``` is defined, this ```imageUrl``` value is ignored.\n",
+            "default": null
+          }
+        }
+      },
+      "LayerOptionsTorque": {
+        "type": "object",
+        "title": "Layer options Torque",
+        "description": "If you are using Torque as a layer resource, the following configurations are required in your MapConfig file. For more details about Torque layers in general, see the Torque API documentation.\n",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "description": "The SQL request to the user database that will fetch the rendered data.\n\n**Tip:** The SQL request should include the following Mapnik layer configurations:\n  * geom_column\n  * interactivity\n  * attributes\n"
+          },
+          "cartocss": {
+            "$ref": "#/components/schemas/CartoCSS"
+          },
+          "cartocss_version": {
+            "$ref": "#/components/schemas/CartoCSSVersion"
+          },
+          "step": {
+            "type": "integer",
+            "description": "The number of animation steps to render when requesting a torque.png tile.",
+            "default": 0
+          },
+          "geom_column": {
+            "type": "string",
+            "description": "The name of the column containing the geometry.\n\n*You **must** specify this value as part of the Torque layer SQLconfiguration.\n",
+            "default": "the_geom_webmercator"
+          },
+          "srid": {
+            "$ref": "#/components/schemas/Srid"
+          },
+          "affected_tables": {
+            "$ref": "#/components/schemas/Affected_tables"
+          },
+          "attributes": {
+            "description": "The id and column values returned by the Torque attributes service. (This option is disabled if no configuration is defined).\n*You **must** specify this value as part of the Torque layer SQL configuration.\n",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The key value used to fetch columns."
+                },
+                "columns": {
+                  "type": "string",
+                  "description": "A string of values (columns) returned by the Torque attribute service."
+                }
+              },
+              "required": [
+                "id",
+                "columns"
+              ]
+            }
+          }
+        },
+        "required": [
+          "sql",
+          "cartocss",
+          "cartocss_version"
+        ]
+      },
+      "LayerType": {
+        "title": "Layer type",
+        "type": "string",
+        "enum": [
+          "mapnik",
+          "cartodb",
+          "torque",
+          "http",
+          "plain",
+          "named"
+        ],
+        "description": "A string value that defines the layer type:\n* **mapnik** - rasterized tiles\n* **cartodb** -  an alias for mapnik (for backward compatibility)\n* **torque** - render vector tiles in torque format\n* **http** - load tiles over HTTP\n* **plain** - color or background image url\n* **named** - use a Named Map as a layer\n"
+      },
+      "Links": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string",
+            "format": "url",
+            "description": "link to the resource"
+          }
+        }
+      },
+      "ListSyncTablesResponse": {
+        "type": "object",
+        "properties": {
+          "syncronizations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncTablesResponseItem"
+            }
+          },
+          "total_entries": {
+            "type": "integer",
+            "title": "Total entries",
+            "description": "Number of items contained in the response array"
+          }
+        }
+      },
+      "MapConfig": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Spec version to use for validation.",
+            "default": "1.0.0"
+          },
+          "extent": {
+            "type": "string",
+            "description": "The default map extent for the map projection.\n**Note:** Currently, only webmercator is supported.\n"
+          },
+          "srid": {
+            "type": "string",
+            "description": "The spatial reference identifier for the map.",
+            "default": 3857
+          },
+          "maxzoom": {
+            "type": "string",
+            "description": "The maximum zoom level for your map. A request beyond the defined maxzoom returns a 404 error.",
+            "default": "undefined (infinite)"
+          },
+          "minzoom": {
+            "type": "string",
+            "description": "The minimum zoom level for your map. A request beyond the defined minzoom returns a 404 error.",
+            "default": 0
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Layer"
+            }
+          }
+        },
+        "required": [
+          "layers"
+        ]
+      },
+      "MapResponse": {
+        "type": "object",
+        "properties": {
+          "layergroupid": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "layers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "$ref": "#/components/schemas/LayerType"
+                    },
+                    "meta": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "cdn_url": {
+            "type": "object",
+            "properties": {
+              "http": {
+                "type": "string"
+              },
+              "https": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "NamedMapResponse": {
+        "type": "object",
+        "title": "Named Map Response",
+        "properties": {
+          "template_id": {
+            "type": "string"
+          }
+        }
+      },
+      "NamedMapResponseList": {
+        "type": "object",
+        "title": "Named Map Response List",
+        "properties": {
+          "template_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "template name"
+            }
+          }
+        }
+      },
+      "OutputFormat": {
+        "title": "Output format",
+        "type": "string",
+        "enum": [
+          "GPKG",
+          "CSV",
+          "SHP",
+          "SVG",
+          "KML",
+          "SpatiaLite",
+          "GeoJSON"
+        ],
+        "description": "Output format"
+      },
+      "RequestResponse": {
+        "type": "object",
+        "properties": {
+          "item_queue_id": {
+            "type": "string",
+            "description": "A unique alphanumeric identifier referencing the import process in the targeted account"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "A boolean value indicating whether the import process was started or not."
+          }
+        }
+      },
+      "SQLGeneralStatment": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SQLStatementString"
+              },
+              {
+                "$ref": "#/components/schemas/SQLMultipleStatements"
+              },
+              {
+                "$ref": "#/components/schemas/SQLMultipleStatementsWithFallbacks"
+              }
+            ],
+            "description": "long-running SQL statement(s)."
+          }
+        }
+      },
+      "SQLMultipleStatements": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StatementAndStatus"
+        }
+      },
+      "SQLMultipleStatementsWithFallbacks": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StatementAndStatusAndFallbacks"
+                }
+              }
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Fallbacks"
+          }
+        ]
+      },
+      "SQLSingleStatement": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "$ref": "#/components/schemas/SQLStatementString"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "SQLStatementString": {
+        "title": "SQL statement",
+        "type": "string"
+      },
+      "Srid": {
+        "type": "string",
+        "description": "The spatial reference identifier for the geometry column.",
+        "default": 3857
+      },
+      "StatementAndStatus": {
+        "title": "SQL statement and status",
+        "type": "object",
+        "properties": {
+          "query": {
+            "$ref": "#/components/schemas/SQLStatementString"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          }
+        }
+      },
+      "StatementAndStatusAndFallbacks": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StatementAndStatus"
+          },
+          {
+            "$ref": "#/components/schemas/Fallbacks"
+          }
+        ]
+      },
+      "StatementResult": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "number",
+            "format": "float",
+            "description": "time in seconds it has taken to run the statement"
+          },
+          "total_rows": {
+            "type": "number",
+            "format": "integer",
+            "description": "number of rows returned"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "the structure/data depends on the statement"
+            }
+          }
+        },
+        "example": {
+          "time": 0.007,
+          "total_rows": 1,
+          "rows": [
+            {
+              "count": 4994
+            }
+          ]
+        }
+      },
+      "SyncTablesResponseItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "ID",
+            "description": "A unique alphanumeric identifier of the synced table"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "The actual name of the created sync table"
+          },
+          "interval": {
+            "type": "integer",
+            "title": "Interval",
+            "description": "An integer value representing the number of seconds between synchronizations of the table contents"
+          },
+          "url": {
+            "type": "string",
+            "title": "URL",
+            "description": "The **public** URL address where the file to be synchronized is located",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "created",
+              "queued",
+              "syncing",
+              "success",
+              "failure"
+            ],
+            "title": "State",
+            "description": "A string value indicating the current state of the synchronized dataset"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created at",
+            "description": "The date time at which the table was created in the CARTO database"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated at",
+            "description": "The date time at which the table had its contents modified"
+          },
+          "run_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Run at",
+            "description": "The date time at which the table **will** get its contents synched with the source file"
+          },
+          "retried_times": {
+            "type": "integer",
+            "title": "Retried times",
+            "description": "An integer value indicating the number of attempts that were performed to sync the table"
+          },
+          "log_id": {
+            "type": "string",
+            "title": "Log ID",
+            "description": "A unique alphanumeric identifier to locate the log traces of the given table"
+          },
+          "error_code": {
+            "type": "integer",
+            "title": "Error code",
+            "description": "An integer value representing a unique error identifier",
+            "nullable": true
+          },
+          "error_message": {
+            "type": "string",
+            "title": "Error message",
+            "description": "A string value indicating the message related to the _error_code_ element",
+            "nullable": true
+          },
+          "ran_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ran at",
+            "description": "The date time at which the table **had** its contents synched with the source file"
+          },
+          "modified_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Modified at",
+            "description": "The date time at which the table was manually modified, if applicable"
+          },
+          "etag": {
+            "type": "string",
+            "title": "ETAG",
+            "description": "HTTP entity tag of the source file",
+            "nullable": true
+          },
+          "checksum": {
+            "type": "string",
+            "title": "Checksum",
+            "description": "See **etag**",
+            "nullable": true
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User ID",
+            "description": "A unique alphanumeric element that identifies the CARTO account user in the internal database"
+          },
+          "service_name": {
+            "type": "string",
+            "enum": [
+              "gdrive",
+              "dropbox"
+            ],
+            "title": "State",
+            "description": "A string with the name of the datasource used to import the file\nIt can have any of the following values: \n- **gdrive** - Google Drive\n- **dropbox** - Dropbox\n- `null` - URL imports\n",
+            "nullable": true
+          },
+          "service_item_id": {
+            "type": "string",
+            "title": "Service item ID",
+            "description": "A unique identifier used by CARTO to reference the sync table and its related datasource service"
+          },
+          "type_guessing": {
+            "type": "boolean",
+            "title": "Type guessing",
+            "description": "If set to `false` disables field type guessing (for Excel and CSVs)"
+          },
+          "quoted_fields_guessing": {
+            "type": "boolean",
+            "title": "Quoted fields guessing",
+            "description": "If set to `false` disables type guessing of CSV fields that come inside double quotes"
+          },
+          "content_guessing": {
+            "type": "boolean",
+            "title": "Content guessing",
+            "description": "Set to `true` to enable content guessing and automatic geocoding based on results. Currently, this only implements geocoding of countries, cities and IP addresses"
+          },
+          "visualization_id": {
+            "type": "string",
+            "title": "Visualization ID",
+            "description": "A unique identifier for the map created in the import process. Only applies if created_visualization is set to `true`"
+          },
+          "from_external_source": {
+            "type": "boolean",
+            "title": "From external source",
+            "description": "A boolean indicating whether the Sync Table is connected to an external source, generally the CARTO Data library"
+          }
+        }
+      },
+      "TableGrant": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "string"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "select",
+                "insert",
+                "update",
+                "delete"
+              ]
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name",
+          "schema",
+          "permissions"
+        ]
+      },
+      "Template": {
+        "type": "object",
+        "title": "Template",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Spec version to use for validation.",
+            "default": "0.0.1"
+          },
+          "name": {
+            "type": "string",
+            "description": "There can only be one template with the same name for any user. Valid names start with a letter or a number, and only contain letters, numbers, dashes (-), or underscores (_)"
+          },
+          "auth": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "description": "token or open",
+                "default": "open"
+              },
+              "valid_tokens": {
+                "type": "string",
+                "description": "when method is set to token, the values listed here allow you to instantiate the Named Map. See this [example](http://docs.carto.com/faqs/manipulating-your-data/#how-to-create-a-password-protected-named-map) for how to create a password-protected map."
+              }
+            }
+          },
+          "placeholders": {
+            "$ref": "#/components/schemas/TemplatePlaceholders"
+          },
+          "layergroup": {
+            "$ref": "#/components/schemas/MapConfig"
+          },
+          "view": {
+            "$ref": "#/components/schemas/TemplateView"
+          }
+        },
+        "required": [
+          "version",
+          "name",
+          "auth",
+          "placeholders",
+          "layergroup"
+        ]
+      },
+      "TemplateParams": {
+        "type": "object",
+        "title": "Template Parameters"
+      },
+      "TemplatePlaceholders": {
+        "type": "object",
+        "title": "Template Placeholders",
+        "description": "Variables that can be placed in layergroup's definition (SQL or CartoCSS of any layer). Placeholders need to be defined with a `type` and a default value for MapConfigs. See details about defining a MapConfig `type` for [Layergroup configurations](https://carto.com/developers/maps-api/guides/MapConfig-file-format/#layergroup-configurations). Valid placeholder names start with a letter and can only contain letters, numbers, or underscores. They have to be written between the `<%=` and `%>` strings in order to be replaced inside the Named Maps API.\n**Example**:```<%= my_color %>```\nThe set of supported placeholders for a template need to be explicitly defined with a specific type, and default value, for each placeholder. Placeholder default values will be used whenever new values are not provided as options, at the time of creation on the client. They can also be used to test the template by creating a default version with new options provided. When using templates, be very careful about your selections as they can give broad access to your data if they are defined loosely.\n",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "sql_literal",
+              "sql_ident",
+              "number",
+              "css_color"
+            ],
+            "description": "sql_literal: internal single-quotes will be sql-escaped sql_ident: internal double-quotes will be sql-escaped number: can only contain numerical representation css_color: can only contain color names or hex-values\n"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "default"
+        ]
+      },
+      "TemplateView": {
+        "type": "object",
+        "title": "Template View",
+        "description": "Extra keys to specify the view area for the map. It can be used to have a static preview of a Named Map without having to instantiate it. It is possible to specify it with `center` + `zoom` or with a bounding box `bbox`. Center+zoom takes precedence over bounding box. Also it is possible to choose which layers are visible or not with `preview_layers` indicating its visibility by layer index or id (visible by default).",
+        "properties": {
+          "zoom": {
+            "$ref": "#/components/schemas/TemplateViewZoom"
+          },
+          "center": {
+            "$ref": "#/components/schemas/TemplateViewCenter"
+          },
+          "bounds": {
+            "$ref": "#/components/schemas/TemplateViewBounds"
+          },
+          "preview_layers": {
+            "$ref": "#/components/schemas/TemplateViewPreviewLayers"
+          }
+        },
+        "required": [
+          "zoom",
+          "center",
+          "bounds"
+        ]
+      },
+      "TemplateViewBounds": {
+        "type": "object",
+        "title": "Template View Bounds",
+        "description": "View area for the map. It can be used to have a static preview with bounding box `bbox",
+        "properties": {
+          "west": {
+            "type": "number",
+            "description": "LowerCorner longitude for the bounding box, in decimal degrees (aka most western)"
+          },
+          "south": {
+            "type": "number",
+            "description": "LowerCorner latitude for the bounding box, in decimal degrees (aka most southern)"
+          },
+          "east": {
+            "type": "number",
+            "description": "UpperCorner longitude for the bounding box, in decimal degrees (aka most eastern)"
+          },
+          "north": {
+            "type": "number",
+            "description": "UpperCorner latitude for the bounding box, in decimal degrees (aka most northern)"
+          }
+        },
+        "example": {
+          "west": -45,
+          "south": -45,
+          "east": 45,
+          "north": 45
+        }
+      },
+      "TemplateViewCenter": {
+        "type": "object",
+        "title": "Template View Center",
+        "properties": {
+          "lng": {
+            "type": "number",
+            "description": "The longitude to use for the center"
+          },
+          "lat": {
+            "type": "number",
+            "description": "The latitude to use for the center"
+          }
+        },
+        "example": {
+          "lng": 0,
+          "lat": 0
+        }
+      },
+      "TemplateViewPreviewLayers": {
+        "type": "object",
+        "title": "Template View Preview Layers",
+        "description": "Indicates which layers are visible or not by layer index or id (visible by default).",
+        "example": {
+          "0": true,
+          "layer1": false
+        }
+      },
+      "TemplateViewZoom": {
+        "type": "number",
+        "title": "Template View Zoom",
+        "description": "The zoom level to use",
+        "example": 4
+      },
+      "Timestamps": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "the date and time when the job schema was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "the date and time of when the job schema was last updated, or modified."
+          }
+        }
+      },
+      "Url": {
+        "type": "string",
+        "title": "url",
+        "description": "When importing remote files, the full URL to the publicly accessible file"
+      }
+    },
+    "responses": {
+      "AuthUnauthorized": {
+        "description": "Unauthorized. Wrong or no authentication provided."
+      },
+      "BadInput": {
+        "description": "Request's parameters error"
+      },
+      "BadRequest": {
+        "description": "The server could not understand the request due to invalid syntax or unexpected condition."
+      },
+      "Forbidden": {
+        "description": "Forbidden. The API key does not authorize this request."
+      },
+      "InternalServerError": {
+        "description": "Server encountered an unexpected condition that prevented it from fulfilling the request."
+      },
+      "MapsBadInput": {
+        "description": "Request's parameters error."
+      },
+      "MapsNotFound": {
+        "description": "The specified resource was not found."
+      },
+      "NotFound": {
+        "description": "The specified resource was not found"
+      },
+      "PlatformLimits": {
+        "description": "You are over platform's limits."
+      },
+      "TooManyRequest": {
+        "description": "The user has sent too many requests in a given amount of time (\"rate limiting\" or \"database timeout\")."
+      },
+      "Unauthorized": {
+        "description": "Unauthorized. No authentication provided."
+      }
+    },
+    "parameters": {
+      "apiKeyName": {
+        "in": "path",
+        "name": "name",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "the API key `name`"
+      },
+      "east": {
+        "in": "path",
+        "name": "east",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "UpperCorner longitude, in decimal degrees (aka most eastern) in WGS 84 (EPSG:4326)"
+      },
+      "format": {
+        "in": "path",
+        "name": "format",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "png",
+            "jpg"
+          ]
+        },
+        "description": "Output image format"
+      },
+      "height": {
+        "in": "path",
+        "name": "height",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Height in pixels for the output image."
+      },
+      "jobId": {
+        "in": "path",
+        "name": "job_id",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "the job universally unique identifier (uuid)."
+      },
+      "lat": {
+        "in": "path",
+        "name": "lat",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "The latitude for the center of the map."
+      },
+      "layerIndex": {
+        "in": "path",
+        "name": "layer",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "title": "layer index",
+          "minimum": 0
+        },
+        "description": "0 based layer index"
+      },
+      "layergroupId": {
+        "in": "path",
+        "name": "layergroupid",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "The layergroup ID."
+      },
+      "layersFilter": {
+        "in": "path",
+        "name": "layers_filter",
+        "required": true,
+        "schema": {
+          "oneOf": [
+            {
+              "type": "string",
+              "title": "all"
+            },
+            {
+              "type": "string",
+              "title": "list of indexes"
+            }
+          ]
+        },
+        "description": "Layers to be rendered together.\n\nSupports 2 format options:\n* a comma separated list of layer indexes (0-based). Examples:\n\n  * **0,1,3** - will filter and blend layers with indexes 0, 1 and 3\n  * **2** - only one layer\n\n* **all** will blend all layers in the layergroup\n"
+      },
+      "layersQueryParam": {
+        "in": "query",
+        "name": "layer",
+        "schema": {
+          "oneOf": [
+            {
+              "type": "string",
+              "title": "all"
+            },
+            {
+              "type": "string",
+              "title": "list of indexes"
+            }
+          ]
+        },
+        "description": "Layers to be rendered together.\n\nSupports 2 format options:\n* a comma separated list of layer indexes (0-based). Examples:\n\n  * **0,1,3** - will filter and blend layers with indexes 0, 1 and 3\n  * **2** - only one layer\n\n* **all** will blend all layers in the layergroup (**default value**)\n"
+      },
+      "lng": {
+        "in": "path",
+        "name": "lng",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "The longitude for the center of the map."
+      },
+      "name": {
+        "in": "path",
+        "name": "name",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "The named map name"
+      },
+      "north": {
+        "in": "path",
+        "name": "north",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "UpperCorner latitude, in decimal degrees (aka most northern) in WGS 84 (EPSG:4326)"
+      },
+      "south": {
+        "in": "path",
+        "name": "south",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "LowerCorner latitude, in decimal degrees (aka most southern) in WGS 84 (EPSG:4326)"
+      },
+      "templateName": {
+        "in": "path",
+        "name": "template_name",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Name of the requested template"
+      },
+      "west": {
+        "in": "path",
+        "name": "west",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "LowerCorner longitude, in decimal degrees (aka most western) in WGS 84 (EPSG:4326)"
+      },
+      "width": {
+        "in": "path",
+        "name": "width",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Width in pixels for the output image."
+      },
+      "x": {
+        "in": "path",
+        "name": "x",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "X coordinate."
+      },
+      "y": {
+        "in": "path",
+        "name": "y",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Y coordinate."
+      },
+      "z": {
+        "in": "path",
+        "name": "z",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "description": "Zoom level."
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyHTTPBasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "ApiKeyQueryParam": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "api_key"
+      },
+      "MapsApiKeyQueryParam": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    },
+    "examples": {
+      "CreateImportUrl": {
+        "value": {
+          "url": "https://remotehost.url/path/to/remotefile"
+        },
+        "summary": "Import from URL"
+      },
+      "RequestResponseSuccess": {
+        "value": {
+          "item_queue_id": "9906bce0-f1a3-4b07-be71-818f4bfd7673",
+          "success": true
+        },
+        "summary": "A success response"
       }
     }
   }

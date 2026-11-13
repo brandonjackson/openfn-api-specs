@@ -1,16 +1,24 @@
-# Wigal Frog SMS API (wigal-sms) v3.0.0
+# Wigal Frog API (wigal-sms) vv3
 
 <!-- derived from openapi.json by `pnpm specs index wigal-sms` — do not edit by hand -->
 
-base: https://frogapi.wigal.com.gh | auth: apiKey (header API-KEY), apiKey (header USERNAME) | 5 operations in 2 resources
+base: https://frogapi.wigal.com.gh | auth: apiKey (header API-KEY), apiKey (header USERNAME) | 9 operations in 4 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## balance
-- GET /api/v3/balance — getAccountBalance: Get account balance
+## Account
+- GET /api/v3/balance — getAccountBalance: Get the account balance and bundles
 
-## sms
-- POST /api/v3/sms/send — sendSms: Send SMS (general or personalized)
-- POST /api/v3/sms/otp/generate — generateOtp: Generate and send an OTP
-- POST /api/v3/sms/otp/verify — verifyOtp: Verify an OTP
-- POST /api/v3/sms/history — getSmsHistory: Get message history / delivery status
+## OTP
+- POST /api/v3/sms/otp/generate — generateSmsOtp: Generate and send an OTP by SMS
+- POST /api/v3/sms/otp/verify — verifySmsOtp: Verify an SMS OTP
+- POST /api/v3/voice/otp/generate — generateVoiceOtp: Generate and deliver an OTP by voice call
+- POST /api/v3/voice/otp/verify — verifyVoiceOtp: Verify a voice OTP
+
+## SMS
+- POST /api/v3/sms/send — sendSms: Send general or personalised SMS
+- POST /api/v3/sms/history — listMessageHistory: Get sent message history
+
+## Voice
+- POST /api/v3/voice/send — sendVoice: Place pre-recorded voice calls
+- POST /api/v3/voice/send/dynamic — sendInteractiveVoice: Place interactive voice calls

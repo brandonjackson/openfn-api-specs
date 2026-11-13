@@ -5,43 +5,348 @@
   "x-openfn-adaptor": "intuit",
   "x-source": {
     "openapi": "#/components/schemas/Item",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "properties": {
     "Id": {
-      "type": "string",
-      "example": "1"
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
     },
     "SyncToken": {
       "type": "string",
-      "example": "0"
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
+    },
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
     },
     "Name": {
       "type": "string",
-      "example": "Pest Control"
+      "description": "Product: QBW Description: User recognizable name for the Item.[br /]Max. length: 31 characters. Product: QBO Description: User recognizable name for the Item.[br /]Max. length: 100 characters. Filterable: ALL Sortable: ALL Required: QBW"
+    },
+    "Sku": {
+      "type": "string",
+      "description": "Product: QBO Description: Stock Keeping Unit - User entered item identifier that identifies an item uniquely [br /]Max. length: 100 characters. Filterable: ALL Sortable: ALL"
     },
     "Description": {
       "type": "string",
-      "example": "Pest Control Services"
+      "description": "Product: QBW Description: User entered description for the item that describes the details of the service or product.[br /]Max. length: 4000 characters. Product: QBO Description: User entered description for the item that describes the details of the service or product.[br /]Max. length: 4000 characters. Filterable: QBO Sortable: QBO"
     },
     "Active": {
       "type": "boolean",
-      "example": true
+      "description": "Product: QBW Description: True if active. Inactive items may be hidden from display and may not be used in financial transactions. Filterable: QBW"
     },
-    "Type": {
+    "SubItem": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the item is a subitem; false or null indicates a top-level item."
+    },
+    "ParentRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the item's parent entity."
+    },
+    "Level": {
+      "type": "integer",
+      "description": "Product: ALL Description: Specifies the level of the item, 0 if top level parent, otherwise specifies the depth from the top parent."
+    },
+    "FullyQualifiedName": {
       "type": "string",
-      "example": "Service"
+      "description": "Product: ALL Description: Fully qualified name of the entity. The fully qualified name prepends the topmost parent, followed by each sub element separated by colons. Takes the form of: [br /] Parent:Customer:Job:Sub-job [br /] Limited to 5 levels. Max. length: 41 characters (single name) or 209 characters (fully qualified name)."
+    },
+    "Taxable": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the item is subject to tax."
+    },
+    "SalesTaxIncluded": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the sales tax is included in the item amount, and therefore is not calculated for the transaction."
+    },
+    "PercentBased": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the tax amount is percentage based."
     },
     "UnitPrice": {
       "type": "number",
-      "example": 35
+      "description": "Product: ALL Description: Monetary value of the service or product, as expressed in the home currency. Filterable: QBW Sortable: QBW"
+    },
+    "RatePercent": {
+      "type": "number",
+      "description": "Product: ALL Description: The tax amount expressed as a percent of charges entered in the current transaction. To enter a rate of 10% use 10.0, not 0.01.[br /]Applicable to the Service, OtherCharge or Part (Non-Inventory) item types only, and only if the Purchase part of the item does not exist, that is, the item is not used as a reimbursable item, or as a part in assemblies."
+    },
+    "Type": {
+      "allOf": [
+        {
+          "$ref": "ItemTypeEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Classification that specifies the use of this item. See the description at the top of the Item entity page for details. [br /] Filterable: ALL"
+    },
+    "PaymentMethodRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to a PaymentMethod for an item of type Payment."
+    },
+    "UOMSetRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the unit of measure set (UOM) entity used by this item."
     },
     "IncomeAccountRef": {
-      "$ref": "ReferenceType.json"
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the posting account, that is, the account that records the proceeds from the sale of this item.[br /]Required for the the following types: Assembly, Inventory, Other Charge, Product, Service. Required: ALL"
     },
-    "MetaData": {
-      "$ref": "MetaData.json"
+    "PurchaseDesc": {
+      "type": "string",
+      "description": "Product: ALL Description: User entered purchase description for the item."
+    },
+    "PurchaseTaxIncluded": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the purchase tax is included in the item amount, and therefore is not calculated for the transaction."
+    },
+    "PurchaseCost": {
+      "type": "number",
+      "description": "Product: ALL Description: Amount paid when buying or ordering the item, as expressed in the home currency."
+    },
+    "ExpenseAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the expense account used to pay the vendor for this item.[br /]Note: for a service item, this may also be an equity account to record a draw against the company equity to pay for the service.[br /]If the Purchase information (PurchaseDesc, PurchaseTaxIncluded, PurchaseCost, etc.) is provided, this account is required for the the following item types: Other..."
+    },
+    "COGSAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the Cost of Goods Sold account for the inventory item.[br /]Required for the the following item types: Assembly, Inventory. Required: ALL"
+    },
+    "AssetAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the Inventory Asset account that tracks the current value of the inventory. If the same account is used for all inventory items, the current balance of this account will represent the current total value of the inventory.[br /]Required for the the following item types: Assembly, Inventory. Required: ALL"
+    },
+    "PrefVendorRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the preferred vendor of this item."
+    },
+    "AvgCost": {
+      "type": "number",
+      "description": "Product: ALL Description: Average cost of the item, expressed in the home currency."
+    },
+    "TrackQtyOnHand": {
+      "type": "boolean",
+      "description": "Product: QBO Description: Quantity on hand to be tracked."
+    },
+    "QtyOnHand": {
+      "type": "number",
+      "description": "Product: ALL Description: Current quantity of the inventory items available for sale. Sortable: QBW"
+    },
+    "QtyOnPurchaseOrder": {
+      "type": "number",
+      "description": "Product: ALL Description: Quantity of the inventory item being ordered, for which there is a purchase order issued."
+    },
+    "QtyOnSalesOrder": {
+      "type": "number",
+      "description": "Product: ALL Description: Quantity of the inventory item that is placed on sales orders."
+    },
+    "ReorderPoint": {
+      "type": "number",
+      "description": "Product: ALL Description: Quantity on hand threshold below which a purchase order against this inventory item should be issued. When the QtyOnHand is less than the ReorderPoint, the QuickBooks purchase order system will prompt the user to reorder."
+    },
+    "ManPartNum": {
+      "type": "string",
+      "description": "Product: ALL Description: Identifier provided by manufacturer for the Item, for example, the model number.[br /]Applicable for the the following item types: Inventory, Product."
+    },
+    "DepositToAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Optional reference to the account in which the payment money is deposited.[br /]If not specified, the Undeposited Funds account will be used. Applicable to the Payment item type only."
+    },
+    "SalesTaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the sales tax code for the item.[br /]Applicable to the Service, Other Charge, Part (Non-Inventory), Inventory and Assembly item types only."
+    },
+    "PurchaseTaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the purchase tax code for the item.[br /]Applicable to the Service, Other Charge, and Part (Non-Inventory) item types."
+    },
+    "InvStartDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: ALL Description: Date of the opening balance for the inventory transaction. QuickBooks creates the Opening Balance inventory transaction as of the given date, and calculates the total value by multiplying the cost by the quantity on hand.[br /]Applies to the Quantity On Hand and Total Value.[br /]Applicable to the Inventory and Assembly item types only."
+    },
+    "BuildPoint": {
+      "type": "number",
+      "description": "Product: ALL Description: Assembly item QuantityOnHand threshold below which more assemblies should be built.[br /]Applicable to the Assembly Item type only.[br /]When he quantity of the assembly item gets below the BuildPoint number, QuickBooks will remind the user to build more."
+    },
+    "PrintGroupedItems": {
+      "type": "boolean",
+      "description": "Product: QBW Description: Lets us know if the user wants to display the subitems as a group. Applicable to items of Group type only. Filterable: QBW"
+    },
+    "SpecialItem": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if this is a special item used by QuickBooks in certain accounting functions, including miscellaneous charges that do not fall into the categories of service, labor, materials, or parts. Examples include delivery charges, setup fees, and service charges."
+    },
+    "SpecialItemType": {
+      "allOf": [
+        {
+          "$ref": "SpecialItemTypeEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description Type of special item, if SpecialItem is true.[br /]"
+    },
+    "ItemGroupDetail": {
+      "allOf": [
+        {
+          "$ref": "ItemGroupDetail.json"
+        }
+      ],
+      "description": "Product: ALL Description: Contains the detailed components of the group. Applicable to a group item only."
+    },
+    "ItemAssemblyDetail": {
+      "allOf": [
+        {
+          "$ref": "ItemAssemblyDetail.json"
+        }
+      ],
+      "description": "Product: ALL Description: Contains the detailed inventory parts used when the assembly is built. Applicable to an inventory assembly item only."
+    },
+    "AbatementRate": {
+      "type": "number",
+      "description": "Product: QBO Description: India sales tax abatement rate."
+    },
+    "ReverseChargeRate": {
+      "type": "number",
+      "description": "Product: QBO Description: India sales tax reverse charge rate."
+    },
+    "ServiceType": {
+      "type": "string",
+      "description": "Product: QBO Description: India sales tax service type, see ServiceTypeEnum for values."
+    },
+    "ItemCategoryType": {
+      "type": "string",
+      "description": "Product: QBO Description: Categorizes the given item as a product or a service. The applicable values are those exposed through the ItemCategoryTypeEnum. This is currently applicable only in FR region."
+    },
+    "ItemEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Internal use only: extension place holder for Item"
+    },
+    "TaxClassificationRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the SalesTaxCode for this item."
+    },
+    "UQCDisplayText": {
+      "type": "string",
+      "description": "Product: ALL Description: Unit of measure (UQC) text to be displayed for this line item in Invoice/Sales forms. Applicable for IN Region."
+    },
+    "UQCId": {
+      "type": "string",
+      "description": "Product: ALL Description: Unit of measure for this line item as per the standard unit (UQC) defined under the GST rule. Example: KGS- kilograms, MTR- metres, SQF- square feet. It will be shown in GSTR1 report. Applicable for IN Region."
+    },
+    "ClassRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: Reference to the Class for this item."
+    },
+    "Source": {
+      "type": "string",
+      "description": "Product: QBO Description: Originating source of the Item. Valid values are defined in SourceTypeEnum"
+    },
+    "DeferredRevenue": {
+      "type": "boolean",
+      "description": "Product: QBO Description: Use the DeferredRevenue property to indicate that the goods/services sold have not yet been delivered to the customer, and therefore not appropriate for the accounting engine to book as Revenue for accounting."
+    },
+    "CustomExtensions": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomExtensions.json"
+      },
+      "description": "Product: IES Description: Custom extensions of the Item Extensions like dimensions and other user defined categories"
     }
-  }
+  },
+  "description": "Product: QBO Description: The Item resource represents any product or service that is sold or purchased. Inventory items are not currently supported. Product: QBW Description: An item is a thing that your company buys, sells, or re-sells, such as products, shipping and handling charges, discounts, and sales tax (if applicable). An item is shown as a line on an invoice or other sales form. The I..."
 }

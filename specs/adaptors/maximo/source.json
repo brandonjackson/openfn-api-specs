@@ -3,15 +3,80 @@
   "npm": "@openfn/language-maximo",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-maximo/ast.json",
-    "https://github.com/OpenFn/adaptors/tree/main/packages/maximo",
-    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/",
-    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/query/selecting/",
-    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/crud/create_and_update/",
-    "https://bportaluri.com/2017/04/maximo-rest-apis-examples.html",
-    "https://www.ibm.com/support/pages/using-rest-api-details"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/oas",
+      "result": "rejected",
+      "note": "IBM documents that every Maximo instance generates its own OAS3 document at GET /maximo/oslc/oas (filters: os, module, includeactions, addinternal, primary; Swagger UI at /maximo/oslc/oas/api.html). It is built from that installation's object structures, needs credentials, and no public instance exists, so there is no vendor spec to capture here. Anyone with an instance can capture it and this becomes found-openapi (the oas route is modelled as getOpenApiDocument)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://developer.ibm.com/apis/catalog/maximo--maximo-manage-rest-api/Introduction",
+      "result": "not-found",
+      "note": "IBM API Hub lists a 'Maximo Manage REST API' product, but the page is a JS shell and its catalog backend (developer.ibm.com/rest/api-hub-catalog/apis/products[/<id>]) answered HTTP 500 'Unable to get products' on 2026-11-13, so no spec download could be reached."
+    },
+    {
+      "kind": "github-org",
+      "url": "https://github.com/ibm-maximo-dev",
+      "result": "not-found",
+      "note": "Searched all 18 repos of IBM's Maximo developer org: maximo-restapi-documentation (main = README only; gh-pages = the rendered REST API guide, ~40 pages, no spec file), maximo-nodejs-sample, maximo-swift-restclient, maximodev-cli, etc. No openapi/swagger/postman file."
+    },
+    {
+      "kind": "docs",
+      "url": "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/",
+      "result": "used",
+      "note": "IBM's Maximo REST API guide (last updated 2026-08-07), cloned from the gh-pages branch and read page by page: API home, authentication, API keys, query (select/filter/sort/paging/saved query/child/distinct), CRUD/bulk/sync/delete, actions, workflow, attachments, lookups, group-by, hierarchical/GL, JSON schema, interactive logic, e-signature, duplicate requests, batch errors, file import/export, BIRT reports, Migration Manager, system properties, troubleshooting/logging, swagger (oas). Every NextGen path and header modelled here comes from those pages."
+    },
+    {
+      "kind": "docs",
+      "url": "https://www.ibm.com/support/pages/using-rest-api-details",
+      "result": "used",
+      "note": "IBM support blog on the legacy MIF REST API (maxrest/rest/os and /mbo, ~eq~ filters, POST for create/update). With https://www.ibm.com/support/pages/resting-maximo and the bportaluri.com examples it is the evidence for the /maxrest/rest family; the Knowledge Center reference pages and the MIF PDF for 7.6 returned 403/404 from this environment."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No IBM Maximo entry among 2529 apis.guru APIs."
+    },
+    {
+      "kind": "postman",
+      "result": "not-found",
+      "note": "No IBM-owned Postman workspace or SwaggerHub API for Maximo; community MCP/integration guides only restate the /oslc/oas route."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "IBM has no single published OpenAPI/Swagger document for the legacy Maximo Integration Framework REST API (the maxrest/rest service) that this adaptor uses, so the spec was authored from IBM's REST API docs plus the adaptor surface. The adaptor is a thin passthrough with three operations: fetch (GET baseUrl+endpoint with query params, then optionally re-POST the body elsewhere), update (POST baseUrl+endpoint with header x-methodoverride:PATCH, Maximo 7.6+), and update75 (same, Maximo 7.5). Endpoints are arbitrary strings supplied by the caller, e.g. maxrest/rest/os/mxinventory or maxrest/rest/mbo/workorder/1234. Coverage models the two endpoint families (os object structures and mbo business objects) for the resources shown in the adaptor examples and common Maximo MBOs: work orders, assets, inventory, inventory balances, and persons. Response wrapper (rsStart/rsCount/rsTotal + member array) and record field names are representative rather than exhaustive; real payloads vary by object structure and Maximo version. Newer NextGen/OSLC endpoints (/maximo/oslc, /maximo/api) are not modeled since this adaptor targets the maxrest service."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/apihome/apihome",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/authentication/auth",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/authentication/apikey",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/query/selecting",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/query/sort_and_paging",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/crud/create_and_update",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/crud/bulk",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/action/action",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/attachment/attachment",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/lookup",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/migrationmanager/api",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/oas",
+    "https://ibm-maximo-dev.github.io/maximo-restapi-documentation/troubleshooting",
+    "https://www.ibm.com/support/pages/using-rest-api-details",
+    "https://www.ibm.com/support/pages/resting-maximo",
+    "https://bportaluri.com/2017/04/maximo-rest-apis-examples.html",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-maximo/ast.json",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/maximo/src/Adaptor.js"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "IBM Maximo (Asset Management 7.6 / Maximo Manage in MAS 8-9) is self-hosted and its OpenAPI document is generated per instance at /maximo/oslc/oas from that installation's object structures, so there is no public machine spec; this document is authored from IBM's Maximo REST API guide. The adaptor is a thin passthrough: it resolves configuration.baseUrl + a caller-supplied endpoint and sends the maxauth header; fetch() GETs and re-POSTs the result to postUrl, update() POSTs JSON with x-method-override: PATCH + patchtype: MERGE and update75() POSTs a form body with the same headers. The previous spec described only the legacy /maxrest/rest family and invented per-MBO record schemas; but x-method-override/patchtype are the NextGen (/maximo/oslc, /maximo/api) update convention, so the whole NextGen API is now modelled alongside the legacy one. 'Full' = every route family the guide documents: API home/metadata (whoami, systeminfo, products, members, license, apimeta, oas, jsonschemas, glcomp, error messages), login/form login/logout and API-key create/revoke, the object-structure collection/record/child/lookup routes with all documented query parameters and headers (oslc.select/where/orderBy/pageSize, savedQuery, querytemplate, gbcols, distinct, count, action=wsmethod/workflow/importfile/genreport, x-method-override PATCH/DELETE/BULK/SYNC, properties, patchtype, transactionid, esigauth), attachments (doclinks), MBO services, automation-script APIs, logging and the Migration Manager /dm and /adminmode routes — 51 NextGen operations (most under /maximo/{apiRoot} with apiRoot = oslc|api) plus 9 legacy maxrest os/mbo/ss operations. Object structures are installation-specific, so records are a generic Resource (href, _rowstamp, attributes) inside a ResourceCollection {member, responseInfo}; nothing is invented per object. Gaps: legacy maxrest JSON envelopes and the full _-parameter list are only partly documented in reachable sources, the logout method is not stated, and native/basic auth do not apply on MAS Manage (API keys or SAML only)."
 }

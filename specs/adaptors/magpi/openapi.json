@@ -1,248 +1,741 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Magpi Outbound & Inbound API",
-    "version": "3.0.0",
-    "description": "OpenAPI description of the Magpi (magpi.com, formerly DataDyne / EpiSurveyor) mobile data collection API surface used by the OpenFn language-magpi adaptor. The adaptor's `fetchSurveyData` operation POSTs form-encoded credentials to the Get Survey Data endpoint (https://www.magpi.com/api/surveydata/v3) and receives an XML `SurveyDataList` document, which the adaptor parses to JSON. Its `submitRecord` operation POSTs an XML record to the Inbound `mobileApi/uploadData` endpoint. The upstream API is XML-based; response schemas here model the JSON shape the adaptor produces after XML->JSON conversion so they can seed mock collections.",
+    "title": "Magpi API (Outbound, REST Outbound and Inbound)",
+    "version": "legacy-v1-v3 / rest-2019",
+    "description": "Magpi (magpi.com, formerly DataDyne) was a mobile data-collection platform. It published three APIs: the legacy XML Outbound API (form-encoded username + accesstoken; Get Surveys and Get Survey Data v1/v2, plus the v3 URL the adaptor calls), the newer JSON 'Magpi Rest Outbound API' on api.magpi.com (access token in the Authorization header), and the Inbound API used by Magpi's mobile clients to fetch XForms and upload records. Magpi discontinued operations in February 2025; every host now fails or serves a parked page, so this document is a historical record of the documented surface. The OpenFn adaptor's fetchSurveyData POSTs to https://www.magpi.com/api/surveydata/v3 and converts the XML SurveyDataList to JSON; submitRecord builds a {apiUrl}/mobileApi/uploadData URL and an XML <form> body but never sends it.",
     "x-openfn-adaptor": "magpi"
   },
   "servers": [
     {
       "url": "https://www.magpi.com",
-      "description": "Magpi production API base"
+      "description": "Host hard-coded by the adaptor's fetchSurveyData (shut down; now a parked page)"
+    },
+    {
+      "url": "https://app.magpi.com",
+      "description": "Host named in the legacy Outbound API docs (shut down)"
+    },
+    {
+      "url": "https://api.magpi.com",
+      "description": "New REST Outbound API host (shut down)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Surveys",
+      "description": "Legacy Outbound API: list forms (XML)."
+    },
+    {
+      "name": "Survey Data",
+      "description": "Legacy Outbound API: submission data (XML)."
+    },
+    {
+      "name": "Forms",
+      "description": "REST Outbound API: forms and their questions (JSON)."
+    },
+    {
+      "name": "Answers",
+      "description": "REST Outbound API: submitted answers (JSON)."
+    },
+    {
+      "name": "Inbound",
+      "description": "Inbound API used by Magpi clients to fetch forms and upload records."
     }
   ],
   "paths": {
-    "/api/surveydata/v3": {
-      "post": {
-        "operationId": "fetchSurveyData",
-        "summary": "Get survey data (v3)",
-        "description": "Fetches submission records for a form/survey. Credentials and filters are sent as an application/x-www-form-urlencoded body (username, accesstoken, surveyid, startdate, enddate). The upstream response is XML; the adaptor converts it to the JSON shape modelled here.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": { "$ref": "#/components/schemas/SurveyDataRequest" }
-            }
-          }
+    "/api/surveys": {
+      "servers": [
+        {
+          "url": "https://www.magpi.com",
+          "description": "Host hard-coded by the adaptor's fetchSurveyData (shut down; now a parked page)"
         },
-        "responses": {
-          "200": {
-            "description": "Survey data list for the requested survey.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/SurveyDataList" }
-              }
-            }
-          }
+        {
+          "url": "https://app.magpi.com",
+          "description": "Host named in the legacy Outbound API docs (shut down)"
         }
-      }
-    },
-    "/api/surveydata/v2": {
+      ],
       "post": {
-        "operationId": "fetchSurveyDataV2",
-        "summary": "Get survey data (v2, includes sub-form data)",
-        "description": "Version 2 of Get Survey Data, which additionally returns sub-form (repeating group) data. Same form-encoded request parameters as v3.",
+        "operationId": "listSurveys",
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Get Surveys: list the forms the user has data-view access to",
+        "description": "Legacy Outbound API call 1. Returns a list of all Magpi forms for which the user has data view access; the surveyid used by Get Survey Data comes from this list. Parameters may be sent as a POST form body or as GET query parameters. The response is XML; its element names are not recoverable from the evidence available (the docs site is offline), so it is modelled as an opaque XML document.",
         "requestBody": {
           "required": true,
           "content": {
             "application/x-www-form-urlencoded": {
-              "schema": { "$ref": "#/components/schemas/SurveyDataRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CredentialsRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Survey data list including sub-form data.",
+            "description": "XML list of forms.",
             "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/SurveyDataList" }
+              "application/xml": {
+                "schema": {
+                  "type": "string",
+                  "description": "XML document listing forms (element names not documented in recoverable evidence)."
+                }
               }
             }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
           }
         }
       }
     },
     "/api/surveydata": {
+      "servers": [
+        {
+          "url": "https://www.magpi.com",
+          "description": "Host hard-coded by the adaptor's fetchSurveyData (shut down; now a parked page)"
+        },
+        {
+          "url": "https://app.magpi.com",
+          "description": "Host named in the legacy Outbound API docs (shut down)"
+        }
+      ],
       "post": {
-        "operationId": "fetchSurveyDataV1",
-        "summary": "Get survey data (v1)",
-        "description": "Version 1 of the Get Survey Data endpoint. Returns top-level submission records for a survey using the same form-encoded credentials and date filters.",
+        "operationId": "getSurveyData",
+        "tags": [
+          "Survey Data"
+        ],
+        "summary": "Get Survey Data (v1)",
+        "description": "Legacy Outbound API call 2. Returns the submissions of one form as an XML SurveyDataList. POST (form body) or GET (query string). startdate/enddate filter on the record DateStamp, inclusive. The JSON response schema models the records after XML conversion, as the adaptor does.",
         "requestBody": {
           "required": true,
           "content": {
             "application/x-www-form-urlencoded": {
-              "schema": { "$ref": "#/components/schemas/SurveyDataRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SurveyDataRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Survey data list for the requested survey.",
+            "description": "SurveyData records (XML SurveyDataList upstream; JSON after XML conversion).",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/SurveyDataList" }
+                "schema": {
+                  "type": "array",
+                  "description": "Upstream body is XML: a SurveyDataList root holding one SurveyData element per record (a single element when there is one record, none when nothing matches). Modelled as the JSON array of records the adaptor produces after XML conversion and normalisation.",
+                  "items": {
+                    "$ref": "#/components/schemas/SurveyData"
+                  }
+                }
               }
             }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/api/surveydata/v2": {
+      "servers": [
+        {
+          "url": "https://www.magpi.com",
+          "description": "Host hard-coded by the adaptor's fetchSurveyData (shut down; now a parked page)"
+        },
+        {
+          "url": "https://app.magpi.com",
+          "description": "Host named in the legacy Outbound API docs (shut down)"
+        }
+      ],
+      "post": {
+        "operationId": "getSurveyDataV2",
+        "tags": [
+          "Survey Data"
+        ],
+        "summary": "Get Survey Data (v2, includes sub-form data)",
+        "description": "Version 2 URL of Get Survey Data; the docs direct callers here to fetch sub-form (repeat group) data. Same parameters as v1. The adaptor README's example URL uses this version.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/SurveyDataRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SurveyData records including sub-form data (XML SurveyDataList upstream).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Upstream body is XML: a SurveyDataList root holding one SurveyData element per record (a single element when there is one record, none when nothing matches). Modelled as the JSON array of records the adaptor produces after XML conversion and normalisation.",
+                  "items": {
+                    "$ref": "#/components/schemas/SurveyData"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/api/surveydata/v3": {
+      "servers": [
+        {
+          "url": "https://www.magpi.com",
+          "description": "Host hard-coded by the adaptor's fetchSurveyData (shut down; now a parked page)"
+        },
+        {
+          "url": "https://app.magpi.com",
+          "description": "Host named in the legacy Outbound API docs (shut down)"
+        }
+      ],
+      "post": {
+        "operationId": "getSurveyDataV3",
+        "tags": [
+          "Survey Data"
+        ],
+        "summary": "Get Survey Data (v3, as called by the adaptor)",
+        "description": "The URL hard-coded in the adaptor's fetchSurveyData (https://www.magpi.com/api/surveydata/v3), sent as a form-encoded POST with username, accesstoken, surveyid, startdate and enddate. Not described in the recoverable docs text; modelled from the adaptor source. The adaptor parses the XML response, reads SurveyDataList.SurveyData (a single element or a list), and keeps the first record's LastSubmissionDate as the cursor for the next run.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/SurveyDataRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SurveyData records (XML SurveyDataList upstream; JSON after XML conversion).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Upstream body is XML: a SurveyDataList root holding one SurveyData element per record (a single element when there is one record, none when nothing matches). Modelled as the JSON array of records the adaptor produces after XML conversion and normalisation.",
+                  "items": {
+                    "$ref": "#/components/schemas/SurveyData"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/api/forms": {
+      "servers": [
+        {
+          "url": "https://api.magpi.com",
+          "description": "New REST Outbound API host (shut down)"
+        }
+      ],
+      "get": {
+        "operationId": "listForms",
+        "tags": [
+          "Forms"
+        ],
+        "summary": "List Forms",
+        "description": "REST Outbound API. Lists all Magpi forms for which the user has data-view access. Optional true/false filters: mine, shared, isPublic, template. Returns JSON.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only forms owned by the user."
+          },
+          {
+            "name": "shared",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only forms shared with the user."
+          },
+          {
+            "name": "isPublic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only public forms."
+          },
+          {
+            "name": "template",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only template forms."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Forms visible to the token's user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Form"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/api/form/{formExternalId}": {
+      "servers": [
+        {
+          "url": "https://api.magpi.com",
+          "description": "New REST Outbound API host (shut down)"
+        }
+      ],
+      "get": {
+        "operationId": "listFormQuestions",
+        "tags": [
+          "Forms"
+        ],
+        "summary": "List Questions of a form",
+        "description": "REST Outbound API. Gets a list of all questions for the specified form, addressed by its external id (not the legacy numeric surveyid).",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/formExternalId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Questions of the form.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Question"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/api/form/{formExternalId}/answers": {
+      "servers": [
+        {
+          "url": "https://api.magpi.com",
+          "description": "New REST Outbound API host (shut down)"
+        }
+      ],
+      "get": {
+        "operationId": "listFormAnswers",
+        "tags": [
+          "Answers"
+        ],
+        "summary": "Get the data (answers) for a form",
+        "description": "REST Outbound API. Gets the submitted data for the specified form. Paged with start/limit (default limit 100, maximum 500) and filterable with searchQuery. Forms with sub-form questions return sub-form answers by reference; fetch them with getSubformAnswers. Answer values may be typed objects (for example type 'image').",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/formExternalId"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Offset of the first record to return."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "maximum": 500
+            },
+            "description": "Number of records to return (default 100, max 500)."
+          },
+          {
+            "name": "searchQuery",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search records by name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Records (answers) of the form.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Answer"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/api/answer/{formExternalId}/{uuid}/{questionName}": {
+      "servers": [
+        {
+          "url": "https://api.magpi.com",
+          "description": "New REST Outbound API host (shut down)"
+        }
+      ],
+      "get": {
+        "operationId": "getSubformAnswers",
+        "tags": [
+          "Answers"
+        ],
+        "summary": "Get Sub-form data",
+        "description": "REST Outbound API. Returns the sub-form records stored under one sub-form question of one record.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/formExternalId"
+          },
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUID of the parent record."
+          },
+          {
+            "name": "questionName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Name of the sub-form question."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sub-form records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Answer"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/GetSurveyForm": {
+      "servers": [
+        {
+          "url": "{server_root}",
+          "description": "Inbound API server root ($server_root in the docs)",
+          "variables": {
+            "server_root": {
+              "default": "https://www.magpi.com",
+              "description": "Magpi server root; the adaptor uses state.configuration.apiUrl"
+            }
+          }
+        }
+      ],
+      "post": {
+        "operationId": "getSurveyForm",
+        "tags": [
+          "Inbound"
+        ],
+        "summary": "Get a form definition (XForm)",
+        "description": "Inbound API. The client writes requestType, id and login fields to the request body (Java DataOutputStream framing in the vendor sample code) and receives an XForm representation of the requested form.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "DataOutputStream-framed fields: requestType, id, login credentials."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "XForm (XML) of the requested form.",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string",
+                  "description": "XForm document."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
+          }
+        }
+      }
+    },
+    "/UploadRecordsNew": {
+      "servers": [
+        {
+          "url": "{server_root}",
+          "description": "Inbound API server root ($server_root in the docs)",
+          "variables": {
+            "server_root": {
+              "default": "https://www.magpi.com",
+              "description": "Magpi server root; the adaptor uses state.configuration.apiUrl"
+            }
+          }
+        }
+      ],
+      "post": {
+        "operationId": "uploadRecords",
+        "tags": [
+          "Inbound"
+        ],
+        "summary": "Upload a record (add new or update existing)",
+        "description": "Inbound API. Adds a new record or updates an existing one. The body starts with the account username and password (writeUTF in the vendor sample) followed by the record. The response is one of a set of numeric status codes (for example a code for invalid username/password); the code table is not recoverable from the evidence available.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "DataOutputStream-framed username, password and record payload."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload status code.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "description": "Numeric upload status code."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
           }
         }
       }
     },
     "/mobileApi/uploadData": {
+      "servers": [
+        {
+          "url": "{server_root}",
+          "description": "Inbound API server root ($server_root in the docs)",
+          "variables": {
+            "server_root": {
+              "default": "https://www.magpi.com",
+              "description": "Magpi server root; the adaptor uses state.configuration.apiUrl"
+            }
+          }
+        }
+      ],
       "post": {
         "operationId": "submitRecord",
-        "summary": "Upload / submit a record to an existing form",
-        "description": "Inbound API endpoint. The adaptor serialises the supplied JSON payload to an XML `<form>` document and POSTs it here using the configured username/password. Submits a single record against a form/survey that already exists in the Magpi account.",
+        "tags": [
+          "Inbound"
+        ],
+        "summary": "Submit a record (adaptor submitRecord target)",
+        "description": "URL built by the adaptor's submitRecord ({apiUrl}/mobileApi/uploadData) with the record serialised as an XML <form> element. The adaptor marks the operation work-in-progress and never sends the request; the path does not appear in the recoverable Inbound API docs (whose upload call is UploadRecordsNew). Kept so every adaptor operation maps to a path.",
+        "deprecated": true,
         "requestBody": {
           "required": true,
           "content": {
             "application/xml": {
-              "schema": { "$ref": "#/components/schemas/RecordUpload" }
+              "schema": {
+                "type": "string",
+                "description": "XML <form> element produced by js2xmlparser from the adaptor's JSON input; child elements are the form's question names."
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Upload result.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/UploadResponse" }
-              }
-            }
+            "description": "Response not documented."
+          },
+          "default": {
+            "description": "Error (format not documented in recoverable evidence)."
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "accessToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "REST Outbound API: the access token generated on the Magpi API settings page, sent as the Authorization header value."
+      }
+    },
+    "parameters": {
+      "formExternalId": {
+        "name": "formExternalId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "External id of the form (from listForms)."
+      }
+    },
     "schemas": {
-      "SurveyDataRequest": {
+      "CredentialsRequest": {
         "type": "object",
-        "description": "Form-encoded request parameters for the Get Survey Data endpoints.",
-        "required": ["username", "accesstoken", "surveyid"],
+        "description": "Legacy Outbound API credentials, sent as form fields or query parameters.",
+        "required": [
+          "username",
+          "accesstoken"
+        ],
         "properties": {
           "username": {
             "type": "string",
-            "description": "Magpi username that owns the access token.",
-            "example": "testuser"
+            "description": "Username of the user who generated the access token.",
+            "example": "example-user"
           },
           "accesstoken": {
             "type": "string",
-            "description": "API access token generated for the user.",
-            "example": "yt72xk536RUPpKscMUof"
+            "description": "Access token created on the Magpi API settings page.",
+            "example": "YOUR_ACCESS_TOKEN"
+          }
+        }
+      },
+      "SurveyDataRequest": {
+        "type": "object",
+        "description": "Legacy Get Survey Data parameters.",
+        "required": [
+          "username",
+          "accesstoken",
+          "surveyid"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Account username.",
+            "example": "example-user"
+          },
+          "accesstoken": {
+            "type": "string",
+            "description": "Access token; each token is associated with the user who generated it.",
+            "example": "YOUR_ACCESS_TOKEN"
           },
           "surveyid": {
             "type": "string",
-            "description": "Identifier of the survey/form whose data is being fetched.",
+            "description": "Numeric survey id (not the survey's name), taken from Get Surveys.",
             "example": "37479"
           },
           "startdate": {
             "type": "string",
-            "format": "date",
-            "description": "Only return submissions on or after this date (must be used with enddate).",
-            "example": "2017-09-27"
+            "description": "Optional start date; filtering is on the record DateStamp and inclusive. Same date format as the Magpi data tab."
           },
           "enddate": {
             "type": "string",
-            "format": "date",
-            "description": "Only return submissions on or before this date (must be used with startdate).",
-            "example": "2017-10-27"
-          },
-          "start": {
-            "type": "integer",
-            "description": "Pagination offset (index of first record to return).",
-            "example": 0
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Maximum number of records to return.",
-            "example": 100
-          }
-        }
-      },
-      "SurveyDataList": {
-        "type": "object",
-        "description": "Container returned by the Get Survey Data endpoints (XML SurveyDataList, converted to JSON).",
-        "properties": {
-          "SurveyData": {
-            "type": "array",
-            "description": "Submission records. Upstream XML may return a single object or an array; the adaptor normalises to an array.",
-            "items": { "$ref": "#/components/schemas/SurveyData" }
+            "description": "Optional end date; filtering is on the record DateStamp and inclusive."
           }
         }
       },
       "SurveyData": {
         "type": "object",
-        "description": "A single survey submission. Answer fields are dynamic per form, so arbitrary string-valued properties are permitted alongside the well-known metadata fields.",
+        "description": "One submission record. Child elements are the form's question names (form-specific) plus record metadata; only LastSubmissionDate is evidenced by the adaptor source.",
         "properties": {
-          "SubmissionId": {
-            "type": "string",
-            "description": "Unique identifier of the submission.",
-            "example": "9911002"
-          },
-          "SubmissionDate": {
-            "type": "string",
-            "description": "Timestamp the submission was received.",
-            "example": "2017-09-28 14:03:11"
-          },
           "LastSubmissionDate": {
             "type": "string",
-            "description": "Timestamp of the most recent submission in the list; the adaptor stores this as state.lastSubmissionDate for incremental fetches.",
-            "example": "2017-10-01 09:15:00"
-          },
-          "surveyId": {
-            "type": "string",
-            "description": "Survey identifier, stamped onto each record by the adaptor.",
-            "example": "37479"
-          },
-          "source": {
-            "type": "string",
-            "description": "Source label stamped onto each record by the adaptor.",
-            "example": "Magpi API"
-          }
-        },
-        "additionalProperties": {
-          "type": "string",
-          "description": "Form-specific answer values keyed by question/field name."
-        }
-      },
-      "RecordUpload": {
-        "type": "object",
-        "description": "A record to submit to an existing form. The adaptor serialises this JSON object into an XML <form> element. Field names correspond to the target form's questions.",
-        "properties": {
-          "surveyid": {
-            "type": "string",
-            "description": "Identifier of the form/survey to submit against.",
-            "example": "37479"
-          },
-          "data": {
-            "type": "object",
-            "description": "Answer values keyed by field name.",
-            "additionalProperties": { "type": "string" }
+            "description": "Submission timestamp the adaptor keeps as the next run's startdate (read from the first record)."
           }
         },
         "additionalProperties": true
       },
-      "UploadResponse": {
+      "Form": {
         "type": "object",
-        "description": "Result of an inbound uploadData submission.",
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "Outcome status of the upload.",
-            "example": "success"
-          },
-          "recordId": {
-            "type": "string",
-            "description": "Identifier assigned to the newly created record.",
-            "example": "9911003"
-          },
-          "message": {
-            "type": "string",
-            "description": "Human-readable result message.",
-            "example": "Record uploaded successfully."
-          }
-        }
+        "description": "A Magpi form as returned by the REST Outbound API. Field names are not recoverable from the evidence available (docs offline); forms are addressed by their external id.",
+        "additionalProperties": true
+      },
+      "Question": {
+        "type": "object",
+        "description": "A question of a form (REST Outbound API). Field names not recoverable from the evidence available.",
+        "additionalProperties": true
+      },
+      "Answer": {
+        "type": "object",
+        "description": "One submitted record (REST Outbound API). Keys are question names; typed values such as images appear as objects with a type field (e.g. 'image'). Full field list not recoverable.",
+        "additionalProperties": true
       }
     }
   }

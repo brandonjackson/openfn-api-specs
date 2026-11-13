@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsAgentCustomToolUseEvent",
+  "title": "BetaManagedAgentsAgentCustomToolUseEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsAgentCustomToolUseEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Event emitted when the agent calls a custom tool. The session goes idle until the client sends a `user.custom_tool_result` event with the result. The client can send it as soon as this event arrives, without waiting for `session.status_idle`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "name",
+    "input",
+    "processed_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "agent.custom_tool_use"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the custom tool being called.",
+      "type": "string"
+    },
+    "input": {
+      "description": "Input parameters for the tool call.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsStruct.json"
+        }
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when this tool use was processed.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "session_thread_id": {
+      "description": "When set, this event was cross-posted from a subagent's thread to surface its custom tool use on the primary thread's stream. Empty on the thread's own events. Informational only: the server routes the matching `user.custom_tool_result` by `custom_tool_use_id`, so clients do not send it back.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

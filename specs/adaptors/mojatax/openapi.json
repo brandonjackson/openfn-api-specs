@@ -1,79 +1,147 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Mojatax VFD API (generated, focused)",
-    "version": "1.0.0",
-    "description": "Focused OpenAPI 3.0.3 for the Mojatax VFD (Virtual Fiscal Device) API used by the OpenFn mojatax adaptor to issue Tanzania Revenue Authority (TRA) fiscal receipts/invoices. The adaptor's post() helper prefixes every path with /client/, so endpoints are modelled under /client/. Vendor machine-readable docs are not published; this is a best-effort subset.",
+    "title": "Mojatax VFD API",
+    "version": "v1",
+    "description": "Mojatax is a Tanzanian Virtual Fiscal Device (VFD) service: it registers sales receipts/invoices with the Tanzania Revenue Authority (TRA) on behalf of client systems. The API is private (documented only in a non-public Postman workspace). The OpenFn adaptor logs in with POST /api/v1/auth/clientLogin and then calls client routes under /api/v1/client/ with a bearer token; this document models every route the adaptor and its docs evidence.",
     "x-openfn-adaptor": "mojatax"
   },
-  "servers": [{ "url": "https://api.mojatax.com" }],
+  "servers": [
+    {
+      "url": "https://vfd-staging.mojatax.com",
+      "description": "Staging host named in the adaptor configuration schema and the adaptor request issue (OpenFn/adaptors#773)."
+    },
+    {
+      "url": "https://vfd.mojatax.com",
+      "description": "Production VFD host (from certificate transparency logs; not documented, unverified)."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "Invoices"
+    }
+  ],
   "paths": {
-    "/client/GetToken": {
+    "/api/v1/auth/clientLogin": {
       "post": {
-        "operationId": "getToken",
-        "summary": "Authenticate a business client and obtain an access token",
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "clientLogin",
+        "summary": "Exchange client credentials for an access token",
+        "description": "Run by the adaptor's execute() unless configuration.access_token is already set. The adaptor reads response.body.access_token and sends it as `Authorization: Bearer <access_token>`.",
+        "x-openfn-source": "adaptor source: packages/mojatax/src/Utils.js authorize(); test/Adaptor.test.js mock",
+        "security": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "client_id": { "type": "string" },
-                  "password": { "type": "string" }
+                "$ref": "#/components/schemas/ClientLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
-        },
-        "responses": {
-          "200": {
-            "description": "Access token response",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } }
-            }
-          }
         }
       }
     },
-    "/client/CreateInvoice": {
+    "/api/v1/client/CreateInvoice": {
       "post": {
+        "tags": [
+          "Invoices"
+        ],
         "operationId": "createInvoice",
-        "summary": "Create a fiscal invoice/receipt",
+        "summary": "Create (fiscalise) an invoice",
+        "description": "Submits a sale invoice for VFD registration. Reached with the adaptor's post('CreateInvoice', body), which prefixes /api/v1/client/. The request issue spells the route createInvoice; the adaptor and its tests use CreateInvoice. Only customerId, invoice_id and items appear in OpenFn's examples; the item shape and any receipt/verification fields in the response are not publicly documented.",
+        "x-openfn-source": "adaptor source: packages/mojatax/src/Adaptor.js post()/request() JSDoc; README example; test/Adaptor.test.js mocks; issue OpenFn/adaptors#773",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/InvoiceInput" } }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The created invoice and its fiscal receipt details",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
-            }
-          }
-        }
-      }
-    },
-    "/client/CancelInvoice": {
-      "post": {
-        "operationId": "cancelInvoice",
-        "summary": "Cancel a previously issued invoice",
-        "requestBody": {
-          "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": { "invoice_id": { "type": "string" } }
+                "$ref": "#/components/schemas/CreateInvoiceRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Cancellation result",
+            "description": "Invoice accepted (the adaptor tests mock both 200 and 201).",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/OperationResult" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Invoice created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
         }
@@ -81,54 +149,97 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "access_token from POST /api/v1/auth/clientLogin."
+      }
+    },
     "schemas": {
-      "TokenResponse": {
+      "ClientLoginRequest": {
         "type": "object",
+        "required": [
+          "client_id",
+          "password"
+        ],
         "properties": {
-          "access_token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIs..." },
-          "token_type": { "type": "string", "example": "Bearer" },
-          "expires_in": { "type": "integer", "example": 3600 }
-        }
-      },
-      "InvoiceInput": {
-        "type": "object",
-        "properties": {
-          "invoice_id": { "type": "string", "example": "PID092" },
-          "customerId": { "type": "string", "example": "102" },
-          "items": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/InvoiceItem" }
+          "client_id": {
+            "type": "string",
+            "description": "Client id issued by Mojatax (configuration.clientId)."
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
           }
         }
       },
-      "InvoiceItem": {
+      "AccessToken": {
         "type": "object",
+        "required": [
+          "access_token"
+        ],
         "properties": {
-          "description": { "type": "string", "example": "Consultation" },
-          "quantity": { "type": "number", "example": 1 },
-          "unitPrice": { "type": "number", "example": 15000 },
-          "taxCode": { "type": "string", "example": "A" }
+          "access_token": {
+            "type": "string",
+            "description": "Bearer token."
+          }
+        }
+      },
+      "CreateInvoiceRequest": {
+        "type": "object",
+        "description": "Invoice payload. Only these fields appear in OpenFn's examples; others accepted by the API are not publicly documented.",
+        "additionalProperties": true,
+        "properties": {
+          "invoice_id": {
+            "type": "string",
+            "description": "Client-side invoice reference."
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Customer identifier."
+          },
+          "items": {
+            "type": "array",
+            "description": "Invoice line items (item shape not documented).",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "example": {
+          "invoice_id": "PID092",
+          "customerId": "102",
+          "items": []
         }
       },
       "Invoice": {
         "type": "object",
+        "description": "Invoice as echoed by the API. Fields beyond these (receipt number, verification code/URL) are not documented.",
+        "additionalProperties": true,
         "properties": {
-          "invoice_id": { "type": "string", "example": "PID092" },
-          "customerId": { "type": "string", "example": "102" },
-          "status": { "type": "string", "example": "ISSUED" },
-          "receiptNumber": { "type": "string", "example": "6789012345" },
-          "receiptUrl": { "type": "string", "example": "https://verify.tra.go.tz/6789012345" },
-          "totalAmount": { "type": "number", "example": 15000 },
-          "issuedAt": { "type": "string", "format": "date-time" },
-          "items": { "type": "array", "items": { "$ref": "#/components/schemas/InvoiceItem" } }
+          "id": {
+            "type": "integer",
+            "description": "Mojatax invoice id."
+          },
+          "invoice_id": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 7,
+          "customerId": "102",
+          "invoice_id": "PID092"
         }
       },
-      "OperationResult": {
+      "Error": {
         "type": "object",
-        "properties": {
-          "success": { "type": "boolean", "example": true },
-          "message": { "type": "string", "example": "Invoice cancelled" }
-        }
+        "description": "Error body; shape not documented.",
+        "additionalProperties": true
       }
     }
   }

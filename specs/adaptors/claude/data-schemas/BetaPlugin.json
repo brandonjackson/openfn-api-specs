@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaPlugin",
+  "title": "Plugin",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaPlugin",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "components": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "BetaPluginComponent.json"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Components",
+      "description": "What the served version contains; null when not enumerated."
+    },
+    "content_scan": {
+      "anyOf": [
+        {
+          "$ref": "BetaPluginContentScan.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The served version's content scan; null when it has not been scanned."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At",
+      "description": "RFC 3339.",
+      "examples": [
+        "2026-03-14T09:26:53.589793Z"
+      ]
+    },
+    "created_by": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "$ref": "BetaPluginUserActor.json"
+            },
+            {
+              "$ref": "BetaPluginApiActor.json"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "api_actor": "#/components/schemas/BetaPluginApiActor",
+              "user_actor": "#/components/schemas/BetaPluginUserActor"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Created By",
+      "description": "Who created the Plugin; null when no creator is recorded."
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Description",
+      "description": "The served version's description.",
+      "examples": [
+        "Reviews pull requests against your team's conventions."
+      ]
+    },
+    "display_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Display Name",
+      "description": "The served version's display name.",
+      "examples": [
+        "Code Review Helper"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "The Plugin's ID.",
+      "examples": [
+        "plugin_01JyHfbRkZvD1gW7oTqXc3Ne"
+      ]
+    },
+    "latest_version_id": {
+      "type": "string",
+      "title": "Latest Version Id",
+      "description": "The newest version.",
+      "examples": [
+        "pluginver_01KaZmQpRsTuVwXyZ2b4c6d8"
+      ]
+    },
+    "manifest_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Manifest Version",
+      "description": "The served version's manifest `version`, normalized for display, or `null` (the Plugin Version's `manifest_version` says how and when).",
+      "examples": [
+        "1.2.0"
+      ]
+    },
+    "marketplace_id": {
+      "type": "string",
+      "title": "Marketplace Id",
+      "description": "The ID of the plugin marketplace the Plugin lives in.",
+      "examples": [
+        "marketplace_01HxQ3v9KpZ2mTn8RwLc4Ys7"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Lowercase identifier, unique within its plugin marketplace. Fixed for an organization-owned Plugin's lifetime; a member-owned Plugin's changes when its owner renames it in claude.ai, while its `id` stays the same.",
+      "examples": [
+        "code-review-helper"
+      ]
+    },
+    "organization_installation_preference": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "auto_install",
+            "available",
+            "not_available",
+            "required"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Organization Installation Preference",
+      "description": "Organization-owned Plugin: the organization-wide installation setting every member gets unless an RBAC Group they belong to holds its own — the Plugin's own setting, or its plugin marketplace's default. Null for a member-owned Plugin, which has shares instead. One of `required`, `auto_install`, `available`, `not_available`; a value this API does not yet name is returned as stored.",
+      "examples": [
+        "available"
+      ]
+    },
+    "organization_installation_preference_inherited": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Organization Installation Preference Inherited",
+      "description": "Organization-owned Plugin: true while it has no organization-wide setting of its own and `organization_installation_preference` is its plugin marketplace's default. Null for a member-owned Plugin."
+    },
+    "owner": {
+      "oneOf": [
+        {
+          "$ref": "BetaPluginOwnerOrganization.json"
+        },
+        {
+          "$ref": "BetaPluginOwnerUser.json"
+        }
+      ],
+      "title": "Owner",
+      "description": "Who owns the Plugin: the organization, or the member whose personal plugin marketplace it lives in.",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/BetaPluginOwnerOrganization",
+          "user": "#/components/schemas/BetaPluginOwnerUser"
+        }
+      }
+    },
+    "reach": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "contained",
+            "privileged",
+            "remote"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Reach",
+      "description": "How far the served version reaches, or `null` if it is not classified.\n\n`remote` means it declares an MCP server or a CLI, or something that counts as one. `privileged` means it is not `remote`, but declares a hook (of any type, even one that posts to a URL), monitor, language server, Claude Code workflow (any file in a `workflows/` folder at its root counts as one), or settings, or has a skill, command, or other Markdown file whose frontmatter pre-approves tools (`allowed-tools` with any value other than an empty one or one that names only `AskUserQuestion`, `TodoWrite`, and `ToolSearch`). Otherwise it is `contained`.\n\nIf the frontmatter of a skill, command, or other Markdown file that could change the value could not be read, or was past a size limit, the version is `null` or `privileged` (or `remote`, if something else it declares makes it `remote`), not `contained`. The value is normally worked out when a version is stored, under the rules of that time, so an older version can be `null`, `contained` where the same files stored today would be `privileged`, `remote`, or `null`, or `privileged` where they would be `remote`."
+    },
+    "served_version_id": {
+      "type": "string",
+      "title": "Served Version Id",
+      "description": "The version claude.ai serves to members.",
+      "examples": [
+        "pluginver_01K9wPcHd4Rm2Tx8Vq6Ln3Sb"
+      ]
+    },
+    "served_version_pinned": {
+      "type": "boolean",
+      "title": "Served Version Pinned",
+      "description": "True once the served version has been pinned, through Update Plugin or in claude.ai. While false, a new version normally becomes the served version when it is stored. While the newest version is not the served version, as when a version saved in claude.ai is waiting for its content scan, `served_version_id` differs from `latest_version_id`."
+    },
+    "type": {
+      "type": "string",
+      "const": "plugin",
+      "title": "Type",
+      "description": "Always `plugin`.",
+      "default": "plugin"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At",
+      "description": "RFC 3339. Moves on a served-version change (including pinning an unpinned Plugin to the version it already serves) and, normally, on a new version. A version saved in claude.ai that waits for its content scan moves it when it becomes the served version, and not necessarily when it is stored. A change to the Plugin's installation settings or shares does not move it.",
+      "examples": [
+        "2026-03-14T09:26:53.589793Z"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "components",
+    "content_scan",
+    "created_at",
+    "created_by",
+    "description",
+    "display_name",
+    "id",
+    "latest_version_id",
+    "manifest_version",
+    "marketplace_id",
+    "name",
+    "organization_installation_preference",
+    "organization_installation_preference_inherited",
+    "owner",
+    "reach",
+    "served_version_id",
+    "served_version_pinned",
+    "type",
+    "updated_at"
+  ]
+}

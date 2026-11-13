@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseWebSearchToolResultBlock",
+  "title": "ResponseWebSearchToolResultBlock",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseWebSearchToolResultBlock",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "caller": {
+      "discriminator": {
+        "mapping": {
+          "code_execution_20250825": "#/components/schemas/BetaServerToolCaller",
+          "code_execution_20260120": "#/components/schemas/BetaServerToolCaller_20260120",
+          "direct": "#/components/schemas/BetaDirectCaller"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaDirectCaller.json"
+        },
+        {
+          "$ref": "BetaServerToolCaller.json"
+        },
+        {
+          "$ref": "BetaServerToolCaller_20260120.json"
+        }
+      ],
+      "title": "Caller"
+    },
+    "content": {
+      "anyOf": [
+        {
+          "$ref": "BetaResponseWebSearchToolResultError.json"
+        },
+        {
+          "items": {
+            "$ref": "BetaResponseWebSearchResultBlock.json"
+          },
+          "type": "array"
+        }
+      ],
+      "title": "Content"
+    },
+    "tool_use_id": {
+      "pattern": "^srvtoolu_[a-zA-Z0-9_]+$",
+      "title": "Tool Use Id",
+      "type": "string"
+    },
+    "type": {
+      "const": "web_search_tool_result",
+      "default": "web_search_tool_result",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "content",
+    "tool_use_id",
+    "type"
+  ],
+  "type": "object"
+}

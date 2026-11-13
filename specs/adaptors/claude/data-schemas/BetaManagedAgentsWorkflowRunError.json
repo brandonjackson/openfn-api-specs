@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsWorkflowRunError",
+  "title": "BetaManagedAgentsWorkflowRunError",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsWorkflowRunError",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Why a workflow run did not finish, or was not created. More types may be added. On `workflow_run.status_ended`, for a `type` you do not recognize, rely on the event's `result.type`.",
+  "type": "object",
+  "discriminator": {
+    "propertyName": "type",
+    "mapping": {
+      "timeout_error": "#/components/schemas/BetaManagedAgentsTimeoutWorkflowRunError",
+      "program_error": "#/components/schemas/BetaManagedAgentsProgramWorkflowRunError",
+      "unknown_error": "#/components/schemas/BetaManagedAgentsUnknownWorkflowRunError",
+      "thread_limit_error": "#/components/schemas/BetaManagedAgentsThreadLimitWorkflowRunError",
+      "max_workflow_runs_error": "#/components/schemas/BetaManagedAgentsMaxWorkflowRunsWorkflowRunError"
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "BetaManagedAgentsTimeoutWorkflowRunError.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsProgramWorkflowRunError.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsUnknownWorkflowRunError.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsThreadLimitWorkflowRunError.json"
+    },
+    {
+      "$ref": "BetaManagedAgentsMaxWorkflowRunsWorkflowRunError.json"
+    }
+  ]
+}

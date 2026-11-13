@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaBrowserToolset_20260801",
+  "title": "BrowserToolset_20260801",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaBrowserToolset_20260801",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "description": "The browser toolset: a single ``tools[]`` entry (carrying no\n``name``) that declares the browser tool family. The model is served\nthe family's tool with any members disabled via ``configs`` removed\nfrom its schema.",
+  "properties": {
+    "cache_control": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Create a cache control breakpoint at this content block.",
+      "title": "Cache Control"
+    },
+    "configs": {
+      "anyOf": [
+        {
+          "$ref": "BetaBrowserToolsetConfigs.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Sparse per-member overrides, keyed by member name. Absent, null, and {} are equivalent; a member's defaults apply wherever its key is absent."
+    },
+    "type": {
+      "const": "browser_toolset_20260801",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "type": "object"
+}

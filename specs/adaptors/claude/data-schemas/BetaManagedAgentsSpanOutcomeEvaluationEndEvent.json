@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSpanOutcomeEvaluationEndEvent",
+  "title": "BetaManagedAgentsSpanOutcomeEvaluationEndEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSpanOutcomeEvaluationEndEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Emitted when an outcome evaluation cycle completes. Carries the verdict and aggregate token usage. A verdict of `needs_revision` means another evaluation cycle follows; `satisfied`, `max_iterations_reached`, `failed`, or `interrupted` are terminal — no further evaluation cycles follow.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "processed_at",
+    "outcome_evaluation_start_id",
+    "iteration",
+    "result",
+    "explanation",
+    "usage",
+    "outcome_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "span.outcome_evaluation_end",
+      "examples": [
+        "span.outcome_evaluation_end"
+      ]
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string",
+      "examples": [
+        "sevt_011CZkZUVz5nHiv9qfWYomas"
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when outcome evaluation ended.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-03-15T10:02:31Z"
+      ]
+    },
+    "outcome_evaluation_start_id": {
+      "description": "The id of the corresponding `span.outcome_evaluation_start` event.",
+      "type": "string",
+      "examples": [
+        "sevt_011CZkZTUy4mGhu8peVXnmzr"
+      ]
+    },
+    "iteration": {
+      "description": "0-indexed revision cycle, matching the corresponding `span.outcome_evaluation_start`.",
+      "type": "integer",
+      "format": "int32",
+      "examples": [
+        0
+      ]
+    },
+    "result": {
+      "description": "Evaluation verdict. 'satisfied': criteria met, session goes idle. 'needs_revision': criteria not met, another revision cycle follows. 'max_iterations_reached': evaluation budget exhausted with criteria still unmet — one final acknowledgment turn follows before the session goes idle, but no further evaluation runs. 'failed': grader determined the rubric does not apply to the deliverables. 'interrupted': user sent an interrupt while evaluation was in progress.",
+      "type": "string",
+      "examples": [
+        "satisfied"
+      ]
+    },
+    "explanation": {
+      "description": "Human-readable explanation of the verdict. For `needs_revision`, describes which criteria failed and why.",
+      "type": "string",
+      "examples": [
+        "All five sections present with inline citations."
+      ]
+    },
+    "usage": {
+      "description": "Aggregate token usage for this evaluation cycle. Sums across all grader model requests within the cycle.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsSpanModelUsage.json"
+        }
+      ],
+      "examples": [
+        {
+          "input_tokens": 1842,
+          "output_tokens": 213,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 1536
+        }
+      ]
+    },
+    "outcome_id": {
+      "description": "The `outc_` ID of the outcome being evaluated.",
+      "type": "string",
+      "examples": [
+        "outc_011CZkZRSw2kEfs6ncTVmjxP"
+      ]
+    }
+  },
+  "example": {
+    "type": "span.outcome_evaluation_end",
+    "id": "sevt_011CZkZUVz5nHiv9qfWYomas",
+    "processed_at": "2026-03-15T10:02:31Z",
+    "outcome_evaluation_start_id": "sevt_011CZkZTUy4mGhu8peVXnmzr",
+    "iteration": 0,
+    "result": "satisfied",
+    "explanation": "All five sections present with inline citations.",
+    "usage": {
+      "input_tokens": 1842,
+      "output_tokens": 213,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1536
+    },
+    "outcome_id": "outc_011CZkZRSw2kEfs6ncTVmjxP"
+  }
+}

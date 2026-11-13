@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsDeploymentRun",
+  "title": "BetaManagedAgentsDeploymentRun",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsDeploymentRun",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A persistent, append-only record of a single deployment execution. Records session creation success or failure — no session lifecycle tracking.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "deployment_id",
+    "trigger_context",
+    "session_id",
+    "error",
+    "agent",
+    "created_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "deployment_run"
+    },
+    "id": {
+      "description": "Unique identifier for this run (`drun_...`).",
+      "type": "string"
+    },
+    "deployment_id": {
+      "description": "ID of the deployment that produced this run.",
+      "type": "string"
+    },
+    "trigger_context": {
+      "description": "What triggered this run and trigger-specific metadata.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsTriggerContext.json"
+        }
+      ]
+    },
+    "session_id": {
+      "description": "Populated on success. Null on creation failure. Exactly one of `session_id` or `error` is non-null.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "description": "Populated on creation failure. Null on success. Exactly one of `session_id` or `error` is non-null.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsRunError.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "agent": {
+      "description": "Snapshot of the agent at fire time. Always fully resolved — deployments pin agent + version.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsAgentReference.json"
+        }
+      ]
+    },
+    "created_at": {
+      "description": "Time this run record was persisted.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    }
+  }
+}

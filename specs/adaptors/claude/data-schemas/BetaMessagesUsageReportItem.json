@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaMessagesUsageReportItem",
+  "title": "MessagesUsageReportItem",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaMessagesUsageReportItem",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "uncached_input_tokens": {
+      "type": "integer",
+      "title": "Uncached Input Tokens",
+      "description": "The number of uncached input tokens processed.",
+      "examples": [
+        1500
+      ]
+    },
+    "cache_creation": {
+      "$ref": "BetaCacheCreation.json",
+      "description": "The number of input tokens for cache creation."
+    },
+    "cache_read_input_tokens": {
+      "type": "integer",
+      "title": "Cache Read Input Tokens",
+      "description": "The number of input tokens read from the cache.",
+      "examples": [
+        200
+      ]
+    },
+    "output_tokens": {
+      "type": "integer",
+      "title": "Output Tokens",
+      "description": "The number of output tokens generated.",
+      "examples": [
+        500
+      ]
+    },
+    "server_tool_use": {
+      "$ref": "BetaServerToolUse.json",
+      "description": "Server-side tool usage metrics."
+    },
+    "api_key_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Api Key Id",
+      "description": "ID of the API key used. `null` if not grouping by API key or if the request did not use an API key, as with usage in the Claude Console or from most Claude Managed Agents sessions.",
+      "examples": [
+        "apikey_01Rj2N8SVvo6BePZj99NhmiT"
+      ]
+    },
+    "workspace_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Workspace Id",
+      "description": "ID of the Workspace used. `null` if not grouping by workspace or for the default workspace.",
+      "examples": [
+        "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"
+      ]
+    },
+    "account_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Account Id",
+      "description": "ID of the user account that made the request. `null` if not grouping by account or if no user account made the request.",
+      "examples": [
+        "user_01WxYzAbCdEfGhJkMnPqRsTu"
+      ]
+    },
+    "service_account_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Service Account Id",
+      "description": "ID of the service account that made the request. `null` if not grouping by service account or if no service account made the request. This can be the ID of an Anthropic-managed service account, such as one that runs Claude Managed Agents sessions, which the Service Accounts endpoints do not return.",
+      "examples": [
+        "svac_01Hk3R9TWxq7CfQak00OiVw4"
+      ]
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Model",
+      "description": "Model used. `null` if not grouping by model.",
+      "examples": [
+        "claude-opus-5-5",
+        "claude-sonnet-5-5"
+      ]
+    },
+    "service_tier": {
+      "anyOf": [
+        {
+          "$ref": "BetaUsageReportServiceTier.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Service tier used. `null` if not grouping by service tier.",
+      "examples": [
+        "standard",
+        "batch",
+        "priority",
+        "priority_on_demand",
+        "flex",
+        "flex_discount"
+      ]
+    },
+    "context_window": {
+      "anyOf": [
+        {
+          "$ref": "BetaMessagesUsageReportContextWindow.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Context window used. `null` if not grouping by context window.\n\nA request is classified by comparing its prompt size with its model's own long-context boundary, the same boundary that billing uses. The two values are labels for the two classes, not literal ranges: where a model's boundary is below 200k, a request whose prompt exceeds that boundary is reported under `200k-1M`, and a `0-200k` filter does not return it. Where the report cannot determine a model's boundary, it uses 200k instead. Usage stored before this classification took effect may still be reported under its earlier value, at any `bucket_width`, until it expires. Billed amounts are not affected.",
+      "examples": [
+        "0-200k",
+        "200k-1M"
+      ]
+    },
+    "inference_geo": {
+      "anyOf": [
+        {
+          "$ref": "BetaInferenceGeoFilter.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Inference Geo",
+      "description": "Inference geo used matching requests' `inference_geo` parameter if set, otherwise the workspace's `default_inference_geo`.\nFor models that do not support specifying `inference_geo` the value is `\"not_available\"`. Always `null` if not grouping by inference geo.",
+      "examples": [
+        "global",
+        "us",
+        "not_available"
+      ]
+    },
+    "speed": {
+      "anyOf": [
+        {
+          "$ref": "BetaSpeed.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Speed of the usage. `null` if not grouping by speed.",
+      "examples": [
+        "standard",
+        "fast"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "uncached_input_tokens",
+    "cache_creation",
+    "cache_read_input_tokens",
+    "output_tokens",
+    "server_tool_use",
+    "api_key_id",
+    "workspace_id",
+    "account_id",
+    "service_account_id",
+    "model",
+    "service_tier",
+    "context_window",
+    "inference_geo",
+    "speed"
+  ]
+}

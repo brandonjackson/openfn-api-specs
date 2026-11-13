@@ -5,57 +5,61 @@
   "x-openfn-adaptor": "claude",
   "x-source": {
     "openapi": "#/components/schemas/ContentBlock",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
-  "type": "object",
-  "description": "A block of generated content. The most common type is `text`; tool use and thinking blocks may also appear.",
-  "required": [
-    "type"
-  ],
-  "properties": {
-    "type": {
-      "type": "string",
-      "example": "text",
-      "enum": [
-        "text",
-        "thinking",
-        "redacted_thinking",
-        "tool_use",
-        "server_tool_use",
-        "web_search_tool_result",
-        "code_execution_tool_result"
-      ]
+  "discriminator": {
+    "mapping": {
+      "bash_code_execution_tool_result": "#/components/schemas/ResponseBashCodeExecutionToolResultBlock",
+      "code_execution_tool_result": "#/components/schemas/ResponseCodeExecutionToolResultBlock",
+      "container_upload": "#/components/schemas/ResponseContainerUploadBlock",
+      "redacted_thinking": "#/components/schemas/ResponseRedactedThinkingBlock",
+      "server_tool_use": "#/components/schemas/ResponseServerToolUseBlock",
+      "text": "#/components/schemas/ResponseTextBlock",
+      "text_editor_code_execution_tool_result": "#/components/schemas/ResponseTextEditorCodeExecutionToolResultBlock",
+      "thinking": "#/components/schemas/ResponseThinkingBlock",
+      "tool_search_tool_result": "#/components/schemas/ResponseToolSearchToolResultBlock",
+      "tool_use": "#/components/schemas/ResponseToolUseBlock",
+      "web_fetch_tool_result": "#/components/schemas/ResponseWebFetchToolResultBlock",
+      "web_search_tool_result": "#/components/schemas/ResponseWebSearchToolResultBlock"
     },
-    "text": {
-      "type": "string",
-      "description": "Present when type is `text`."
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "ResponseTextBlock.json"
     },
-    "thinking": {
-      "type": "string",
-      "description": "Present when type is `thinking`."
+    {
+      "$ref": "ResponseThinkingBlock.json"
     },
-    "id": {
-      "type": "string",
-      "description": "Present when type is `tool_use`."
+    {
+      "$ref": "ResponseRedactedThinkingBlock.json"
     },
-    "name": {
-      "type": "string",
-      "description": "Tool name, present when type is `tool_use`."
+    {
+      "$ref": "ResponseToolUseBlock.json"
     },
-    "input": {
-      "type": "object",
-      "additionalProperties": true,
-      "description": "Tool input, present when type is `tool_use`."
+    {
+      "$ref": "ResponseServerToolUseBlock.json"
     },
-    "citations": {
-      "type": [
-        "array",
-        "null"
-      ],
-      "items": {
-        "type": "object",
-        "additionalProperties": true
-      }
+    {
+      "$ref": "ResponseWebSearchToolResultBlock.json"
+    },
+    {
+      "$ref": "ResponseWebFetchToolResultBlock.json"
+    },
+    {
+      "$ref": "ResponseCodeExecutionToolResultBlock.json"
+    },
+    {
+      "$ref": "ResponseBashCodeExecutionToolResultBlock.json"
+    },
+    {
+      "$ref": "ResponseTextEditorCodeExecutionToolResultBlock.json"
+    },
+    {
+      "$ref": "ResponseToolSearchToolResultBlock.json"
+    },
+    {
+      "$ref": "ResponseContainerUploadBlock.json"
     }
-  }
+  ]
 }

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsMemory",
+  "title": "BetaManagedAgentsMemory",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsMemory",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A text document at a path inside a memory store.\n\n`content` is `null` when the response uses `view=basic`. `content_size_bytes` and `content_sha256` are always set, so you can detect changes without fetching the content. To retrieve, update, or delete a memory, pass its ID, which stays the same when its path changes.\n\nSee the [memory guide](https://platform.claude.com/docs/en/managed-agents/memory#view-and-edit-memories) to learn more about working with memories.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "memory_store_id",
+    "path",
+    "content_size_bytes",
+    "content_sha256",
+    "memory_version_id",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "memory"
+    },
+    "id": {
+      "description": "The unique ID of the memory (`mem_...`). It stays the same when the memory's path changes.\n\nTo retrieve, update, or delete the memory, pass this ID.",
+      "type": "string"
+    },
+    "memory_store_id": {
+      "description": "ID of the memory store this memory belongs to (a `memstore_...` value).",
+      "type": "string"
+    },
+    "path": {
+      "description": "Hierarchical path of the memory within the store, e.g. `/projects/foo/notes.md`. Always starts with `/`. Paths are case-sensitive and unique within a store. Maximum 1,024 bytes.",
+      "type": "string"
+    },
+    "content": {
+      "description": "The memory's UTF-8 text content, or `null` when the response uses `view=basic`.\n\nThe maximum size is 100 kB (102,400 bytes).",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "content_size_bytes": {
+      "description": "The size of the memory's `content` in UTF-8 bytes. It is set regardless of `view`.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "content_sha256": {
+      "description": "Lowercase hex SHA-256 digest of the UTF-8 `content` bytes (64 characters). The server applies no normalization, so clients can compute the same hash locally for staleness checks and as the value for a `content_sha256` precondition on update. Always populated, regardless of `view`.",
+      "type": "string"
+    },
+    "memory_version_id": {
+      "description": "The ID of the memory version that holds the memory's current content (`memver_...`).\n\nMemory versions don't have a flag that marks the latest one. Compare their IDs with this field instead.\n\nSee the [memory guide](https://platform.claude.com/docs/en/managed-agents/memory#audit-memory-changes) to learn more about memory versions.",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "When this memory was created, in RFC 3339 format.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "updated_at": {
+      "description": "When the memory was last changed, in RFC 3339.\n\nTo find out who made the change, look at `created_by` on the memory version that `memory_version_id` references.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    }
+  }
+}

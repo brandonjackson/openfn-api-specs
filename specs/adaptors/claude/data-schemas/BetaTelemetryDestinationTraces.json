@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaTelemetryDestinationTraces",
+  "title": "BetaTelemetryDestinationTraces",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaTelemetryDestinationTraces",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A telemetry destination's settings for the traces it receives.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "enabled",
+    "endpoint_url",
+    "content_mode",
+    "max_content_bytes"
+  ],
+  "properties": {
+    "enabled": {
+      "description": "Whether the destination receives traces. A destination whose `enabled` is false keeps its other settings.",
+      "type": "boolean"
+    },
+    "endpoint_url": {
+      "description": "The full URL that the API posts traces to, exactly as registered, or `null` if the destination doesn't have one.\n\nWhen it is `null`, the API posts traces to `endpoint_url` with `/v1/traces` appended.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "content_mode": {
+      "description": "What the exported spans contain.",
+      "allOf": [
+        {
+          "$ref": "BetaTelemetryDestinationContentMode.json"
+        }
+      ]
+    },
+    "max_content_bytes": {
+      "description": "The most bytes of content that one exported span can contain, or `null` if only the API's maximum applies.\n\nContent means model prompts and responses, and tool inputs and outputs. The API shortens longer content to this size before it delivers the span. A destination whose `content_mode` is `metadata_only` keeps this value. It applies once `content_mode` is `content`.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int32"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

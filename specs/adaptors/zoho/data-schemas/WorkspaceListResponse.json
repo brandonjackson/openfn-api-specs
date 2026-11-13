@@ -5,37 +5,36 @@
   "x-openfn-adaptor": "zoho",
   "x-source": {
     "openapi": "#/components/schemas/WorkspaceListResponse",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
-  "description": "Envelope listing the workspaces/databases owned by the user.",
-  "required": [
-    "response"
-  ],
   "properties": {
     "response": {
       "type": "object",
       "properties": {
         "uri": {
-          "type": "string"
+          "type": "string",
+          "description": "The resource URI the action ran against, e.g. /api/{ownerEmail}/{workspace}/{view}."
         },
         "action": {
           "type": "string",
-          "example": "USERDATABASES"
+          "description": "The ZOHO_ACTION that was executed."
         },
         "result": {
-          "type": "object",
-          "properties": {
-            "dbList": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": true
+          "type": "array",
+          "items": {
+            "$ref": "Workspace.json"
+          }
         }
-      }
+      },
+      "required": [
+        "action",
+        "result"
+      ]
     }
-  }
+  },
+  "required": [
+    "response"
+  ],
+  "description": "MYWORKSPACELIST / SHAREDWORKSPACELIST result."
 }

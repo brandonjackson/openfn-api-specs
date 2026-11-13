@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaPluginShare",
+  "title": "PluginShare",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaPluginShare",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Granted At",
+      "description": "When the share was given; a share whose role is later changed in claude.ai is re-granted and carries the time of that change.",
+      "examples": [
+        "2026-03-14T09:26:53.589793Z"
+      ]
+    },
+    "plugin_id": {
+      "type": "string",
+      "title": "Plugin Id",
+      "description": "The Plugin's ID.",
+      "examples": [
+        "plugin_01JyHfbRkZvD1gW7oTqXc3Ne"
+      ]
+    },
+    "target": {
+      "oneOf": [
+        {
+          "$ref": "BetaPluginTargetOrganization.json"
+        },
+        {
+          "$ref": "BetaPluginTargetRbacGroup.json"
+        },
+        {
+          "$ref": "BetaPluginTargetOrganizationMember.json"
+        }
+      ],
+      "title": "Target",
+      "description": "Who the Plugin is shared with: `organization` (every member), `rbac_group` (one RBAC Group), or `organization_member` (one member).",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "organization": "#/components/schemas/BetaPluginTargetOrganization",
+          "organization_member": "#/components/schemas/BetaPluginTargetOrganizationMember",
+          "rbac_group": "#/components/schemas/BetaPluginTargetRbacGroup"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "const": "plugin_share",
+      "title": "Type",
+      "description": "Always `plugin_share`.",
+      "default": "plugin_share"
+    }
+  },
+  "type": "object",
+  "required": [
+    "granted_at",
+    "plugin_id",
+    "target",
+    "type"
+  ],
+  "description": "One share the owner of a member-owned Plugin has given. Shares are\nread-only in this API and have no ID of their own; who gave a share is\nrecorded on the Compliance API activity feed, not here."
+}

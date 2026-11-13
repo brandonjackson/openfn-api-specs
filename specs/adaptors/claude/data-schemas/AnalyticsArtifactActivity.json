@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/AnalyticsArtifactActivity",
+  "title": "AnalyticsArtifactActivity",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/AnalyticsArtifactActivity",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "title": "Artifact Type",
+      "description": "Canonical artifact MIME type (e.g. `text/markdown`, `application/vnd.ant.react`, `image/svg+xml`), or `other`. Claude Code and Cowork artifacts report as `text/html`."
+    },
+    "artifacts_created_count": {
+      "type": "integer",
+      "title": "Artifacts Created Count",
+      "description": "Number of artifacts created in this bucket on the requested day"
+    },
+    "distinct_user_count": {
+      "type": "integer",
+      "title": "Distinct User Count",
+      "description": "Number of distinct users who created artifacts in this bucket on the requested day"
+    },
+    "is_shared": {
+      "type": "boolean",
+      "title": "Is Shared",
+      "description": "Whether the artifacts in this bucket have ever been shared (a Claude Code / Cowork artifact is shared once anyone beyond its creator may open it: named members, the whole organization, or anyone with the link)."
+    },
+    "product": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Product",
+      "description": "Product that produced this row's activity: one of `chat`, `claude_code`, `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified). These are the canonical Cost & Usage product names; an `office_agent` row's per-surface breakdown is in its `office_metrics`. On `/plugins` only `cowork`, `claude_code` and `chat_cowork_unified` occur (the only surfaces with plugin attribution); on `/artifacts` only `chat`, `claude_code`, `cowork` and `chat_cowork_unified` occur (the surfaces that create artifacts); `/apps/chat/projects` does not support the product dimension (a `product` entry in `group_by[]` or `filter[]` there is rejected). Present only when the request grouped by `product`."
+    },
+    "published_artifacts_created_count": {
+      "type": "integer",
+      "title": "Published Artifacts Created Count",
+      "description": "Number of those artifacts that have been published (for Claude Code / Cowork artifacts: open to anyone with the link); never exceeds `artifacts_created_count`"
+    },
+    "rbac_group_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rbac Group Id",
+      "description": "Tagged RBAC group identifier (`rbac_group_...`), matching the spend-limits API spelling. Present only when the request grouped by `rbac_group_id`."
+    },
+    "rbac_group_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rbac Group Name",
+      "description": "Resolved RBAC group display name, alongside `rbac_group_id` when name resolution is available. Null if the group has been deleted or its name could not be resolved; `rbac_group_id` remains the stable key."
+    },
+    "user_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "User Id",
+      "description": "Tagged user identifier (e.g. `user_...`). Present only when the request grouped by `user_id`."
+    }
+  },
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifacts_created_count",
+    "distinct_user_count",
+    "is_shared",
+    "published_artifacts_created_count"
+  ],
+  "description": "Artifact-creation activity for one (`artifact_type`, `is_shared`) bucket\non a given day.\n\nArtifacts form a small finite cube — the canonical MIME type (8 values incl.\n`other`) crossed with shared-vs-private — so the response is the full set of\nnon-empty buckets, not a ranked/paginated list. Claude Code and Cowork\nartifacts report under `text/html` and are counted from 2026-08-17\nonward; earlier days contain claude.ai chat artifacts only. With\n`group_by[]=product` / `user_id` / `rbac_group_id` each row is further\nsplit by the flat group keys and counts are scoped to that cut."
+}

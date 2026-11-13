@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsUserToolResultEvent",
+  "title": "BetaManagedAgentsUserToolResultEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsUserToolResultEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Event sent by the client providing the result of an agent-toolset tool execution. Only valid on `self_hosted` environments, where sandbox-routed tools are executed by the client rather than the server.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "tool_use_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "user.tool_result"
+    },
+    "id": {
+      "description": "Unique identifier for this event.",
+      "type": "string"
+    },
+    "tool_use_id": {
+      "description": "The id of the `agent.tool_use` event this result corresponds to, which can be found in the last `session.status_idle` [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids) `stop_reason.event_ids` field.",
+      "type": "string"
+    },
+    "content": {
+      "description": "The result content returned by the tool.",
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsToolResultContentBlock.json"
+      }
+    },
+    "is_error": {
+      "description": "Whether the tool execution resulted in an error.",
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "processed_at": {
+      "description": "Timestamp when this result was processed.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "session_thread_id": {
+      "description": "Set by the server to the subagent thread this result was routed to. Omitted when it was routed to the primary thread.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

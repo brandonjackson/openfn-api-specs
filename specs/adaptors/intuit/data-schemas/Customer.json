@@ -5,65 +5,435 @@
   "x-openfn-adaptor": "intuit",
   "x-source": {
     "openapi": "#/components/schemas/Customer",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "properties": {
     "Id": {
-      "type": "string",
-      "example": "1"
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
     },
     "SyncToken": {
       "type": "string",
-      "example": "0"
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
     },
-    "DisplayName": {
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
       "type": "string",
-      "example": "Amy's Bird Sanctuary"
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
+    },
+    "IntuitId": {
+      "type": "string",
+      "description": "Product: QBO Description: IntuitId represents the realm id, authid or an entity id. An entity is a new type of IAM identity that represents a person or a business which has no Intuit authentication context"
+    },
+    "Organization": {
+      "type": "boolean",
+      "description": "Product: QBW Description: True if the entity represents an organization; otherwise the entity represents a person. Default is NULL or False, representing a person."
+    },
+    "Title": {
+      "type": "string",
+      "description": "Product: ALL Description: QBW: Title of the person. The person can have zero or more titles. Description: QBO: Title of the person. The person can have zero or more titles. InputType: ReadWrite ValidRange: QBW: Min=0, Max=15 ValidationRules: QBW: At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. ValidationRules: QBO: At least one of the name elements is..."
     },
     "GivenName": {
       "type": "string",
-      "example": "Amy"
+      "description": "Product: QBW Description: Given name or first name of a person.[br /]Max. length: 25 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. Product: QBO Description: Given name or first name of a person.[br /]Max. length: 25 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, FamilyName, or Suffix. F..."
+    },
+    "MiddleName": {
+      "type": "string",
+      "description": "Product: QBW Description: Middle name of the person. The person can have zero or more middle names.[br /]Max. length: 5 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. Product: QBO Description: Middle name of the person. The person can have zero or more middle names.[br /]Max. length: 15 characters.[br /]At least one of the name eleme..."
     },
     "FamilyName": {
       "type": "string",
-      "example": "Lauterbach"
+      "description": "Product: QBW Description: Family name or the last name of the person.[br /]Max. length: 25 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. Product: QBO Description: Family name or the last name of the person.[br /]Max. length: 15 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, FamilyName,..."
+    },
+    "Suffix": {
+      "type": "string",
+      "description": "Product: QBO Description: Suffix appended to the name of a person. For example, Senior, Junior, etc. QBO only field.[br /]Max. length: 15 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, FamilyName, or Suffix."
+    },
+    "FullyQualifiedName": {
+      "type": "string",
+      "description": "Product: ALL Description: Fully qualified name of the entity. The fully qualified name prepends the topmost parent, followed by each sub element separated by colons. Takes the form of Parent:Customer:Job:Sub-job. Limited to 5 levels.[br /]Max. length: 41 characters (single name) or 209 characters (fully qualified name)."
     },
     "CompanyName": {
       "type": "string",
-      "example": "Amy's Bird Sanctuary"
+      "description": "Product: ALL Description: The name of the company associated with the person or organization."
+    },
+    "DisplayName": {
+      "type": "string",
+      "description": "Product: QBO Description: The name of the person or organization as displayed. If not provided, this is populated from FullName. Product: QBW Description: The name of the person or organization as displayed. Required: ALL Filterable: QBW"
+    },
+    "PrintOnCheckName": {
+      "type": "string",
+      "description": "Product: ALL Description: Name of the person or organization as printed on a check. If not provided, this is populated from FullName."
+    },
+    "UserId": {
+      "type": "string",
+      "description": "Product: QBW Description: The ID of the Intuit user associated with this name. Note: this is NOT the Intuit AuthID of the user."
     },
     "Active": {
       "type": "boolean",
-      "example": true
+      "description": "Product: ALL Description: If true, this entity is currently enabled for use by QuickBooks. The default value is true. Filterable: QBW"
+    },
+    "V4IDPseudonym": {
+      "type": "string",
+      "description": "Auto generated Public ID when a new customer/vendor/employee is added to QBO. (ReadOnly)"
+    },
+    "PrimaryPhone": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Primary phone number."
+    },
+    "AlternatePhone": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Alternate phone number."
+    },
+    "Mobile": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Mobile phone number."
+    },
+    "Fax": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Fax number."
+    },
+    "PrimaryEmailAddr": {
+      "allOf": [
+        {
+          "$ref": "EmailAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Primary email address."
+    },
+    "WebAddr": {
+      "allOf": [
+        {
+          "$ref": "WebSiteAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Website address (URI)."
+    },
+    "OtherContactInfo": {
+      "type": "array",
+      "items": {
+        "$ref": "ContactInfo.json"
+      },
+      "description": "Product: QBW Description: List of ContactInfo entities of any contact info type. The ContactInfo Type values are defined in the ContactTypeEnum."
+    },
+    "DefaultTaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the tax code associated with the Customer or Vendor by default for sales or purchase taxes."
+    },
+    "Taxable": {
+      "type": "boolean",
+      "description": "Product: QBO only Description: True if the customer is taxable."
+    },
+    "BillAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Default billing address."
+    },
+    "ShipAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Default shipping address."
+    },
+    "OtherAddr": {
+      "type": "array",
+      "items": {
+        "$ref": "PhysicalAddress.json"
+      },
+      "description": "Product: QBW only. Description: An address other than default billing or shipping."
+    },
+    "ContactName": {
+      "type": "string",
+      "description": "Product: QBW Description: Name of the Customer contact."
+    },
+    "AltContactName": {
+      "type": "string",
+      "description": "Product: QBW Description: Name of the Alternate Customer contact."
+    },
+    "Notes": {
+      "type": "string",
+      "description": "Product: ALL Description: Free form text describing the Customer.[br /]Max. length: 1024 characters."
+    },
+    "Job": {
+      "type": "boolean",
+      "description": "Product: ALL Description: If true, this is a Job or sub-customer. If false or null, this is a top level customer, not a Job or sub-customer."
+    },
+    "BillWithParent": {
+      "type": "boolean",
+      "description": "Product: ALL Description: If true, this Customer is billed with its parent. If false, or null the customer is not to be billed with its parent. This property is valid only if this entity is a Job or sub Customer."
+    },
+    "RootCustomerRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: The top level Customer in the hierarchy to which this Job or sub customer belongs."
+    },
+    "ParentRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: The immediate parent of the Sub-Customer/Job in the hierarchical \"Customer:Job\" list.[br /]Required for the create operation if the Customer is a sub-customer or Job."
+    },
+    "Level": {
+      "type": "integer",
+      "description": "Product: ALL Description: Specifies the level of the hirearchy in which the entity is located. Zero specifies the top level of the hierarchy; anything above will be level with respect to the parent."
+    },
+    "CustomerTypeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to a CustomerType associated with the Customer."
+    },
+    "SalesTermRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to a SalesTerm associated with the Customer."
+    },
+    "SalesRepRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to a SalesRep associated with the Customer."
+    },
+    "TaxGroupCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: US-only, reference to a TaxCode entity where the group field of the referenced entity is true, that is, a TaxCode representing a list of tax rates that apply for the customer."
+    },
+    "TaxRateRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: US-only, reference to a TaxRate entity indicating the sales tax to apply by default for the customer."
+    },
+    "PaymentMethodRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to a PaymentMethod associated with the Customer."
+    },
+    "CCDetail": {
+      "allOf": [
+        {
+          "$ref": "CreditChargeInfo.json"
+        }
+      ],
+      "description": "Product: ALL Description: Credit-card information to request a credit card payment from a merchant account service."
+    },
+    "PriceLevelRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: Reference to a PriceLevel associated with the Customer."
     },
     "Balance": {
       "type": "number",
-      "example": 239
+      "description": "Product: ALL Description: Specifies the open balance amount or the amount unpaid by the customer. For the create operation, this represents the opening balance for the customer. When returned in response to the query request it represents the current open balance (unpaid amount) for that customer. Filterable: QBW Sortable: QBW"
     },
-    "PrimaryEmailAddr": {
-      "type": "object",
-      "properties": {
-        "Address": {
-          "type": "string",
-          "example": "Birds@Intuit.com"
+    "OpenBalanceDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: ALL Description: Date of the Open Balance for the create operation."
+    },
+    "BalanceWithJobs": {
+      "type": "number",
+      "description": "Product: QBW Description: Cumulative open balance amount for the Customer (or Job) and all its sub-jobs. Cannot be written to QuickBooks. Product: QBO Description: Cumulative open balance amount for the Customer (or Job) and all its sub-jobs. Filterable: ALL Non-default: ALL"
+    },
+    "CreditLimit": {
+      "type": "number",
+      "description": "Product: QBW Description: Specifies the maximum amount of an unpaid customer balance."
+    },
+    "AcctNum": {
+      "type": "string",
+      "description": "Product: QBW Description: Name or number of the account associated with this customer.[br /]Max. length: 99 characters."
+    },
+    "CurrencyRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
         }
-      }
+      ],
+      "description": "Product: ALL Description: Reference to the currency code for all the business transactions created for or received from the customer."
     },
-    "PrimaryPhone": {
-      "type": "object",
-      "properties": {
-        "FreeFormNumber": {
-          "type": "string",
-          "example": "(650) 555-3311"
+    "OverDueBalance": {
+      "type": "number",
+      "description": "Product: QBW Description: Over-due balance amount. Cannot be written to QuickBooks."
+    },
+    "TotalRevenue": {
+      "type": "number",
+      "description": "Product: QBW Description: The total revenue amount from the Customer. Cannot be written to QuickBooks."
+    },
+    "TotalExpense": {
+      "type": "number",
+      "description": "Product: QBW Description: The total expense amount for the Customer. Cannot be written to QuickBooks."
+    },
+    "PreferredDeliveryMethod": {
+      "type": "string",
+      "description": "Product: ALL Description: Preferred delivery method. Vales are Print, Email, or None."
+    },
+    "ResaleNum": {
+      "type": "string",
+      "description": "Product: ALL Description: Resale number or some additional info about the customer."
+    },
+    "JobInfo": {
+      "allOf": [
+        {
+          "$ref": "JobInfo.json"
         }
-      }
+      ],
+      "description": "Product: ALL Description: Information about the job. Relevant only if the Customer represents the actual task or project, not just a person or organization."
     },
-    "BillAddr": {
-      "$ref": "PhysicalAddress.json"
+    "TDSEnabled": {
+      "type": "boolean",
+      "description": "Product: QBO Description: True, if TDS (Tax Deducted at Source) is enabled for this customer."
     },
-    "MetaData": {
-      "$ref": "MetaData.json"
+    "CustomerEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Internal use only: extension place holder for Customer."
+    },
+    "SecondaryTaxIdentifier": {
+      "type": "string",
+      "description": "Product: QBO Description: Specifies secondary Tax ID of the Person or Organization. Applicable for IN companies for CST Registration No. and in future can be extended to other regions."
+    },
+    "ARAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: The A/R account ID for the customer. This is applicable only in FR where each customer needs to have his own AR account."
+    },
+    "PrimaryTaxIdentifier": {
+      "type": "string",
+      "description": "Product: QBO Description: Specifies primary Tax ID of the Person or Organization."
+    },
+    "TaxExemptionReasonId": {
+      "type": "string",
+      "description": "Product: QBO Description: Specifies tax exemption reason to be associated with Customer"
+    },
+    "IsProject": {
+      "type": "boolean",
+      "description": "Product: QBO Description: Specifies whether this customer is a project."
+    },
+    "BusinessNumber": {
+      "type": "string",
+      "description": "Business Number of the Customer. Applicable to CA/UK/IN versions of QuickBooks. Referred to as PAN in India."
+    },
+    "GSTIN": {
+      "type": "string",
+      "description": "GST Identification Number of the Customer. Applicable for IN region only."
+    },
+    "GSTRegistrationType": {
+      "type": "string",
+      "description": "GST registration type of the Customer. Applicable for IN region only."
+    },
+    "IsCISContractor": {
+      "type": "boolean",
+      "description": "Product: QBO only Description: True if the customer is CIS contractor"
+    },
+    "ClientCompanyId": {
+      "type": "string",
+      "description": "Internal use only: Applicable only for Accountant companies, Not null represents associated QBO company id. (Readonly)"
+    },
+    "ClientEntityId": {
+      "type": "string",
+      "description": "Internal use only: Applicable only for Accountant companies, External reference for Customer. (ReadOnly)"
+    },
+    "Source": {
+      "type": "string",
+      "description": "Product: QBO Description: Originating source of the Customer. Valid values are defined in SourceTypeEnum"
+    },
+    "TaxRegime": {
+      "type": "string",
+      "description": "Product: QBO Description: Tax regime of a customer which is required by CFDI4.0 in Mexico. Visit http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20_version3-3.htm and find the catalogues that contain the accepted values of TaxRegime."
     }
-  }
+  },
+  "description": "Product: ALL Description: QBO: The Customer entityrepresents the consumer of the service or the product that your business offers. QBO allows categorizing the customers in a way that is meaningful to the business. For example, you can set up a category of customers to indicate which industry a customer represents, the geographic location of a customer, or how a customer came to know about the b..."
 }

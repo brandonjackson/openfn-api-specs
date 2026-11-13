@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsCronSchedule",
+  "title": "BetaManagedAgentsCronSchedule",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsCronSchedule",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "5-field POSIX cron schedule with computed runtime timestamps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "expression",
+    "timezone"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "cron",
+      "examples": [
+        "cron"
+      ]
+    },
+    "expression": {
+      "description": "5-field POSIX cron expression: minute hour day-of-month month day-of-week (e.g., \"0 9 * * 1-5\" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean Sunday. Extended cron syntax - seconds or year fields, and the special characters L, W, #, and ? - is not supported, nor are predefined shortcuts (@daily).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "examples": [
+        "0 9 * * 1-5"
+      ]
+    },
+    "timezone": {
+      "description": "IANA timezone identifier (e.g., \"America/Los_Angeles\", \"UTC\").",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "America/Los_Angeles"
+      ]
+    },
+    "last_run_at": {
+      "description": "Time the most recent scheduled run actually started. Null until one completes; preserved after the deployment is archived. Manual runs do not update this.",
+      "anyOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "2026-03-16T16:00:09Z"
+      ]
+    },
+    "upcoming_runs_at": {
+      "description": "Up to 5 timestamps of upcoming cron occurrences. Non-empty for active and paused deployments (reflects what the schedule would do if unpaused); empty once the deployment is archived (`archived_at` set). Each fire is offset by a small per-schedule jitter, so a run will actually start at or shortly after its listed time.",
+      "type": "array",
+      "items": {
+        "$ref": "BetaTimestamp.json"
+      },
+      "examples": [
+        [
+          "2026-03-17T16:00:00Z",
+          "2026-03-18T16:00:00Z"
+        ]
+      ]
+    }
+  },
+  "example": {
+    "type": "cron",
+    "expression": "0 9 * * 1-5",
+    "timezone": "America/Los_Angeles",
+    "last_run_at": "2026-03-16T16:00:09Z",
+    "upcoming_runs_at": [
+      "2026-03-17T16:00:00Z",
+      "2026-03-18T16:00:00Z"
+    ]
+  }
+}

@@ -1,12 +1,124 @@
 {
   "adaptor": "fhir-eswatini",
   "npm": "@openfn/language-fhir-eswatini",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://github.com/OpenFn/adaptors/tree/main/packages/fhir-eswatini",
-    "https://www.hl7.org/fhir/R4/http.html"
+  "origin": "converted",
+  "upstreamFormat": "json-schema",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://hl7.org/fhir/R4/fhir.schema.json",
+    "format": "json-schema-draft-06",
+    "contentHash": "sha256:2230406893b4cf002a4ee1e5e2bbeca22ac5d2d4931b3e9ef7b9594bbc376a01",
+    "fetchedAt": "2026-11-13"
+  },
+  "attempts": [
+    {
+      "kind": "adaptor-source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/fhir-eswatini/src/Adaptor.ts",
+      "result": "used",
+      "note": "Re-exports read/search/update/delete/create/createBundle/uploadBundle from fhir-4 and overrides addToBundle with fullUrl base https://hapifhir.eswatinihie.com (BASE_URL constant); package.json `fhir.specUrl` is http://172.209.216.154/definitions.json.zip with options.base fhir-4; generated profiles reference FHIR 4.0.1 value sets. So the target is an R4 (4.0.1) server: the Eswatini HIE HAPI server."
+    },
+    {
+      "kind": "capability-statement",
+      "url": "https://hapifhir.eswatinihie.com/fhir/metadata",
+      "result": "used",
+      "note": "The live Eswatini HIE server's own CapabilityStatement (kind instance, HAPI FHIR Server 7.0.2, fhirVersion 4.0.1, date 2024-03-07T10:46:29Z): 146 types (the 145 R4 types plus Parameters), each with read/vread/update/patch/delete/history-instance/history-type/create/search-type, system transaction and history-system. Saved verbatim as upstream-server-capabilities.json (sha256:e0b647f79f942913b9bb97b958de5811956217201784fd6646b61c9b8ed37683). Used for the two search parameters it declares beyond the R4 base (Patient chiefdom, ServiceRequest referral-recipient, both custom SearchParameters on this server); also confirms the R4 interaction set."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://hapifhir.eswatinihie.com/fhir/api-docs",
+      "result": "rejected",
+      "note": "The server's HAPI-generated OpenAPI 3.0.1 (5.4 MB YAML, 2086 paths / 3282 operations): only two opaque schemas (FHIR-JSON-RESOURCE/FHIR-XML-RESOURCE) and no application/json content, so no resource schemas. Used as a cross-check: this spec covers 2794 of its 3282 operations; the 488 not covered are HAPI-proprietary ($expunge on every type, $reindex, $export/$export-poll-status, $get-resource-counts, $mark-all-resources-for-reindexing, $perform-reindexing-pass, $reindex-terminology, $trigger-subscription, $summary, code-system delta uploads, $invalidate-expansion), HAPI's GET form of /{type}/_search (146), and REST endpoints for the Parameters type."
+    },
+    {
+      "kind": "implementation-guide",
+      "url": "http://172.209.216.154/package.tgz",
+      "result": "used",
+      "note": "The Eswatini FHIR IG hl7.fhir.sz.core 1.0.0 (FHIR 4.0.1, canonical https://eswatinihie.com/fhir, published as IG-publisher output on a bare IP; definitions.json.zip is the adaptor's generator input). 29 StructureDefinitions, all constraints on R4 types (SzPatient, SzEncounter, SzLabRequest, SzReferral, ... and 10 extensions), 16 CodeSystems, 17 ValueSets, 5 NamingSystems; no CapabilityStatement, SearchParameter or OperationDefinition, so the IG narrows resource content without changing the REST surface."
+    },
+    {
+      "kind": "openapi",
+      "url": "http://172.209.216.154/openapi.json",
+      "result": "not-found",
+      "note": "404; the IG site has no OpenAPI or downloads page."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://hl7.org/fhir/R4/fhir.openapi.json",
+      "result": "not-found",
+      "note": "HL7 publishes no OpenAPI for R4: fhir.openapi.json returns Apache's 300 'similar names' page; /openapi.json, /openapi.yaml, /swagger.json and /openapi/ on hl7.org/fhir/R4 all 404 (re-probed 2026-11-13)."
+    },
+    {
+      "kind": "docs",
+      "url": "https://hl7.org/fhir/R4/downloads.html",
+      "result": "rejected",
+      "note": "The R4 downloads page offers definitions.json.zip, fhir.schema.json and the core package — machine-readable, but no OpenAPI/Swagger artifact."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "apis.guru (2529 APIs) lists no HL7/FHIR API; the only health entries are amazonaws.com:comprehendmedical and infermedica.com."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/gotidy/fhir-to-openapi",
+      "result": "rejected",
+      "note": "Community FHIR-to-OpenAPI generators exist but are not vendor-published (SKILL.md §2); followed back to HL7's own machine-readable definitions."
+    },
+    {
+      "kind": "json-schema",
+      "url": "https://hl7.org/fhir/R4/fhir.schema.json",
+      "result": "used",
+      "note": "HL7's own complete R4 (v4.0.1) JSON Schema (draft-06): 680 definitions covering all 145 resource types, datatypes and backbone elements. Saved verbatim as upstream.json (sha256:2230406893b4cf002a4ee1e5e2bbeca22ac5d2d4931b3e9ef7b9594bbc376a01) and converted to components.schemas."
+    },
+    {
+      "kind": "capability-statement",
+      "url": "https://hl7.org/fhir/R4/capabilitystatement-base.json",
+      "result": "used",
+      "note": "HL7's base CapabilityStatement for R4 ('a server that provides the full set of functionality defined by FHIR'): 145 resource types, their interactions, 1697 resource search parameters, the system interactions and the 46-entry operation list. Saved verbatim as upstream-capabilities.json (sha256:29ae88d66f66371f97a71feece55f2464ae35e8fadf40ddb79d4a005c1a5c217) and converted to the path surface."
+    },
+    {
+      "kind": "operation-definitions",
+      "url": "https://hl7.org/fhir/R4/operationslist.html",
+      "result": "used",
+      "note": "All 46 R4 OperationDefinitions fetched individually (https://hl7.org/fhir/R4/operation-<resource>-<code>.json) for the $-operation paths, levels, input/output parameters and response resource."
+    },
+    {
+      "kind": "docs",
+      "url": "https://hl7.org/fhir/R4/http.html",
+      "result": "used",
+      "note": "The normative RESTful API specification: URL shapes per interaction, patch, the conditional create/update/delete forms, the _search POST form and the GET-invocation rule for operations."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "FHIR R4 profile variant for Eswatini (national client registry). Adaptor surface is builder-centric (addToBundle, mapValues, b.* resource builders) and posts transaction Bundles to a FHIR R4 server. Modelled as standard FHIR R4 REST + transaction Bundle. Server base taken from the adaptor's own mapValues example (http://172.209.216.154:3447/fhir). Profile-specific ValueSets/extensions are not fully enumerated."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "configuration-schema.json",
+    "server-capabilitystatement",
+    "hapi-openapi",
+    "fhir-r4-regeneration"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://hl7.org/fhir/R4/fhir.schema.json",
+    "https://hl7.org/fhir/R4/capabilitystatement-base.json",
+    "https://hl7.org/fhir/R4/operationslist.html",
+    "https://hl7.org/fhir/R4/http.html",
+    "https://hl7.org/fhir/R4/search.html",
+    "https://hl7.org/fhir/R4/operations.html",
+    "https://hl7.org/fhir/R4/downloads.html",
+    "https://hapifhir.eswatinihie.com/fhir/metadata",
+    "https://hapifhir.eswatinihie.com/fhir/api-docs",
+    "http://172.209.216.154/",
+    "http://172.209.216.154/package.tgz",
+    "http://172.209.216.154/definitions.json.zip",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-fhir-eswatini/ast.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/fhir-eswatini"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "HL7 FHIR Release 4 (v4.0.1) RESTful API as served by the Eswatini HIE FHIR server (https://hapifhir.eswatinihie.com/fhir, HAPI 7.0.2), which the fhir-eswatini adaptor targets with resources profiled by the Eswatini IG (hl7.fhir.sz.core 1.0.0). The IG publishes only profiles, extensions and terminology, so the REST surface is the R4 base; this spec reuses HL7's R4 fhir.schema.json and base CapabilityStatement verbatim (the same bytes and hashes as specs/adaptors/fhir) and adds the two custom search parameters the server's own CapabilityStatement declares (Patient?chiefdom=, ServiceRequest?referral-recipient=; the server's documentation text for chiefdom is copied from referral-recipient and is reproduced as served). 'Full' means all 145 R4 resource types with the eight base interactions plus patch and the conditional forms, the system interactions, /metadata and all 46 R4 operations: 1872 operations over 944 paths and all 680 upstream definitions. Conversion: the same derivation as specs/adaptors/fhir (a converter that regenerates that adaptor's committed openapi.json byte-for-byte from the same R4 inputs was used, so the two specs share every path, operationId, parameter and schema): draft-06 `const` became a single-value `enum`; `type: object` was added to object definitions; FHIR's 20 primitive types are inlined at their use sites; every body and response is offered as application/json and application/fhir+json; operations take a `Parameters` body, and a GET form is emitted only when every required input is primitive and the operation does not change state. One deliberate difference from specs/adaptors/fhir: the system-level operations (/$meta, /$versions, /$graphql, /$data-requirements, /$closure, /$process-message, /$convert) do not carry the `resourceType` path parameter, which the fhir spec declares on those paths although they have no `{resourceType}` segment. Adaptor surface (ast.json: addToBundle, mapValues; the rest re-exported from fhir-4): read GET /{type}/{id}, search GET /{type}, create POST /{type}, update PUT /{type}/{id}, delete DELETE /{type}/{id}, uploadBundle POST / — all present; no generic get/post builders are exported, so the server's HAPI-proprietary endpoints (488 operations in its own api-docs, listed in attempts) are unreachable from this adaptor and are not modelled. The Sz* profiles are not encoded as schemas; payloads are validated against the base R4 resource schemas."
 }

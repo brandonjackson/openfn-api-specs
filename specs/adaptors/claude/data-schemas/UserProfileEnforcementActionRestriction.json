@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/UserProfileEnforcementActionRestriction",
+  "title": "UserProfileEnforcementActionRestriction",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/UserProfileEnforcementActionRestriction",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Anthropic has limited how it serves the end user until the action is resolved. The end user may still be served in part.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "reason",
+    "action",
+    "opened_at",
+    "expires_at"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "restriction",
+      "examples": [
+        "restriction"
+      ]
+    },
+    "id": {
+      "description": "The action's ID (`enac_...`), stable while the action is open.",
+      "type": "string",
+      "examples": [
+        "enac_011CZkZCu8hGbp5mYRQgUmz9"
+      ]
+    },
+    "reason": {
+      "description": "Why Anthropic placed the limit: `unsupported_region`, `fraud_or_abuse`, `high_harm`, `usage_policy_violation`, `account_compromise` or `unspecified`.",
+      "allOf": [
+        {
+          "$ref": "UserProfileEnforcementActionReason.json"
+        }
+      ],
+      "examples": [
+        "fraud_or_abuse"
+      ]
+    },
+    "action": {
+      "description": "The next step on the action: `verify` or `null`. `verify`: the end user can clear it now by passing an identity check. `null`: there is nothing the end user can do now to clear it, including while Anthropic reviews an identity check the end user submitted.",
+      "anyOf": [
+        {
+          "$ref": "UserProfileEnforcementActionNextStep.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "verify"
+      ]
+    },
+    "opened_at": {
+      "description": "When Anthropic opened the action, in RFC 3339 format.",
+      "allOf": [
+        {
+          "$ref": "Timestamp.json"
+        }
+      ],
+      "examples": [
+        "2026-10-02T19:30:00Z"
+      ]
+    },
+    "expires_at": {
+      "description": "When the action ends on its own, in RFC 3339 format; it stops showing once this time has passed. `null` when it has no end date, and always `null` when `reason` is `account_compromise`.",
+      "anyOf": [
+        {
+          "$ref": "Timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        null
+      ]
+    }
+  },
+  "example": {
+    "type": "restriction",
+    "id": "enac_011CZkZCu8hGbp5mYRQgUmz9",
+    "reason": "fraud_or_abuse",
+    "action": "verify",
+    "opened_at": "2026-10-02T19:30:00Z",
+    "expires_at": null
+  }
+}

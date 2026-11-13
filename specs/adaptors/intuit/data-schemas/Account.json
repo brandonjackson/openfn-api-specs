@@ -5,44 +5,196 @@
   "x-openfn-adaptor": "intuit",
   "x-source": {
     "openapi": "#/components/schemas/Account",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "properties": {
     "Id": {
-      "type": "string",
-      "example": "33"
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
     },
     "SyncToken": {
       "type": "string",
-      "example": "0"
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
+    },
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
     },
     "Name": {
       "type": "string",
-      "example": "Accounts Payable"
+      "description": "User recognizable name for the Account.[br /] Product: ALL Required: ALL Filterable: QBW ValidRange: QBW: Max=31 ValidRange: QBO: Max=100"
     },
-    "AccountType": {
+    "SubAccount": {
+      "type": "boolean",
+      "description": "Product: ALL Description: Specifies the Account is a SubAccount or Not. True if subaccount, false or null if it is top-level account"
+    },
+    "ParentRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Specifies the Parent AccountId if this represents a SubAccount. Else null or empty"
+    },
+    "Description": {
       "type": "string",
-      "example": "Accounts Payable"
+      "description": "Product: ALL Description: User entered description for the account, which may include user entered information to guide bookkeepers/accountants in deciding what journal entries to post to the account. ValidRange: QBW: Max=200 ValidRange: QBO: Max=100"
     },
-    "AccountSubType": {
+    "FullyQualifiedName": {
       "type": "string",
-      "example": "AccountsPayable"
+      "description": "Product: ALL Description: Fully qualified name of the entity. The fully qualified name prepends the topmost parent, followed by each sub element separated by colons. Takes the form of: [br /] Parent:Account1:SubAccount1:SubAccount2 InputType: ReadOnly"
     },
-    "Classification": {
+    "AccountAlias": {
       "type": "string",
-      "example": "Liability"
+      "description": "Product: ALL Description: Display Name of the account that will be shown in Transaction Forms based on Account Category ValidRange: QBO: Max=100"
     },
-    "CurrentBalance": {
-      "type": "number",
-      "example": 1602.67
+    "TxnLocationType": {
+      "type": "string",
+      "description": "Product: ALL Description: Location Type for the Transaction. ValidRange: QBO: Max=50"
     },
     "Active": {
       "type": "boolean",
-      "example": true
+      "description": "Product: ALL Description: Whether or not active inactive accounts may be hidden from most display purposes and may not be posted to. Filterable: QBW"
     },
-    "MetaData": {
-      "$ref": "MetaData.json"
+    "Classification": {
+      "allOf": [
+        {
+          "$ref": "AccountClassificationEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: 5 types of classification an account classified. Suggested examples of account type are Asset, Equity, Expense, Liability, Revenue Filterable: QBW"
+    },
+    "AccountType": {
+      "allOf": [
+        {
+          "$ref": "AccountTypeEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: Type is a detailed account classification that specifies the use of this account. 16 type of account subtypes available in AccountTypeEnum Filterable: QBW Required: ALL"
+    },
+    "AccountSubType": {
+      "type": "string",
+      "description": "Product: QBO Description: AccountSubTypeEnum specificies QBO on detail type. If not specified default value are listed for each SubType"
+    },
+    "AccountPurposes": {
+      "type": "array",
+      "items": {
+        "$ref": "ReferenceType.json"
+      },
+      "description": "Product: QBO Description: Internal use only: Account purpose indicates the mapping of the chart-of-account to a purpose (eg: DEFAULT_QB_CASH_CHECKING_ACCOUNT). A chart-of-account can have multiple account purpose mapping."
+    },
+    "AcctNum": {
+      "type": "string",
+      "description": "Product: ALL Description: User entered/specified account number to help the user in identifying the account within the chart-of-accounts and in deciding what should be posted to the account."
+    },
+    "AcctNumExtn": {
+      "type": "string",
+      "description": "Product: QBO Description: An extension to the base account number that can be added to Customer A/R or Supplier A/P accounts."
+    },
+    "BankNum": {
+      "type": "string",
+      "description": "Product: QBW Description: Bank Account Number, should include routing number whatever else depending upon the context, this may be the credit card number or the checking account number, etc. ValidRange: QBW: max=25"
+    },
+    "OpeningBalance": {
+      "type": "number",
+      "description": "Product: ALL Description: Specifies the Opening Balance amount when creating a new Balance Sheet account."
+    },
+    "OpeningBalanceDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: ALL Description: Specifies the Date of the Opening Balance amount when creating a new Balance Sheet account."
+    },
+    "CurrentBalance": {
+      "type": "number",
+      "description": "Product: ALL Description: Specifies the balance amount for the current Account. Valid for Balance Sheet accounts. InputType: QBW: ReadOnly"
+    },
+    "CurrentBalanceWithSubAccounts": {
+      "type": "number",
+      "description": "Product: ALL Description: Specifies the cumulative balance amount for the current Account and all its sub-accounts. InputType: QBW: ReadOnly"
+    },
+    "CurrencyRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the Currency that this account will hold the amounts in."
+    },
+    "TaxAccount": {
+      "type": "boolean",
+      "description": "Product: ALL Description: Describes if the account is taxable"
+    },
+    "TaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW Description: If the account is taxable, refers to taxcode reference if applicable I18n: QBW: GlobalOnly"
+    },
+    "OnlineBankingEnabled": {
+      "type": "boolean",
+      "description": "Product: ALL Description: Indicates if the Account is linked with Online Banking feature (automatically download transactions) of QuickBooks Online or QuickBooks Desktop. Null or false indicates not linked with online banking. True if Online banking based download is enabled for this account. InputType: ALL: ReadOnly"
+    },
+    "FIName": {
+      "type": "string",
+      "description": "Product: ALL Description: Indicates the name of financial institution name if Account is linked with Online banking. Valid only if account is online banking enabled. This is optional and read-only. InputType: ALL: ReadOnly"
+    },
+    "JournalCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: The Journal Code that is associated with the account. This is required only for Bank accounts. This is applicable only in FR. InputType: ALL: ReadOnly"
+    },
+    "AccountEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Product: ALL Description: extension place holder for Account."
     }
-  }
+  },
+  "description": "Account is a component of a Chart Of Accounts, and is part of a Ledger. Used to record a total monetary amount allocated against a specific use. Accounts are one of five basic types: asset, liability, revenue (income), expenses, or equity."
 }

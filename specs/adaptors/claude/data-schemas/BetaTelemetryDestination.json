@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaTelemetryDestination",
+  "title": "BetaTelemetryDestination",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaTelemetryDestination",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An OpenTelemetry destination: an OTLP/HTTP endpoint, the request headers sent with every delivery to it, what the exported spans contain, and which workspaces it covers. A destination belongs to an organization. A workspace's spans go to every enabled destination that covers it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "display_name",
+    "endpoint_url",
+    "header_names",
+    "traces",
+    "state",
+    "delivery_health",
+    "created_at",
+    "updated_at",
+    "workspaces"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "telemetry_destination"
+    },
+    "id": {
+      "description": "The unique ID of the destination (`tdst_...`).",
+      "type": "string"
+    },
+    "display_name": {
+      "description": "Human-readable name for the destination. Null when none was set.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "endpoint_url": {
+      "description": "The base URL of the destination's OTLP/HTTP endpoint, exactly as registered.\n\nThe API appends the per-signal path, such as `/v1/traces`, on delivery, unless `traces.endpoint_url` is set.",
+      "type": "string"
+    },
+    "header_names": {
+      "description": "Names of the registered request headers. Header values are write-only and are never returned.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "traces": {
+      "description": "The destination's settings for the traces it receives.",
+      "allOf": [
+        {
+          "$ref": "BetaTelemetryDestinationTraces.json"
+        }
+      ]
+    },
+    "state": {
+      "description": "Whether the destination receives deliveries.",
+      "allOf": [
+        {
+          "$ref": "BetaTelemetryDestinationState.json"
+        }
+      ]
+    },
+    "delivery_health": {
+      "description": "The most recent delivery results for this destination.",
+      "allOf": [
+        {
+          "$ref": "BetaTelemetryDestinationDeliveryHealth.json"
+        }
+      ]
+    },
+    "created_at": {
+      "description": "Time the destination was created.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "updated_at": {
+      "description": "Time of the last change to the destination's configuration or state. Changes to `delivery_health` don't change it.\n\nAn update that sets a header value always changes it, even when the value is the same as before. Adding or removing a single workspace on the destination's list doesn't change it. An update that changes the list does.",
+      "allOf": [
+        {
+          "$ref": "BetaTimestamp.json"
+        }
+      ]
+    },
+    "workspaces": {
+      "description": "Which of the organization's workspaces the destination covers.",
+      "allOf": [
+        {
+          "$ref": "BetaTelemetryDestinationWorkspaces.json"
+        }
+      ]
+    }
+  }
+}

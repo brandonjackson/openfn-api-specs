@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsMcpOauthRefreshResponse",
+  "title": "BetaManagedAgentsMcpOauthRefreshResponse",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsMcpOauthRefreshResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "OAuth refresh token configuration returned in credential responses.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "token_endpoint",
+    "client_id",
+    "token_endpoint_auth"
+  ],
+  "properties": {
+    "token_endpoint": {
+      "description": "Token endpoint URL used to refresh the access token.",
+      "type": "string"
+    },
+    "client_id": {
+      "description": "The OAuth client ID used when refreshing the access token.",
+      "type": "string"
+    },
+    "resource": {
+      "description": "OAuth resource indicator.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scope": {
+      "description": "OAuth scope for the refresh request.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "token_endpoint_auth": {
+      "type": "object",
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "none": "#/components/schemas/BetaManagedAgentsTokenEndpointAuthNoneResponse",
+          "client_secret_basic": "#/components/schemas/BetaManagedAgentsTokenEndpointAuthBasicResponse",
+          "client_secret_post": "#/components/schemas/BetaManagedAgentsTokenEndpointAuthPostResponse"
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "BetaManagedAgentsTokenEndpointAuthNoneResponse.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsTokenEndpointAuthBasicResponse.json"
+        },
+        {
+          "$ref": "BetaManagedAgentsTokenEndpointAuthPostResponse.json"
+        }
+      ]
+    }
+  }
+}

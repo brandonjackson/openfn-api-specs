@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaComputerToolset_20260801",
+  "title": "ComputerToolset_20260801",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaComputerToolset_20260801",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "description": "The computer toolset: a single ``tools[]`` entry (carrying no\n``name``) that declares the computer tool family. The model is\nserved the family's tool with any members disabled via ``configs``\nremoved from its schema. Every member is enabled by default, zoom\nincluded. The single-tool options ``display_number`` and\n``enable_zoom`` are not fields of a toolset entry — it carries only\n``type``, ``configs``, and ``cache_control``; zoom is controlled\nvia ``configs.zoom.enabled``.",
+  "properties": {
+    "cache_control": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Create a cache control breakpoint at this content block.",
+      "title": "Cache Control"
+    },
+    "configs": {
+      "anyOf": [
+        {
+          "$ref": "BetaComputerToolsetConfigs.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Sparse per-member overrides, keyed by member name. Absent, null, and {} are equivalent; a member's defaults apply wherever its key is absent."
+    },
+    "type": {
+      "const": "computer_toolset_20260801",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "type": "object"
+}

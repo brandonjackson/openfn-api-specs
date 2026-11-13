@@ -3,12 +3,67 @@
   "npm": "@openfn/language-intuit",
   "origin": "generated",
   "upstreamFormat": "docs",
-  "sources": [
-    "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/customer",
-    "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/invoice",
-    "https://developer.intuit.com/app/developer/qbo/docs/develop/explore-the-quickbooks-online-api/data-queries",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-intuit/configuration-schema.json"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "docs-only",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account",
+      "result": "not-found",
+      "note": "The API Explorer is a client-rendered app (web-shell plugins); no OpenAPI/Swagger link or bootstrap JSON. developer.intuit.com/llms.txt indexes guides but not the entity reference pages; sitemap.xml 404."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/intuit",
+      "result": "not-found",
+      "note": "Searched the intuit and IntuitDeveloper GitHub orgs (SDKs, quickbooks-online-mcp-server, intuit-cli-for-quickbooks, sample apps) for openapi/swagger/postman files: none. Third-party QuickBooks OpenAPI repos exist but are not vendor-published."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No intuit.com / QuickBooks entry on apis.guru."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/collections/4884662-e6c576f1-f6d3-440f-b090-da9ff1ac519d",
+      "result": "rejected",
+      "note": "Intuit Developer's official public Postman collection 'QuickBooks Online Accounting API' (workspace intuit-developer-quickbooks-online-accounting-api, 181 requests). Example-based and incomplete (no CompanyCurrency, CustomerType, CreditCardPayment, JournalCode, RecurringTransaction, TaxClassification, PDF/send endpoints), so not usable as the full upstream; used as the vendor's operation matrix and every one of its requests is present in this spec."
+    },
+    {
+      "kind": "xsd",
+      "url": "https://github.com/intuit/QuickBooks-V3-Java-SDK/tree/develop/ipp-v3-java-data/src/main/xsd",
+      "result": "used",
+      "note": "Intuit's own v3 XSDs (Finance.xsd, IntuitBaseTypes.xsd, IntuitNamesTypes.xsd, IntuitRestServiceDef.xsd, Report.xsd, SalesTax.xsd, EntitlementsResponse.xsd, at SDK commit c4d5dfad, 2026-07-17) define every entity's fields; converted mechanically into the component schemas. They carry types, not endpoints."
+    },
+    {
+      "kind": "docs",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account",
+      "result": "used",
+      "note": "Entity list and per-entity operations (create/read/update/delete/void/pdf/send), query, CDC, batch, upload, reports and entitlements from the API Explorer and Intuit's guides, cross-checked against the Postman collection."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The intuit adaptor is a thin HTTP wrapper (request/get/post via re-exported http) over the Intuit QuickBooks Online Accounting API v3. Intuit publishes docs but no consolidated public OpenAPI. Authored a focused OpenAPI 3.0.3 covering the core accounting entities and the query endpoint under /v3/company/{realmId}, matching Intuit's documented request/response envelopes (entity wrapped as {\"Customer\": {...}, \"time\": ...}; query returns {\"QueryResponse\": {...}}). Base server is the sandbox host from the config schema."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account",
+    "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/invoice",
+    "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/batch",
+    "https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/data-queries",
+    "https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/change-data-capture",
+    "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/report-entities/balancesheet",
+    "https://www.postman.com/collections/4884662-e6c576f1-f6d3-440f-b090-da9ff1ac519d",
+    "https://github.com/intuit/QuickBooks-V3-Java-SDK/tree/develop/ipp-v3-java-data/src/main/xsd",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-intuit/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-intuit/configuration-schema.json",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/intuit"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The QuickBooks Online Accounting API v3 (quickbooks.api.intuit.com, sandbox-quickbooks.api.intuit.com). The intuit adaptor (v1.1.3) has no named operations (ast.json lists none); it exports http.get/http.post, which call configuration.baseUrl + path with a Bearer token, so any Accounting API endpoint is reachable and the whole API is modelled. Intuit publishes no OpenAPI; this spec combines two vendor machine artifacts with the docs: the endpoint surface follows the API Explorer's entity list and Intuit Developer's official Postman collection (all 181 of its requests map onto a spec operation), and every entity schema is converted mechanically from Intuit's own v3 XSDs shipped in QuickBooks-V3-Java-SDK (extensions flattened, simpleContent as {value, ...}, repeated elements as arrays), so field coverage is complete to the latest minor version rather than hand-picked. 176 operations: create/read/update/delete (plus void, PDF and email where the docs offer them) for 38 entities, company info, preferences, exchange rates, TaxService, query (GET and POST), CDC, batch, attachment upload, 29 reports and entitlements; 250 schemas (was a 10-operation stub on the sandbox host). Modelling notes: create and full/sparse update share POST /{entity}, so update is keyed '/{entity}#update'; delete and void are '#operation=delete' / '#operation=void' keys; responses are the API's {<Entity>: {...}, time} envelopes, so data-schemas lists the envelopes with the XSD entity types nested; PDF endpoints return application/pdf. Best-effort because the per-entity operation matrix comes from docs and the Postman collection rather than a machine-readable endpoint spec, the change-order read follows Postman's POST form, and the reports' query filters are the common set (each report accepts a subset)."
 }

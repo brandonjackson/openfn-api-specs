@@ -1,14 +1,76 @@
 {
   "adaptor": "memento",
   "npm": "@openfn/language-memento",
-  "origin": "generated",
-  "upstreamFormat": "docs",
-  "sources": [
-    "https://mementodatabase.docs.apiary.io/",
-    "https://docs.openfn.org/adaptors/packages/memento-docs",
-    "https://github.com/OpenFn/adaptors/blob/main/packages/memento/src/Adaptor.js",
-    "https://github.com/OpenFn/adaptors/blob/main/packages/memento/src/util.js"
+  "origin": "converted",
+  "upstreamFormat": "api-blueprint",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": {
+    "specUrl": "https://jsapi.apiary.io/apis/mementodatabase.apib",
+    "format": "api-blueprint-1A",
+    "fetchedAt": "2026-11-13",
+    "note": "Committed verbatim as upstream.apib, sha256 sha256:15e57a84716d7bfb489c26bb344467f3ae2802d3463c0bbb473acfb81d5fe523 (identical on two fetches). contentHash is deliberately not recorded here: test/upstream.test.ts only looks for upstream.json/.yaml/.yml, so a recorded hash would report the .apib file as missing. Same pattern as openlmis' RAML captures."
+  },
+  "attempts": [
+    {
+      "kind": "api-blueprint",
+      "url": "https://jsapi.apiary.io/apis/mementodatabase.apib",
+      "result": "used",
+      "note": "vendor's API Blueprint behind https://mementodatabase.docs.apiary.io (the docs the adaptor README links); 7 resources / 9 actions; sha256:15e57a84716d7bfb489c26bb344467f3ae2802d3463c0bbb473acfb81d5fe523"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://api.mementodatabase.com/{openapi.json,swagger.json}",
+      "result": "not-found",
+      "note": "404 on the API host; /v1/* answers 401 JSON without a token"
+    },
+    {
+      "kind": "converter",
+      "url": "npx apib2swagger",
+      "result": "rejected",
+      "note": "the repo converter has no API Blueprint support and running apib2swagger was not permitted in this session; converted by hand (9 actions, small blueprint)"
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "no memento entry"
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=mementodatabase",
+      "result": "not-found",
+      "note": "0 results"
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/mementodatabase",
+      "result": "not-found",
+      "note": "no vendor GitHub org or SDK found by search"
+    },
+    {
+      "kind": "postman",
+      "url": "https://mindcloud.co/docs/universal/rest/memento-database/latest",
+      "result": "rejected",
+      "note": "third-party (MindCloud) wrapper docs, not the vendor API"
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No published machine spec (Memento Cloud API is documented only in Apiary/API Blueprint). Authored a focused OpenAPI 3.0.3 from the vendor Apiary docs and the adaptor source. Base URL https://api.mementodatabase.com with /v1 prefix confirmed from src/util.js. Covers the exact paths the adaptor calls: GET /v1/libraries, GET /v1/libraries/{id}, GET/POST /v1/libraries/{id}/entries, GET/PATCH /v1/libraries/{id}/entries/{entryId}."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "live-api-401"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://jsapi.apiary.io/apis/mementodatabase.apib",
+    "https://mementodatabase.docs.apiary.io/",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-memento/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-memento/dist/index.cjs",
+    "https://github.com/OpenFn/adaptors/tree/main/packages/memento"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "Memento Cloud API (beta) for Memento Database cloud libraries. The vendor's machine spec is the API Blueprint on Apiary, saved verbatim as upstream.apib; openapi.json is a hand conversion of all 9 actions (list/get libraries; list/create/get/edit/delete entries; search entries; upload files) and every example-bearing response is a named schema, with the blueprint's examples kept. Mapping: blueprint HOST https://api.mementodatabase.com/v1/ -> servers[0]; the per-action `token` attribute -> a query apiKey security scheme; [Entry][] model references -> the Entry schema. One addition not in the blueprint: a shared Error schema for default responses, from the live API's 401 body and the adaptor's 403 'API rate limit exceeded' handling (limit: 10 requests/minute). All 6 adaptor operations map to paths, but updateEntry sends PUT to /libraries/{libraryId}/entries/{entryId} while the blueprint documents PATCH (unverifiable without a token); the spec keeps the vendor's PATCH. The earlier stub also had PATCH and lacked delete, search and file upload."
 }

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaMCPToolset",
+  "title": "MCPToolset",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaMCPToolset",
+    "capturedAt": "2026-11-13"
+  },
+  "additionalProperties": false,
+  "description": "Configuration for a group of tools from an MCP server.\n\nAllows configuring enabled status and defer_loading for all tools\nfrom an MCP server, with optional per-tool overrides.",
+  "properties": {
+    "cache_control": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "ephemeral": "#/components/schemas/BetaCacheControlEphemeral"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "BetaCacheControlEphemeral.json"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Create a cache control breakpoint at this content block.",
+      "title": "Cache Control"
+    },
+    "configs": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "$ref": "BetaMCPToolConfig.json"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Configuration overrides for specific tools, keyed by tool name",
+      "title": "Configs"
+    },
+    "default_config": {
+      "$ref": "BetaMCPToolDefaultConfig.json",
+      "description": "Default configuration applied to all tools from this server"
+    },
+    "mcp_server_name": {
+      "description": "Name of the MCP server to configure tools for",
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Mcp Server Name",
+      "type": "string"
+    },
+    "tools": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "BetaMCPTool.json"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The server's tool listing, pinned: when present, the server is not asked for its tools before sampling and exactly these entries, with `default_config` and `configs` applied, are the toolset's tools. Copy it from the `mcp_tool_listing` block of an earlier response.",
+      "title": "Tools",
+      "x-anthropic-beta-required": [
+        "mcp-client-2026-09-15"
+      ]
+    },
+    "type": {
+      "const": "mcp_toolset",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mcp_server_name",
+    "type"
+  ],
+  "type": "object"
+}

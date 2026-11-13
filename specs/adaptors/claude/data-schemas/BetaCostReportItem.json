@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaCostReportItem",
+  "title": "CostReportItem",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaCostReportItem",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "currency": {
+      "type": "string",
+      "title": "Currency",
+      "description": "Currency code for the cost amount. Currently always `\"USD\"`.",
+      "examples": [
+        "USD"
+      ]
+    },
+    "amount": {
+      "type": "string",
+      "title": "Amount",
+      "description": "Cost amount in lowest currency units (e.g. cents) as a decimal string. For example, `\"123.45\"` in `\"USD\"` represents `$1.23`.",
+      "examples": [
+        "123.78912",
+        "0.1",
+        "1500"
+      ]
+    },
+    "workspace_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Workspace Id",
+      "description": "ID of the Workspace this cost is associated with. `null` if not grouping by workspace or for the default workspace.",
+      "examples": [
+        "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Description",
+      "description": "Description of the cost item. `null` if not grouping by description.",
+      "examples": [
+        "Claude Opus 5.5 Usage - Input Tokens"
+      ]
+    },
+    "cost_type": {
+      "anyOf": [
+        {
+          "$ref": "BetaCostType.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Type of cost. `null` if not grouping by description.",
+      "examples": [
+        "tokens",
+        "web_search",
+        "code_execution",
+        "session_usage"
+      ]
+    },
+    "context_window": {
+      "anyOf": [
+        {
+          "$ref": "BetaMessagesUsageReportContextWindow.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Input context window used. `null` if not grouping by description or for non-token costs.",
+      "examples": [
+        "0-200k",
+        "200k-1M"
+      ]
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Model",
+      "description": "Model name used. `null` if not grouping by description, for non-token costs, or for token costs with no model ID.",
+      "examples": [
+        "claude-opus-5-5",
+        "claude-sonnet-5-5"
+      ]
+    },
+    "service_tier": {
+      "anyOf": [
+        {
+          "$ref": "BetaCostReportServiceTier.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Service tier used. `null` if not grouping by description or for non-token costs.",
+      "examples": [
+        "standard",
+        "batch"
+      ]
+    },
+    "token_type": {
+      "anyOf": [
+        {
+          "$ref": "BetaCostReportTokenType.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Type of token. `null` if not grouping by description or for non-token costs.",
+      "examples": [
+        "uncached_input_tokens",
+        "output_tokens",
+        "cache_read_input_tokens",
+        "cache_creation.ephemeral_1h_input_tokens",
+        "cache_creation.ephemeral_5m_input_tokens"
+      ]
+    },
+    "inference_geo": {
+      "anyOf": [
+        {
+          "$ref": "BetaInferenceGeoFilter.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Inference Geo",
+      "description": "Inference geo used matching requests' `inference_geo` parameter if set, otherwise the workspace's `default_inference_geo`.\nFor models that do not support specifying `inference_geo` the value is `\"not_available\"`. Always `null` if not grouping by inference geo.",
+      "examples": [
+        "global",
+        "us",
+        "not_available"
+      ]
+    },
+    "speed": {
+      "anyOf": [
+        {
+          "$ref": "BetaSpeed.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Speed used. `null` if not grouping by description, or for non-token costs.",
+      "examples": [
+        "standard",
+        "fast"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "currency",
+    "amount",
+    "workspace_id",
+    "description",
+    "cost_type",
+    "context_window",
+    "model",
+    "service_tier",
+    "token_type",
+    "inference_geo",
+    "speed"
+  ]
+}

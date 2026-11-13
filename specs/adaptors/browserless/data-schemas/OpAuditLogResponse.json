@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "browserless/OpAuditLogResponse",
+  "title": "OpAuditLogResponse",
+  "x-openfn-adaptor": "browserless",
+  "x-source": {
+    "openapi": "#/components/schemas/OpAuditLogResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Public-facing audit-log entry returned by the audit HTTP route. Omits\ntoken_hash — never includes any token material — and carries the credential\nreference plus non-secret target metadata only.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique audit-entry identifier.",
+      "type": "string"
+    },
+    "integrationId": {
+      "description": "Integration this credential operation used.",
+      "type": "string"
+    },
+    "profileId": {
+      "description": "Authentication profile associated with the operation, or null.",
+      "type": "string"
+    },
+    "secretRef": {
+      "description": "The alias or op:// reference requested. Never a resolved value.",
+      "type": "string"
+    },
+    "targetOrigin": {
+      "description": "Document origin the fill was attempted on, or null.",
+      "type": "string"
+    },
+    "targetSelector": {
+      "description": "CSS selector supplied by the caller, or null.",
+      "type": "string"
+    },
+    "targetDescriptor": {
+      "description": "Non-secret descriptor of the focused element, or null.",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "OpAuditOutcome.json",
+      "description": "`success` if filled, `saved` if created, otherwise `failure`."
+    },
+    "errorCode": {
+      "description": "Error code when the outcome is `failure`, otherwise null.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO timestamp of the operation.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "errorCode",
+    "id",
+    "integrationId",
+    "outcome",
+    "profileId",
+    "secretRef",
+    "targetDescriptor",
+    "targetOrigin",
+    "targetSelector"
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionThreadAgent",
+  "title": "BetaManagedAgentsSessionThreadAgent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionThreadAgent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Resolved `agent` definition for a single `session_thread`. Snapshot of the agent at thread creation time. The multiagent roster is not repeated here; read it from `Session.agent`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "id",
+    "version",
+    "name",
+    "description",
+    "model",
+    "system",
+    "tools",
+    "mcp_servers",
+    "skills",
+    "execution_identity"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "agent",
+      "examples": [
+        "agent"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "examples": [
+        "agent_011CZkYqphY8vELVzwCUpqiQ"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "format": "int32",
+      "examples": [
+        1
+      ]
+    },
+    "name": {
+      "type": "string",
+      "examples": [
+        "Researcher"
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "A focused research subagent."
+      ]
+    },
+    "model": {
+      "$ref": "BetaManagedAgentsModelConfig.json",
+      "examples": [
+        {
+          "id": "claude-opus-5-5",
+          "speed": "standard"
+        }
+      ]
+    },
+    "system": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "examples": [
+        "You are a research subagent that gathers and summarises sources for the coordinating agent."
+      ]
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsAgentTool.json"
+      },
+      "examples": [
+        [
+          {
+            "type": "agent_toolset_20260401",
+            "default_config": {
+              "enabled": true,
+              "permission_policy": {
+                "type": "always_ask"
+              }
+            },
+            "configs": []
+          }
+        ]
+      ]
+    },
+    "mcp_servers": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsMCPServer.json"
+      },
+      "examples": [
+        []
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "BetaManagedAgentsSkill.json"
+      },
+      "examples": [
+        []
+      ]
+    },
+    "execution_identity": {
+      "description": "Execution principal snapshotted from the agent at session creation. Always present; `{\"type\": \"service_account\"}` when runs carry no customer-named principal.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsExecutionIdentity.json"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ],
+      "examples": [
+        {
+          "type": "service_account"
+        }
+      ]
+    }
+  },
+  "example": {
+    "type": "agent",
+    "id": "agent_011CZkYqphY8vELVzwCUpqiQ",
+    "version": 1,
+    "name": "Researcher",
+    "description": "A focused research subagent.",
+    "model": {
+      "id": "claude-opus-5-5",
+      "speed": "standard"
+    },
+    "system": "You are a research subagent that gathers and summarises sources for the coordinating agent.",
+    "tools": [
+      {
+        "type": "agent_toolset_20260401",
+        "default_config": {
+          "enabled": true,
+          "permission_policy": {
+            "type": "always_ask"
+          }
+        },
+        "configs": []
+      }
+    ],
+    "mcp_servers": [],
+    "skills": [],
+    "execution_identity": {
+      "type": "service_account"
+    }
+  }
+}

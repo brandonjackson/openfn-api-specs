@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/ValidateExternalKeyResponse",
+  "title": "ValidateExternalKeyResponse",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/ValidateExternalKeyResponse",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Error",
+      "description": "Error message when status is `failure`. Null otherwise."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "failure",
+        "success"
+      ],
+      "title": "Status",
+      "description": "`success` — encrypt/decrypt roundtrip succeeded. `failure` — the roundtrip failed or timed out; see `error`."
+    },
+    "type": {
+      "type": "string",
+      "const": "external_key_validation",
+      "title": "Type",
+      "default": "external_key_validation"
+    }
+  },
+  "type": "object",
+  "required": [
+    "error",
+    "status",
+    "type"
+  ],
+  "description": "Result of a validation roundtrip against the customer's KMS.\n\nHTTP 200 for both outcomes — the operation completed; `status` says\nwhether the key works."
+}

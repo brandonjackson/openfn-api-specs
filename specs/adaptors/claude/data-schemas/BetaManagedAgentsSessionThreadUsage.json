@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsSessionThreadUsage",
+  "title": "BetaManagedAgentsSessionThreadUsage",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsSessionThreadUsage",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Cumulative token usage for a session thread across all turns.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "input_tokens": {
+      "description": "Total input tokens consumed across all turns.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "output_tokens": {
+      "description": "Total output tokens generated across all turns.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "cache_read_input_tokens": {
+      "description": "Total tokens read from prompt cache.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "cache_creation": {
+      "description": "Tokens used to create prompt cache entries, broken down by cache TTL.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsCacheCreationUsage.json"
+        }
+      ]
+    },
+    "list_cost": {
+      "description": "Cumulative list cost of this thread across all turns, priced at public list rates. Absent until cost tracking is available for the thread. Each figure is rounded to the nearest cent independently and the session's aggregate `usage.list_cost` additionally includes session runtime, so per-thread costs do not sum exactly to the session figure; the session figure is authoritative and is what a budget is enforced against.",
+      "anyOf": [
+        {
+          "$ref": "BetaMonetaryAmount.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    },
+    "active_seconds": {
+      "description": "Cumulative time in seconds this thread spent in running status. Equal to `stats.active_seconds`; surfaced here so a thread's usage carries every quantity its cost is priced on.",
+      "type": "number",
+      "format": "double",
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    },
+    "server_tool_use": {
+      "description": "Cumulative server-executed tool usage across all turns of this thread. Absent until server-tool tracking is available for the thread.",
+      "anyOf": [
+        {
+          "$ref": "BetaManagedAgentsServerToolUsage.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-anthropic-beta-required": [
+        "managed-agents-2026-04-01"
+      ]
+    }
+  }
+}

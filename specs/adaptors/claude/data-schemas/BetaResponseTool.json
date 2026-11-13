@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaResponseTool",
+  "title": "ResponseTool",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaResponseTool",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "A custom tool definition, as sent.",
+  "properties": {
+    "type": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "const": "custom",
+          "type": "string"
+        }
+      ],
+      "title": "Type"
+    },
+    "description": {
+      "description": "Description of what this tool does.\n\nTool descriptions should be as detailed as possible. The more information that the model has about what the tool is and how to use it, the better it will perform. You can use natural language descriptions to reinforce important aspects of the tool input JSON schema.",
+      "examples": [
+        "Get the current weather in a given location"
+      ],
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the tool.\n\nThis is how the tool will be called by the model and in `tool_use` blocks.",
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[a-zA-Z0-9_-]{1,128}$",
+      "title": "Name",
+      "type": "string"
+    },
+    "input_schema": {
+      "additionalProperties": true,
+      "description": "[JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.\n\nThis defines the shape of the `input` that your tool accepts and that the model will produce.",
+      "examples": [
+        {
+          "properties": {
+            "location": {
+              "description": "The city and state, e.g. San Francisco, CA",
+              "type": "string"
+            },
+            "unit": {
+              "description": "Unit for the output - one of (celsius, fahrenheit)",
+              "type": "string"
+            }
+          },
+          "required": [
+            "location"
+          ],
+          "type": "object"
+        }
+      ],
+      "properties": {
+        "properties": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Properties"
+        },
+        "required": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Required"
+        },
+        "type": {
+          "const": "object",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Input Schema",
+      "type": "object"
+    },
+    "strict": {
+      "description": "When true, guarantees schema validation on tool names and inputs",
+      "title": "Strict",
+      "type": "boolean"
+    },
+    "eager_input_streaming": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Enable eager input streaming for this tool. When true, tool input parameters will be streamed incrementally as they are generated, and types will be inferred on-the-fly rather than buffering the full JSON output. When false, streaming is disabled for this tool even if the fine-grained-tool-streaming beta is active. When null (default), uses the default behavior based on beta headers.",
+      "title": "Eager Input Streaming"
+    },
+    "allowed_callers": {
+      "items": {
+        "$ref": "BetaAllowedCaller.json"
+      },
+      "title": "Allowed Callers",
+      "type": "array"
+    },
+    "defer_loading": {
+      "description": "If true, tool will not be included in initial system prompt. Only loaded when returned via tool_reference from tool search.",
+      "title": "Defer Loading",
+      "type": "boolean"
+    },
+    "input_examples": {
+      "items": {
+        "additionalProperties": {
+          "$ref": "BetaJsonValue.json"
+        },
+        "type": "object"
+      },
+      "title": "Input Examples",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "input_schema"
+  ],
+  "type": "object"
+}

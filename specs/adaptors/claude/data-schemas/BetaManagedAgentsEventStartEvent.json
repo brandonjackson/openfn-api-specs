@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsEventStartEvent",
+  "title": "BetaManagedAgentsEventStartEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsEventStartEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "Opens a preview of a buffered event. Carries the previewed event's type and id only. Followed by zero or more event_delta events with the same event id, normally concluded by the buffered event carrying that id. If the producing model request ends without that event (an error or interrupt mid-stream), its terminal span.model_request_end closes the preview. Only sent on stream connections that opt in via event_deltas; never appears in event history.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "event"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "event_start"
+    },
+    "event": {
+      "description": "The previewed event's type and id. The event type determines which delta types the preview's event_delta events carry: agent.message events stream content_delta fragments; agent.thinking previews are start-only — no deltas follow, and the buffered agent.thinking with the same id concludes them.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsEventStartEvent_Event.json"
+        }
+      ]
+    }
+  }
+}

@@ -2,280 +2,419 @@
   "openapi": "3.0.3",
   "info": {
     "title": "SIUBEN (Sistema Único de Beneficiarios) API",
-    "version": "1.0.0",
-    "description": "Synthesized OpenAPI description of the SIUBEN API surface targeted by the OpenFn siuben-rd adaptor. SIUBEN is the Dominican Republic's Sistema Único de Beneficiarios — the national social beneficiary registry that identifies, characterizes and scores households (via the Índice de Calidad de Vida / Quality of Life Index) for eligibility to social programs and subsidies. The adaptor authenticates against POST /authenticate (username/password -> bearer Token) and then issues generic bearer-authenticated GET/request calls. Only /authenticate is confirmed from the adaptor source; the beneficiary/household/ICV consultation endpoints are synthesized from SIUBEN's documented public functions and are intended for mocking, not live traffic.",
+    "version": "unpublished",
+    "description": "Partner API of SIUBEN, the Dominican Republic's single social-beneficiary registry (households, members, poverty category and Índice de Calidad de Vida). SIUBEN publishes no API documentation or machine spec; this document is reconstructed from the OpenFn adaptor source (JWT login at POST /authenticate, then bearer-authenticated generic http.get/http.request calls under configuration.baseUrl) and, for the beneficiary lookup/update routes, from an independent public C# client of a SIUBEN API. Everything here is best-effort.",
     "x-openfn-adaptor": "siuben-rd"
   },
   "servers": [
     {
-      "url": "https://api.siuben.gob.do",
-      "description": "Mock placeholder base URL. The real base URL is supplied per-connection via the adaptor's `configuration.baseUrl`."
+      "url": "{baseUrl}",
+      "description": "configuration.baseUrl of the SIUBEN deployment OpenFn is given (not public).",
+      "variables": {
+        "baseUrl": {
+          "default": "https://siuben-endpoint.example.gob.do",
+          "description": "Placeholder; the real host is private and set per credential."
+        }
+      }
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    },
-    "schemas": {
-      "AuthRequest": {
-        "type": "object",
-        "required": ["username", "password"],
-        "properties": {
-          "username": { "type": "string" },
-          "password": { "type": "string" }
-        }
-      },
-      "AuthResponse": {
-        "type": "object",
-        "properties": {
-          "Token": {
-            "type": "string",
-            "description": "Bearer token used for subsequent Authorization headers."
-          },
-          "Expiration": { "type": "string", "format": "date-time" }
-        }
-      },
-      "Beneficiario": {
-        "type": "object",
-        "properties": {
-          "cedula": {
-            "type": "string",
-            "description": "National ID (cédula) of the beneficiary.",
-            "example": "00112345678"
-          },
-          "nombres": { "type": "string" },
-          "apellidos": { "type": "string" },
-          "sexo": { "type": "string", "enum": ["M", "F"] },
-          "fechaNacimiento": { "type": "string", "format": "date" },
-          "hogarId": { "type": "string" },
-          "estatus": {
-            "type": "string",
-            "description": "Registration status of the beneficiary.",
-            "example": "REGISTRADO"
-          }
-        }
-      },
-      "Hogar": {
-        "type": "object",
-        "properties": {
-          "hogarId": { "type": "string" },
-          "jefeHogarCedula": { "type": "string" },
-          "provincia": { "type": "string" },
-          "municipio": { "type": "string" },
-          "sector": { "type": "string" },
-          "direccion": { "type": "string" },
-          "cantidadMiembros": { "type": "integer" },
-          "icv": { "$ref": "#/components/schemas/Icv" }
-        }
-      },
-      "MiembroHogar": {
-        "type": "object",
-        "properties": {
-          "cedula": { "type": "string" },
-          "nombres": { "type": "string" },
-          "apellidos": { "type": "string" },
-          "parentesco": {
-            "type": "string",
-            "description": "Relationship to the head of household.",
-            "example": "HIJO"
-          },
-          "edad": { "type": "integer" }
-        }
-      },
-      "Icv": {
-        "type": "object",
-        "description": "Índice de Calidad de Vida (Quality of Life Index) classification for a household.",
-        "properties": {
-          "hogarId": { "type": "string" },
-          "puntaje": {
-            "type": "number",
-            "description": "Score on a 0–100 scale.",
-            "example": 42.7
-          },
-          "categoria": {
-            "type": "string",
-            "description": "ICV poverty category.",
-            "example": "ICV-2"
-          },
-          "cisehVersion": { "type": "string", "example": "CISEH-2023" }
-        }
-      },
-      "ListaBeneficiarios": {
-        "type": "object",
-        "properties": {
-          "total": { "type": "integer" },
-          "data": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/Beneficiario" }
-          }
-        }
-      },
-      "ListaMiembros": {
-        "type": "object",
-        "properties": {
-          "total": { "type": "integer" },
-          "data": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/MiembroHogar" }
-          }
-        }
-      }
+  "security": [
+    {
+      "bearerAuth": []
     }
-  },
-  "security": [{ "bearerAuth": [] }],
+  ],
+  "tags": [
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "Beneficiarios",
+      "description": "Beneficiary (citizen) records looked up by cédula."
+    }
+  ],
   "paths": {
     "/authenticate": {
       "post": {
+        "tags": [
+          "Authentication"
+        ],
         "operationId": "authenticate",
-        "summary": "Authenticate and obtain a bearer token",
-        "description": "Confirmed from the adaptor source: the siuben-rd adaptor POSTs username/password and reads the `Token` field from the response body for subsequent bearer-authenticated requests.",
+        "summary": "Obtain a bearer token",
+        "description": "Called by the adaptor's execute() before every job with configuration.username/password; the adaptor reads response.body.Token and sends it as `Authorization: Bearer <Token>` on every later request.",
+        "x-openfn-source": "adaptor source: packages/siuben-rd/src/Utils.js authorize() (PR OpenFn/adaptors#1626)",
         "security": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AuthRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticateRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Authentication succeeded.",
+            "description": "Token issued",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthToken"
+                }
               }
             }
-          }
-        }
-      }
-    },
-    "/beneficiarios": {
-      "get": {
-        "operationId": "listBeneficiarios",
-        "summary": "List/search beneficiaries",
-        "parameters": [
-          {
-            "name": "cedula",
-            "in": "query",
-            "schema": { "type": "string" },
-            "description": "Filter by national ID."
           },
-          {
-            "name": "provincia",
-            "in": "query",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of beneficiaries.",
+          "401": {
+            "description": "Error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ListaBeneficiarios" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/beneficiarios/{cedula}": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "login",
+        "summary": "Obtain a bearer token (login variant seen in a third-party client)",
+        "description": "Login route used by an independent SIUBEN client: body {name, password}, response {token}; the client caches the JWT for 45 minutes and re-authenticates on 401. The OpenFn adaptor does not call this route; it is kept because the beneficiary routes below come from the same client. Whether the deployment behind an OpenFn credential exposes it is unknown.",
+        "x-openfn-source": "third-party client: github.com/KillerMaker/Extech-Indotel-Api Services/Siuben/SiubenApiProxy.cs + Models/Siuben/*.cs (an INDOTEL integration against a SIUBEN API); not vendor documentation",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Data/get/{cedula}": {
       "get": {
+        "tags": [
+          "Beneficiarios"
+        ],
         "operationId": "getBeneficiario",
-        "summary": "Get a beneficiary by cédula",
+        "summary": "Look up a beneficiary by cédula",
+        "description": "Returns the SIUBEN record for a national ID (cédula, digits only; the observed client strips dashes). 404 means the person is not in the registry.",
+        "x-openfn-source": "third-party client: github.com/KillerMaker/Extech-Indotel-Api Services/Siuben/SiubenApiProxy.cs + Models/Siuben/*.cs (an INDOTEL integration against a SIUBEN API); not vendor documentation",
         "parameters": [
           {
-            "name": "cedula",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/Cedula"
           }
         ],
         "responses": {
           "200": {
-            "description": "The beneficiary record.",
+            "description": "Beneficiary record",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Beneficiario" }
+                "schema": {
+                  "$ref": "#/components/schemas/Beneficiario"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No SIUBEN record for this cédula"
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
     },
-    "/hogares/{hogarId}": {
-      "get": {
-        "operationId": "getHogar",
-        "summary": "Get a household by id",
+    "/api/Data/update/{cedula}": {
+      "put": {
+        "tags": [
+          "Beneficiarios"
+        ],
+        "operationId": "updateBeneficiarioContrato",
+        "summary": "Record a programme contract against a beneficiary",
+        "description": "Writes a contract number and contract date onto the beneficiary identified by cédula. The observed client only checks for a 2xx status and never reads the body.",
+        "x-openfn-source": "third-party client: github.com/KillerMaker/Extech-Indotel-Api Services/Siuben/SiubenApiProxy.cs + Models/Siuben/*.cs (an INDOTEL integration against a SIUBEN API); not vendor documentation",
         "parameters": [
           {
-            "name": "hogarId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/Cedula"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContratoRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "The household record.",
+            "description": "Updated. Response body not documented (type not documented).",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Hogar" }
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No SIUBEN record for this cédula"
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       }
-    },
-    "/hogares/{hogarId}/miembros": {
-      "get": {
-        "operationId": "getHogarMiembros",
-        "summary": "List members of a household",
-        "parameters": [
-          {
-            "name": "hogarId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The household members.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ListaMiembros" }
-              }
-            }
-          }
-        }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token from POST /authenticate (field `Token`)."
       }
     },
-    "/icv/{hogarId}": {
-      "get": {
-        "operationId": "getIcv",
-        "summary": "Get the Quality of Life Index (ICV) for a household",
-        "parameters": [
-          {
-            "name": "hogarId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+    "parameters": {
+      "Cedula": {
+        "name": "cedula",
+        "in": "path",
+        "required": true,
+        "description": "Dominican national ID number (cédula), 11 digits without dashes.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9]{11}$"
+        },
+        "example": "00000000000"
+      }
+    },
+    "schemas": {
+      "AuthenticateRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
         ],
-        "responses": {
-          "200": {
-            "description": "The ICV classification.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Icv" }
-              }
-            }
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
           }
         }
+      },
+      "AuthToken": {
+        "type": "object",
+        "required": [
+          "Token"
+        ],
+        "description": "Login response read by the adaptor (capital-T `Token`).",
+        "properties": {
+          "Token": {
+            "type": "string",
+            "description": "JWT bearer token."
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "password"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Username."
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "LoginToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT bearer token."
+          }
+        }
+      },
+      "Beneficiario": {
+        "type": "object",
+        "description": "A person's SIUBEN registry entry and the household it belongs to.",
+        "required": [
+          "idHogar",
+          "cedula",
+          "provincia",
+          "provinciaCodigo",
+          "nombre",
+          "apellidos"
+        ],
+        "properties": {
+          "idHogar": {
+            "type": "string",
+            "description": "SIUBEN household identifier."
+          },
+          "cedula": {
+            "type": "string",
+            "description": "National ID (cédula)."
+          },
+          "provincia": {
+            "type": "string",
+            "description": "Province name."
+          },
+          "provinciaCodigo": {
+            "type": "string",
+            "description": "Province code."
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Given name(s)."
+          },
+          "apellidos": {
+            "type": "string",
+            "description": "Surname(s)."
+          },
+          "categoria_pobreza": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Poverty category assigned by SIUBEN."
+          },
+          "categoriaIcv": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Índice de Calidad de Vida (quality-of-life index) category."
+          },
+          "nocontrato": {
+            "type": "string",
+            "nullable": true,
+            "description": "Programme contract number, once recorded via PUT /api/Data/update/{cedula}."
+          }
+        },
+        "example": {
+          "idHogar": "HOGAR-0001",
+          "cedula": "00000000000",
+          "provincia": "EXAMPLE PROVINCE",
+          "provinciaCodigo": "01",
+          "nombre": "EXAMPLE",
+          "apellidos": "PERSON",
+          "categoria_pobreza": 1,
+          "categoriaIcv": 2,
+          "nocontrato": null
+        }
+      },
+      "UpdateContratoRequest": {
+        "type": "object",
+        "required": [
+          "noContrato",
+          "fechaContrato"
+        ],
+        "properties": {
+          "noContrato": {
+            "type": "string",
+            "description": "Contract number."
+          },
+          "fechaContrato": {
+            "type": "string",
+            "description": "Contract date (format not documented)."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error body; shape not documented.",
+        "additionalProperties": true
       }
     }
   }

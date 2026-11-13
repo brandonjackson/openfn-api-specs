@@ -5,48 +5,391 @@
   "x-openfn-adaptor": "intuit",
   "x-source": {
     "openapi": "#/components/schemas/Vendor",
-    "capturedAt": "2026-07-06"
+    "capturedAt": "2026-11-13"
   },
   "type": "object",
   "properties": {
     "Id": {
-      "type": "string",
-      "example": "56"
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
     },
     "SyncToken": {
       "type": "string",
-      "example": "0"
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
     },
-    "DisplayName": {
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
       "type": "string",
-      "example": "Bob's Burger Joint"
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
+    },
+    "IntuitId": {
+      "type": "string",
+      "description": "Product: QBO Description: IntuitId represents the realm id, authid or an entity id. An entity is a new type of IAM identity that represents a person or a business which has no Intuit authentication context"
+    },
+    "Organization": {
+      "type": "boolean",
+      "description": "Product: QBW Description: True if the entity represents an organization; otherwise the entity represents a person. Default is NULL or False, representing a person."
+    },
+    "Title": {
+      "type": "string",
+      "description": "Product: ALL Description: QBW: Title of the person. The person can have zero or more titles. Description: QBO: Title of the person. The person can have zero or more titles. InputType: ReadWrite ValidRange: QBW: Min=0, Max=15 ValidationRules: QBW: At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. ValidationRules: QBO: At least one of the name elements is..."
+    },
+    "GivenName": {
+      "type": "string",
+      "description": "Product: QBW Description: Given name or first name of a person.[br /]Max. length: 25 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. Product: QBO Description: Given name or first name of a person.[br /]Max. length: 25 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, FamilyName, or Suffix. F..."
+    },
+    "MiddleName": {
+      "type": "string",
+      "description": "Product: QBW Description: Middle name of the person. The person can have zero or more middle names.[br /]Max. length: 5 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. Product: QBO Description: Middle name of the person. The person can have zero or more middle names.[br /]Max. length: 15 characters.[br /]At least one of the name eleme..."
+    },
+    "FamilyName": {
+      "type": "string",
+      "description": "Product: QBW Description: Family name or the last name of the person.[br /]Max. length: 25 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, or FamilyName. Product: QBO Description: Family name or the last name of the person.[br /]Max. length: 15 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, FamilyName,..."
+    },
+    "Suffix": {
+      "type": "string",
+      "description": "Product: QBO Description: Suffix appended to the name of a person. For example, Senior, Junior, etc. QBO only field.[br /]Max. length: 15 characters.[br /]At least one of the name elements is required: Title, GivenName, MiddleName, FamilyName, or Suffix."
+    },
+    "FullyQualifiedName": {
+      "type": "string",
+      "description": "Product: ALL Description: Fully qualified name of the entity. The fully qualified name prepends the topmost parent, followed by each sub element separated by colons. Takes the form of Parent:Customer:Job:Sub-job. Limited to 5 levels.[br /]Max. length: 41 characters (single name) or 209 characters (fully qualified name)."
     },
     "CompanyName": {
       "type": "string",
-      "example": "Bob's Burger Joint"
+      "description": "Product: ALL Description: The name of the company associated with the person or organization."
+    },
+    "DisplayName": {
+      "type": "string",
+      "description": "Product: QBO Description: The name of the person or organization as displayed. If not provided, this is populated from FullName. Product: QBW Description: The name of the person or organization as displayed. Required: ALL Filterable: QBW"
+    },
+    "PrintOnCheckName": {
+      "type": "string",
+      "description": "Product: ALL Description: Name of the person or organization as printed on a check. If not provided, this is populated from FullName."
+    },
+    "UserId": {
+      "type": "string",
+      "description": "Product: QBW Description: The ID of the Intuit user associated with this name. Note: this is NOT the Intuit AuthID of the user."
     },
     "Active": {
       "type": "boolean",
-      "example": true
+      "description": "Product: ALL Description: If true, this entity is currently enabled for use by QuickBooks. The default value is true. Filterable: QBW"
+    },
+    "V4IDPseudonym": {
+      "type": "string",
+      "description": "Auto generated Public ID when a new customer/vendor/employee is added to QBO. (ReadOnly)"
+    },
+    "PrimaryPhone": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Primary phone number."
+    },
+    "AlternatePhone": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Alternate phone number."
+    },
+    "Mobile": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Mobile phone number."
+    },
+    "Fax": {
+      "allOf": [
+        {
+          "$ref": "TelephoneNumber.json"
+        }
+      ],
+      "description": "Product: ALL Description: Fax number."
+    },
+    "PrimaryEmailAddr": {
+      "allOf": [
+        {
+          "$ref": "EmailAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Primary email address."
+    },
+    "WebAddr": {
+      "allOf": [
+        {
+          "$ref": "WebSiteAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Website address (URI)."
+    },
+    "OtherContactInfo": {
+      "type": "array",
+      "items": {
+        "$ref": "ContactInfo.json"
+      },
+      "description": "Product: QBW Description: List of ContactInfo entities of any contact info type. The ContactInfo Type values are defined in the ContactTypeEnum."
+    },
+    "DefaultTaxCodeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: ALL Description: Reference to the tax code associated with the Customer or Vendor by default for sales or purchase taxes."
+    },
+    "ContactName": {
+      "type": "string",
+      "description": "Name of the contact within the vendor. Used by QBD only"
+    },
+    "AltContactName": {
+      "type": "string",
+      "description": "Name of the Alternate contact within the vendor. Used by QBD only"
+    },
+    "Notes": {
+      "type": "string",
+      "description": "Product: ALL Description: Free form text describing the Vendor.[br /]Max. length: 1024 characters."
+    },
+    "BillAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Default billing address."
+    },
+    "ShipAddr": {
+      "allOf": [
+        {
+          "$ref": "PhysicalAddress.json"
+        }
+      ],
+      "description": "Product: ALL Description: Default shipping address."
+    },
+    "OtherAddr": {
+      "type": "array",
+      "items": {
+        "$ref": "PhysicalAddress.json"
+      },
+      "description": "Product: QBW only. Description: An address other than default billing or shipping."
+    },
+    "TaxCountry": {
+      "type": "string",
+      "description": "Product: QBW. Description: Country of Vendor."
+    },
+    "TaxIdentifier": {
+      "type": "string",
+      "description": "Specifies the Tax ID of the Person or Organization"
+    },
+    "TaxIdEffectiveDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Product: QBO Description: Specifies the date of registeration of Supplier. Applicable for IN Region and in future can be extended to other regions."
+    },
+    "BusinessNumber": {
+      "type": "string",
+      "description": "Product: QBW. Description: Business Number of the Vendor. Applicable for CA/UK versions of QuickBooks."
+    },
+    "ParentRef": {
+      "$ref": "ReferenceType.json"
+    },
+    "VendorTypeRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW. Description: Reference to the VendorType."
+    },
+    "TermRef": {
+      "$ref": "ReferenceType.json"
+    },
+    "PrefillAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBW. Description: Reference to the PrefillAccount."
     },
     "Balance": {
       "type": "number",
-      "example": 0
+      "description": "Product: ALL Description: Specifies the open balance amount or the amount unpaid by the vendor. For the create operation, this represents the opening balance for the vendor. When returned in response to the query request it represents the current open balance (unpaid amount) for that vendor. Filterable: QBW Sortable: QBW"
     },
-    "PrimaryEmailAddr": {
-      "type": "object",
-      "properties": {
-        "Address": {
-          "type": "string",
-          "example": "bob@example.com"
+    "BillRate": {
+      "type": "number",
+      "description": "BillRate can be set to specify this vendor's hourly billing rate."
+    },
+    "OpenBalanceDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Specifies the date of the Open Balance. Non QB-writable."
+    },
+    "CreditLimit": {
+      "type": "number",
+      "description": "Specifies the maximum amount of an unpaid vendor balance."
+    },
+    "AcctNum": {
+      "type": "string",
+      "description": "Name or number of the account associated with this vendor. Length Restriction: QBO: 15 QBD: 1024"
+    },
+    "Vendor1099": {
+      "type": "boolean",
+      "description": "The Vendor is an independent contractor, someone who is given a 1099-MISC form at the end of the year. The \"1099 Vendor\" is paid with regular checks, and taxes are not withhold on their behalf."
+    },
+    "T4AEligible": {
+      "type": "boolean",
+      "description": "Product: QBW Description: True if vendor is T4A eligible. Applicable for CA/UK versions of quickbooks."
+    },
+    "T5018Eligible": {
+      "type": "boolean",
+      "description": "Product: QBW Description: True if vendor is T5018 eligible. Applicable for CA/UK versions of quickbooks."
+    },
+    "CurrencyRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
         }
-      }
+      ],
+      "description": "Reference to the currency all the business transactions created for or received from that vendor are created in."
     },
-    "BillAddr": {
-      "$ref": "PhysicalAddress.json"
+    "TDSEnabled": {
+      "type": "boolean",
+      "description": "Product: QBO Description: True, if TDS (Tax Deducted at Source) is enabled for this Vendor. If enabled, TDS metadata needs to be passsed in VendorEx field."
     },
-    "MetaData": {
-      "$ref": "MetaData.json"
+    "TDSEntityTypeId": {
+      "type": "integer",
+      "description": "Product: QBO Description: Entity Type of the Vendor."
+    },
+    "TDSSectionTypeId": {
+      "type": "integer",
+      "description": "Product: QBO Description: Default TDS section type for the vendor to be used in transaction."
+    },
+    "TDSOverrideThreshold": {
+      "type": "boolean",
+      "description": "Product: QBO Description: True, if TDS threshold calculation should be overriden."
+    },
+    "TaxReportingBasis": {
+      "type": "string",
+      "description": "Product: QBO Description: The tax reporting basis for the supplier. The applicable values are those exposed through the TaxReportBasisTypeEnum. This is applicable only in FR."
+    },
+    "APAccountRef": {
+      "allOf": [
+        {
+          "$ref": "ReferenceType.json"
+        }
+      ],
+      "description": "Product: QBO Description: The A/P account ID for the supplier. This is applicable only in FR where each supplier needs to have his own AP account."
+    },
+    "VendorEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Internal use only: extension place holder for Vendor."
+    },
+    "GSTIN": {
+      "type": "string",
+      "description": "GST Identification Number of the Vendor. Applicable for IN region only."
+    },
+    "GSTRegistrationType": {
+      "type": "string",
+      "description": "GST registration type of the Vendor. Applicable for IN region only."
+    },
+    "IsSubContractor": {
+      "type": "boolean",
+      "description": "Product: QBO only Description: True if the vendor is subcontractor"
+    },
+    "SubcontractorType": {
+      "type": "string",
+      "description": "Specifies the Subcontractor type. Applicable only for UK region, values are defined in the SubcontractorTypeEnum."
+    },
+    "CISRate": {
+      "type": "string",
+      "description": "Specifies the CIS Rate. Applicable only for UK region, values are defined in the CISRateEnum."
+    },
+    "HasTPAR": {
+      "type": "boolean",
+      "description": "Product: QBO Only Description: True if the Vendor has TPAR. Applicable for AU region only."
+    },
+    "VendorPaymentBankDetail": {
+      "allOf": [
+        {
+          "$ref": "VendorBankAccountDetail.json"
+        }
+      ],
+      "description": "Product: QBO Only Description: Contains Bank Account details to enable Vendor Batch Payment. Applicable for AU region only."
+    },
+    "Source": {
+      "type": "string",
+      "description": "Product: QBO Description: Originating source of the Vendor. Valid values are defined in SourceTypeEnum"
+    },
+    "CostRate": {
+      "type": "number",
+      "description": "Hourly cost rate of the Employee. QBO only. QBD Unsupporetd field."
+    },
+    "AgencyVerificationStatus": {
+      "allOf": [
+        {
+          "$ref": "AgencyVerificationStatus.json"
+        }
+      ],
+      "description": "Subcontractor's agency verification status for CIS"
+    },
+    "AgencyVerificationStatusMsg": {
+      "type": "string",
+      "description": "Subcontractor's agency verification status detailed message for CIS"
+    },
+    "AgencyVerificationTSUTC": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Latest timestamp for subcontractor's agency verification for CIS"
+    },
+    "CompanyRegistrationNumber": {
+      "type": "string",
+      "description": "Company registration number for CIS"
     }
-  }
+  },
+  "description": "Describes the Party as a Vendor Role view"
 }

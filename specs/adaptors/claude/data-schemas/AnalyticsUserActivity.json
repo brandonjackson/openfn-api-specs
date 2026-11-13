@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/AnalyticsUserActivity",
+  "title": "AnalyticsUserActivity",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/AnalyticsUserActivity",
+    "capturedAt": "2026-11-13"
+  },
+  "properties": {
+    "chat_cowork_unified_metrics": {
+      "anyOf": [
+        {
+          "$ref": "AnalyticsChatCoworkUnifiedMetrics.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Activity recorded while the member had Chat and Cowork unified (Cowork's features inside claude.ai chat) turned on, split into `chat` (chat activity) and `sessions` (Cowork activity). Omitted from the response where Chat and Cowork unified is not available."
+    },
+    "chat_metrics": {
+      "$ref": "AnalyticsChatMetrics.json"
+    },
+    "claude_code_metrics": {
+      "$ref": "AnalyticsClaudeCodeMetrics.json"
+    },
+    "claude_tag_metrics": {
+      "anyOf": [
+        {
+          "$ref": "AnalyticsClaudeTagMetrics.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Claude Tag activity in Slack by a user who has linked a Claude account. Activity by Slack users who have not linked an account appears only in the `/summaries` Claude Tag counts, so these rows do not add up to those counts. Omitted from the response on deployments that do not offer Claude Tag reporting."
+    },
+    "cowork_metrics": {
+      "$ref": "AnalyticsCoworkMetrics.json"
+    },
+    "design_metrics": {
+      "$ref": "AnalyticsDesignMetrics.json"
+    },
+    "distinct_user_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Distinct User Count",
+      "description": "Number of distinct active users represented by this row. Only set for grouped rollups (`group_by[]`); null for per-user rows. In date-range mode, recomputed as an exact distinct count of the group's active members over the requested window, never a sum of per-day values."
+    },
+    "last_activity_date": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Activity Date",
+      "description": "Most recent UTC day (YYYY-MM-DD) on which the user had any counted activity, within the requested window: equal to the requested `date` in single-day mode, and to the latest active day from `starting_date` (inclusive) to `ending_date` (exclusive) in date-range rollup mode — never a day earlier than the window start. On filtered requests (`filter[]`) only days matching the filter count: with `filter[]=rbac_group_id:{id}` it is the last day the user was active while a member of that group, consistent with the row's other metrics. On grouped (`group_by[]`) rows it is the latest day any member of the group was active (the requested `date` in single-day mode). Omitted from the response while last-activity reporting is not enabled for this organization."
+    },
+    "office_metrics": {
+      "$ref": "AnalyticsOfficeMetrics.json"
+    },
+    "rbac_group_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rbac Group Id",
+      "description": "Tagged RBAC group identifier (`rbac_group_...`), matching the spend-limits API spelling. Present only when the request grouped by `rbac_group_id`."
+    },
+    "rbac_group_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rbac Group Name",
+      "description": "Resolved RBAC group display name, alongside `rbac_group_id` when name resolution is available. Null if the group has been deleted or its name could not be resolved; `rbac_group_id` remains the stable key."
+    },
+    "science_metrics": {
+      "$ref": "AnalyticsScienceMetrics.json"
+    },
+    "user": {
+      "anyOf": [
+        {
+          "$ref": "AnalyticsUser.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The user this row describes. Null on rows aggregated across users."
+    },
+    "web_search_count": {
+      "type": "integer",
+      "title": "Web Search Count",
+      "description": "Number of web searches performed"
+    }
+  },
+  "type": "object",
+  "required": [
+    "chat_metrics",
+    "claude_code_metrics",
+    "cowork_metrics",
+    "design_metrics",
+    "distinct_user_count",
+    "office_metrics",
+    "science_metrics",
+    "user",
+    "web_search_count"
+  ],
+  "description": "Per-user activity data for a given day."
+}

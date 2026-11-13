@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaManagedAgentsDeploymentUserDefineOutcomeEvent",
+  "title": "BetaManagedAgentsDeploymentUserDefineOutcomeEvent",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaManagedAgentsDeploymentUserDefineOutcomeEvent",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "An outcome the agent should work toward. The agent begins work on receipt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "description",
+    "rubric"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "user.define_outcome"
+    },
+    "description": {
+      "description": "What the agent should produce. This is the task specification.",
+      "type": "string"
+    },
+    "rubric": {
+      "description": "How to grade the outcome. Text or file reference.",
+      "allOf": [
+        {
+          "$ref": "BetaManagedAgentsRubric.json"
+        }
+      ]
+    },
+    "max_iterations": {
+      "description": "Eval→revision cycles before giving up. Default 3, max 20.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int32"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intuit/Term",
+  "title": "Term",
+  "x-openfn-adaptor": "intuit",
+  "x-source": {
+    "openapi": "#/components/schemas/Term",
+    "capturedAt": "2026-11-13"
+  },
+  "type": "object",
+  "properties": {
+    "Id": {
+      "allOf": [
+        {
+          "$ref": "id.json"
+        }
+      ],
+      "description": "Product: ALL Description: Unique Identifier for an Intuit entity (object). [br /]Required for the update operation. Required: ALL Filterable: ALL"
+    },
+    "SyncToken": {
+      "type": "string",
+      "description": "Product: ALL Description: Version number of the entity. The SyncToken is used to lock the entity for use by one application at a time. As soon as an application modifies an entity, its SyncToken is incremented; another application's request to modify the entity with the same SyncToken will fail. Only the latest version of the entity is maintained by Data Services. An attempt to modify an entity..."
+    },
+    "MetaData": {
+      "allOf": [
+        {
+          "$ref": "ModificationMetaData.json"
+        }
+      ],
+      "description": "Product: ALL Description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications."
+    },
+    "CustomField": {
+      "type": "array",
+      "items": {
+        "$ref": "CustomField.json"
+      },
+      "description": "Product: QBW Description: Custom field (or data extension). Filterable: QBW"
+    },
+    "AttachableRef": {
+      "type": "array",
+      "items": {
+        "$ref": "AttachableRef.json"
+      },
+      "description": "Specifies entity name of the attachment from where the attachment was requested"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Product: ALL Description: Domain in which the entity belongs."
+    },
+    "status": {
+      "allOf": [
+        {
+          "$ref": "EntityStatusEnum.json"
+        }
+      ],
+      "description": "Product: ALL Description: System status of the entity. Output only field.[br /] Filterable: ALL"
+    },
+    "sparse": {
+      "type": "boolean",
+      "description": "Product: ALL Description: True if the entity representation has a partial set of elements. Output only field."
+    },
+    "Name": {
+      "type": "string",
+      "description": "Product: ALL Description: User recognizable name for the term, for example, \"Net 30\". ValidRange: QBW: max=31 ValidRange: QBO: Max=31 Required: ALL Filterable: QBO Sortable: ALL"
+    },
+    "Active": {
+      "type": "boolean",
+      "description": "Product: ALL Description: If true, this entity is currently enabled for use by QuickBooks. Filterable: ALL Default Value: true"
+    },
+    "Type": {
+      "type": "string",
+      "description": "Product: ALL Description: Type of the Sales Term. Valid values: Standard or DateDriven, as defined by SalesTermTypeEnum. [br /] If dueDays is not null, the Type is Standard else DateDriven. InputType: ALL: ReadOnly"
+    },
+    "DiscountPercent": {
+      "type": "number",
+      "description": "Product: ALL Description: Discount percentage available against an amount if paid within the days specified by DiscountDays. ValidRange: ALL: Min=0, Max=100"
+    },
+    "DueDays": {
+      "type": "integer",
+      "description": "Product: ALL Description: Number of days from delivery of goods or services until the payment is due. Business Rules: QBO: [li] This value is required if DayOfMonthDue is not specified. [/li] [li] If DueDays is specified, only DiscountDays and DiscountPercent can be additionally specified.[/li] Required: QBO ValidRange: QBO: Min=0 Max=999"
+    },
+    "DiscountDays": {
+      "type": "integer",
+      "description": "Product: ALL Description: Discount applies if paid within this number of days. Business Rules: [li] This value is used only when DueDays is specified. [/li] ValidRange: QBO: Min=0 Max=999"
+    },
+    "DayOfMonthDue": {
+      "type": "integer",
+      "description": "Product: ALL Description: Payment must be received by this day of the month. Business Rules: QBO: [li] This value is used only when DueDays is not specified.[/li] [li] Required for the Create request when DueDays is not specified.[/li] ValidRange: QBO: Min=1 Max=31"
+    },
+    "DueNextMonthDays": {
+      "type": "integer",
+      "description": "Product: ALL Description: Payment due next month if issued that many days before the DayOfMonthDue. Business Rules: QBO: [li] Required for the Create request when DueDays is not specified.[/li] ValidRange: QBO: Min=1 Max=999"
+    },
+    "DiscountDayOfMonth": {
+      "type": "integer",
+      "description": "Product: ALL Description: Discount applies if paid before this day of month. Business Rules: QBO: Required for the Create request when DueDays is not specified. ValidRange: QBO: Min=1 Max=31"
+    },
+    "SalesTermEx": {
+      "allOf": [
+        {
+          "$ref": "IntuitAnyType.json"
+        }
+      ],
+      "description": "Product: ALL Description:- Internal use only: extension place holder for SalesTermEx"
+    }
+  },
+  "description": "Product: ALL Description: The Term entity represents the terms under which a sale is made, typically expressed in the form of days due after the goods are received. Optionally, a discount of the total amount may be applied if payment is made within a stipulated time. For example, net 30 indicates that payment is due within 30 days. A term of 2%/15 net 60 indicates that payment is due within 60..."
+}

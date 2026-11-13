@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaFallbackCreditNotApplied",
+  "title": "FallbackCreditNotApplied",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaFallbackCreditNotApplied",
+    "capturedAt": "2026-11-13"
+  },
+  "description": "No reprice was applied; ``reason`` says why.",
+  "properties": {
+    "reason": {
+      "description": "Why the reprice was not applied.\n\nA closed enum; additions to the redemption-check vocabulary arrive as\ndeliberate schema updates.",
+      "enum": [
+        "body_mismatch",
+        "continuation_excluded",
+        "continuation_only",
+        "expired",
+        "invalid_target_model",
+        "not_enabled",
+        "reprice_unavailable",
+        "temporarily_unavailable",
+        "variant_fields_present",
+        "wrong_organization",
+        "wrong_platform",
+        "wrong_workspace"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "remove_to_redeem": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Request fields to remove before retrying, so the retry can redeem this\ntoken.\n\nPresent exactly when `reason` is `variant_fields_present` — never null,\nnever an empty array; absent otherwise. Fields are named only from your own request, and only after\nthe sealed variant hash matched. A served best-effort retry has already\nbeen billed at normal price; nothing redeems retroactively, but a corrected\nre-send inside the token's five-minute window can still redeem.",
+      "title": "Remove To Redeem"
+    },
+    "type": {
+      "const": "not_applied",
+      "default": "not_applied",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "reason",
+    "type"
+  ],
+  "type": "object"
+}
