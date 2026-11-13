@@ -1,19 +1,19 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OpenFn Collections API",
-    "version": "0.9.3",
-    "description": "Synthesized OpenAPI spec for the OpenFn Collections adaptor (@openfn/language-collections). Collections are an OpenFn-internal, Lightning-hosted key/value store used as a high-performance cache, buffer or storage solution. A collection is a named namespace of key/value items; all values are stored as strings (which typically contain JSON). This spec is derived from the adaptor surface (get/set/remove/each) and the Lightning REST endpoints those operations call. Endpoints are mounted under the Lightning `/collections` base path and authenticated with a Personal Access Token (Bearer). An optional `project_id` query parameter scopes a collection to a specific Lightning project.",
+    "title": "OpenFn Lightning Collections API",
+    "version": "2.20.1+main.71ce1f0",
+    "description": "Key/value storage scoped to a Lightning project, served at /collections on an OpenFn Lightning instance. The collections adaptor (collections.get/set/remove/each) reaches it with undici against configuration.collections_endpoint and a Bearer collections_token (a run token inside a workflow, or a personal access token). Modelled from the Lightning router (scope \"/collections\") and LightningWeb.CollectionsController at main 71ce1f0. Collection creation/renaming lives in the REST API (/api/projects/{project_id}/collections/{id}, see the openfn adaptor spec).",
     "x-openfn-adaptor": "collections"
   },
   "servers": [
     {
       "url": "https://{host}/collections",
-      "description": "OpenFn Lightning collections endpoint (matches WORKER_COLLECTIONS_URL / collections_endpoint).",
+      "description": "Lightning collections endpoint (configuration.collections_endpoint / WORKER_COLLECTIONS_URL).",
       "variables": {
         "host": {
           "default": "app.openfn.org",
-          "description": "Lightning host serving the collections API."
+          "description": "Lightning host."
         }
       }
     }
@@ -25,79 +25,31 @@
   ],
   "tags": [
     {
-      "name": "collections",
-      "description": "Manage collections (named key/value namespaces)."
-    },
-    {
-      "name": "items",
-      "description": "Read and write key/value items within a collection."
+      "name": "Items",
+      "description": "Items in a named collection."
     }
   ],
   "paths": {
-    "/": {
-      "get": {
-        "operationId": "listCollections",
-        "summary": "List collections",
-        "description": "List the collections available on the Lightning instance (optionally scoped to a project). Synthesized management endpoint; the adaptor itself always targets a named collection.",
-        "tags": ["collections"],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of collections.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CollectionList"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/{name}": {
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/CollectionName"
-        }
-      ],
       "get": {
         "operationId": "listCollectionItems",
-        "summary": "List / query items in a collection",
-        "description": "Fetch multiple items from a collection using a key pattern (wildcards, e.g. `2024-01*`) and/or date filters. Results are cursor-paginated: if more items remain, a non-null `cursor` is returned to fetch the next page. This backs the adaptor's `get()` (multi mode) and `each()` streaming operations.",
-        "tags": ["items"],
+        "summary": "Stream items matching a key pattern and date filters",
+        "tags": [
+          "Items"
+        ],
+        "description": "Answers a chunked JSON body {\"items\": [...], \"cursor\": ...}. Unknown query parameters are refused (400 invalid_parameter). Used by collections.get() with a pattern or filters, and by collections.each().",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/project_id"
           },
           {
             "name": "key",
             "in": "query",
             "required": false,
-            "description": "Key or key pattern to match. Supports `*` wildcards (e.g. `2024-01*`). Defaults to `*` (all items).",
-            "schema": {
-              "type": "string",
-              "default": "*"
-            }
-          },
-          {
-            "name": "createdAfter",
-            "in": "query",
-            "required": false,
-            "description": "Only match items created after the end of the given ISO 8601 date.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdBefore",
-            "in": "query",
-            "required": false,
-            "description": "Only match items created before the start of the given ISO 8601 date.",
+            "description": "Key or pattern; * is a wildcard (e.g. 2024-01*). Default all.",
             "schema": {
               "type": "string"
             }
@@ -106,25 +58,66 @@
             "name": "limit",
             "in": "query",
             "required": false,
-            "description": "Maximum number of items to return in this page.",
+            "description": "Items in this response (server default 1000). The adaptor sends its pageSize here.",
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 0,
+              "default": 1000
             }
           },
           {
             "name": "cursor",
             "in": "query",
             "required": false,
-            "description": "Opaque cursor from a previous response, used to resume paging.",
+            "description": "Cursor from the previous response.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "required": false,
+            "description": "Items created after (the adaptor maps createdAfter).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "created_before",
+            "in": "query",
+            "required": false,
+            "description": "Items created before (the adaptor maps createdBefore).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updated_after",
+            "in": "query",
+            "required": false,
+            "description": "Items updated after.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updated_before",
+            "in": "query",
+            "required": false,
+            "description": "Items updated before.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A (possibly paginated) page of matching items.",
+            "description": "Items and cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -132,17 +125,37 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
       "post": {
         "operationId": "upsertCollectionItems",
-        "summary": "Upsert (set) one or more items",
-        "description": "Insert or replace one or more key/value items in a collection. If a key already exists, its value is overwritten. Backs the adaptor's `set()` operation, which uploads items in batches. Each item's `value` is a string (typically JSON-encoded).",
-        "tags": ["items"],
+        "summary": "Upsert many items",
+        "tags": [
+          "Items"
+        ],
+        "description": "Used by collections.set(). Existing keys are replaced.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/project_id"
           }
         ],
         "requestBody": {
@@ -150,14 +163,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpsertRequest"
+                "$ref": "#/components/schemas/UpsertItemsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Upsert result.",
+            "description": "Count written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -165,42 +178,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
           }
         }
       },
       "delete": {
-        "operationId": "removeCollectionItemsByQuery",
-        "summary": "Remove items by key pattern / query",
-        "description": "Remove multiple items matching a key pattern (wildcards) or date filters. Backs the adaptor's `remove()` operation in multi mode.",
-        "tags": ["items"],
+        "operationId": "deleteCollectionItems",
+        "summary": "Delete items matching a key pattern (or all)",
+        "tags": [
+          "Items"
+        ],
+        "description": "Used by collections.remove() with a pattern or filters. Only key is read; the date filters the adaptor may also send are ignored by the server.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/project_id"
           },
           {
             "name": "key",
             "in": "query",
             "required": false,
-            "description": "Key or key pattern to remove. Supports `*` wildcards. Defaults to `*` (all items).",
-            "schema": {
-              "type": "string",
-              "default": "*"
-            }
-          },
-          {
-            "name": "createdAfter",
-            "in": "query",
-            "required": false,
-            "description": "Only remove items created after the end of the given ISO 8601 date.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdBefore",
-            "in": "query",
-            "required": false,
-            "description": "Only remove items created before the start of the given ISO 8601 date.",
+            "description": "Key or pattern with * wildcards; omitted deletes every item.",
             "schema": {
               "type": "string"
             }
@@ -208,7 +225,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Delete result.",
+            "description": "Count deleted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -216,32 +233,47 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
     },
     "/{name}/{key}": {
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/CollectionName"
-        },
-        {
-          "$ref": "#/components/parameters/ItemKey"
-        }
-      ],
       "get": {
         "operationId": "getCollectionItem",
-        "summary": "Get a single item by key",
-        "description": "Fetch a single item by its exact key. Backs the adaptor's `get()` operation in single mode. Returns 204 with an empty body if the key does not exist.",
-        "tags": ["items"],
+        "summary": "Get one item by key",
+        "tags": [
+          "Items"
+        ],
+        "description": "Used by collections.get(name, key) without wildcards. 204 with an empty body when the key is missing.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/project_id"
           }
         ],
         "responses": {
           "200": {
-            "description": "The matching item.",
+            "description": "The item.",
             "content": {
               "application/json": {
                 "schema": {
@@ -251,18 +283,41 @@
             }
           },
           "204": {
-            "description": "No item found for the given key."
+            "description": "No item with that key."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
       "put": {
-        "operationId": "setCollectionItem",
-        "summary": "Set / replace a single item by key",
-        "description": "Insert or replace the value for a single key. Synthesized convenience over the batch upsert endpoint; the adaptor's `set()` with a static key writes a single-item batch. The `value` is a string (typically JSON-encoded).",
-        "tags": ["items"],
+        "operationId": "putCollectionItem",
+        "summary": "Upsert one item",
+        "tags": [
+          "Items"
+        ],
+        "description": "Not called by the adaptor (set() always POSTs to /{name}), but served by Lightning.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/project_id"
           }
         ],
         "requestBody": {
@@ -270,14 +325,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ItemValue"
+                "$ref": "#/components/schemas/PutItemRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Upsert result.",
+            "description": "Written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -285,22 +340,48 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
           }
         }
       },
       "delete": {
-        "operationId": "removeCollectionItem",
-        "summary": "Remove a single item by key",
-        "description": "Remove a single item by its exact key. Backs the adaptor's `remove()` operation in single mode.",
-        "tags": ["items"],
+        "operationId": "deleteCollectionItem",
+        "summary": "Delete one item by key",
+        "tags": [
+          "Items"
+        ],
+        "description": "Used by collections.remove(name, key). A missing key answers deleted: 0, never 404.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/project_id"
           }
         ],
         "responses": {
           "200": {
-            "description": "Delete result.",
+            "description": "Deleted count (0 or 1).",
             "content": {
               "application/json": {
                 "schema": {
@@ -308,6 +389,21 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -318,115 +414,315 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "OpenFn Personal Access Token (collections_token), sent as `Authorization: Bearer <token>`."
+        "description": "collections_token: a run token, personal access token, or service-account token with collections:write."
       }
     },
     "parameters": {
-      "CollectionName": {
+      "name": {
         "name": "name",
         "in": "path",
         "required": true,
-        "description": "The name of the collection (a key/value namespace).",
+        "description": "Collection name (resolved within the caller's projects; add project_id when the name is ambiguous).",
         "schema": {
           "type": "string"
         }
       },
-      "ItemKey": {
+      "key": {
         "name": "key",
         "in": "path",
         "required": true,
-        "description": "The exact key of a single item.",
+        "description": "Item key (exact).",
         "schema": {
           "type": "string"
         }
       },
-      "ProjectId": {
+      "project_id": {
         "name": "project_id",
         "in": "query",
         "required": false,
-        "description": "Optional Lightning project id to disambiguate a collection scoped to a project.",
+        "description": "Disambiguates a collection name that exists in several projects (409 ambiguous_name otherwise). The adaptor sends configuration.project_id when set.",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "400: invalid_request (unreadable Authorization header), invalid_parameter, malformed (body is not a JSON object).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "401: unauthenticated (no bearer token) or invalid_token (unknown, revoked or expired token).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "403: forbidden (no permission, or the record may not exist) or insufficient_scope (token lacks the grant).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "404: not_found (record or route does not exist), only to callers allowed to learn that.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "409: id_taken, scheduled_for_deletion, concurrent_edit, being_edited, in_use or ambiguous_name.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Unprocessable": {
+        "description": "422: invalid (see errors).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "ServiceUnavailable": {
+        "description": "503: not_ready (adaptor catalogue still loading; retry-after 5) or service_unavailable.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
         }
       }
     },
     "schemas": {
-      "Collection": {
+      "ProblemEntry": {
         "type": "object",
-        "description": "Metadata for a collection (a named key/value namespace).",
+        "description": "One error entry in a problem document. Exactly one of pointer/parameter/header/path says where the problem is.",
+        "required": [
+          "code",
+          "detail"
+        ],
         "properties": {
-          "name": {
+          "code": {
             "type": "string",
-            "description": "Unique name of the collection.",
-            "example": "patients-2024"
+            "description": "Stable entry code (an Ecto validation code or a Lightning entry code, e.g. unknown_key, taken, type, not_found)."
           },
-          "projectId": {
+          "detail": {
             "type": "string",
-            "nullable": true,
-            "description": "Lightning project the collection belongs to, if scoped.",
-            "example": "3a1e9c2b-5f47-4d8a-9b2e-1c0f7a6d5e4b"
+            "description": "Human-readable message; may change."
           },
-          "itemCount": {
-            "type": "integer",
-            "description": "Number of items currently stored in the collection.",
-            "example": 128
-          },
-          "createdAt": {
+          "pointer": {
             "type": "string",
-            "format": "date-time",
-            "example": "2024-01-15T08:30:00Z"
+            "description": "JSON Pointer into the request body, e.g. #/members/0/email."
           },
-          "updatedAt": {
+          "parameter": {
             "type": "string",
-            "format": "date-time",
-            "example": "2024-06-01T12:00:00Z"
+            "description": "Query parameter name."
+          },
+          "header": {
+            "type": "string",
+            "description": "Request header name, lower case."
+          },
+          "path": {
+            "type": "string",
+            "description": "Path segment name, e.g. id or project_id."
           }
-        },
-        "required": ["name"]
+        }
       },
-      "CollectionList": {
+      "Problem": {
         "type": "object",
-        "description": "A list of collections.",
+        "description": "RFC 9457 problem document (LightningWeb.API.Problem). Sent as application/problem+json when Accept names it, application/json otherwise. Branch on `code`. Lightning releases up to v2.20.1 answered most API errors with ad-hoc JSON instead (the Unreleased changelog entry calls the switch breaking).",
+        "required": [
+          "type",
+          "status",
+          "title",
+          "code",
+          "detail"
+        ],
         "properties": {
-          "collections": {
+          "type": {
+            "type": "string",
+            "description": "Always about:blank.",
+            "example": "about:blank"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status."
+          },
+          "title": {
+            "type": "string",
+            "description": "HTTP reason phrase."
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable response code (LightningWeb.API.Codes).",
+            "enum": [
+              "bad_request",
+              "invalid_request",
+              "malformed",
+              "invalid_parameter",
+              "invalid_header",
+              "unauthenticated",
+              "invalid_token",
+              "exceeds_limit",
+              "forbidden",
+              "insufficient_scope",
+              "trigger_disabled",
+              "not_found",
+              "not_acceptable",
+              "request_timeout",
+              "scheduled_for_deletion",
+              "id_taken",
+              "being_edited",
+              "concurrent_edit",
+              "in_use",
+              "ambiguous_name",
+              "export_conflict",
+              "content_too_large",
+              "uri_too_long",
+              "unsupported_media_type",
+              "invalid",
+              "too_many_runs",
+              "too_many_requests",
+              "internal",
+              "not_implemented",
+              "bad_gateway",
+              "service_unavailable",
+              "not_ready",
+              "timeout"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Fixed human-readable explanation of the code."
+          },
+          "errors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Collection"
+              "$ref": "#/components/schemas/ProblemEntry"
             }
+          },
+          "scope": {
+            "type": "string",
+            "description": "On insufficient_scope: the token grant the route needs."
           }
         },
-        "required": ["collections"]
+        "additionalProperties": true,
+        "example": {
+          "type": "about:blank",
+          "status": 400,
+          "title": "Bad Request",
+          "code": "invalid_parameter",
+          "detail": "A path or query parameter is not valid. See errors.",
+          "errors": [
+            {
+              "path": "id",
+              "code": "type",
+              "detail": "is not a UUID"
+            }
+          ]
+        }
       },
       "CollectionItem": {
         "type": "object",
-        "description": "A single key/value item. The value is stored as a string and typically contains JSON.",
+        "description": "A key/value entry of a collection (Lightning.Collections.Item Jason encoder). value is the stored string, usually JSON the adaptor serialised with JSON.stringify and parses back.",
+        "required": [
+          "key",
+          "value"
+        ],
         "properties": {
           "key": {
-            "type": "string",
-            "description": "The item key.",
-            "example": "556e0a62"
+            "type": "string"
           },
           "value": {
             "type": "string",
-            "description": "The item value, stored as a string (usually JSON-encoded).",
-            "example": "{\"name\":\"New York\",\"code\":\"NY\"}"
+            "description": "Stored string, at most 1,000,000 bytes (typically JSON-encoded)."
           },
-          "createdAt": {
+          "created": {
             "type": "string",
-            "format": "date-time",
-            "example": "2024-01-15T08:30:00Z"
+            "description": "inserted_at.",
+            "format": "date-time"
           },
-          "updatedAt": {
+          "updated": {
             "type": "string",
-            "format": "date-time",
-            "example": "2024-01-15T08:30:00Z"
+            "description": "updated_at.",
+            "format": "date-time"
           }
         },
-        "required": ["key", "value"]
+        "example": {
+          "key": "patient-001",
+          "value": "{\"name\":\"Example Patient\",\"ward\":\"A\"}",
+          "created": "2026-01-15T10:00:00.000000Z",
+          "updated": "2026-01-15T10:00:00.000000Z"
+        }
       },
       "CollectionItemList": {
         "type": "object",
-        "description": "A cursor-paginated page of items. When `cursor` is non-null, more items remain and it should be passed back to fetch the next page.",
+        "description": "Streamed (chunked) page of items. cursor is null when nothing is left; otherwise pass it back as ?cursor=.",
+        "required": [
+          "items",
+          "cursor"
+        ],
         "properties": {
           "items": {
             "type": "array",
@@ -436,89 +732,84 @@
           },
           "cursor": {
             "type": "string",
-            "nullable": true,
-            "description": "Opaque cursor to the next page, or null when the last page has been returned.",
-            "example": "1000"
-          },
-          "count": {
-            "type": "integer",
-            "description": "Number of items returned in this page.",
-            "example": 2
+            "description": "Opaque (base64 item id).",
+            "nullable": true
           }
-        },
-        "required": ["items", "cursor"]
-      },
-      "ItemValue": {
-        "type": "object",
-        "description": "A single item value payload (for setting one key).",
-        "properties": {
-          "value": {
-            "type": "string",
-            "description": "The value to store, as a string (usually JSON-encoded).",
-            "example": "{\"NY\":\"New York\",\"LDN\":\"London\"}"
-          }
-        },
-        "required": ["value"]
-      },
-      "UpsertRequest": {
-        "type": "object",
-        "description": "A batch of key/value items to upsert.",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CollectionItem"
-            }
-          }
-        },
-        "required": ["items"]
+        }
       },
       "UpsertResult": {
         "type": "object",
-        "description": "Result of an upsert operation.",
+        "required": [
+          "upserted"
+        ],
         "properties": {
           "upserted": {
             "type": "integer",
-            "description": "Number of items inserted or replaced.",
-            "example": 3
+            "description": "Number of items written."
           },
-          "errors": {
+          "error": {
+            "type": "string",
+            "description": "Always null on success.",
+            "nullable": true
+          }
+        }
+      },
+      "DeleteResult": {
+        "type": "object",
+        "required": [
+          "deleted"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The key or key pattern deleted (null when DELETE /{name} had no key).",
+            "nullable": true
+          },
+          "deleted": {
+            "type": "integer",
+            "description": "Number of items deleted; 0 for a missing key (never 404)."
+          }
+        }
+      },
+      "UpsertItemsRequest": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
             "type": "array",
-            "description": "Any per-item errors reported by the server.",
+            "description": "The adaptor sends batches of at most 1000.",
             "items": {
               "type": "object",
+              "required": [
+                "key",
+                "value"
+              ],
               "properties": {
                 "key": {
                   "type": "string"
                 },
-                "message": {
-                  "type": "string"
+                "value": {
+                  "type": "string",
+                  "description": "JSON-encoded value."
                 }
               }
             }
           }
-        },
-        "required": ["upserted"]
+        }
       },
-      "DeleteResult": {
+      "PutItemRequest": {
         "type": "object",
-        "description": "Result of a remove operation.",
+        "required": [
+          "value"
+        ],
         "properties": {
-          "deleted": {
-            "type": "integer",
-            "description": "Number of items removed.",
-            "example": 5
-          },
-          "keys": {
-            "type": "array",
-            "description": "The keys that were removed.",
-            "items": {
-              "type": "string"
-            },
-            "example": ["2024-01-01", "2024-01-02"]
+          "value": {
+            "type": "string",
+            "description": "JSON-encoded value."
           }
-        },
-        "required": ["deleted"]
+        }
       }
     }
   }

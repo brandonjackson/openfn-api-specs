@@ -3,13 +3,103 @@
   "npm": "@openfn/language-openfn",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openfn/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-openfn/types/index.d.ts",
-    "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/openfn/README.md",
-    "https://github.com/OpenFn/lightning",
-    "https://docs.openfn.org"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://app.openfn.org/workflow-api.yaml",
+      "result": "rejected",
+      "note": "Vendor-published OpenAPI 3.0.3 served from Lightning priv/static (also at github.com/OpenFn/lightning/blob/main/priv/static/workflow-api.yaml). Incomplete vendor spec: 5 workflow operations of the ~40 token routes, server URL /api/v1/ that the router does not serve, and a bare-array list response where the controller returns {workflows: [...]}. Used only as a cross-check for the Workflow shape."
+    },
+    {
+      "kind": "docs",
+      "url": "https://raw.githubusercontent.com/OpenFn/lightning/main/API.md",
+      "result": "used",
+      "note": "The vendor's own route table (every /api route with its token grant) plus the error format. Exists on main only (404 at tag v2.20.1). Every row is modelled."
+    },
+    {
+      "kind": "source",
+      "url": "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/router.ex",
+      "result": "used",
+      "note": "Phoenix router at main 71ce1f0: the authoritative route list. Request/response shapes read from lib/lightning_web/controllers/api/*_controller.ex and *_json.ex views, LightningWeb.API.{Problem,Codes,Filters,Errors} and the Ecto schemas' Jason encoders."
+    },
+    {
+      "kind": "source",
+      "url": "https://raw.githubusercontent.com/OpenFn/lightning/v2.20.1/lib/lightning_web/router.ex",
+      "result": "used",
+      "note": "Diffed against main to mark unreleased routes (PUT /projects/{id}, GET/PUT /credentials/{id}, GET/PUT /projects/{project_id}/collections/{id}) and note v2.20.1 differences (ad-hoc error JSON, unpaginated credentials list, no project members)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://app.openfn.org/openapi.json",
+      "result": "not-found",
+      "note": "404. Also 404: /api/openapi.json, /swagger.json, /api-docs, /.well-known/openapi.json, /api/v1/openapi.json on app.openfn.org and /openapi.json on docs.openfn.org. Lightning has no OpenAPI generator (no open_api_spex dependency)."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.openfn.org/documentation/build/workflows-api",
+      "result": "used",
+      "note": "Prose docs for the workflows routes (GET/PUT/PATCH, workflow structure); /documentation/build-with-api only points at the Lightning repo."
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenFn/lightning",
+      "result": "used",
+      "note": "Code search for openapi/swagger finds only priv/static/workflow-api.yaml (rejected above)."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No openfn / lightning entry among 2529 APIs."
+    },
+    {
+      "kind": "swaggerhub",
+      "url": "https://api.swaggerhub.com/specs?query=openfn",
+      "result": "not-found",
+      "note": "Fuzzy matches only (cmis, FileNet); nothing published by OpenFn."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/_api/ws/proxy (search-all: \"OpenFn Lightning\")",
+      "result": "rejected",
+      "note": "One public workspace \"OpenFn Lightning API\" (handle grey-spaceship-168913, Dec 2025) - a community collection, not vendor-published; not used."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/OpenFn/kit",
+      "result": "not-found",
+      "note": "OpenFn CLI (deploy/pull) calls /api/provision but ships no machine spec."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "No public vendor OpenAPI exists for the OpenFn platform. The adaptor exposes only generic HTTP operations (request(method, path, options), get(path, options), post(path, data, options)) that target resources relative to /api/ on an OpenFn v1 (Lightning) host; the rest of its surface is common data-mapping helpers (fn, each, field, merge, cursor, etc.) that make no HTTP calls. This spec synthesizes: a generic /api/{path} GET+POST passthrough backing request/get/post, plus concrete Lightning resource endpoints (projects, workflows, jobs, triggers, runs, credentials, dataclips) inferred from the adaptor README/examples (which reference jobs with name/body/trigger_id/project_id and projects) and the OpenFn/Lightning data model. Resource field shapes and example UUIDs are inferred, not captured from a live API, so field-level fidelity is best-effort. 18 operations across 8 resource shapes."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "lightning-router",
+    "lightning-API.md"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/router.ex",
+    "https://raw.githubusercontent.com/OpenFn/lightning/main/API.md",
+    "https://github.com/OpenFn/lightning/tree/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/controllers/api",
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/api/problem.ex",
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/api/codes.ex",
+    "https://github.com/OpenFn/lightning/blob/71ce1f083a9962aa2ada08a06d7f67b3ec5a3db5/lib/lightning_web/controllers/token_exchange_controller.ex",
+    "https://raw.githubusercontent.com/OpenFn/lightning/v2.20.1/lib/lightning_web/router.ex",
+    "https://raw.githubusercontent.com/OpenFn/lightning/main/CHANGELOG.md",
+    "https://app.openfn.org/workflow-api.yaml",
+    "https://docs.openfn.org/documentation/build/workflows-api",
+    "https://docs.openfn.org/documentation/api-tokens",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openfn/ast.json",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/openfn/src/util.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/openfn/src/Adaptor.js"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The openfn adaptor (3.1.3) calls {baseUrl}/api/{path} (default host app.openfn.org) with Authorization: Bearer access_token via request/get/post, so \"full\" here is every route under /api that a bearer token can reach on OpenFn Lightning. Lightning publishes no complete machine spec (workflow-api.yaml covers 5 workflow ops at a dead /api/v1 base and was rejected), so the 40 operations were enumerated from the vendor router (main 71ce1f0) and API.md route table, and every response/request shape was read from the controllers, JSON views and Ecto encoders rather than guessed. Synthesized as an OpenFn-internal surface: complete because the route table is finite and each row is modelled; field-level types come from source, not captured traffic. Main is ahead of the latest release: five operations carry x-lightning-unreleased, errors are RFC 9457 problem documents only on main (v2.20.1 sends ad-hoc JSON), and v2.20.1's credentials list is unpaginated. Excluded on purpose: the four cookie-session-only /api routes (AI assistant sessions, workflow health) and /.well-known/oauth-authorization-server (outside /api). Finding: the adaptor's README and JSDoc examples (post('jobs', {name, body}), \"OpenFn v1 API\") describe the retired v1 platform; Lightning exposes jobs read-only, so those examples 404. Tool limitation: Lightning wraps workflows as {workflow} / {workflows} with no pagination sibling, so the extractor does not surface Workflow as a data object (it is still a named component schema)."
 }

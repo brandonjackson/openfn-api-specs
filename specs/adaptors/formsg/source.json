@@ -3,11 +3,63 @@
   "npm": "@openfn/language-formsg",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
-  "sources": [
-    "https://github.com/OpenFn/adaptors/tree/main/packages/formsg",
-    "https://github.com/opengovsg/formsg-sdk",
-    "https://www.npmjs.com/package/@opengovsg/formsg-sdk"
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "github",
+      "url": "https://github.com/opengovsg/FormSG",
+      "result": "not-found",
+      "note": "No openapi/swagger file in the repo tree (only SAM templates). Used apps/backend/src/types/submission.ts (WebhookData/WebhookView) for the webhook payload shape."
+    },
+    {
+      "kind": "sdk",
+      "url": "https://github.com/opengovsg/formsg-sdk",
+      "result": "used",
+      "note": "src/types.ts (DecryptParams, DecryptedContent, FormField, FieldType) and src/webhooks.ts (X-FormSG-Signature format). The SDK fetches only attachment URLs, which the adaptor never asks for."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.form.gov.sg/functions/integrations/webhooks",
+      "result": "not-found",
+      "note": "Docs host unreachable from this environment (proxy 502); guide.form.gov.sg/advanced-guide/webhooks is 404."
+    },
+    {
+      "kind": "apis-guru",
+      "url": "https://api.apis.guru/v2/list.json",
+      "result": "not-found",
+      "note": "No form.gov.sg / opengovsg entry."
+    },
+    {
+      "kind": "postman",
+      "url": "https://www.postman.com/_api/ws/proxy (search-all: \"FormSG\")",
+      "result": "not-found",
+      "note": "No vendor workspace."
+    },
+    {
+      "kind": "source",
+      "url": "https://github.com/OpenFn/adaptors/blob/main/packages/formsg/src/Adaptor.ts",
+      "result": "used",
+      "note": "The three public operations and what each writes to state."
+    }
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Non-REST adaptor. formsg makes no outbound API calls; decryptSubmission, verifyWebhook and processWebhook run the @opengovsg/formsg-sdk locally to verify the X-FormSG-Signature webhook header and decrypt the submission encryptedContent with the form secret key. Synthesized from the adaptor operation surface: endpoints model the operations as request/response pairs so the EncryptedSubmission and DecryptedSubmission shapes seed as collections. Server URL is a mock placeholder."
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "formsg-sdk-types"
+  ],
+  "modifications": [],
+  "sources": [
+    "https://github.com/OpenFn/adaptors/blob/main/packages/formsg/src/Adaptor.ts",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-formsg/ast.json",
+    "https://github.com/opengovsg/formsg-sdk/blob/develop/src/types.ts",
+    "https://github.com/opengovsg/formsg-sdk/blob/develop/src/webhooks.ts",
+    "https://github.com/opengovsg/FormSG/blob/develop/apps/backend/src/types/submission.ts"
+  ],
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The formsg adaptor (1.0.12) calls no API: FormSG pushes encrypted submissions to a webhook (typically an OpenFn trigger) and decryptSubmission, verifyWebhook and processWebhook verify and decrypt them locally with @opengovsg/formsg-sdk. \"Full\" is that operation surface: all three ast.json operations are modelled as facade POST paths, with request bodies from the operation arguments and responses equal to the state.data each one writes; FormSGWebhook/EncryptedSubmission model the inbound payload from FormSG's own WebhookData type. Corrected over the July stub: the decrypted output is formsg-sdk DecryptedContent ({responses, verified}, 24 field types), and verifyWebhook returns {verified, signature}; the stub's submissionId/attachments/epoch fields were not what the adaptor returns. Not modelled: FormSG's separate admin/public REST API, which this adaptor has no way to call."
 }

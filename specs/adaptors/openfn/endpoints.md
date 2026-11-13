@@ -1,45 +1,69 @@
-# OpenFn Platform API (synthesized from adaptor surface) (openfn) v1.0.0
+# OpenFn Lightning REST API (openfn) v2.20.1+main.71ce1f0
 
 <!-- derived from openapi.json by `pnpm specs index openfn` — do not edit by hand -->
 
-base: http://localhost:4010 | auth: not declared | 22 operations in 8 resources
+base: https://{host}/api | auth: http/bearer | 40 operations in 11 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## credentials
-- GET /api/credentials — listCredentials: List credentials
-- GET /api/credentials/{id} — getCredential: Get a credential by id
+## Auth
+- POST /oauth/token — exchangeServiceAccountToken: Exchange a service account assertion for an access token
 
-## dataclips
-- GET /api/dataclips — listDataclips: List dataclips
-- POST /api/dataclips — createDataclip: Create a dataclip
-- GET /api/dataclips/{id} — getDataclip: Get a dataclip by id
+## Collections
+- GET /projects/{project_id}/collections/{id} — getCollection: Read a collection
+- PUT /projects/{project_id}/collections/{id} — putCollection: Create or rename a collection
 
-## jobs
-- GET /api/jobs — listJobs: List jobs
-- POST /api/jobs — createJob: Create a job
-- GET /api/jobs/{id} — getJob: Get a job by id
+## Credentials
+- GET /credentials — listCredentials: List your credentials, or a project's by project_id
+- POST /credentials — createCredential: Create a credential you own
+- GET /credentials/{id} — getCredential: Read a credential, without its secrets
+- PUT /credentials/{id} — putCredential: Create or replace a credential
+- DELETE /credentials/{id} — deleteCredential: Delete a credential you own
+- GET /projects/{project_id}/credentials — listProjectCredentials: List a project's credentials
 
-## projects
-- GET /api/projects — listProjects: List projects
-- POST /api/projects — createProject: Create a project
-- GET /api/projects/{id} — getProject: Get a project by id
+## Jobs
+- GET /projects/{project_id}/jobs — listProjectJobs: List a project's jobs
+- GET /projects/{project_id}/jobs/{id} — getProjectJob: Read a job
+- GET /jobs — listJobs: List jobs across projects
+- GET /jobs/{id} — getJob: Read a job
 
-## runs
-- GET /api/runs — listRuns: List runs
-- POST /api/runs — createRun: Create (enqueue) a run
-- GET /api/runs/{id} — getRun: Get a run by id
+## Log Lines
+- GET /log_lines — listLogLines: List log lines
 
-## triggers
-- GET /api/triggers — listTriggers: List triggers
-- POST /api/triggers — createTrigger: Create a trigger
-- GET /api/triggers/{id} — getTrigger: Get a trigger by id
+## Projects
+- GET /projects — listProjects: List projects
+- GET /projects/{id} — getProject: Read a project
+- PUT /projects/{id} — putProject: Create or replace a project
 
-## workflows
-- GET /api/workflows — listWorkflows: List workflows
-- POST /api/workflows — createWorkflow: Create a workflow
-- GET /api/workflows/{id} — getWorkflow: Get a workflow by id
+## Provisioning
+- POST /provision — provisionProject: Apply a provisioning document
+- GET /provision/yaml — getProvisionedProjectYaml: Read a project as YAML
+- GET /provision/{id} — getProvisionedProject: Read a project as a provisioning document
 
-## {path}
-- GET /api/{path} — request: Generic GET passthrough to any OpenFn API resource
-- POST /api/{path} — post: Generic POST passthrough to any OpenFn API resource
+## Runs
+- GET /projects/{project_id}/runs — listProjectRuns: List a project's runs
+- GET /projects/{project_id}/runs/{id} — getProjectRun: Read a run
+- GET /runs — listRuns: List runs across projects
+- GET /runs/{id} — getRun: Read a run
+
+## Users
+- GET /users — listUsers: List users, or find one by email
+- POST /users — createUser: Create a user
+- GET /users/{id} — getUser: Read a user
+- PATCH /users/{id} — updateUser: Change a user
+- POST /users/register — registerUser: Sign up, where the instance offers it
+
+## Work Orders
+- GET /projects/{project_id}/work_orders — listProjectWorkOrders: List a project's work orders
+- GET /projects/{project_id}/work_orders/{id} — getProjectWorkOrder: Read a work order
+- GET /work_orders — listWorkOrders: List work orders across projects
+- GET /work_orders/{id} — getWorkOrder: Read a work order
+
+## Workflows
+- GET /projects/{project_id}/workflows — listProjectWorkflows: List a project's workflows
+- POST /projects/{project_id}/workflows — createWorkflow: Create a workflow
+- GET /projects/{project_id}/workflows/{id} — getProjectWorkflow: Read a workflow
+- PUT /projects/{project_id}/workflows/{id} — replaceWorkflow: Change a workflow (PUT)
+- PATCH /projects/{project_id}/workflows/{id} — updateWorkflow: Change a workflow (PATCH)
+- GET /workflows — listWorkflows: List workflows across projects
+- GET /workflows/{id} — getWorkflow: Read a workflow

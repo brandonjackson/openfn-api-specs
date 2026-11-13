@@ -3,10 +3,39 @@
   "npm": "@openfn/language-http",
   "origin": "synthesized",
   "upstreamFormat": "adaptor-surface",
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "complete",
+  "completenessReason": null,
+  "upstream": null,
+  "attempts": [
+    {
+      "kind": "none",
+      "url": "https://github.com/OpenFn/adaptors/tree/main/packages/http",
+      "result": "not-found",
+      "note": "Generic client: the target API is whatever configuration.baseUrl names, so no vendor spec can exist. Surface read from src/Adaptor.js, src/util.js and configuration-schema.json."
+    },
+    {
+      "kind": "docs",
+      "url": "https://docs.openfn.org/adaptors/packages/http-docs",
+      "result": "used",
+      "note": "Adaptor docs (same JSDoc as ast.json)."
+    }
+  ],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "configuration-schema.json"
+  ],
+  "modifications": [],
   "sources": [
     "https://cdn.jsdelivr.net/npm/@openfn/language-http/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-http/types/index.d.ts"
+    "https://github.com/OpenFn/adaptors/blob/main/packages/http/src/Adaptor.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/http/src/util.js",
+    "https://github.com/OpenFn/adaptors/blob/main/packages/http/configuration-schema.json",
+    "https://docs.openfn.org/adaptors/packages/http-docs"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "The http adaptor is a generic REST/HTTP client (request, get, post, put, patch, del, parseXML) with no fixed upstream API. Synthesized a conventional RESTful resource collection (/resources and /resources/{id} with GET/POST/PUT/PATCH/DELETE) so mocker has a reusable Resource shape to seed. Server URL is a mock placeholder; the Resource schema uses additionalProperties because concrete fields depend on whatever API the adaptor is pointed at."
+  "capturedAt": "2026-11-13",
+  "lastCheckedAt": "2026-11-13",
+  "notes": "The http adaptor (7.3.3) talks to no particular system: request(method, path), get, post, put, patch and del send any of GET/POST/PUT/PATCH/DELETE (request() also allows others such as HEAD) to {baseUrl}/{path} with Basic or Bearer auth. \"Full\" therefore means the adaptor's operation surface, not a vendor API: each method is modelled at a collection-level (/{resource}) and an item-level (/{resource}/{id}) template with an open Resource schema, which replaces the July stub's invented literal /resources paths and its localhost server. parseXML and the 25 common re-exports make no request and are enumerated in info.x-openfn-local-operations instead of being turned into fake endpoints. Limits: OpenAPI 3.0 has no multi-segment path wildcard, so a deeper path (a/b/c) matches neither template, and the response schemas say nothing about any real API."
 }

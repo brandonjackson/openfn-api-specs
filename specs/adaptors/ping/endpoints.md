@@ -1,18 +1,16 @@
-# Ping (SPING) adaptor surface (synthesized) (ping) v1.0
+# UNHCR PRIMES Interoperability Gateway (PING) API (ping) vv2/v3 (as called by the adaptor)
 
 <!-- derived from openapi.json by `pnpm specs index ping` — do not edit by hand -->
 
-base: https://sping.example.azure-api.net | auth: not declared | 5 operations in 3 resources
+base: {baseUrl} | auth: http/bearer, apiKey (header Ocp-Apim-Subscription-Key) | 3 operations in 3 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
-## ping
-- GET /ping — ping: Connectivity/health probe
+## Auth
+- POST /primespingb2cuat.onmicrosoft.com/b2c_1_msawe-primes-ping-test-apim-rpocuf/oauth2/v2.0/token — requestToken: Get an access token (Azure AD B2C, resource-owner password grant)
 
-## records
-- GET /records — getRecords: Generic GET read (get helper)
-- POST /records — postRecord: Generic POST write (post helper)
-- GET /records/{id} — getRecord: Fetch a single record by id
+## Ingestion
+- POST /api/ingestion/v2/{partnerId}/data — ingestData: Ingest records into PRIMES (e.g. update intervention records)
 
-## token
-- POST /token — requestToken: Obtain an OAuth2 bearer token from the Azure AD B2C token endpoint
+## Retrieval
+- POST /primes/fetch/paging/v3/retrievedatawithpaging — retrieveDataWithPaging: Retrieve shared PRIMES data, paged (v3)
