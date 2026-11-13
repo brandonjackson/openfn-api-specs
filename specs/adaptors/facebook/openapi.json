@@ -1,34 +1,2674 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Facebook Messenger Send API (subset)",
-    "version": "2.6",
-    "description": "Focused OpenAPI subset of the Facebook (Meta) Messenger Platform Send API used by the OpenFn facebook adaptor. The adaptor's postMessage operation issues POST /me/messages against the Graph API to deliver a message to a recipient identified by PSID.",
+    "title": "Messenger Platform API (Meta Graph API)",
+    "version": "v26.0",
+    "description": "Meta's Messenger Platform, served over the Graph API at graph.facebook.com: the Send API, attachment upload, Messenger profile and per-user settings, personas, custom/thread labels, conversation routing (handover), conversations and messages, moderation, page status and feature review, calling, user profile and messaging insights. The OpenFn facebook adaptor's postMessage() POSTs a Send API request to /v2.6/me/messages.",
     "x-openfn-adaptor": "facebook"
   },
-  "servers": [{ "url": "https://graph.facebook.com/v2.6" }],
+  "externalDocs": {
+    "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/llms.txt"
+  },
+  "servers": [
+    {
+      "url": "https://graph.facebook.com/{version}",
+      "variables": {
+        "version": {
+          "default": "v26.0",
+          "description": "Graph API version; the adaptor hard-codes v2.6."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "pageAccessToken": []
+    },
+    {
+      "bearer": []
+    }
+  ],
   "paths": {
     "/me/messages": {
       "post": {
-        "operationId": "postMessage",
-        "summary": "Send a message via the Messenger Send API",
-        "parameters": [
-          { "name": "access_token", "in": "query", "schema": { "type": "string" }, "description": "Page access token" }
+        "operationId": "sendMessageAsMe",
+        "summary": "Send a message (Page token, me)",
+        "tags": [
+          "Messenger Platform Send API"
         ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendMessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/SendRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
             }
           }
         },
+        "description": "Send API. The adaptor's postMessage() calls POST /me/messages (with a Page access token `me` is the Page) with messaging_type UPDATE. Also used for sender actions (typing_on/off, mark_seen).",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-platform-send-api"
+        }
+      }
+    },
+    "/{conversation_id}": {
+      "get": {
+        "operationId": "getConversation",
+        "summary": "Get a conversation and its messages",
+        "tags": [
+          "Messenger Page Conversations"
+        ],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Conversation (thread) ID."
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "e.g. messages, participants."
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Message accepted",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/SendResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/Conversation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/conversations"
+        }
+      }
+    },
+    "/{id}/business_messaging_feature_status": {
+      "post": {
+        "operationId": "postIdBusinessMessagingFeatureStatus",
+        "summary": "Check business messaging feature status",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The page ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Business messaging feature status for the page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMessagingFeatureStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/business-messaging-feature-status"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessMessagingFeatureStatusRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/custom_labels": {
+      "get": {
+        "operationId": "getIdCustomLabels",
+        "summary": "",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The page ID"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fields selected for return, separated by comma. More details in section 'Fields'(https://developers.facebook.com/docs/graph-api/overview). Note only field selection (with nesting) is supported, but not all the features of Field Expansion(https://developers.facebook.com/docs/graph-api/guides/field-expansion/), e.g. limit, offset, etc."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "If specified, a page of data immediately before this cursor will be returned."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "If specified, a page of data immediately after this cursor will be returned."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "This is the maximum number of objects that may be returned. A query may return fewer than the value of limit due to filtering. Do not depend on the number of results being fewer than the limit value to indicate that your query reached the end of the list of data, use the absence of next instead. For example, if you set limit to 10 and 9 results are returned, there may be more data available, but one item was removed due to privacy filtering. In all cases, the API returns the correct pagination links."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of custom labels for the page"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/manage-custom-labels-for-a-page"
+        },
+        "description": "`id` is a Page ID (the Page's labels) or a PSID (the labels assigned to that user, documented as 'Manage custom labels for a Messenger user')."
+      },
+      "post": {
+        "operationId": "postIdCustomLabels",
+        "summary": "",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The page ID"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this field in API versions before v12.0. Alternative to sending the label name in the request body."
+          },
+          {
+            "name": "page_label_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this field in API versions v12.0 and later. Alternative to sending the label name in the request body."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The newly created custom label for the page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCustomLabelsLegacyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/manage-custom-labels-for-a-page"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PageCustomLabelsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{message_id}": {
+      "get": {
+        "operationId": "getMessage",
+        "summary": "Get a message",
+        "tags": [
+          "Messenger Page Conversations"
+        ],
+        "parameters": [
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Message ID (mid)."
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "e.g. id,created_time,from,to,message,attachments."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/conversations"
+        }
+      }
+    },
+    "/{message_id}/attachments": {
+      "get": {
+        "operationId": "listMessageAttachments",
+        "summary": "List a message's attachments",
+        "tags": [
+          "Messenger Message Attachments"
+        ],
+        "parameters": [
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Message ID (mid)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageAttachmentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-message-attachments"
+        }
+      }
+    },
+    "/{message_id}/reactions": {
+      "get": {
+        "operationId": "listMessageReactions",
+        "summary": "List a message's reactions",
+        "tags": [
+          "Messenger Message Reactions"
+        ],
+        "parameters": [
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Message ID (mid)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageReactionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-message-reactions"
+        }
+      }
+    },
+    "/{message_id}/shares": {
+      "get": {
+        "operationId": "listMessageShares",
+        "summary": "List a message's shares",
+        "tags": [
+          "Messenger Message Shares"
+        ],
+        "parameters": [
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Message ID (mid)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageShareList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-message-shares"
+        }
+      }
+    },
+    "/{page_id}/calls": {
+      "post": {
+        "operationId": "postPageIdCalls",
+        "summary": "Create or update a page call action",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger call"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response containing the result of the call action and session information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCallsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-calls"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PageCallsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{page_id}/conversations": {
+      "get": {
+        "operationId": "listPageConversations",
+        "summary": "List a Page's conversations",
+        "tags": [
+          "Messenger Page Conversations"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "messenger",
+                "instagram"
+              ]
+            },
+            "description": "messenger or instagram."
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only the conversation with this PSID (retrieves a user's conversation/thread)."
+          },
+          {
+            "name": "folder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "inbox, page_done, other, pending, spam."
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated fields, e.g. participants,messages{id,message}."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Also documented as 'Retrieve Messenger conversations/threads for a user' when filtered by user_id.",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-page-conversations"
+        }
+      }
+    },
+    "/{page_id}/custom_user_settings": {
+      "delete": {
+        "operationId": "deletePageIdCustomUserSettings",
+        "summary": "Delete custom user settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Business Facebook Page ID"
+          },
+          {
+            "name": "psid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page-scoped user ID (alternative to request body)"
+          },
+          {
+            "name": "params",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSON-encoded array of custom user settings field names to delete (alternative to request body, e.g. [\"persistent_menu\"])"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete custom user settings (persistent menus) for a Messenger page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCustomUserSettingsDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/manage-custom-user-settings-for-a-messenger-page"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PageCustomUserSettingsDeleteRequest"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getPageIdCustomUserSettings",
+        "summary": "Retrieve custom user settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Business Facebook Page ID"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fields selected for return, separated by comma. More details in section 'Fields'(https://developers.facebook.com/docs/graph-api/overview). Note only field selection (with nesting) is supported, but not all the features of Field Expansion(https://developers.facebook.com/docs/graph-api/guides/field-expansion/), e.g. limit, offset, etc."
+          },
+          {
+            "name": "psid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page-scoped user ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve custom user settings (persistent menus) for a Messenger page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCustomUserSettingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/manage-custom-user-settings-for-a-messenger-page"
+        }
+      },
+      "post": {
+        "operationId": "postPageIdCustomUserSettings",
+        "summary": "Update custom user settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Business Facebook Page ID"
+          },
+          {
+            "name": "psid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page-scoped user ID. Alternative to request body — we recommend using the request body for POST requests."
+          },
+          {
+            "name": "persistent_menu",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSON-encoded persistent menu array. Alternative to request body — we recommend using the request body for POST requests."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update custom user settings (persistent menus) for a Messenger page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCustomUserSettingsPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/manage-custom-user-settings-for-a-messenger-page"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PageCustomUserSettingsPostRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{page_id}/extend_thread_control": {
+      "post": {
+        "operationId": "extendThreadControl",
+        "summary": "Extend thread control",
+        "tags": [
+          "Conversation routing: Extend thread control API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadControlRequest"
+              }
+            }
+          }
+        },
+        "description": "Extend the current owner's control by `duration` seconds.",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/conversation-routing-extend-thread-control-api"
+        }
+      }
+    },
+    "/{page_id}/insights": {
+      "get": {
+        "operationId": "getMessagingInsights",
+        "summary": "Get Page messaging insights",
+        "tags": [
+          "Messaging Insights"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          },
+          {
+            "name": "metric",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated metrics, e.g. page_messages_total_messaging_connections,page_messages_new_conversations_unique."
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Unix time."
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Unix time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/analytics/messaging-insights"
+        }
+      }
+    },
+    "/{page_id}/message_attachments": {
+      "post": {
+        "operationId": "uploadMessageAttachment",
+        "summary": "Upload a reusable attachment",
+        "tags": [
+          "Messenger Platform Message Attachments Upload API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachmentUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentUploadRequest"
+              }
+            }
+          }
+        },
+        "description": "Saves an attachment by URL (or multipart filedata) for reuse in the Send API by attachment_id. Commonly called as /me/message_attachments.",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-platform-message-attachments-upload-api"
+        }
+      }
+    },
+    "/{page_id}/messages": {
+      "post": {
+        "operationId": "sendMessage",
+        "summary": "Send a message from a Page",
+        "tags": [
+          "Messenger Platform Send API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendMessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "description": "Send API. The adaptor's postMessage() calls POST /me/messages (with a Page access token `me` is the Page) with messaging_type UPDATE. Also used for sender actions (typing_on/off, mark_seen).",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger-platform-send-api"
+        }
+      }
+    },
+    "/{page_id}/messaging_feature_review": {
+      "get": {
+        "operationId": "getPageIdMessagingFeatureReview",
+        "summary": "Retrieve messaging feature review status",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID to retrieve messaging feature review status for"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fields selected for return, separated by comma. More details in section 'Fields'(https://developers.facebook.com/docs/graph-api/overview). Note only field selection (with nesting) is supported, but not all the features of Field Expansion(https://developers.facebook.com/docs/graph-api/guides/field-expansion/), e.g. limit, offset, etc."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of messaging features and their review statuses for the page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessagingFeatureReviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messaging-feature-review"
+        }
+      }
+    },
+    "/{page_id}/messenger_call_permissions": {
+      "get": {
+        "operationId": "getPageIdMessengerCallPermissions",
+        "summary": "Retrieve messenger call permissions",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger call permissions check"
+          },
+          {
+            "name": "psid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page-scoped ID of the user to check permissions for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve messenger call permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessengerCallPermissionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-call-permissions"
+        }
+      }
+    },
+    "/{page_id}/messenger_call_settings": {
+      "get": {
+        "operationId": "getPageIdMessengerCallSettings",
+        "summary": "Retrieve messenger call settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger call settings"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of fields to return (call_routing, call_hours, audio_enabled, icon_enabled, video_enabled)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve messenger call settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessengerCallSettingsGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-call-settings"
+        }
+      },
+      "post": {
+        "operationId": "postPageIdMessengerCallSettings",
+        "summary": "Update messenger call settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger call settings"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of fields to return (call_routing, call_hours, audio_enabled, icon_enabled, video_enabled)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update messenger call settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessengerCallSettingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-call-settings"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageMessengerCallSettingsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{page_id}/messenger_profile": {
+      "delete": {
+        "operationId": "deletePageIdMessengerProfile",
+        "summary": "Delete messenger profile settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger profile settings"
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "messenger",
+                "whatsapp"
+              ]
+            },
+            "description": "The messaging platform (MESSENGER or INSTAGRAM). Defaults to MESSENGER if not specified"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Array of fields to delete [\"get_started\", \"persistent_menu\", \"whitelisted_domains\", \"account_linking_url\", \"ice_breakers\", \"commands\"]"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete messenger profile settings for a Messenger Business Platform page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessengerProfileDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-profile"
+        }
+      },
+      "get": {
+        "operationId": "getPageIdMessengerProfile",
+        "summary": "Retrieve messenger profile settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger profile settings"
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "messenger",
+                "whatsapp"
+              ]
+            },
+            "description": "The messaging platform (MESSENGER or INSTAGRAM). Defaults to MESSENGER if not specified"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of fields to return (get_started, persistent_menu, whitelisted_domains, account_linking_url, ice_breakers, commands, subject_to_new_eu_privacy_rules)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve messenger profile settings for a Messenger Platform business page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessengerProfileGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-profile"
+        }
+      },
+      "post": {
+        "operationId": "postPageIdMessengerProfile",
+        "summary": "Update messenger profile settings",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the messenger profile settings"
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "messenger",
+                "whatsapp"
+              ]
+            },
+            "description": "The messaging platform (MESSENGER or INSTAGRAM). Defaults to MESSENGER if not specified"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update messenger profile settings for a Messenger Platform business page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMessengerProfilePostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-messenger-profile"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageMessengerProfilePostRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{page_id}/moderate_conversations": {
+      "post": {
+        "operationId": "postPageIdModerateConversations",
+        "summary": "Moderate page conversations",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The Facebook Page ID"
+          },
+          {
+            "name": "user_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSON-encoded array of user objects with id field (e.g., [{\"id\":123}]). Alternative to request body — we recommend using the request body for POST requests."
+          },
+          {
+            "name": "actions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSON-encoded array of actions (e.g., [\"block_user\",\"unblock_user\"]). Alternative to request body — we recommend using the request body for POST requests."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response indicating success or failure of the moderation action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageModerateConversationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/messenger/igv2-page-moderate-conversations"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageModerateConversationsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{page_id}/page_status": {
+      "get": {
+        "operationId": "getPageIdPageStatus",
+        "summary": "Retrieve page status",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The page ID for the call status API"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Integrity and business messaging status for the page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-status-api"
+        }
+      }
+    },
+    "/{page_id}/pass_thread_control": {
+      "post": {
+        "operationId": "passThreadControl",
+        "summary": "Pass thread control to another app",
+        "tags": [
+          "Conversation routing: Pass thread control API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadControlRequest"
+              }
+            }
+          }
+        },
+        "description": "Hand the conversation to target_app_id (263902037430900 for the Page inbox).",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/conversation-routing-pass-thread-control-api"
+        }
+      }
+    },
+    "/{page_id}/personas": {
+      "get": {
+        "operationId": "getPageIdPersonas",
+        "summary": "List page personas",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Business Facebook Page ID"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fields selected for return, separated by comma. More details in section 'Fields'(https://developers.facebook.com/docs/graph-api/overview). Note only field selection (with nesting) is supported, but not all the features of Field Expansion(https://developers.facebook.com/docs/graph-api/guides/field-expansion/), e.g. limit, offset, etc."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "If specified, a page of data immediately before this cursor will be returned."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "If specified, a page of data immediately after this cursor will be returned."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "This is the maximum number of objects that may be returned. A query may return fewer than the value of limit due to filtering. Do not depend on the number of results being fewer than the limit value to indicate that your query reached the end of the list of data, use the absence of next instead. For example, if you set limit to 10 and 9 results are returned, there may be more data available, but one item was removed due to privacy filtering. In all cases, the API returns the correct pagination links."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of active personas for a Messenger page"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-personas-for-a-messenger-page"
+        }
+      },
+      "post": {
+        "operationId": "postPageIdPersonas",
+        "summary": "Create a page persona",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Business Facebook Page ID"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The display name of the persona. Alternative to request body — we recommend using the request body for POST requests."
+          },
+          {
+            "name": "profile_picture_url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The URL of the persona profile picture. Alternative to request body — we recommend using the request body for POST requests."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create a new Messenger bot persona for a page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePersonasPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-personas-for-a-messenger-page"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagePersonasPostRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{page_id}/release_thread_control": {
+      "post": {
+        "operationId": "releaseThreadControl",
+        "summary": "Release thread control",
+        "tags": [
+          "Conversation routing: Release thread control API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadControlRequest"
+              }
+            }
+          }
+        },
+        "description": "Set the thread to idle so any app can take it.",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/conversation-routing-release-thread-control-api"
+        }
+      }
+    },
+    "/{page_id}/request_thread_control": {
+      "post": {
+        "operationId": "requestThreadControl",
+        "summary": "Request thread control",
+        "tags": [
+          "Conversation routing: Request thread control API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadControlRequest"
+              }
+            }
+          }
+        },
+        "description": "Ask the current owner (primary receiver) to pass control.",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/conversation-routing-request-thread-control-api"
+        }
+      }
+    },
+    "/{page_id}/take_thread_control": {
+      "post": {
+        "operationId": "takeThreadControl",
+        "summary": "Take thread control",
+        "tags": [
+          "Conversation routing: Take thread control API"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadControlRequest"
+              }
+            }
+          }
+        },
+        "description": "Primary receiver only: take control from the current owner.",
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/conversation-routing-take-thread-control-api"
+        }
+      }
+    },
+    "/{page_id}/thread_owner": {
+      "get": {
+        "operationId": "getThreadOwner",
+        "summary": "Get the app that owns a thread",
+        "tags": [
+          "Page Thread Owner"
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page ID (or `me` with a Page access token)."
+          },
+          {
+            "name": "recipient",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "PSID of the person."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadOwnerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/page-thread-owner"
+        }
+      }
+    },
+    "/{persona_id}": {
+      "delete": {
+        "operationId": "deletePersonaId",
+        "summary": "Delete a persona",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "persona_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Messenger Platform Persona ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete a Messenger bot persona",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-a-messenger-bot-persona"
+        }
+      },
+      "get": {
+        "operationId": "getPersonaId",
+        "summary": "Retrieve a persona",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "persona_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Messenger Platform Persona ID"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fields selected for return, separated by comma. More details in section 'Fields'(https://developers.facebook.com/docs/graph-api/overview). Note only field selection (with nesting) is supported, but not all the features of Field Expansion(https://developers.facebook.com/docs/graph-api/guides/field-expansion/), e.g. limit, offset, etc."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Details of a Messenger bot persona",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-a-messenger-bot-persona"
+        }
+      }
+    },
+    "/{psid}": {
+      "get": {
+        "operationId": "getUserProfile",
+        "summary": "Get a user's profile (User Profile API)",
+        "tags": [
+          "User Profile"
+        ],
+        "parameters": [
+          {
+            "name": "psid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Page-scoped user ID."
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "first_name,last_name,profile_pic,locale,timezone,gender."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/identity/user-profile"
+        }
+      }
+    },
+    "/{thread_label_id}": {
+      "delete": {
+        "operationId": "deleteThreadLabelId",
+        "summary": "Delete a thread label",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "thread_label_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Thread label ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response indicating success of thread label deletion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserMessageThreadLabelDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-a-thread-label-for-a-messenger-page"
+        }
+      },
+      "get": {
+        "operationId": "getThreadLabelId",
+        "summary": "Retrieve a thread label",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "thread_label_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Thread label ID"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fields selected for return, separated by comma. More details in section 'Fields'(https://developers.facebook.com/docs/graph-api/overview). Note only field selection (with nesting) is supported, but not all the features of Field Expansion(https://developers.facebook.com/docs/graph-api/guides/field-expansion/), e.g. limit, offset, etc."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thread label details for a Messenger page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserMessageThreadLabelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/retrieve-a-thread-label-for-a-messenger-page"
+        }
+      }
+    },
+    "/{thread_label_id}/label": {
+      "delete": {
+        "operationId": "deleteThreadLabelIdLabel",
+        "summary": "Remove a thread label",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "thread_label_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Thread label ID"
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The PSID of the user to remove from the thread label. Alternative to sending it in the request body."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response indicating whether the thread label was removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserMessageThreadLabelLabelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/add-a-label-to-a-thread-for-a-messenger-page"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PageUserMessageThreadLabelLabelDeleteRequest"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postThreadLabelIdLabel",
+        "summary": "Associate a thread label",
+        "tags": [
+          ""
+        ],
+        "parameters": [
+          {
+            "name": "thread_label_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Thread label ID"
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The PSID of the user to associate with the thread label. Alternative to sending it in the request body."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response indicating whether the thread label was associated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserMessageThreadLabelLabelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                }
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "url": "https://developers.facebook.com/documentation/business-messaging/messenger-platform/reference/add-a-label-to-a-thread-for-a-messenger-page"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PageUserMessageThreadLabelLabelRequest"
               }
             }
           }
@@ -37,50 +2677,3080 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "pageAccessToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "access_token",
+        "description": "Page access token (the adaptor sends it as ?access_token=)."
+      },
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
     "schemas": {
-      "SendRequest": {
+      "Actions": {
         "type": "object",
-        "required": ["recipient", "message"],
         "properties": {
-          "messaging_type": {
+          "action_name": {
             "type": "string",
-            "enum": ["RESPONSE", "UPDATE", "MESSAGE_TAG"]
+            "enum": [
+              "send_call_permission_request",
+              "start_call"
+            ],
+            "description": "Name of the action (send_call_permission_request or start_call)"
           },
-          "recipient": { "$ref": "#/components/schemas/Recipient" },
-          "message": { "$ref": "#/components/schemas/Message" }
+          "can_perform": {
+            "type": "boolean",
+            "description": "Whether the action can be performed"
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Limits"
+            },
+            "description": "Rate limit information for the action"
+          }
+        },
+        "required": [
+          "action_name",
+          "can_perform"
+        ]
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "audio",
+              "video",
+              "file",
+              "template"
+            ]
+          },
+          "payload": {
+            "$ref": "#/components/schemas/AttachmentPayload"
+          }
+        },
+        "required": [
+          "type",
+          "payload"
+        ]
+      },
+      "AttachmentPayload": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Media URL."
+          },
+          "is_reusable": {
+            "type": "boolean"
+          },
+          "attachment_id": {
+            "type": "string",
+            "description": "A saved attachment."
+          },
+          "template_type": {
+            "type": "string",
+            "description": "generic, button, media, receipt, product, coupon, customer_feedback, ..."
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "buttons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Button"
+            }
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "description": "Media or template payload; the template fields depend on template_type."
+      },
+      "AttachmentUploadRequest": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "attachment": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "audio",
+                      "video",
+                      "file"
+                    ]
+                  },
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "is_reusable": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "AttachmentUploadResponse": {
+        "type": "object",
+        "properties": {
+          "attachment_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "attachment_id"
+        ],
+        "description": "A reusable attachment ID."
+      },
+      "BusinessMessagingFeatureStatusFeatureParams": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "type": "string",
+            "description": "The name of the business messaging feature to check"
+          }
+        },
+        "required": [
+          "feature"
+        ]
+      },
+      "BusinessMessagingFeatureStatusRequest": {
+        "type": "object",
+        "properties": {
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusinessMessagingFeatureStatusFeatureParams"
+            },
+            "description": "List of features to check the status of"
+          }
+        },
+        "required": [
+          "features"
+        ]
+      },
+      "BusinessMessagingFeatureStatusResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Data"
+            },
+            "description": "List of business messaging feature statuses"
+          }
         }
       },
-      "Recipient": {
+      "Button": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "Page-scoped recipient ID (PSID)" },
-          "user_ref": { "type": "string" },
-          "phone_number": { "type": "string" }
+          "type": {
+            "type": "string",
+            "description": "web_url, postback, phone_number, account_link, account_unlink, game_play."
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "string"
+          },
+          "webview_height_ratio": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "tall",
+              "full"
+            ]
+          },
+          "messenger_extensions": {
+            "type": "boolean"
+          },
+          "fallback_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "Call_hours": {
+        "type": "object",
+        "properties": {
+          "timezone_id": {
+            "type": "string",
+            "description": "Timezone identifier for call hours"
+          },
+          "weekly_operating_hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Weekly_operating_hours"
+            },
+            "description": "Weekly operating hours"
+          }
+        },
+        "description": "Operating hours configuration for when calls are accepted"
+      },
+      "Call_hours2": {
+        "type": "object",
+        "properties": {
+          "timezone_id": {
+            "type": "string",
+            "description": "Timezone identifier for call hours"
+          },
+          "weekly_operating_hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Weekly_operating_hours2"
+            },
+            "description": "Weekly operating hours"
+          }
+        },
+        "required": [
+          "timezone_id",
+          "weekly_operating_hours"
+        ],
+        "description": "Operating hours configuration for when calls are accepted | Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Call_routing": {
+        "type": "object",
+        "properties": {
+          "ring_target": {
+            "type": "string",
+            "enum": [
+              "META",
+              "PARTNERS"
+            ],
+            "description": "Target for incoming calls"
+          }
+        },
+        "description": "Call routing configuration for incoming calls"
+      },
+      "Call_routing2": {
+        "type": "object",
+        "properties": {
+          "ring_target": {
+            "type": "string",
+            "enum": [
+              "META",
+              "PARTNERS"
+            ],
+            "description": "Target for incoming calls"
+          }
+        },
+        "required": [
+          "ring_target"
+        ],
+        "description": "Call routing configuration for incoming calls"
+      },
+      "Call_to_actions": {
+        "type": "object"
+      },
+      "Call_to_actions2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of call-to-action (postback, web_url, nested)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the menu item"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload for postback type"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL for web_url type"
+          },
+          "webview_height_ratio": {
+            "type": "string",
+            "description": "Height ratio for webview (compact, tall, full)"
+          },
+          "messenger_extensions": {
+            "type": "boolean",
+            "description": "Whether messenger extensions are enabled"
+          },
+          "webview_share_button": {
+            "type": "string",
+            "description": "Webview share button visibility"
+          },
+          "call_to_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Call_to_actions"
+            },
+            "description": "Nested call-to-actions for nested type"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "Call_to_actions3": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of call to action (postback, web_url, nested)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the menu item"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload for postback type"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL for web_url type"
+          }
         }
+      },
+      "Commands": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Command name (e.g., /start, /help)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of what the command does"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
+      "Commands2": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Locale for this command configuration"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Commands"
+            },
+            "description": "Array of bot commands for this locale"
+          }
+        },
+        "required": [
+          "locale",
+          "commands"
+        ]
+      },
+      "Commands3": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Command name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of what the command does"
+          }
+        }
+      },
+      "Commands4": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Locale for this command configuration"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Commands3"
+            },
+            "description": "Array of bot commands for this locale"
+          }
+        },
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Conversation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "updated_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "link": {
+            "type": "string"
+          },
+          "message_count": {
+            "type": "integer"
+          },
+          "unread_count": {
+            "type": "integer"
+          },
+          "participants": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Participant"
+                }
+              }
+            }
+          },
+          "messages": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              },
+              "paging": {
+                "$ref": "#/components/schemas/Paging"
+              }
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "description": "A Messenger conversation (thread) between a Page and a person."
+      },
+      "ConversationList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Conversation"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/Paging"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Cursors": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string",
+            "description": "This is the cursor that points to the start of the page of data that has been returned."
+          },
+          "after": {
+            "type": "string",
+            "description": "This is the cursor that points to the end of the page of data that has been returned."
+          }
+        },
+        "description": "Cursors to the next and previous pages"
+      },
+      "Cursors2": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string",
+            "description": "This is the cursor that points to the start of the page of data that has been returned."
+          },
+          "after": {
+            "type": "string",
+            "description": "This is the cursor that points to the end of the page of data that has been returned."
+          }
+        },
+        "description": "Cursors to the next and previous pages"
+      },
+      "Data": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "type": "string",
+            "description": "The name of the business messaging feature"
+          },
+          "status": {
+            "type": "string",
+            "description": "The status of the feature (e.g. available, limited)"
+          },
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Error2"
+              }
+            ],
+            "description": "Error details if the feature status check failed"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error10": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "Error11": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "Error12": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error13": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error14": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error2": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A human-readable error message"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of error"
+          },
+          "code": {
+            "type": "string",
+            "description": "The error code"
+          }
+        },
+        "description": "Error details if the feature status check failed"
+      },
+      "Error3": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error4": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error5": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error6": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error7": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error8": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Error9": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error_data": {},
+          "error_subcode": {
+            "type": "integer"
+          },
+          "error_user_msg": {
+            "type": "string"
+          },
+          "error_user_msg_html": {},
+          "error_user_title": {
+            "type": "string"
+          },
+          "error_user_title_html": {},
+          "fbtrace_id": {
+            "type": "string"
+          },
+          "is_transient": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "original_response": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "Get_started": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "string",
+            "description": "Payload sent when user clicks the Get-Started button"
+          }
+        },
+        "description": "Get-Started button configuration with payload"
+      },
+      "GraphError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "integer"
+              },
+              "error_subcode": {
+                "type": "integer"
+              },
+              "fbtrace_id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "description": "Graph API error."
+      },
+      "Ice_breakers": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Ice breaker question text"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload sent when user selects this ice breaker"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram",
+              "messenger",
+              "whatsapp"
+            ],
+            "description": "Platform for this ice breaker (MESSENGER or INSTAGRAM)"
+          }
+        },
+        "required": [
+          "question",
+          "payload"
+        ]
+      },
+      "Ice_breakers2": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Ice breaker question text"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload sent when user selects this ice breaker"
+          }
+        }
+      },
+      "Insight": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Metric, e.g. page_messages_total_messaging_connections."
+          },
+          "period": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InsightValue"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "description": "A Page messaging insights metric."
+      },
+      "InsightList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Insight"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/Paging"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "InsightValue": {
+        "type": "object",
+        "properties": {
+          "value": {},
+          "end_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Limits": {
+        "type": "object",
+        "properties": {
+          "time_period": {
+            "type": "string",
+            "description": "Time period for the limit (e.g., PT24H)"
+          },
+          "max_allowed": {
+            "type": "integer",
+            "description": "Maximum allowed requests in the time period"
+          },
+          "current_usage": {
+            "type": "integer",
+            "description": "Current usage count in the time period"
+          }
+        },
+        "required": [
+          "time_period",
+          "max_allowed",
+          "current_usage"
+        ]
       },
       "Message": {
         "type": "object",
         "properties": {
-          "text": { "type": "string" },
-          "attachment": {
+          "id": {
+            "type": "string"
+          },
+          "created_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string",
+            "description": "Text."
+          },
+          "from": {
+            "$ref": "#/components/schemas/Participant"
+          },
+          "to": {
             "type": "object",
             "properties": {
-              "type": { "type": "string", "enum": ["image", "audio", "video", "file", "template"] },
-              "payload": { "type": "object" }
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Participant"
+                }
+              }
             }
+          },
+          "attachments": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MessageAttachment"
+                }
+              },
+              "paging": {
+                "$ref": "#/components/schemas/Paging"
+              }
+            }
+          },
+          "reactions": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MessageReaction"
+                }
+              }
+            }
+          },
+          "shares": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MessageShare"
+                }
+              }
+            }
+          },
+          "sticker": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "description": "A message in a conversation (fields requested with ?fields=)."
+      },
+      "MessageAttachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "mime_type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "file_url": {
+            "type": "string"
+          },
+          "image_data": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "preview_url": {
+                "type": "string"
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              }
+            }
+          },
+          "video_data": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "preview_url": {
+                "type": "string"
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "description": "An attachment on a message."
+      },
+      "MessageAttachmentList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageAttachment"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/Paging"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MessageReaction": {
+        "type": "object",
+        "properties": {
+          "reaction": {
+            "type": "string",
+            "description": "Emoji."
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participant"
+            }
+          }
+        },
+        "description": "A reaction on a message."
+      },
+      "MessageReactionList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageReaction"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/Paging"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MessageShare": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "template": {
+            "type": "object"
+          }
+        },
+        "description": "A shared link/post/product on a message."
+      },
+      "MessageShareList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageShare"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/Paging"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "OutgoingMessage": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Up to 2000 characters."
+          },
+          "attachment": {
+            "$ref": "#/components/schemas/Attachment"
           },
           "quick_replies": {
             "type": "array",
-            "items": { "type": "object" }
+            "items": {
+              "$ref": "#/components/schemas/QuickReply"
+            }
+          },
+          "metadata": {
+            "type": "string",
+            "description": "Echoed in message_echoes webhooks."
+          }
+        },
+        "description": "Message content: text or attachment, optionally with quick replies."
+      },
+      "PageCallsRequest": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram",
+              "messenger",
+              "whatsapp"
+            ],
+            "description": "Platform for the messaging service"
+          },
+          "call_id": {
+            "type": "string",
+            "description": "Unique identifier for the call"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "connect",
+              "media_update",
+              "reject",
+              "terminate"
+            ],
+            "description": "The call action to perform (accept, connect, terminate, etc.)"
+          },
+          "to": {
+            "type": "string",
+            "description": "Target user for the call"
+          },
+          "session": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Session"
+              }
+            ],
+            "description": "Session payload with SDP information"
+          },
+          "tracks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tracks"
+            },
+            "description": "Media track configurations (max 4 items)"
+          },
+          "from_version": {
+            "type": "integer",
+            "description": "Current version number of the peer connection"
+          },
+          "to_version": {
+            "type": "integer",
+            "description": "New version number of the peer connection"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "PageCallsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if the call action was processed successfully"
+          },
+          "call_id": {
+            "type": "string",
+            "description": "Unique identifier for the call conference"
+          },
+          "session": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Session2"
+              }
+            ],
+            "description": "Session data containing SDP information"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "PageCustomLabelsGetResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the custom label"
+          },
+          "page_label_name": {
+            "type": "string",
+            "description": "Returned in API versions v12.0 and later. The name of the custom label."
           }
         }
       },
-      "SendResponse": {
+      "PageCustomLabelsLegacyResponse": {
         "type": "object",
         "properties": {
-          "recipient_id": { "type": "string" },
-          "message_id": { "type": "string" }
+          "id": {
+            "type": "string",
+            "description": "The ID of the custom label"
+          }
         }
+      },
+      "PageCustomLabelsRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Use this field in API versions before v12.0. The name of the page label to create."
+          },
+          "page_label_name": {
+            "type": "string",
+            "description": "Use this field in API versions v12.0 and later. The name of the page label to create."
+          }
+        }
+      },
+      "PageCustomUserSettingsData": {
+        "type": "object",
+        "properties": {
+          "user_level_persistent_menu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PagePersistentMenu"
+            },
+            "description": "Array of user-level persistent menu configurations"
+          },
+          "page_level_persistent_menu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PagePersistentMenu"
+            },
+            "description": "Array of page-level persistent menu configurations"
+          }
+        }
+      },
+      "PageCustomUserSettingsDeleteRequest": {
+        "type": "object",
+        "properties": {
+          "psid": {
+            "type": "string",
+            "description": "Page-scoped user ID"
+          },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of custom user settings field names to delete (e.g. [\"persistent_menu\"])"
+          }
+        }
+      },
+      "PageCustomUserSettingsDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Operation result status"
+          }
+        }
+      },
+      "PageCustomUserSettingsPostRequest": {
+        "type": "object",
+        "properties": {
+          "psid": {
+            "type": "string",
+            "description": "Page-scoped user ID"
+          },
+          "persistent_menu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PagePersistentMenu"
+            },
+            "description": "Array of persistent menu configurations. Pass null to clear."
+          }
+        }
+      },
+      "PageCustomUserSettingsPostResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Operation result status"
+          }
+        }
+      },
+      "PageCustomUserSettingsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageCustomUserSettingsData"
+            },
+            "description": "Array of custom user settings data"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PageMessagingFeatureReviewItem": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "type": "string",
+            "description": "The name of the messaging feature"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "pending",
+              "limited",
+              "rejected"
+            ],
+            "description": "The review status of the feature (approved, pending, limited, or rejected)"
+          }
+        },
+        "required": [
+          "feature",
+          "status"
+        ]
+      },
+      "PageMessagingFeatureReviewResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageMessagingFeatureReviewItem"
+            },
+            "description": "List of messaging features and their review statuses for the page"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PageMessengerCallPermissionsPayload": {
+        "type": "object",
+        "properties": {
+          "permission": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Permission"
+              }
+            ],
+            "description": "Permission status for business-initiated calls"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Actions"
+            },
+            "description": "Available actions and their constraints"
+          }
+        },
+        "required": [
+          "permission"
+        ]
+      },
+      "PageMessengerCallPermissionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageMessengerCallPermissionsPayload"
+            },
+            "description": "Array containing call permissions data (Graph API edge format)"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PageMessengerCallSettingsGetResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageMessengerCallSettingsPayload"
+            },
+            "description": "Array containing call settings data (Graph API edge format)"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PageMessengerCallSettingsPayload": {
+        "type": "object",
+        "properties": {
+          "audio_enabled": {
+            "type": "boolean",
+            "description": "Whether audio calling is enabled"
+          },
+          "icon_enabled": {
+            "type": "boolean",
+            "description": "Whether call button icon is enabled"
+          },
+          "video_enabled": {
+            "type": "boolean",
+            "description": "Whether video calling is enabled"
+          },
+          "call_routing": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Call_routing"
+              }
+            ],
+            "description": "Call routing configuration for incoming calls"
+          },
+          "call_hours": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Call_hours"
+              }
+            ],
+            "description": "Operating hours configuration for when calls are accepted"
+          }
+        }
+      },
+      "PageMessengerCallSettingsRequest": {
+        "type": "object",
+        "properties": {
+          "audio_enabled": {
+            "type": "boolean",
+            "description": "Enable or disable audio calling"
+          },
+          "icon_enabled": {
+            "type": "boolean",
+            "description": "Enable or disable call button icon"
+          },
+          "video_enabled": {
+            "type": "boolean",
+            "description": "Enable or disable video calling"
+          },
+          "call_routing": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Call_routing2"
+              }
+            ],
+            "description": "Call routing configuration for incoming calls"
+          },
+          "call_hours": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Call_hours2"
+              }
+            ],
+            "description": "Operating hours configuration for when calls are accepted"
+          }
+        }
+      },
+      "PageMessengerCallSettingsResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Result of the call settings update operation"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "PageMessengerProfileDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Operation result status"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "PageMessengerProfileGetResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageMessengerProfilePayload"
+            },
+            "description": "Array containing messenger profile data (Graph API edge format)"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PageMessengerProfilePayload": {
+        "type": "object",
+        "properties": {
+          "get_started": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Get_started"
+              }
+            ],
+            "description": "Get-Started button configuration with payload"
+          },
+          "persistent_menu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Persistent_menu"
+            },
+            "description": "Persistent menu configuration for the page across different locales"
+          },
+          "whitelisted_domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of domains that are allowed for webviews and extensions"
+          },
+          "account_linking_url": {
+            "type": "string",
+            "description": "URL used for account linking"
+          },
+          "ice_breakers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ice_breakers"
+            },
+            "description": "Ice breaker questions that appear in new conversations"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Commands2"
+            },
+            "description": "Bot commands configuration for the page"
+          },
+          "subject_to_new_eu_privacy_rules": {
+            "type": "boolean",
+            "description": "Whether the page is subject to new EU privacy rules (ePD jurisdiction)"
+          }
+        }
+      },
+      "PageMessengerProfilePostRequest": {
+        "type": "object",
+        "properties": {
+          "get_started": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Get_started"
+              }
+            ],
+            "description": "Get-Started button configuration with payload"
+          },
+          "persistent_menu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Persistent_menu2"
+            },
+            "description": "Persistent menu configuration array"
+          },
+          "whitelisted_domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of domains allowed for webviews and extensions"
+          },
+          "account_linking_url": {
+            "type": "string",
+            "description": "URL used for account linking"
+          },
+          "ice_breakers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ice_breakers2"
+            },
+            "description": "Ice breaker questions for new conversations"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Commands4"
+            },
+            "description": "Bot commands configuration"
+          }
+        }
+      },
+      "PageMessengerProfilePostResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Operation result status"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "PageModerateConversationsRequest": {
+        "type": "object",
+        "properties": {
+          "user_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageModerateConversationsUserId"
+            },
+            "description": "List of Universal Scoped IDs to moderate (required, minimum 1, maximum 10). Supports both Messenger PSIDs and IG Scoped IDs. Each object contains an \"id\" field."
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ban_user",
+                "block_user",
+                "move_to_spam",
+                "unban_user",
+                "unblock_user"
+              ]
+            },
+            "description": "List of moderation actions to perform (required, minimum 1, maximum 2). Valid values: \"ban_user\", \"block_user\", \"move_to_spam\", \"unban_user\", \"unblock_user\"."
+          }
+        },
+        "required": [
+          "user_ids",
+          "actions"
+        ]
+      },
+      "PageModerateConversationsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the moderation action was successful."
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "PageModerateConversationsUserId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The Universal Scoped ID (Messenger PSID or IG Scoped ID) of the user to moderate."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PagePersistentMenu": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Locale for the persistent menu"
+          },
+          "composer_input_disabled": {
+            "type": "boolean",
+            "description": "Whether the composer input is disabled for this menu"
+          },
+          "call_to_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersistentMenuCallToAction"
+            },
+            "description": "Array of call to action items for the persistent menu"
+          },
+          "disabled_surfaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of surfaces where the persistent menu is disabled"
+          }
+        }
+      },
+      "PagePersonasPostRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the persona (optional when provided via query param)"
+          },
+          "profile_picture_url": {
+            "type": "string",
+            "description": "The URL of the persona profile picture (optional when provided via query param)"
+          }
+        }
+      },
+      "PagePersonasPostResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the newly created persona"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PagePersonasResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the persona"
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the persona"
+          },
+          "profile_picture_url": {
+            "type": "string",
+            "description": "The URL of the persona profile picture"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PageStatusActionEvent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "LEARN_MORE",
+              "FILE_APPEAL",
+              "SUPPORT_TICKET",
+              "ID_VERIFICATION"
+            ],
+            "description": "The type of recommended action, e.g. FILE_APPEAL, LEARN_MORE, etc."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "PENDING",
+              "CLOSED"
+            ],
+            "description": "The status of this recommended action, e.g. PENDING, COMPLETED, etc."
+          },
+          "created_time": {
+            "type": "integer",
+            "description": "The time when this recommended action was created"
+          },
+          "updated_time": {
+            "type": "integer",
+            "description": "The time when this recommended action was updated"
+          },
+          "violation_type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The violation type that triggered this recommended action."
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "created_time",
+          "updated_time"
+        ]
+      },
+      "PageStatusRecommendedAction": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "LEARN_MORE",
+              "FILE_APPEAL",
+              "SUPPORT_TICKET",
+              "ID_VERIFICATION"
+            ],
+            "description": "The type of recommended action, e.g. FILE_APPEAL, LEARN_MORE, etc."
+          },
+          "url": {
+            "type": "string",
+            "description": "The action URL for this recommended action."
+          },
+          "violation_type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The violation type that triggered this recommended action."
+          }
+        },
+        "required": [
+          "type",
+          "url",
+          "violation_type"
+        ]
+      },
+      "PageStatusResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Page ID"
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "The time when this response was generated"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "warning",
+              "restricted",
+              "ok",
+              "suspended"
+            ],
+            "description": "The overall status of the page"
+          },
+          "violations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageStatusViolation"
+            },
+            "description": "The violations that are affecting the page status"
+          },
+          "restrictions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageStatusRestriction"
+            },
+            "description": "The restrictions that are affecting the page status"
+          },
+          "recommended_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageStatusRecommendedAction"
+            },
+            "description": "The recommended actions that can be taken to improve the page status"
+          },
+          "action_events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageStatusActionEvent"
+            },
+            "description": "The statuses of the recommended actions that have been taken"
+          }
+        },
+        "required": [
+          "id",
+          "timestamp",
+          "status"
+        ],
+        "description": "| Method | How to send it | |--------|----------------| | Authorization header | `Authorization: Bearer {access-token}` | | Query parameter | `access_token={access-token}` | | Query parameter | `oauth_token={access-token}` | All endpoints require one of: `Authorization: Bearer {access-token}`, `access_token={access-token}` or `oauth_token={access-token}`"
+      },
+      "PageStatusRestriction": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "type": "string",
+            "enum": [
+              "page_create_group",
+              "page_edit_category",
+              "page_invite",
+              "page_merge",
+              "page_messaging",
+              "page_messaging_api",
+              "page_name_change",
+              "page_online_event",
+              "page_publish",
+              "post_media",
+              "unknown"
+            ],
+            "description": "The features restricted as a result of some violation"
+          },
+          "description": {
+            "type": "string",
+            "description": "A human-readable description of the feature limit"
+          },
+          "applied_time": {
+            "type": "integer",
+            "description": "The time when this restriction was applied"
+          },
+          "expiration_time": {
+            "type": "integer",
+            "description": "The time when this restriction will expire"
+          },
+          "violation_type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The violation type that triggered this restriction"
+          }
+        },
+        "required": [
+          "feature",
+          "description",
+          "applied_time"
+        ]
+      },
+      "PageStatusViolation": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of this violation. Usually, this is linked to the action that triggered the violation."
+          },
+          "description": {
+            "type": "string",
+            "description": "Static string description"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the help page for this violation"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "description": "The severity of this violation"
+          }
+        },
+        "required": [
+          "type",
+          "description",
+          "url"
+        ]
+      },
+      "PageUserMessageThreadLabelDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the thread label was successfully deleted"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "PageUserMessageThreadLabelLabelDeleteRequest": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The PSID of the user to remove from the thread label. Alternative to the query parameter."
+          }
+        }
+      },
+      "PageUserMessageThreadLabelLabelRequest": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The PSID of the user to associate with the thread label"
+          }
+        }
+      },
+      "PageUserMessageThreadLabelLabelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the operation was successful"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "PageUserMessageThreadLabelResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the thread label"
+          },
+          "page_label_name": {
+            "type": "string",
+            "description": "The name of the thread label"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Paging": {
+        "type": "object",
+        "properties": {
+          "cursors": {
+            "type": "object",
+            "properties": {
+              "before": {
+                "type": "string"
+              },
+              "after": {
+                "type": "string"
+              }
+            }
+          },
+          "next": {
+            "type": "string",
+            "format": "uri"
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "description": "Graph API cursor paging."
+      },
+      "Paging2": {
+        "type": "object",
+        "properties": {
+          "cursors": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cursors2"
+              }
+            ],
+            "description": "Cursors to the next and previous pages"
+          },
+          "previous": {
+            "type": "string",
+            "description": "The API that will return the previous page of data. If not included, this is the first page of data."
+          },
+          "next": {
+            "type": "string",
+            "description": "The API that will return the next page of data. If not included, this is the last page of data. Due to how pagination works with visibility and privacy, it is possible that a page may be empty but contain a next paging link. Stop paging when the next link no longer appears."
+          }
+        },
+        "description": "Pagination metadata"
+      },
+      "Participant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "HAS_PERMISSION",
+              "NO_PERMISSION"
+            ],
+            "description": "Permission status (HAS_PERMISSION or NO_PERMISSION)"
+          },
+          "expiration_time": {
+            "type": "integer",
+            "description": "Unix timestamp when permission expires (only present if HAS_PERMISSION)"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "description": "Permission status for business-initiated calls"
+      },
+      "PersistentMenuCallToAction": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of the call to action (e.g. nested, web_url, postback)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title text of the call to action"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL for web_url type actions"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload data for postback type actions"
+          },
+          "call_to_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersistentMenuCallToActionLevel2"
+            },
+            "description": "Array of nested call to action items"
+          },
+          "webview_height_ratio": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "tall",
+              "full"
+            ],
+            "description": "Height ratio of the webview when opened"
+          },
+          "messenger_extensions": {
+            "type": "boolean",
+            "description": "Whether Messenger extensions are enabled for the webview"
+          },
+          "fallback_url": {
+            "type": "string",
+            "description": "Fallback URL for clients that do not support Messenger extensions"
+          },
+          "webview_share_button": {
+            "type": "string",
+            "enum": [
+              "hide",
+              "show"
+            ],
+            "description": "Whether the share button is shown in the webview"
+          }
+        }
+      },
+      "PersistentMenuCallToActionLevel2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of the call to action (e.g. nested, web_url, postback)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title text of the call to action"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL for web_url type actions"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload data for postback type actions"
+          },
+          "call_to_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersistentMenuCallToActionLevel3"
+            },
+            "description": "Array of nested call to action items"
+          },
+          "webview_height_ratio": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "tall",
+              "full"
+            ],
+            "description": "Height ratio of the webview when opened"
+          },
+          "messenger_extensions": {
+            "type": "boolean",
+            "description": "Whether Messenger extensions are enabled for the webview"
+          },
+          "fallback_url": {
+            "type": "string",
+            "description": "Fallback URL for clients that do not support Messenger extensions"
+          },
+          "webview_share_button": {
+            "type": "string",
+            "enum": [
+              "hide",
+              "show"
+            ],
+            "description": "Whether the share button is shown in the webview"
+          }
+        }
+      },
+      "PersistentMenuCallToActionLevel3": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of the call to action (e.g. web_url, postback)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title text of the call to action"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL for web_url type actions"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload data for postback type actions"
+          },
+          "webview_height_ratio": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "tall",
+              "full"
+            ],
+            "description": "Height ratio of the webview when opened"
+          },
+          "messenger_extensions": {
+            "type": "boolean",
+            "description": "Whether Messenger extensions are enabled for the webview"
+          },
+          "fallback_url": {
+            "type": "string",
+            "description": "Fallback URL for clients that do not support Messenger extensions"
+          },
+          "webview_share_button": {
+            "type": "string",
+            "enum": [
+              "hide",
+              "show"
+            ],
+            "description": "Whether the share button is shown in the webview"
+          }
+        }
+      },
+      "Persistent_menu": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Locale for this menu configuration"
+          },
+          "composer_input_disabled": {
+            "type": "boolean",
+            "description": "Whether the composer input is disabled"
+          },
+          "disabled_surfaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Surfaces where the persistent menu is disabled"
+          },
+          "call_to_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Call_to_actions2"
+            },
+            "description": "Array of call-to-action buttons"
+          }
+        },
+        "required": [
+          "locale"
+        ]
+      },
+      "Persistent_menu2": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Locale for this menu configuration"
+          },
+          "composer_input_disabled": {
+            "type": "boolean",
+            "description": "Whether the composer input is disabled"
+          },
+          "call_to_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Call_to_actions3"
+            },
+            "description": "Array of call to action buttons"
+          }
+        }
+      },
+      "PersonaDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the persona was successfully deleted"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "PersonaResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the persona"
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the persona"
+          },
+          "profile_picture_url": {
+            "type": "string",
+            "description": "The URL of the persona profile picture"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "QuickReply": {
+        "type": "object",
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "user_phone_number",
+              "user_email"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content_type"
+        ]
+      },
+      "Recipient": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Page-scoped user ID (PSID)."
+          },
+          "user_ref": {
+            "type": "string",
+            "description": "user_ref from the checkbox plugin."
+          },
+          "post_id": {
+            "type": "string",
+            "description": "Post ID, for private replies."
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "Comment ID, for private replies."
+          },
+          "notification_messages_token": {
+            "type": "string",
+            "description": "Token from a marketing-message opt-in."
+          }
+        },
+        "description": "Exactly one identifier of who receives the message."
+      },
+      "Sdp_renegotiation": {
+        "type": "object",
+        "properties": {
+          "sdp": {
+            "type": "string",
+            "description": "Renegotiation Session Description Protocol data"
+          },
+          "sdp_type": {
+            "type": "string",
+            "description": "Type of renegotiation SDP (Session Description Protocol)"
+          }
+        },
+        "required": [
+          "sdp",
+          "sdp_type"
+        ],
+        "description": "SDP renegotiation data for call updates"
+      },
+      "Sdp_response": {
+        "type": "object",
+        "properties": {
+          "sdp": {
+            "type": "string",
+            "description": "Session Description Protocol data"
+          },
+          "sdp_type": {
+            "type": "string",
+            "description": "Type of SDP (Session Description Protocol)"
+          }
+        },
+        "required": [
+          "sdp",
+          "sdp_type"
+        ],
+        "description": "SDP response data"
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "properties": {
+          "recipient": {
+            "$ref": "#/components/schemas/Recipient"
+          },
+          "messaging_type": {
+            "type": "string",
+            "enum": [
+              "RESPONSE",
+              "UPDATE",
+              "MESSAGE_TAG"
+            ]
+          },
+          "message": {
+            "$ref": "#/components/schemas/OutgoingMessage"
+          },
+          "sender_action": {
+            "type": "string",
+            "enum": [
+              "typing_on",
+              "typing_off",
+              "mark_seen",
+              "react",
+              "unreact"
+            ]
+          },
+          "notification_type": {
+            "type": "string",
+            "enum": [
+              "REGULAR",
+              "SILENT_PUSH",
+              "NO_PUSH"
+            ]
+          },
+          "tag": {
+            "type": "string",
+            "description": "Message tag when messaging_type is MESSAGE_TAG, e.g. ACCOUNT_UPDATE, CONFIRMED_EVENT_UPDATE, POST_PURCHASE_UPDATE, HUMAN_AGENT."
+          },
+          "persona_id": {
+            "type": "string",
+            "description": "Send as a persona."
+          },
+          "reply_to": {
+            "type": "object",
+            "properties": {
+              "mid": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "recipient"
+        ],
+        "description": "Send API request: a message or a sender_action to one recipient."
+      },
+      "SendMessageResponse": {
+        "type": "object",
+        "properties": {
+          "recipient_id": {
+            "type": "string"
+          },
+          "message_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipient_id"
+        ],
+        "description": "Send API result."
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "sdp_type": {
+            "type": "string",
+            "description": "Type of SDP (Session Description Protocol)"
+          },
+          "sdp": {
+            "type": "string",
+            "description": "Session Description Protocol data"
+          }
+        },
+        "required": [
+          "sdp_type",
+          "sdp"
+        ],
+        "description": "Session payload with SDP information"
+      },
+      "Session2": {
+        "type": "object",
+        "properties": {
+          "sdp_response": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Sdp_response"
+              }
+            ],
+            "description": "SDP response data"
+          },
+          "sdp_renegotiation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Sdp_renegotiation"
+              }
+            ],
+            "description": "SDP renegotiation data for call updates"
+          }
+        },
+        "required": [
+          "sdp_response"
+        ],
+        "description": "Session data containing SDP information"
+      },
+      "StandardError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/Error14"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ],
+        "description": "Generic Graph API success flag."
+      },
+      "ThreadControlRequest": {
+        "type": "object",
+        "properties": {
+          "recipient": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "PSID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "target_app_id": {
+            "type": "string",
+            "description": "Pass: the app to hand the thread to (263902037430900 = Page inbox)."
+          },
+          "metadata": {
+            "type": "string",
+            "description": "Passed to the receiving app in the webhook."
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Extend: seconds."
+          }
+        },
+        "required": [
+          "recipient"
+        ]
+      },
+      "ThreadOwner": {
+        "type": "object",
+        "properties": {
+          "thread_owner": {
+            "type": "object",
+            "properties": {
+              "app_id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "description": "Current owner of a conversation thread."
+      },
+      "ThreadOwnerList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThreadOwner"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Tracks": {
+        "type": "object",
+        "properties": {
+          "msid": {
+            "type": "string",
+            "description": "Media stream identifier"
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "default_audio",
+              "default_video",
+              "screen_audio",
+              "screen_video"
+            ],
+            "description": "Media track label type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "enabled"
+            ],
+            "description": "Media track status"
+          }
+        },
+        "required": [
+          "msid",
+          "label",
+          "status"
+        ]
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "PSID."
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "profile_pic": {
+            "type": "string",
+            "format": "uri"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "number"
+          },
+          "gender": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "description": "User Profile API: public profile of the person behind a PSID (fields per ?fields= and granted permissions)."
+      },
+      "Weekly_operating_hours": {
+        "type": "object",
+        "properties": {
+          "day_of_week": {
+            "type": "string",
+            "description": "Day of the week"
+          },
+          "open_time": {
+            "type": "string",
+            "description": "Opening time in HHMM format"
+          },
+          "close_time": {
+            "type": "string",
+            "description": "Closing time in HHMM format"
+          }
+        }
+      },
+      "Weekly_operating_hours2": {
+        "type": "object",
+        "properties": {
+          "day_of_week": {
+            "type": "string",
+            "description": "Day of the week"
+          },
+          "open_time": {
+            "type": "string",
+            "description": "Opening time in HHMM format"
+          },
+          "close_time": {
+            "type": "string",
+            "description": "Closing time in HHMM format"
+          }
+        },
+        "required": [
+          "day_of_week",
+          "open_time",
+          "close_time"
+        ]
       }
     }
   }
