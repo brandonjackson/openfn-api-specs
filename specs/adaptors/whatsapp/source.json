@@ -1,30 +1,30 @@
 {
   "adaptor": "whatsapp",
   "npm": "@openfn/language-whatsapp",
-  "origin": "generated",
-  "upstreamFormat": "docs",
+  "origin": "found-openapi",
+  "upstreamFormat": "openapi-3.1",
   "coverage": "full",
   "derivedFrom": null,
-  "completeness": "best-effort",
-  "completenessReason": "docs-only",
+  "completeness": "complete",
+  "completenessReason": null,
   "attempts": [
     {
       "kind": "openapi",
       "url": "https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/",
-      "result": "not-found",
-      "note": "Meta publishes no OpenAPI document for the WhatsApp Business Platform. Tried /openapi.json, /openapi.yaml, /swagger.json and /.well-known/openapi.json on both graph.facebook.com and developers.facebook.com, and the reference pages' own .json/.md variants; only the markdown rendering exists."
+      "result": "rejected",
+      "note": "Meta serves no OpenAPI document from graph.facebook.com or developers.facebook.com (tried /openapi.json, /openapi.yaml, /swagger.json, /.well-known/openapi.json and the reference pages' .json/.md variants). The vendor spec is published on GitHub instead (see the facebook/openapi attempt)."
     },
     {
       "kind": "docs",
       "url": "https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/llms.txt",
-      "result": "used",
-      "note": "Meta's own machine-readable index of every endpoint reference page, plus the matching .md rendering of each page. The pages are generated from Meta's internal spec and carry base URL, method, path, parameter tables, request/response content types and component schemas, so the whole documented surface is enumerable rather than guessed."
+      "result": "rejected",
+      "note": "Meta's own machine-readable index of every endpoint reference page, plus the matching .md rendering of each page. The pages are generated from Meta's internal spec and carry base URL, method, path, parameter tables, request/response content types and component schemas, so the whole documented surface is enumerable rather than guessed. Superseded on 2026-11-14 by Meta's own OpenAPI (facebook/openapi), kept here as the earlier source."
     },
     {
       "kind": "docs",
       "url": "https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/flowsapi",
-      "result": "used",
-      "note": "The three Flows reference pages Meta's index links (flows/reference/api-for-whatsapp-flows, whatsapp-extension-preview-api, whatsapp-flow-metric-data-point-api) do not resolve \u2014 they return the 'Page Not Found' shell. The Flows and Metrics guides document the same endpoints in full, so the Flows paths were authored from those."
+      "result": "rejected",
+      "note": "The three Flows reference pages Meta's index links (flows/reference/api-for-whatsapp-flows, whatsapp-extension-preview-api, whatsapp-flow-metric-data-point-api) do not resolve — they return the 'Page Not Found' shell. The Flows and Metrics guides document the same endpoints in full, so the Flows paths were authored from those. Superseded on 2026-11-14 by Meta's own OpenAPI (facebook/openapi), kept here as the earlier source."
     },
     {
       "kind": "openapi",
@@ -43,14 +43,22 @@
       "url": "https://www.postman.com/whatsapp/whatsapp-business-platform/collection/wlk6lh4/whatsapp-cloud-api",
       "result": "not-found",
       "note": "Meta's public workspace renders client-side; the collection JSON is not reachable without a Postman API key."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/facebook/openapi/main/business-messaging-api_v23.0.yaml",
+      "result": "used",
+      "note": "Meta's official OpenAPI 3.1 for the WhatsApp Business Platform (MIT, 'intended to formally describe a product area's complete specification'), Graph API v23.0: 78 paths, 113 operations, 369 schemas covering Cloud API messaging, media, groups, calling, phone-number registration, business profiles, templates, Flows, WABAs, solutions and partner onboarding. Every path from the docs-authored spec has a counterpart here except GET/POST /{business-id}/whatsapp_business_accounts. Saved verbatim as upstream.yaml."
     }
   ],
   "verifiedAgainst": [
     "ast.json",
-    "adaptor-source"
+    "adaptor-source",
+    "docs-authored spec (2026-09-13, 106 ops)"
   ],
   "modifications": [],
   "sources": [
+    "https://raw.githubusercontent.com/facebook/openapi/main/business-messaging-api_v23.0.yaml",
     "https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/llms.txt",
     "https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-phone-number/message-api",
     "https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-phone-number/media-upload-api",
@@ -69,7 +77,13 @@
     "https://cdn.jsdelivr.net/npm/@openfn/language-whatsapp/ast.json",
     "https://github.com/OpenFn/adaptors/tree/main/packages/whatsapp"
   ],
-  "capturedAt": "2026-09-13",
-  "lastCheckedAt": "2026-09-13",
-  "notes": "The WhatsApp Business Platform, served over the Meta Graph API at graph.facebook.com. Meta publishes no OpenAPI document (see attempts[]), so this spec is authored from Meta's own reference documentation, which is itself generated from an internal spec: reference/llms.txt lists every endpoint page, and each page's .md rendering gives the base URL, method, path, parameter tables, request/response content types and named component schemas. All 66 reference pages were ingested, and the Flows API was added from Meta's Flows and Metrics guides because its three reference pages are indexed but do not resolve. That gives 106 operations over 70 paths and 338 component schemas \u2014 the whole documented API (Cloud API messaging, media, registration and verification, business profiles, blocking, calling, groups; Business Management templates, phone numbers, WABAs, subscribed apps, analytics, schedules, solutions, Flows and partner onboarding), not just the endpoints the adaptor names. Three modelling notes. (1) Graph nodes are all addressed as /{node-id} at the root, so the node paths here (/{waba-id}, /{phone-number-id}, /{media-id}, ...) are one URL shape distinguished only by the kind of ID supplied; they are kept apart so each node keeps its own operations and response schema. (2) Webhook payloads are delivered to an endpoint you host, not called on this API, so they appear as the WebhookPayload schema and its Incoming* children rather than as a path. (3) Meta's renderer emits an empty section for any schema built with oneOf/allOf, which is exactly the message hierarchy; those 26 schemas (Message, TextMessage, MediaObject, ActionObject, TemplateObject, the Incoming* inbound types, ...) were authored by hand from the request-syntax blocks and example payloads in Meta's message and webhook guides. The adaptor exposes a single generic request(method, path, body, options) operation and joins the configured apiVersion and phoneNumberId onto the path, so it can reach every endpoint under a phone-number node directly and the rest by supplying the matching node ID; verified against ast.json and the adaptor source. BEST-EFFORT rather than complete because the source is prose documentation, not a vendor machine spec: field-level types come from the docs' own tables and may lag the API, and Meta's Marketing Messages and Calling pages describe some payloads only in prose. The 15 root node paths (/{waba-id}, /{phone-number-id}, ...) trip Redocly's no-identical-paths rule, which is the deliberate trade-off in (1): collapsing them into one /{node-id} would drop every root-node resource from data-schemas, since the extractor does not follow oneOf."
+  "capturedAt": "2026-11-14",
+  "lastCheckedAt": "2026-11-14",
+  "notes": "The WhatsApp Business Platform over the Meta Graph API (graph.facebook.com). Source of truth is Meta's own OpenAPI 3.1 document from github.com/facebook/openapi (business-messaging-api_v23.0.yaml), saved byte-for-byte as upstream.yaml; openapi.json is it normalised. Paths carry the Graph version as a leading path parameter (/{Version}/{Phone-Number-ID}/messages), which is how the adaptor calls it: its generic request(method, path, body) joins the configured apiVersion and phoneNumberId onto the path. This replaces the 2026-09-13 spec authored from Meta's reference .md pages (106 ops / 70 paths); cross-checked against it, the vendor spec covers every documented node and edge except /{business-id}/whatsapp_business_accounts, and adds the encrypted-messages, message-history, migration-intent and OBO mobility endpoints. Meta publishes only v23.0 in that repo; when it adds a newer file, re-run convert with its URL. Graph nodes share one URL shape (/{Version}/{node-id}), so several root node paths are identical templates distinguished only by the kind of ID.",
+  "upstream": {
+    "specUrl": "https://raw.githubusercontent.com/facebook/openapi/main/business-messaging-api_v23.0.yaml",
+    "format": "openapi-3.1",
+    "contentHash": "sha256:5c1973265369944b7cdfa3fa690985713575249042e2b7edd46be3ef9bd9b09d",
+    "fetchedAt": "2026-11-14"
+  }
 }

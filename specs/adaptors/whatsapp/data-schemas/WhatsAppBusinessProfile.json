@@ -5,42 +5,70 @@
   "x-openfn-adaptor": "whatsapp",
   "x-source": {
     "openapi": "#/components/schemas/WhatsAppBusinessProfile",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-14"
   },
-  "description": "WhatsApp Business Profile information and settings",
   "type": "object",
+  "description": "WhatsApp Business Profile information and settings",
+  "required": [
+    "messaging_product"
+  ],
   "properties": {
     "messaging_product": {
-      "description": "The messaging service used for the request"
+      "type": "string",
+      "description": "The messaging service used for the request",
+      "enum": [
+        "whatsapp"
+      ],
+      "example": "whatsapp"
     },
     "about": {
       "type": "string",
-      "description": "The text to display in business profile's About section"
+      "description": "The text to display in business profile's About section",
+      "minLength": 1,
+      "maxLength": 139,
+      "example": "Welcome to our business! We provide excellent service."
     },
     "address": {
       "type": "string",
-      "description": "The address of the business"
+      "description": "The address of the business",
+      "maxLength": 256,
+      "example": "123 Business Street, City, State 12345"
     },
     "description": {
       "type": "string",
-      "description": "Description of the business"
+      "description": "Description of the business",
+      "maxLength": 256,
+      "example": "We are a leading provider of quality products and services."
     },
     "email": {
-      "description": "The contact email address of the business"
+      "type": "string",
+      "description": "The contact email address of the business",
+      "format": "email",
+      "maxLength": 128,
+      "example": "contact@business.com"
     },
     "profile_picture_url": {
-      "description": "URL of the business profile picture"
+      "type": "string",
+      "description": "URL of the business profile picture",
+      "format": "uri",
+      "example": "https://pps.whatsapp.net/v/profile_picture_url"
     },
     "websites": {
       "type": "array",
-      "items": {},
-      "description": "URLs associated with the business"
+      "description": "URLs associated with the business",
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 256
+      },
+      "example": [
+        "https://www.business.com",
+        "https://www.facebook.com/business"
+      ]
     },
     "vertical": {
       "$ref": "WhatsAppBusinessVertical.json"
     }
-  },
-  "required": [
-    "messaging_product"
-  ]
+  }
 }

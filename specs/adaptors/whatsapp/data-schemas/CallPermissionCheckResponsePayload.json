@@ -5,21 +5,100 @@
   "x-openfn-adaptor": "whatsapp",
   "x-source": {
     "openapi": "#/components/schemas/CallPermissionCheckResponsePayload",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-14"
   },
   "type": "object",
   "properties": {
     "messaging_product": {
       "type": "string",
+      "example": "whatsapp",
       "description": "Messaging product"
     },
     "permission": {
-      "$ref": "Permission.json"
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "granted",
+            "pending",
+            "denied",
+            "expired"
+          ],
+          "example": "granted",
+          "description": "Current permission status for calling this user"
+        },
+        "expiration_time": {
+          "type": "integer",
+          "format": "int64",
+          "example": 1735689600,
+          "description": "Unix timestamp when the permission expires (if applicable)"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "description": "Call permission details"
     },
     "actions": {
       "type": "array",
       "items": {
-        "$ref": "Actions.json"
+        "type": "object",
+        "properties": {
+          "action_name": {
+            "type": "string",
+            "enum": [
+              "start_call",
+              "send_call_permission_request"
+            ],
+            "example": "start_call",
+            "description": "Name of the action"
+          },
+          "can_perform_action": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the business can perform this action"
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "time_period": {
+                  "type": "string",
+                  "example": "24h",
+                  "description": "Time period for the limit"
+                },
+                "current_usage": {
+                  "type": "integer",
+                  "example": 5,
+                  "description": "Current usage count"
+                },
+                "max_allowed": {
+                  "type": "integer",
+                  "example": 100,
+                  "description": "Maximum allowed usage"
+                },
+                "limit_expiration_time": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 1735689600,
+                  "description": "Unix timestamp when the limit resets"
+                }
+              },
+              "required": [
+                "time_period",
+                "current_usage",
+                "max_allowed"
+              ]
+            },
+            "description": "Rate limits for this action"
+          }
+        },
+        "required": [
+          "action_name",
+          "can_perform_action"
+        ]
       },
       "description": "Available actions and their restrictions"
     }

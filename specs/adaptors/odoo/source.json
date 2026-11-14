@@ -1,21 +1,45 @@
 {
   "adaptor": "odoo",
   "npm": "@openfn/language-odoo",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
+  "origin": "generated",
+  "upstreamFormat": "docs",
   "sources": [
+    "https://www.odoo.com/documentation/19.0/developer/reference/external_rpc_api.html",
+    "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
     "https://github.com/OpenFn/adaptors/blob/main/packages/odoo/src/Adaptor.js",
     "https://github.com/vettloffah/odoo-await/blob/master/lib/index.js",
     "https://www.odoo.com/documentation/16.0/developer/reference/external_api.html",
     "https://cdn.jsdelivr.net/npm/@openfn/language-odoo/ast.json"
   ],
-  "capturedAt": "2026-07-06",
-  "notes": "Odoo's external API is RPC method dispatch, not REST: the adaptor (via odoo-await) authenticates and then routes every one of its six operations — create, read, update, deleteRecord, searchRecord, searchReadRecord — through a single execute_kw call. This document models Odoo's JSON-RPC equivalents of that transport (POST /web/session/authenticate and POST /jsonrpc), which is the whole externally reachable surface: verified against ast.json, all 6 operations funnel through callObject. BEST-EFFORT rather than complete because execute_kw dispatches by method name at runtime — the set of callable model methods is open-ended and cannot be enumerated in OpenAPI — and because the underlying transport is really XML-RPC (POST /xmlrpc/2/common and /xmlrpc/2/object, text/xml), which OpenAPI cannot describe at all. Request/response schemas are therefore models of the JSON-RPC envelope, not a captured vendor spec.",
+  "capturedAt": "2026-11-14",
+  "notes": "Odoo's external API is RPC method dispatch over three documented transports, all modelled here: XML-RPC (POST /xmlrpc/2/common, /xmlrpc/2/object; text/xml bodies described as strings), JSON-RPC (POST /jsonrpc, /web/session/authenticate) and the 19.0 JSON-2 API (POST /json/2/{model}/{method}). The adaptor uses odoo-await, which speaks XML-RPC: it authenticates on /xmlrpc/2/common and sends all six operations (create, read, update, deleteRecord, searchRecord, searchReadRecord) as execute_kw on /xmlrpc/2/object. Until 2026-11-14 this spec held only the JSON-RPC pair, on the mistaken premise that OpenAPI cannot describe XML-RPC, so openfn-mocker's XML-RPC traffic matched no operation. BEST-EFFORT rather than complete because the callable models and methods are defined per database (each instance's /doc page) and cannot be enumerated in a public document; the transports themselves are fully covered.",
   "coverage": "full",
   "completeness": "best-effort",
   "completenessReason": "rpc-transport",
   "verifiedAgainst": [
-    "ast.json"
+    "ast.json",
+    "adaptor-source",
+    "odoo-await"
   ],
-  "lastCheckedAt": "2026-09-03"
+  "lastCheckedAt": "2026-11-14",
+  "attempts": [
+    {
+      "kind": "openapi",
+      "url": "https://<instance>/doc",
+      "result": "rejected",
+      "note": "Odoo 19 serves per-database model/method documentation at /doc, but it needs an authenticated instance and describes that database's models, not the transport."
+    },
+    {
+      "kind": "docs",
+      "url": "https://www.odoo.com/documentation/19.0/developer/reference/external_rpc_api.html",
+      "result": "used",
+      "note": "XML-RPC /xmlrpc/2/common and /xmlrpc/2/object, JSON-RPC /jsonrpc; deprecated since 19.0."
+    },
+    {
+      "kind": "docs",
+      "url": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
+      "result": "used",
+      "note": "External JSON-2 API: POST /json/2/<model>/<method>, bearer API key, error object."
+    }
+  ]
 }

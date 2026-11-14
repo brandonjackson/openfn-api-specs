@@ -5,21 +5,60 @@
   "x-openfn-adaptor": "whatsapp",
   "x-source": {
     "openapi": "#/components/schemas/AssignedWhatsAppBusinessAccount",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-14"
   },
-  "description": "WhatsApp Business Account assigned to a user",
   "type": "object",
+  "description": "WhatsApp Business Account assigned to a user",
+  "required": [
+    "id",
+    "name",
+    "status"
+  ],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier for the WhatsApp Business Account"
+      "description": "Unique identifier for the WhatsApp Business Account",
+      "example": "1234567890123456"
     },
     "name": {
       "type": "string",
-      "description": "Display name of the WhatsApp Business Account"
+      "description": "Display name of the WhatsApp Business Account",
+      "minLength": 1,
+      "maxLength": 100,
+      "example": "Business Account Name"
+    },
+    "status": {
+      "$ref": "WhatsAppBusinessAccountStatus.json"
+    },
+    "assignment_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the account was assigned to the user",
+      "example": "2023-10-15T14:30:00Z"
+    },
+    "permissions": {
+      "type": "array",
+      "description": "List of permissions granted to the user for this account",
+      "items": {
+        "$ref": "WhatsAppBusinessAccountPermission.json"
+      },
+      "example": [
+        "MANAGE",
+        "DEVELOP",
+        "MANAGE_TEMPLATES"
+      ]
+    },
+    "business_id": {
+      "type": "string",
+      "description": "Business ID that owns this WhatsApp Business Account",
+      "example": "9876543210987654"
+    },
+    "phone_numbers": {
+      "type": "array",
+      "description": "Phone numbers associated with this WhatsApp Business Account",
+      "items": {
+        "$ref": "PhoneNumberInfo.json"
+      }
     }
-  },
-  "required": [
-    "id"
-  ]
+  }
 }

@@ -5,102 +5,107 @@
   "x-openfn-adaptor": "whatsapp",
   "x-source": {
     "openapi": "#/components/schemas/WhatsAppBusinessAccount",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-14"
   },
-  "description": "WhatsApp Business Account details and configuration",
   "type": "object",
+  "description": "WhatsApp Business Account details and configuration",
+  "required": [
+    "id",
+    "name"
+  ],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier for the WhatsApp Business Account"
+      "description": "Unique identifier for the WhatsApp Business Account",
+      "example": "1234567890123456"
     },
     "name": {
       "type": "string",
-      "description": "Human-readable name of the WhatsApp Business Account"
+      "description": "Human-readable name of the WhatsApp Business Account",
+      "minLength": 1,
+      "maxLength": 255,
+      "example": "My WhatsApp Business Account"
     },
     "account_review_status": {
       "$ref": "AccountReviewStatus.json"
     },
     "purchase_order_number": {
       "type": "string",
-      "description": "Purchase order number associated with the account"
+      "description": "Purchase order number associated with the account",
+      "example": "PO-2023-001234"
     },
     "audiences": {
       "type": "array",
+      "description": "List of audience segments associated with the account",
       "items": {
         "type": "string"
       },
-      "description": "List of audience segments associated with the account"
+      "example": [
+        "customers",
+        "prospects"
+      ]
     },
     "ownership_type": {
       "$ref": "OwnershipType.json"
     },
     "subscribed_apps": {
       "type": "array",
+      "description": "List of applications subscribed to this WABA",
       "items": {
         "$ref": "SubscribedApp.json"
-      },
-      "description": "List of applications subscribed to this WABA"
+      }
     },
     "business_verification_status": {
       "$ref": "BusinessVerificationStatus.json"
     },
     "country": {
       "type": "string",
-      "description": "Country code for the WhatsApp Business Account"
+      "description": "Country code where the WABA is registered",
+      "pattern": "^[A-Z]{2}$",
+      "example": "US"
     },
     "currency": {
       "type": "string",
-      "description": "Currency code for the WABA (ISO 4217 format)"
+      "description": "Currency code for the WABA",
+      "pattern": "^[A-Z]{3}$",
+      "example": "USD"
     },
     "timezone_id": {
       "type": "string",
-      "description": "Timezone identifier for the WhatsApp Business Account"
+      "description": "Timezone identifier for the WABA",
+      "example": "1"
     },
     "on_behalf_of_business_info": {
       "$ref": "OnBehalfOfBusinessInfo.json"
     },
     "schedules": {
       "type": "array",
+      "description": "Business hours and scheduling information",
       "items": {
         "$ref": "BusinessSchedule.json"
-      },
-      "description": "Business hours and scheduling information"
+      }
     },
     "is_enabled_for_insights": {
       "type": "boolean",
-      "description": "Whether insights are enabled for this WABA"
+      "description": "Whether insights are enabled for this WABA",
+      "example": true
     },
     "dcc_config": {
       "$ref": "DCCConfig.json"
     },
     "message_templates": {
       "type": "array",
+      "description": "Message templates associated with the WABA",
       "items": {
         "$ref": "MessageTemplate.json"
-      },
-      "description": "Message templates associated with the WABA"
+      }
     },
     "phone_numbers": {
       "type": "array",
+      "description": "Phone numbers associated with the WABA",
       "items": {
         "$ref": "PhoneNumber.json"
-      },
-      "description": "Phone numbers associated with the WABA"
-    },
-    "message_template_namespace": {
-      "type": "string",
-      "description": "Namespace identifier for message templates associated with this account"
-    },
-    "primary_business_location": {
-      "type": "string",
-      "description": "Primary business location for the WhatsApp Business Account"
+      }
     }
-  },
-  "required": [
-    "id",
-    "name",
-    "message_template_namespace",
-    "timezone_id"
-  ]
+  }
 }

@@ -368,6 +368,23 @@ test('query-discriminated template keys (Swagger x-ms-paths) match softly', () =
   assert.ok(c.coverage().hit.includes('PUT /{container}/{blob}?BlockBlob'));
 });
 
+test('a discriminator can be carried by a flat request body (RPC over one URL)', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/webservice.php#operation=query': { get: { operationId: 'query', responses: { '200': { description: 'ok' } } } },
+      '/webservice.php#operation=create': { post: { operationId: 'create', responses: { '200': { description: 'ok' } } } },
+      '/webservice.php#operation=update': { post: { operationId: 'update', responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/webservice.php?operation=query&query=select')?.operationId, 'query');
+  assert.equal(c.match('POST', '/webservice.php', { operation: 'update', element: '{}' })?.operationId, 'update', 'body field satisfies the discriminator');
+  assert.equal(c.check({ method: 'POST', path: '/webservice.php', status: 200, requestBody: { operation: 'update' } }).length, 0);
+  assert.ok(c.coverage().hit.includes('POST /webservice.php#operation=update'));
+  assert.ok(!c.coverage().hit.includes('POST /webservice.php#operation=create'));
+});
+
 test('non-JSON type names and JS-incompatible patterns are dropped, not fatal', () => {
   const spec = {
     openapi: '3.0.3',

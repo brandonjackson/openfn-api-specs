@@ -5,50 +5,89 @@
   "x-openfn-adaptor": "whatsapp",
   "x-source": {
     "openapi": "#/components/schemas/WhatsAppBusinessProfileNode",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-14"
   },
-  "description": "WhatsApp Business Profile node details and configuration",
   "type": "object",
+  "description": "WhatsApp Business Profile node details and configuration",
+  "required": [
+    "id"
+  ],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier for the WhatsApp Business Profile"
+      "description": "Unique identifier for the WhatsApp Business Profile",
+      "example": "1234567890123456"
+    },
+    "account_name": {
+      "type": "string",
+      "description": "Name of the business account",
+      "minLength": 1,
+      "maxLength": 75,
+      "example": "E-commerce Business Account"
     },
     "description": {
       "type": "string",
-      "description": "Business description text"
+      "description": "Business description text",
+      "minLength": 1,
+      "maxLength": 256,
+      "example": "Leading e-commerce platform for quality products"
     },
     "email": {
-      "description": "Contact email address of the business"
+      "type": "string",
+      "format": "email",
+      "description": "Contact email address of the business",
+      "maxLength": 128,
+      "example": "contact@business-example.com"
     },
     "about": {
       "type": "string",
-      "description": "About section text for the business profile"
+      "description": "About section text for the business profile",
+      "minLength": 1,
+      "maxLength": 139,
+      "example": "Quality products delivered worldwide"
     },
     "address": {
       "type": "string",
-      "description": "Physical address of the business"
+      "description": "Physical address of the business",
+      "maxLength": 256,
+      "example": "123 Business Street, Commerce City, CC 12345"
     },
     "vertical": {
       "$ref": "WhatsAppBusinessVertical.json"
     },
     "websites": {
       "type": "array",
-      "items": {},
-      "description": "List of website URLs associated with the business"
+      "description": "List of website URLs associated with the business",
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 256,
+        "example": "https://www.business-example.com"
+      },
+      "example": [
+        "https://www.business-example.com",
+        "https://shop.business-example.com"
+      ]
     },
     "profile_picture_url": {
-      "description": "URL of the business profile picture"
-    },
-    "verified_name": {
       "type": "string",
-      "description": "Verified business name associated with this profile"
+      "format": "uri",
+      "description": "URL of the business profile picture",
+      "example": "https://pps.whatsapp.net/v/profile-picture-url"
+    },
+    "profile_picture_handle": {
+      "type": "string",
+      "description": "Handle of the profile picture for upload operations",
+      "example": "4:VGVzdC5wbmc=:aW1hZ2UvanBlZw==:ARat4Mt-L09JON3f30SmDkdyPSuyBkDDYiB4TFXuXISjdgHoNp2b7j882_9Jzr2tPrdKxi92UygyVzTivJiOvmebMpZ6MIjTik3gTyI3ZCQAgQ:e:1659995302:2022308451254161:636685196:ARZf1ftR5N6-qSLtklU"
     },
     "messaging_product": {
-      "description": "The messaging service used"
+      "type": "string",
+      "description": "The messaging service used",
+      "enum": [
+        "whatsapp"
+      ],
+      "example": "whatsapp"
     }
-  },
-  "required": [
-    "id"
-  ]
+  }
 }

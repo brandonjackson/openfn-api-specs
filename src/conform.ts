@@ -116,8 +116,12 @@ export interface Coverage {
 }
 
 export interface Conformer {
-  /** Resolve a method + concrete path to the spec operation it hits, if any. */
-  match(method: string, path: string): ParsedOperation | undefined;
+  /**
+   * Resolve a method + concrete path to the spec operation it hits, if any.
+   * Pass the parsed request body too when there is one: a discriminator
+   * (`#operation=create`) can be carried by a form or JSON body field.
+   */
+  match(method: string, path: string, requestBody?: unknown): ParsedOperation | undefined;
   /** Check one exchange; records it for coverage. */
   check(exchange: Exchange): Violation[];
   /** Check many exchanges; violations in input order. */
@@ -205,10 +209,17 @@ function templateQuery(template: string): Matcher['query'] {
 }
 
 /** Does the request's query string satisfy a template's soft query requirement? */
-function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string): boolean {
+function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, requestBody?: unknown): boolean {
   const q = path.indexOf('?');
-  if (q < 0) return false;
-  const params = new URLSearchParams(path.slice(q + 1).split('#')[0]);
+  const params = new URLSearchParams(q < 0 ? '' : path.slice(q + 1).split('#')[0]);
+  // RPC-style APIs that multiplex one URL (vtiger's POST /webservice.php with
+  // `operation=create` in a form body) carry the discriminator in the body, so
+  // a flat body's scalar fields count as parameters too.
+  if (requestBody && typeof requestBody === 'object' && !Array.isArray(requestBody)) {
+    for (const [k, v] of Object.entries(requestBody as Record<string, unknown>)) {
+      if (!params.has(k) && (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')) params.append(k, String(v));
+    }
+  }
   return reqs.every((r) => (r.value === undefined ? params.has(r.key) : params.getAll(r.key).includes(r.value)));
 }
 
@@ -495,11 +506,11 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   // Most specific first: more literal segments, then fewer params.
   matchers.sort((a, b) => b.literals - a.literals || a.params - b.params);
 
-  const match = (method: string, path: string): ParsedOperation | undefined => {
+  const match = (method: string, path: string, requestBody?: unknown): ParsedOperation | undefined => {
     const m = method.toUpperCase();
     const p = normalizePath(path);
     // Tiers, each already ordered most-specific first: a template whose
-    // discriminator the request's query satisfies; a bare template; a
+    // discriminator the request's query (or flat body) satisfies; a bare template; a
     // flag-only discriminator the request lacks (signalled out of band, e.g.
     // Azure's `#BlockBlob` via a header); a discriminator naming query
     // parameters the request lacks (`#comp=lease`), as a last resort.
@@ -508,7 +519,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
       if (cand.op.method !== m || !cand.regex.test(p)) continue;
       let tier: number;
       if (!cand.query) tier = 1;
-      else if (querySatisfied(cand.query, path)) tier = 0;
+      else if (querySatisfied(cand.query, path, requestBody)) tier = 0;
       else tier = cand.query.every((r) => r.value === undefined) ? 2 : 3;
       if (tier === 0) return cand.op;
       best[tier] ??= cand.op;
@@ -566,7 +577,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const check = (ex: Exchange): Violation[] => {
     exchanges++;
     const label = `${ex.method.toUpperCase()} ${normalizePath(ex.path)}`;
-    const op = match(ex.method, ex.path);
+    const op = match(ex.method, ex.path, ex.requestBody);
     if (!op) {
       unmatched.push(label);
       return [{ kind: 'unknown-operation', exchange: label, message: `no operation in the spec matches ${label}` }];

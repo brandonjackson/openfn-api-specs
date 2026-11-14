@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Sunbird RC - Issuance APIs",
-    "description": "Schema APIs",
+    "title": "Sunbird RC",
+    "description": "Sunbird RC's HTTP surface: the credentialling services (credential issuance, credential-schema and rendering templates, identity/DID), whose paths and schemas are Sunbird's own published OpenAPI documents merged verbatim, plus the registry service (entities, search, claims and attestation, attestation policies, documents), authored from its Spring controller mappings because the registry publishes no static spec (it generates per-deployment Swagger at /api/docs/swagger.json). Registry entity types are deployment-defined, so they appear as the {entityName} path parameter. The registry's /utils/sign, /utils/verify and /health share their keys with the identity service's same-purpose endpoints, which represent both.",
     "termsOfService": "https://sunbirdrc.dev/",
     "contact": {
       "email": "sunbird@example.com"
@@ -15,7 +15,17 @@
   },
   "servers": [
     {
-      "url": "https://sunbirdrc.dev/api/v1"
+      "url": "https://sunbirdrc.dev/api/v1",
+      "description": "Credentialling services (Sunbird's published server)"
+    },
+    {
+      "url": "https://{registryHost}",
+      "description": "Registry service root (behind the reference nginx gateway: https://<host>/registry)",
+      "variables": {
+        "registryHost": {
+          "default": "sunbirdrc.dev/registry"
+        }
+      }
     }
   ],
   "security": [
@@ -31,6 +41,48 @@
     {
       "name": "Verifying",
       "description": "The following APIs are defined for verifying a Verifiable Credential"
+    },
+    {
+      "name": "Credential Schemas"
+    },
+    {
+      "name": "Rendering Templates"
+    },
+    {
+      "name": "Health",
+      "description": "Health Check API"
+    },
+    {
+      "name": "Identity",
+      "description": "The following APIs are defined for generating and resolving a DID"
+    },
+    {
+      "name": "Utils",
+      "description": "Some common utilities"
+    },
+    {
+      "name": "Registry",
+      "description": "Sunbird RC registry service (authored from the registry's Spring controllers)"
+    },
+    {
+      "name": "Registry claims",
+      "description": "Sunbird RC registry service (authored from the registry's Spring controllers)"
+    },
+    {
+      "name": "Registry attestation policies",
+      "description": "Sunbird RC registry service (authored from the registry's Spring controllers)"
+    },
+    {
+      "name": "Registry documents",
+      "description": "Sunbird RC registry service (authored from the registry's Spring controllers)"
+    },
+    {
+      "name": "Registry utils",
+      "description": "Sunbird RC registry service (authored from the registry's Spring controllers)"
+    },
+    {
+      "name": "Registry (legacy)",
+      "description": "Sunbird RC registry service (authored from the registry's Spring controllers)"
     }
   ],
   "paths": {
@@ -345,6 +397,3810 @@
           }
         }
       }
+    },
+    "/credential-schema": {
+      "post": {
+        "tags": [
+          "Credential Schemas"
+        ],
+        "summary": "Create credential schema",
+        "operationId": "createCredentialSchema",
+        "requestBody": {
+          "description": "Payload",
+          "content": {
+            "appliation/json": {
+              "schema": {
+                "$ref": "#/components/schemas/credentialSchemaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Credential Schema successfully created!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/credentialSchemaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Credential Schemas"
+        ],
+        "summary": "Get credential schema by tags",
+        "operationId": "getCredentialSchemas",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tags",
+            "schema": {
+              "type": "string",
+              "example": "tag1,tag2"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Credential Schemas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/credentialSchemaResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/credential-schema/{id}": {
+      "get": {
+        "tags": [
+          "Credential Schemas"
+        ],
+        "summary": "Get credential schema by id",
+        "operationId": "getCredentialSchema",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/credentialSchemaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Credential Schemas"
+        ],
+        "summary": "Update credential schema by id",
+        "description": "If the schema is updated, a new semver will be generated and the old one will be deprecated. If only metadata (like tags/status) is updated, the semver will not be generated",
+        "operationId": "updateCredentialSchema",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Payload",
+          "content": {
+            "appliation/json": {
+              "schema": {
+                "$ref": "#/components/schemas/credentialSchemaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Credential Schema successfully updated!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/credentialSchemaResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "deprecatedId": {
+                          "description": "returns back the id of the schema that was deprecated",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/template": {
+      "post": {
+        "tags": [
+          "Rendering Templates"
+        ],
+        "summary": "Create redenring templates",
+        "operationId": "createRenderingTemplates",
+        "requestBody": {
+          "description": "Payload",
+          "content": {
+            "appliation/json": {
+              "schema": {
+                "$ref": "#/components/schemas/renderingTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Rendering template successfully created!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/renderingTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Rendering Templates"
+        ],
+        "summary": "Get rendering templates by schema id",
+        "operationId": "getRenderingTemplatesBySchemaId",
+        "parameters": [
+          {
+            "name": "schemaId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/renderingTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/template/{id}": {
+      "get": {
+        "tags": [
+          "Rendering Templates"
+        ],
+        "summary": "Get rendering templates by id",
+        "operationId": "getRenderingTemplates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/renderingTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Rendering Templates"
+        ],
+        "summary": "Update rendering templates by id",
+        "description": "Create a new version of template",
+        "operationId": "updateRenderingTemplates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Payload",
+          "content": {
+            "appliation/json": {
+              "schema": {
+                "$ref": "#/components/schemas/renderingTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rendering template successfully updated!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/renderingTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Rendering Templates"
+        ],
+        "summary": "Delete rendering templates by id",
+        "operationId": "deleteRenderingTemplates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Credential Schema successfully deleted!"
+          },
+          "400": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "operationId": "AppController_checkHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/did/generate": {
+      "post": {
+        "tags": [
+          "Identity"
+        ],
+        "operationId": "DidController_generateDID",
+        "summary": "Generate a new DID",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GenerateDidDTO"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DidResponseDTO"
+                  }
+                }
+              }
+            },
+            "description": "DID Generated"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/did/resolve/{id}": {
+      "get": {
+        "tags": [
+          "Identity"
+        ],
+        "operationId": "DidController_resolveDID",
+        "summary": "Resolve a DID ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The DID ID to resolve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DidResponseDTO"
+                }
+              }
+            },
+            "description": "DID resolved"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "DID not found"
+          }
+        }
+      }
+    },
+    "/utils/sign": {
+      "post": {
+        "tags": [
+          "Utils"
+        ],
+        "operationId": "VcController_sign",
+        "summary": "Sign an unsigned VC",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignJsonDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedVCDTO"
+                }
+              }
+            },
+            "description": "VC Signed"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/utils/verify": {
+      "post": {
+        "tags": [
+          "Utils"
+        ],
+        "operationId": "VcController_verify",
+        "summary": "Verify a signed VC",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyJsonDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}": {
+      "post": {
+        "operationId": "registryCreateEntity",
+        "summary": "Create a record",
+        "tags": [
+          "Registry"
+        ],
+        "description": "Validates the body against the entity's schema and stores it. Result: { <entityName>: { osid } }.",
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sync",
+                "async"
+              ],
+              "default": "sync"
+            }
+          },
+          {
+            "name": "callbackUrl",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "registryListOwnEntities",
+        "summary": "List the caller's records",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "viewTemplateId",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Records owned by the token user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrySearchResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}": {
+      "get": {
+        "operationId": "registryGetEntity",
+        "summary": "Read a record",
+        "tags": [
+          "Registry"
+        ],
+        "description": "Returns the record. With Accept: application/ld+json or application/vc+ld+json the record is returned as JSON-LD / a verifiable credential; with Accept: application/pdf, image/svg+xml or text/html (and a template header) the rendered certificate is returned instead.",
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "viewTemplateId",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryEntity"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "registryUpdateEntity",
+        "summary": "Replace a record",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "registryPatchEntity",
+        "summary": "Patch a record (owner/system fields)",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "registryDeleteEntity",
+        "summary": "Delete a record",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/search": {
+      "post": {
+        "operationId": "registrySearchEntities",
+        "summary": "Search records",
+        "tags": [
+          "Registry"
+        ],
+        "description": "POST a filters body, or GET with ?search=<free text>. Only for entities whose schema enables search.",
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrySearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrySearchResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "registrySearchEntitiesByQuery",
+        "summary": "Search records",
+        "tags": [
+          "Registry"
+        ],
+        "description": "POST a filters body, or GET with ?search=<free text>. Only for entities whose schema enables search.",
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrySearchResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/invite": {
+      "post": {
+        "operationId": "registryInviteEntity",
+        "summary": "Invite (create a record and its owner account)",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/sign": {
+      "get": {
+        "operationId": "registrySignedEntityByToken",
+        "summary": "Get the caller's record as a signed credential",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed credential",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/revoke": {
+      "post": {
+        "operationId": "registryRevokeCredential",
+        "summary": "Revoke a record's credential",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/attestationProperties": {
+      "get": {
+        "operationId": "registryGetAttestationProperties",
+        "summary": "Read a record for attestation",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryEntity"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/attestation/{attestationName}/{attestationId}": {
+      "get": {
+        "operationId": "registryGetAttestation",
+        "summary": "Read an attestation",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "attestationName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attestationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attestation (JSON, or a rendered certificate)",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "registryUpdateAttestation",
+        "summary": "Update an attestation (attestor callback)",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "attestationName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attestationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/{property}/{propertyId}": {
+      "post": {
+        "operationId": "registryUpdateSystemProperty",
+        "summary": "Update a system property (internal callback)",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/{property}": {
+      "post": {
+        "operationId": "registryAddProperty",
+        "summary": "Add an item to a record property (array field)",
+        "tags": [
+          "Registry"
+        ],
+        "description": "Matches /api/v1/{entityName}/{entityId}/** in the controller: the property path may be nested.",
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/{property}/{propertyId}": {
+      "put": {
+        "operationId": "registryUpdateProperty",
+        "summary": "Update a record property item",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "registryAddNestedProperty",
+        "summary": "Add to a nested record property",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/partner/api/v1/{entityName}": {
+      "get": {
+        "operationId": "registryPartnerListEntities",
+        "summary": "List records (partner/service account)",
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrySearchResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/claims": {
+      "get": {
+        "operationId": "registryListClaims",
+        "summary": "List claims for the attestor",
+        "tags": [
+          "Registry claims"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claims",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RegistryClaim"
+                      }
+                    },
+                    "totalElements": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/claims/{claimId}": {
+      "get": {
+        "operationId": "registryGetClaim",
+        "summary": "Read a claim",
+        "tags": [
+          "Registry claims"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryClaim"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/claims/{claimId}/attest": {
+      "post": {
+        "operationId": "registryAttestClaim",
+        "summary": "Grant or deny a claim",
+        "tags": [
+          "Registry claims"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "GRANT_CLAIM",
+                      "REJECT_CLAIM"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/send": {
+      "post": {
+        "operationId": "registrySendForAttestation",
+        "summary": "Raise a claim (send a property for attestation)",
+        "tags": [
+          "Registry claims"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "entityName": {
+                    "type": "string"
+                  },
+                  "entityId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "attestation policy name"
+                  },
+                  "propertiesUUID": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "registrySendForAttestationPut",
+        "summary": "Raise a claim (send a property for attestation)",
+        "tags": [
+          "Registry claims"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "entityName": {
+                    "type": "string"
+                  },
+                  "entityId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "attestation policy name"
+                  },
+                  "propertiesUUID": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/attestationPolicy": {
+      "post": {
+        "operationId": "registryCreateAttestationPolicy",
+        "summary": "Create an attestation policy",
+        "tags": [
+          "Registry attestation policies"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryAttestationPolicy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/attestationPolicies": {
+      "get": {
+        "operationId": "registryListAttestationPolicies",
+        "summary": "List attestation policies",
+        "tags": [
+          "Registry attestation policies"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RegistryAttestationPolicy"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/attestationPolicy/{policyId}": {
+      "put": {
+        "operationId": "registryUpdateAttestationPolicy",
+        "summary": "Update an attestation policy",
+        "tags": [
+          "Registry attestation policies"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "policyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryAttestationPolicy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "registryDeleteAttestationPolicy",
+        "summary": "Delete an attestation policy",
+        "tags": [
+          "Registry attestation policies"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "policyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/attestationPolicy/{policyId}/{status}": {
+      "put": {
+        "operationId": "registrySetAttestationPolicyStatus",
+        "summary": "Activate or deactivate an attestation policy",
+        "tags": [
+          "Registry attestation policies"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entity type: the title of a schema registered on the deployment, e.g. Student."
+          },
+          {
+            "name": "policyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ACTIVE | INACTIVE"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/{property}/documents": {
+      "post": {
+        "operationId": "registryUploadDocuments",
+        "summary": "Upload documents to a record property",
+        "tags": [
+          "Registry documents"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Uploaded file references",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "registryDeleteDocuments",
+        "summary": "Delete documents from a record property",
+        "tags": [
+          "Registry documents"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{entityName}/{entityId}/{property}/documents/{documentId}": {
+      "get": {
+        "operationId": "registryGetDocument",
+        "summary": "Download a document",
+        "tags": [
+          "Registry documents"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File bytes",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "registryReplaceDocument",
+        "summary": "Replace a document",
+        "tags": [
+          "Registry documents"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "registryDeleteDocument",
+        "summary": "Delete a document",
+        "tags": [
+          "Registry documents"
+        ],
+        "parameters": [
+          {
+            "name": "entityName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record osid."
+          },
+          {
+            "name": "property",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/templates/{fileName}": {
+      "get": {
+        "operationId": "registryGetTemplate",
+        "summary": "Get a certificate template file",
+        "tags": [
+          "Registry utils"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/verify": {
+      "post": {
+        "operationId": "registryVerifyCertificate",
+        "summary": "Verify a signed certificate",
+        "tags": [
+          "Registry utils"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification result",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/swagger.json": {
+      "get": {
+        "operationId": "registrySwaggerDoc",
+        "summary": "The deployment's generated Swagger 2.0 for its registered entities",
+        "tags": [
+          "Registry utils"
+        ],
+        "responses": {
+          "200": {
+            "description": "Swagger 2.0",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/user/swagger.json": {
+      "get": {
+        "operationId": "registryUserSwaggerDoc",
+        "summary": "Generated Swagger for user-facing entities",
+        "tags": [
+          "Registry utils"
+        ],
+        "responses": {
+          "200": {
+            "description": "Swagger 2.0",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/{file}.json": {
+      "get": {
+        "operationId": "registryEntitySchemaDoc",
+        "summary": "An entity's resolved JSON schema",
+        "tags": [
+          "Registry utils"
+        ],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "JSON schema",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utils/keys/{id}": {
+      "get": {
+        "operationId": "registryGetSigningKey",
+        "summary": "Get a signing public key",
+        "tags": [
+          "Registry utils"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Key",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utils/sign/health": {
+      "get": {
+        "operationId": "registrySignHealth",
+        "summary": "Signature service health",
+        "tags": [
+          "Registry utils"
+        ],
+        "responses": {
+          "200": {
+            "description": "Health",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit": {
+      "post": {
+        "operationId": "registryAudit",
+        "summary": "Query the audit log",
+        "tags": [
+          "Registry utils"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Audit records",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "registryAuditGet",
+        "summary": "Query the audit log",
+        "tags": [
+          "Registry utils"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit records",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/add": {
+      "post": {
+        "operationId": "registryLegacyAdd",
+        "summary": "Add a record (legacy envelope API)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "ver": {
+                    "type": "string"
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/read": {
+      "post": {
+        "operationId": "registryLegacyRead",
+        "summary": "Read a record (legacy)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "ver": {
+                    "type": "string"
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/update": {
+      "post": {
+        "operationId": "registryLegacyUpdate",
+        "summary": "Update a record (legacy)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "ver": {
+                    "type": "string"
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/delete": {
+      "post": {
+        "operationId": "registryLegacyDelete",
+        "summary": "Delete a record (legacy)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "ver": {
+                    "type": "string"
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/search": {
+      "post": {
+        "operationId": "registryLegacySearch",
+        "summary": "Search records (legacy)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "ver": {
+                    "type": "string"
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/registers": {
+      "get": {
+        "operationId": "registryLegacyListRegisters",
+        "summary": "List registers (legacy)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/registry/{entity}": {
+      "get": {
+        "operationId": "registryLegacyListEntity",
+        "summary": "List an entity type (legacy)",
+        "tags": [
+          "Registry (legacy)"
+        ],
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entity type or record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
     }
   },
   "components": {
@@ -639,6 +4495,500 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "renderingTemplateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/renderingTemplateRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "templateId": {
+                "type": "string",
+                "example": "did:cred-template:MDP8AsFhHzhwUvGNuYkX7T/06e126d1-fa44-4882-a243-1e326fbe21dc;version=1.1"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              },
+              "createdBy": {
+                "type": "string"
+              },
+              "updatedBy": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "renderingTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "description": "It should be valid string in handlebar format",
+            "type": "string"
+          },
+          "schemaId": {
+            "type": "string",
+            "example": "did:cred-schema:MDP8AsFhHzhwUvGNuYkX7T/06e126d1-fa44-4882-a243-1e326fbe21db;version=1.1"
+          }
+        }
+      },
+      "updateSchemaRequest": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "REVOKED"
+            ]
+          }
+        }
+      },
+      "credentialSchemaRequest": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+$",
+                "example": "did:cred-schema:MDP8AsFhHzhwUvGNuYkX7T/06e126d1-fa44-4882-a243-1e326fbe21db;version=1.1"
+              },
+              "version": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "author": {
+                "type": "string"
+              },
+              "authored": {
+                "type": "string"
+              },
+              "schema": {
+                "type": "object",
+                "example": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"description\":\"Email\",\"type\":\"object\",\"properties\":{\"emailAddress\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"emailAddress\"],\"additionalProperties\":false}"
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "REVOKED"
+            ]
+          }
+        }
+      },
+      "credentialSchemaResponse": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+$",
+                "example": "did:cred-schema:MDP8AsFhHzhwUvGNuYkX7T/06e126d1-fa44-4882-a243-1e326fbe21db;version=1.1"
+              },
+              "version": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "author": {
+                "type": "string"
+              },
+              "authored": {
+                "type": "string"
+              },
+              "schema": {
+                "type": "object",
+                "example": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"description\":\"Email\",\"type\":\"object\",\"properties\":{\"emailAddress\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"emailAddress\"],\"additionalProperties\":false}"
+              },
+              "proof": {
+                "type": "object"
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "REVOKED"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "updatedBy": {
+            "type": "string"
+          }
+        }
+      },
+      "GenerateDidDTO": {
+        "type": "object",
+        "properties": {
+          "alsoKnownAs": {
+            "description": "AlsoKnownAs property is a unique combination aadhaar and username.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "ramesh@gmail.com"
+            }
+          },
+          "services": {
+            "description": "An array of services that are used, for example a user registration service.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "serviceEndpoint": {
+                  "type": "object"
+                }
+              },
+              "additionalProperties": true,
+              "example": "{ \"id\": \"IdentityHub\", \"type\": \"IdentityHub\", \"serviceEndpoint\": { \"@context\": \"schema.identity.foundation/hub\", \"@type\": \"UserServiceEndpoint\", \"instance\": [ \"did:test:hub.id\" ] } }"
+            }
+          },
+          "method": {
+            "type": "string",
+            "description": "The method of DID."
+          }
+        },
+        "required": [
+          "alsoKnownAs",
+          "services",
+          "method"
+        ]
+      },
+      "SignJsonDTO": {
+        "type": "object",
+        "properties": {
+          "DID": {
+            "type": "string",
+            "description": "The unique DID id of the issuer."
+          },
+          "payload": {
+            "type": "string",
+            "description": "JSON string of the unsigned VC.",
+            "example": "{ \"@context\": [ \"https://www.w3.org/2018/credentials/v1\", \"https://www.w3.org/2018/credentials/examples/v1\" ], \"id\": \"did:ulp:b4a191af-d86e-453c-9d0e-dd4771067235\", \"type\": [ \"VerifiableCredential\", \"UniversityDegreeCredential\" ], \"issuer\": \"did:rcw:6b9d7b31-bc7f-454a-be30-b6c7447b1cff\", \"expirationDate\": \"2023-02-08T11:56:27.259Z\", \"credentialSubject\": { \"id\": \"did:rcw:6b9d7b31-bc7f-454a-be30-b6c7447b1cff\", \"grade\": \"9.23\", \"programme\": \"B.Tech\", \"certifyingInstitute\": \"IIIT Sonepat\", \"evaluatingInstitute\": \"NIT Kurukshetra\" }, \"options\": { \"created\": \"2020-04-02T18:48:36Z\", \"credentialStatus\": { \"type\": \"RevocationList2020Status\" } } }"
+          }
+        },
+        "required": [
+          "DID",
+          "payload"
+        ]
+      },
+      "VerifyJsonDTO": {
+        "type": "object",
+        "properties": {
+          "DID": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "DID"
+        ]
+      },
+      "DidResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "did:rcw:71364c7e-0abe-49cf-9269-4661699f274b"
+          },
+          "alsoKnownAs": {
+            "description": "AlsoKnownAs property is a unique combination aadhaar and username.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "ramesh@gmail.com"
+            }
+          },
+          "service": {
+            "description": "An array of services that are used, for example a user registration service.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "serviceEndpoint": {
+                  "type": "object"
+                }
+              },
+              "additionalProperties": true,
+              "example": "{ \"id\": \"IdentityHub\", \"type\": \"IdentityHub\", \"serviceEndpoint\": { \"@context\": \"schema.identity.foundation/hub\", \"@type\": \"UserServiceEndpoint\", \"instance\": [ \"did:test:hub.id\" ] } }"
+            }
+          },
+          "verificationMethod": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "example": "auth-key"
+              },
+              "type": {
+                "type": "string",
+                "example": "RS256"
+              },
+              "publicKeyJwk": {
+                "type": "object"
+              },
+              "controller": {
+                "type": "string",
+                "example": "did:rcw:71364c7e-0abe-49cf-9269-4661699f274b"
+              }
+            },
+            "description": "The method of DID"
+          },
+          "authentication": {
+            "type": "string",
+            "example": "auth-key"
+          }
+        }
+      },
+      "SignedVCDTO": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "object",
+            "description": "Public Key of issuer",
+            "example": "{\"kty\": \"EC\",\"crv\": \"secp256k1\",\"x\": \"1iTtnvgP141NM-4qC6BgmkeTAjV7u-gZWni71G7cAKo\",\"y\": \"VSGqq6yS0w7riXXRqFxXwKvHgIpQaUNMlFQKh-xgKMI\"}"
+          },
+          "signed": {
+            "type": "string",
+            "description": "Signed VC"
+          }
+        }
+      },
+      "RegistryResponseParams": {
+        "type": "object",
+        "properties": {
+          "resmsgid": {
+            "type": "string"
+          },
+          "msgid": {
+            "type": "string"
+          },
+          "err": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUCCESSFUL",
+              "UNSUCCESSFUL"
+            ]
+          },
+          "errmsg": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistryResponse": {
+        "type": "object",
+        "description": "The registry's standard envelope (dev.sunbirdrc.pojos.Response).",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "API id, e.g. sunbird-rc.registry.create, sunbird-rc.registry.update, sunbird-rc.registry.delete"
+          },
+          "ver": {
+            "type": "string"
+          },
+          "ets": {
+            "type": "integer",
+            "description": "epoch millis"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RegistryResponseParams"
+          },
+          "responseCode": {
+            "type": "string",
+            "examples": [
+              "OK",
+              "ERROR"
+            ]
+          },
+          "result": {
+            "description": "Operation result. For a create: { <entityName>: { osid } } (or { transactionId } in async mode)."
+          }
+        },
+        "required": [
+          "id",
+          "params",
+          "responseCode"
+        ]
+      },
+      "RegistryEntity": {
+        "type": "object",
+        "description": "A registry record. Its fields are defined by the entity's schema registered on the deployment; os-prefixed system fields are added by the registry.",
+        "properties": {
+          "osid": {
+            "type": "string"
+          },
+          "osOwner": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "osCreatedAt": {
+            "type": "string"
+          },
+          "osUpdatedAt": {
+            "type": "string"
+          },
+          "osCreatedBy": {
+            "type": "string"
+          },
+          "osUpdatedBy": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "RegistrySearchRequest": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "description": "Map of field path to { <operator>: value }; operators: eq, gt, gte, lt, lte, between, or, contains, notContains, startsWith, endsWith, notStartsWith, notEndsWith, queryString.",
+            "additionalProperties": {
+              "type": "object"
+            }
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "viewTemplateId": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistrySearchResult": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegistryEntity"
+            }
+          },
+          "nextPage": {
+            "type": "string"
+          },
+          "prevPage": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistryAttestationPolicy": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "osid": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "attestationProperties": {
+            "type": "object"
+          },
+          "attestorPlugin": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistryClaim": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "propertyURI": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "attestationName": {
+            "type": "string"
           }
         }
       }
