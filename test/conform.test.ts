@@ -383,6 +383,7 @@ test('a discriminator can be carried by a flat request body (RPC over one URL)',
   assert.equal(c.check({ method: 'POST', path: '/webservice.php', status: 200, requestBody: { operation: 'update' } }).length, 0);
   assert.ok(c.coverage().hit.includes('POST /webservice.php#operation=update'));
   assert.ok(!c.coverage().hit.includes('POST /webservice.php#operation=create'));
+  assert.equal(c.match('POST', '/webservice.php', { operation: 'Create' })?.operationId, 'create', 'discriminator values compare case-insensitively');
 });
 
 test('non-JSON type names and JS-incompatible patterns are dropped, not fatal', () => {

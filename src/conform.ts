@@ -220,7 +220,13 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
       if (!params.has(k) && (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')) params.append(k, String(v));
     }
   }
-  return reqs.every((r) => (r.value === undefined ? params.has(r.key) : params.getAll(r.key).includes(r.value)));
+  // Values compare case-insensitively: RPC dispatchers normalise them (vtiger
+  // lower-cases `operation`, so the adaptor's `listTypes` is the spec's `listtypes`).
+  return reqs.every((r) => {
+    if (r.value === undefined) return params.has(r.key);
+    const want = r.value.toLowerCase();
+    return params.getAll(r.key).some((v) => v.toLowerCase() === want);
+  });
 }
 
 function compileTemplate(template: string): { src: string; literals: number; params: number } {
