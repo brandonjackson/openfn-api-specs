@@ -1,4 +1,4 @@
-# Wigal Frog API (wigal-sms) vv3
+# Wigal Frog API (wigal-sms) v3
 
 <!-- derived from openapi.json by `pnpm specs index wigal-sms` — do not edit by hand -->
 

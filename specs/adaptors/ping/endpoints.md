@@ -1,4 +1,4 @@
-# UNHCR PRIMES Interoperability Gateway (PING) API (ping) vv2/v3 (as called by the adaptor)
+# UNHCR PRIMES Interoperability Gateway (PING) API (ping) v2/v3 (as called by the adaptor)
 
 <!-- derived from openapi.json by `pnpm specs index ping` — do not edit by hand -->
 

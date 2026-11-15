@@ -1,4 +1,4 @@
-# BigQuery API (bigquery) vv2
+# BigQuery API (bigquery) v2
 
 <!-- derived from openapi.json by `pnpm specs index bigquery` — do not edit by hand -->
 

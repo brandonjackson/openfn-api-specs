@@ -1,4 +1,4 @@
-# Cloud Healthcare API (googlehealthcare) vv1
+# Cloud Healthcare API (googlehealthcare) v1
 
 <!-- derived from openapi.json by `pnpm specs index googlehealthcare` — do not edit by hand -->
 

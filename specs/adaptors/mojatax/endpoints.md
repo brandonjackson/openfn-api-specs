@@ -1,4 +1,4 @@
-# Mojatax VFD API (mojatax) vv1
+# Mojatax VFD API (mojatax) v1
 
 <!-- derived from openapi.json by `pnpm specs index mojatax` — do not edit by hand -->
 

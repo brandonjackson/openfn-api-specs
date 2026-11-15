@@ -1,4 +1,4 @@
-# Google Sheets API (googlesheets) vv4
+# Google Sheets API (googlesheets) v4
 
 <!-- derived from openapi.json by `pnpm specs index googlesheets` — do not edit by hand -->
 

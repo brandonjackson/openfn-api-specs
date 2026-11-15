@@ -1,4 +1,4 @@
-# Gemini API (gemini) vv1beta
+# Gemini API (gemini) v1beta
 
 <!-- derived from openapi.json by `pnpm specs index gemini` — do not edit by hand -->
 

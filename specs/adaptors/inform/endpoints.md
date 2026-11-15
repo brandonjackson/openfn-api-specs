@@ -1,4 +1,4 @@
-# Ona Data API (onadata) as deployed by UNICEF Inform (inform) vv1 (+v2 resources)
+# Ona Data API (onadata) as deployed by UNICEF Inform (inform) v1 (+v2 resources)
 
 <!-- derived from openapi.json by `pnpm specs index inform` — do not edit by hand -->
 

@@ -1,4 +1,4 @@
-# Punto Solidario v2 (puntosolidario-rd) vv2
+# Punto Solidario v2 (puntosolidario-rd) v2
 
 <!-- derived from openapi.json by `pnpm specs index puntosolidario-rd` — do not edit by hand -->
 
