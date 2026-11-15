@@ -339,6 +339,22 @@ function prepareSpec(openapi: any, opts: ConformOptions): { doc: any; formats: S
       // marks `uri`. Asserting absolute-URI there flags the real API's
       // behaviour, not a bug in the payload.
       if (node.format === 'uri') node.format = 'uri-reference';
+      // `allOf: [{ $ref: Base }, { properties: {...}, additionalProperties: false }]`
+      // is the classic composition mistake: each allOf member is validated on its
+      // own, so the closed member rejects every property Base contributes and no
+      // value can satisfy the whole (Meta's WhatsApp message schemas). The author
+      // meant "nothing beyond the union of the members", which 2020-12 spells as
+      // `unevaluatedProperties: false` on the allOf node itself.
+      if (Array.isArray(node.allOf) && node.allOf.length > 1) {
+        let closed = false;
+        for (const member of node.allOf) {
+          if (member && typeof member === 'object' && !member.$ref && member.additionalProperties === false) {
+            delete member.additionalProperties;
+            closed = true;
+          }
+        }
+        if (closed && node.unevaluatedProperties === undefined) node.unevaluatedProperties = false;
+      }
       if (typeof node.format === 'string') formats.add(node.format);
       if (
         opts.strictAdditional &&
