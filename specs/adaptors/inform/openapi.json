@@ -6501,7 +6501,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The file, usually via a 302 redirect to storage.",
+            "description": "The file itself, when storage is served inline.",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -6513,6 +6513,18 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Redirect to the stored file (the usual answer). The adaptor does not follow it: it reads the Location header and fetches the bytes itself.",
+            "headers": {
+              "Location": {
+                "description": "URL of the file in storage (often a pre-signed URL).",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
                 }
               }
             }

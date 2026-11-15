@@ -1,17 +1,89 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Odoo External API (JSON-RPC model)",
-    "version": "16.0",
-    "description": "Synthesized OpenAPI 3.x model of the Odoo external API exercised by the OpenFn odoo adaptor. The adaptor (via the odoo-await client) authenticates and then calls model methods create, read, write, unlink, search and search_read through execute_kw. Odoo transports this over XML-RPC (POST /xmlrpc/2/common and /xmlrpc/2/object, Content-Type text/xml); because OpenAPI cannot faithfully describe XML-RPC method dispatch and the mocker needs JSON, this document models Odoo's equivalent JSON-RPC web endpoints (POST /web/session/authenticate and POST /jsonrpc), which accept and return JSON with the same semantics. Reusable schemas model the res.partner resource and a generic Odoo record.",
+    "title": "Odoo External API",
+    "version": "19.0",
+    "description": "The externally reachable Odoo API, as documented in Odoo 19.0's External RPC API and External JSON-2 API references. Three transports reach the same Models API: XML-RPC (POST /xmlrpc/2/common for version/login/authenticate, POST /xmlrpc/2/object for execute_kw), which is what the OpenFn odoo adaptor uses through the odoo-await client; JSON-RPC (POST /jsonrpc, plus the web client's POST /web/session/authenticate); and, new in 19.0, the JSON-2 API (POST /json/2/{model}/{method}, bearer API key). XML-RPC and JSON-RPC are deprecated since 19.0 and scheduled for removal in Odoo 22 / Online 21.1. The set of callable models and methods is specific to each database (see its /doc page), so model and method are parameters, not enumerated paths. XML-RPC bodies are text/xml methodCall/methodResponse documents and are described as strings.",
     "x-openfn-adaptor": "odoo"
   },
   "servers": [
     {
-      "url": "https://demo.odoo.com"
+      "url": "https://{instance}",
+      "description": "The Odoo server, e.g. mycompany.odoo.com (the adaptor's configuration.baseUrl).",
+      "variables": {
+        "instance": {
+          "default": "demo.odoo.com"
+        }
+      }
     }
   ],
   "paths": {
+    "/xmlrpc/2/common": {
+      "post": {
+        "operationId": "xmlrpcCommon",
+        "summary": "Common service (version, login, authenticate)",
+        "description": "Unauthenticated service: version() returns server version info; login(db, login, password) and authenticate(db, login, password, {}) return the user id (uid) used in every object call. The adaptor's connect step calls authenticate here.",
+        "tags": [
+          "XML-RPC"
+        ],
+        "deprecated": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/XmlRpcMethodCall"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "methodResponse (a fault is also returned with 200)",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/XmlRpcMethodResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xmlrpc/2/object": {
+      "post": {
+        "operationId": "xmlrpcObject",
+        "summary": "Object service (execute_kw)",
+        "description": "Call any model method: execute_kw(db, uid, password, model, method, args, kwargs). The adaptor's create, read, update, deleteRecord, searchRecord and searchReadRecord all go through here as create, read, write, unlink, search and search_read.",
+        "tags": [
+          "XML-RPC"
+        ],
+        "deprecated": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/XmlRpcMethodCall"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "methodResponse (a fault is also returned with 200)",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/XmlRpcMethodResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/web/session/authenticate": {
       "post": {
         "operationId": "authenticate",
@@ -38,7 +110,11 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "JSON-RPC"
+        ],
+        "deprecated": true
       }
     },
     "/jsonrpc": {
@@ -63,6 +139,85 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/JsonRpcResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "JSON-RPC"
+        ],
+        "deprecated": true
+      }
+    },
+    "/json/2/{model}/{method}": {
+      "post": {
+        "operationId": "json2Call",
+        "summary": "Call a model method (JSON-2)",
+        "tags": [
+          "JSON-2"
+        ],
+        "description": "Odoo 19.0+ replacement for XML-RPC/JSON-RPC. Authenticate with Authorization: bearer <API key>; select the database with X-Odoo-Database when the server hosts several. On success the body is the method's JSON-serialised return value.",
+        "security": [
+          {
+            "bearerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Technical model name, e.g. res.partner.",
+            "example": "res.partner"
+          },
+          {
+            "name": "method",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Model method, e.g. search_read, create, write, unlink.",
+            "example": "search_read"
+          },
+          {
+            "name": "X-Odoo-Database",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Json2Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The method's return value (array of records for search_read, list of ids for create/search, true for write/unlink, ...).",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Json2Error"
                 }
               }
             }
@@ -358,6 +513,67 @@
             "example": true
           }
         }
+      },
+      "XmlRpcMethodCall": {
+        "type": "string",
+        "description": "An XML-RPC <methodCall> document (text/xml). On /xmlrpc/2/common the methodName is version, login(db, login, password) or authenticate(db, login, password, user_agent_env); on /xmlrpc/2/object it is execute_kw(db, uid, password, model, method, args, kwargs) (or the older execute).",
+        "example": "<?xml version=\"1.0\"?><methodCall><methodName>execute_kw</methodName><params><param><value><string>mydb</string></value></param><param><value><int>2</int></value></param><param><value><string>secret</string></value></param><param><value><string>res.partner</string></value></param><param><value><string>search_read</string></value></param><param><value><array><data/></array></value></param></params></methodCall>"
+      },
+      "XmlRpcMethodResponse": {
+        "type": "string",
+        "description": "An XML-RPC <methodResponse> document (text/xml): <params> carrying the method's return value, or <fault> with faultCode/faultString on error (still HTTP 200)."
+      },
+      "Json2Request": {
+        "type": "object",
+        "description": "JSON-2 request body: ids (records the method runs on; omit for @api.model methods), an optional context, and the method's own parameters as further named keys (e.g. domain, fields, limit, vals_list).",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      },
+      "Json2Error": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Fully qualified name of the Python exception."
+          },
+          "message": {
+            "type": "string"
+          },
+          "arguments": {
+            "type": "array",
+            "items": {}
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "debug": {
+            "type": "string",
+            "description": "The traceback."
+          }
+        },
+        "required": [
+          "name",
+          "message"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerApiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An Odoo user API key (Preferences > Account Security > New API Key)."
       }
     }
   }

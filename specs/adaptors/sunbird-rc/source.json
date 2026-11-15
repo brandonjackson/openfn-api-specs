@@ -1,18 +1,19 @@
 {
   "adaptor": "sunbird-rc",
   "npm": "@openfn/language-sunbird-rc",
-  "origin": "found-openapi",
+  "origin": "generated",
   "upstreamFormat": "openapi-3.0",
-  "coverage": "subset",
-  "derivedFrom": "upstream.yaml",
-  "completeness": "complete",
-  "completenessReason": null,
+  "coverage": "full",
+  "derivedFrom": null,
+  "completeness": "best-effort",
+  "completenessReason": "derived-from-vendor-source",
   "modifications": [],
   "upstream": {
     "specUrl": "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/issue-api.yaml",
     "format": "openapi-3.0",
     "contentHash": "sha256:227f2ac57cafdb779ddaecffc1642194c9b967a60c4fcf4602bab5bb8fd7a350",
-    "fetchedAt": "2026-07-06"
+    "fetchedAt": "2026-11-14",
+    "note": "upstream.yaml is the credential-issuance spec (unchanged since 2026-07-06, same hash). The two other vendor files are upstream-schema.yaml and upstream-identity.yaml, hashed in attempts[]."
   },
   "attempts": [
     {
@@ -22,17 +23,42 @@
     },
     {
       "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/schema-api.yaml",
+      "result": "used",
+      "note": "Credential-schema service (credential schemas + rendering templates), Sunbird's own OpenAPI 3.0.1; saved verbatim as upstream-schema.yaml, sha256:59d6d6b55355ef19189066f0cd8a511dbabdd52a4015aeb557a934bb432c6a71. Its paths and schemas are merged into openapi.json unchanged."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/identity-api.yaml",
+      "result": "used",
+      "note": "Identity service (DID generate/resolve, sign/verify, health), Sunbird's own OpenAPI 3.0.0; saved verbatim as upstream-identity.yaml, sha256:1b70f2e9133de149c1606bc23c038b390dfbf19f880fe0a420c6ef99c4313d32. Merged unchanged."
+    },
+    {
+      "kind": "openapi",
       "url": "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/registry-api.yaml",
       "result": "not-found",
-      "note": "no published spec for the registry component; its entity endpoints are generated per deployment from the schemas registered there, and served as a per-instance Swagger"
+      "note": "Still no published spec for the registry component: api-documentation/ holds only the issue, schema and identity files. The registry generates a per-deployment Swagger 2.0 at /api/docs/swagger.json (RegistrySwaggerController), which needs a running instance and covers only entity CRUD/search, not claims, attestation policies or documents."
+    },
+    {
+      "kind": "source",
+      "url": "https://github.com/Sunbird-RC/sunbird-rc-core/tree/6bac77b73007e2334fe3cf001b7fb8b23d678d74/java/registry/src/main/java/dev/sunbirdrc/registry/controller",
+      "result": "used",
+      "note": "Every @RequestMapping/@GetMapping/... in the registry's controllers (RegistryEntityController, RegistryClaimsController, RegistryAttestationPolicyController, FileStorageController, RegistryTemplateController, RegistryCertificateController, RegistrySwaggerController, RegistryUtilsController, legacy RegistryController): 50 operations, envelope and search shapes read from the handler bodies."
     }
   ],
-  "verifiedAgainst": [],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source",
+    "sunbird-rc-core@6bac77b73007"
+  ],
   "sources": [
     "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/issue-api.yaml",
+    "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/schema-api.yaml",
+    "https://raw.githubusercontent.com/Sunbird-RC/sunbird-rc-core/main/api-documentation/identity-api.yaml",
+    "https://github.com/Sunbird-RC/sunbird-rc-core/tree/6bac77b73007e2334fe3cf001b7fb8b23d678d74/java/registry/src/main/java/dev/sunbirdrc/registry/controller",
     "https://rc.sunbird.org/api-reference/credentialling-apis/credential-issuance-apis"
   ],
-  "capturedAt": "2026-07-06",
-  "lastCheckedAt": "2026-07-06",
-  "notes": "Verbatim copy of the Sunbird-RC credential issuance OpenAPI 3.0 document (api-documentation/issue-api.yaml) \u2014 complete for that component, which is why it stays the source of truth here. It is a SUBSET of the API the adaptor reaches: Sunbird-RC is multi-component, and the registry entity endpoints the adaptor's generic verbs drive (/api/v1/<entity>) are generated per deployment from the schemas registered there and published only as a per-instance Swagger, so no static document covers them. Known imprecision in the upstream document: credentialResponse types the VC's `type` as a string, while Sunbird-RC (like the W3C VC data model) returns an array."
+  "capturedAt": "2026-11-14",
+  "lastCheckedAt": "2026-11-14",
+  "notes": "Sunbird RC is multi-component, and the adaptor reaches more than one component: issueCredential/getCredential/downloadCredential call the credential service (/credentials/...), its put() example targets the credential-schema service's /template/{id}, and its generic get/post/put/del/request reach whatever baseUrl points at, including the registry's /api/v1/<entity> routes. Until 2026-11-14 this spec was only the credential-issuance OpenAPI (5 operations, coverage: subset). It now covers the whole surface: the three vendor-published service specs (issue, schema, identity; 20 operations) merged verbatim, plus the registry (50 operations: entity CRUD, search, invite, sign/revoke, property items, claims and attestation, attestation policies, documents, templates, verify, docs, utils, audit and the legacy envelope API) authored from its Spring controllers at sunbird-rc-core@6bac77b. Registry entity types are defined per deployment, so they are the {entityName} parameter and records are an open RegistryEntity with the os* system fields. BEST-EFFORT because the registry part is derived from vendor source, not a vendor spec; the merged service specs are the vendor's own. Known imprecision in the upstream issue spec: credentialResponse types the VC's `type` as a string, where real credentials carry an array, and getCredential's response is declared as appliation/json (sic)."
 }
