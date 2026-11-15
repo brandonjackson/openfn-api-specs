@@ -1,4 +1,4 @@
-# Beyonic API (beyonic) vv6
+# Beyonic API (beyonic) v6
 
 <!-- derived from openapi.json by `pnpm specs index beyonic` — do not edit by hand -->
 

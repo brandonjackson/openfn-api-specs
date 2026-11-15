@@ -1,4 +1,4 @@
-# Microsoft Graph API (curated subset: directory, files, mail, calendar, Teams, Planner) (msgraph) vv1.0
+# Microsoft Graph API (curated subset: directory, files, mail, calendar, Teams, Planner) (msgraph) v1.0
 
 <!-- derived from openapi.json by `pnpm specs index msgraph` — do not edit by hand -->
 

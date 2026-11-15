@@ -1,4 +1,4 @@
-# IBIPIMO Laboratory API (ibipimo) vv1
+# IBIPIMO Laboratory API (ibipimo) v1
 
 <!-- derived from openapi.json by `pnpm specs index ibipimo` — do not edit by hand -->
 
