@@ -1,4 +1,4 @@
-# Gmail API (gmail) vv1
+# Gmail API (gmail) v1
 
 <!-- derived from openapi.json by `pnpm specs index gmail` — do not edit by hand -->
 

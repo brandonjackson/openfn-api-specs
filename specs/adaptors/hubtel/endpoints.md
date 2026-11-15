@@ -1,4 +1,4 @@
-# Hubtel Messaging API (SMS and OTP) (hubtel) vv1
+# Hubtel Messaging API (SMS and OTP) (hubtel) v1
 
 <!-- derived from openapi.json by `pnpm specs index hubtel` — do not edit by hand -->
 

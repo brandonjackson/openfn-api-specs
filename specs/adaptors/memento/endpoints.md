@@ -1,4 +1,4 @@
-# Memento Cloud API Beta (memento) vv1
+# Memento Cloud API Beta (memento) v1
 
 <!-- derived from openapi.json by `pnpm specs index memento` — do not edit by hand -->
 

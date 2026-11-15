@@ -1,8 +1,8 @@
-# Meta Graph API - Application Connected Client Businesses (whatsapp) vv23.0
+# Meta Graph API - Application Connected Client Businesses (whatsapp) v23.0
 
 <!-- derived from openapi.json by `pnpm specs index whatsapp` — do not edit by hand -->
 
-base: https://graph.facebook.com, https://graph.facebook.com, https://graph.facebook.com, https://graph.facebook.com | auth: http/bearer (JWT) | 113 operations in 55 resources
+base: https://graph.facebook.com | auth: http/bearer (JWT) | 113 operations in 55 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 

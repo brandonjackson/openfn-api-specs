@@ -1,4 +1,4 @@
-# Google Drive API (googledrive) vv3
+# Google Drive API (googledrive) v3
 
 <!-- derived from openapi.json by `pnpm specs index googledrive` — do not edit by hand -->
 

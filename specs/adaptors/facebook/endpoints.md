@@ -1,4 +1,4 @@
-# Messenger Platform API (Meta Graph API) (facebook) vv26.0
+# Messenger Platform API (Meta Graph API) (facebook) v26.0
 
 <!-- derived from openapi.json by `pnpm specs index facebook` — do not edit by hand -->
 

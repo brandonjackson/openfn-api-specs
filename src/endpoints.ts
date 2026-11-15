@@ -150,7 +150,7 @@ export function buildEndpointIndex(openapi: any, adaptor: string): EndpointIndex
     version: typeof openapi?.info?.version === 'string' && openapi.info.version ? openapi.info.version : undefined,
     servers: (Array.isArray(openapi?.servers) ? openapi.servers : [])
       .map((s: any) => (typeof s?.url === 'string' ? s.url : ''))
-      .filter(Boolean),
+      .filter((url: string, i: number, all: string[]) => url && all.indexOf(url) === i),
     auth: authLabels(openapi),
     operations: count,
     groups: sorted.map((name) => ({ name, operations: groups.get(name)! })),
@@ -174,7 +174,7 @@ export function operationResources(openapi: any): Record<string, string> {
 /** Render the index as the committed `endpoints.md`. */
 export function renderEndpointIndex(index: EndpointIndex): string {
   const lines: string[] = [];
-  lines.push(`# ${index.title} (${index.adaptor})${index.version ? ` v${index.version}` : ''}`);
+  lines.push(`# ${index.title} (${index.adaptor})${index.version ? ` ${/^v/i.test(index.version) ? '' : 'v'}${index.version}` : ''}`);
   lines.push('');
   lines.push(`<!-- derived from openapi.json by \`pnpm specs index ${index.adaptor}\` — do not edit by hand -->`);
   lines.push('');

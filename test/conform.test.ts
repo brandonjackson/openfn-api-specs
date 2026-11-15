@@ -223,6 +223,39 @@ test('nullable on a $ref or a combinator (Stripe style) admits null and still ch
   assert.ok(v.some((x) => x.pointer === '/one'));
 });
 
+test('a closed allOf member (Meta WhatsApp style) closes the union instead of rejecting the base', () => {
+  const spec = {
+    openapi: '3.1.0',
+    paths: {
+      '/m': {
+        post: {
+          requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/TextMessage' } } } },
+          responses: { '200': { content: { 'application/json': { schema: { type: 'object' } } } } },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Base: { type: 'object', required: ['to', 'type'], properties: { to: { type: 'string' }, type: { type: 'string' } } },
+        TextMessage: {
+          allOf: [
+            { $ref: '#/components/schemas/Base' },
+            { type: 'object', additionalProperties: false, required: ['text'], properties: { type: { enum: ['text'] }, text: { type: 'object' } } },
+          ],
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  const ok = { method: 'POST', path: '/m', status: 200, requestBody: { to: '1', type: 'text', text: {} }, responseBody: {} };
+  assert.deepEqual(c.check(ok), []);
+  // Still closed: a property no member declares is rejected.
+  const extra = c.check({ ...ok, requestBody: { to: '1', type: 'text', text: {}, bogus: 1 } });
+  assert.ok(extra.some((x) => x.kind === 'request-schema' && /unevaluated/.test(x.message)));
+  // The committed spec is untouched.
+  assert.equal((spec.components.schemas.TextMessage.allOf[1] as any).additionalProperties, false);
+});
+
 test('unknown vendor formats pass; ignoreFormats disables a known one', () => {
   const strict = createConformer(doc);
   const bad = { id: 'a', name: 'n', deletedAt: 'not-a-date' };

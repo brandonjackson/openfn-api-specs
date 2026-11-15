@@ -1,4 +1,4 @@
-# SurveyCTO Server API (v1 + v2) (surveycto) vv2
+# SurveyCTO Server API (v1 + v2) (surveycto) v2
 
 <!-- derived from openapi.json by `pnpm specs index surveycto` — do not edit by hand -->
 
