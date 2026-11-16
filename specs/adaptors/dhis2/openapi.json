@@ -12,7 +12,7 @@
   },
   "servers": [
     {
-      "url": "http://play.im.dhis2.org/stable-2-43-1/"
+      "url": "http://play.im.dhis2.org/stable-2-43-2-1/"
     }
   ],
   "security": [
@@ -22831,10 +22831,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -23233,10 +23231,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -23623,10 +23619,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -24013,10 +24007,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -24403,10 +24395,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -24793,10 +24783,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -25183,10 +25171,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -25573,10 +25559,8 @@
             "name": "enrollmentStatus",
             "in": "query",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "type": "boolean",
+              "default": []
             }
           },
           {
@@ -34087,6 +34071,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "totalPages",
+            "in": "query",
+            "description": "Get the total number of items and pages in the pager. Only enable this if necessary as it counts all entries. Use the pager's prev/nextPage to determine if there is a previous or a next page instead.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -34096,6 +34088,16 @@
               "application/json": {
                 "schema": {
                   "type": "object"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
                 }
               }
             }
@@ -34119,6 +34121,16 @@
         "responses": {
           "200": {
             "description": "?"
+          },
+          "403": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -34396,6 +34408,53 @@
             }
           },
           "400": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/updatePassword": {
+      "post": {
+        "operationId": "UserAccount.updatePassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "?",
             "content": {
               "application/json": {
@@ -64684,6 +64743,16 @@
               }
             }
           },
+          "403": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          },
           "409": {
             "description": "?",
             "content": {
@@ -77920,43 +77989,6 @@
     },
     "/api/email/notification": {
       "post": {
-        "operationId": "Email.sendSystemNotificationEmail",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EmailParams"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "?",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebMessage"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "?",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/email/notification#sendEmailNotification": {
-      "post": {
         "operationId": "Email.sendEmailNotification",
         "parameters": [
           {
@@ -77987,6 +78019,43 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebMessage"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/email/notification#sendSystemNotificationEmail": {
+      "post": {
+        "operationId": "Email.sendSystemNotificationEmail",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailParams"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "?",
@@ -88387,7 +88456,7 @@
     },
     "/api/fileResources/gist": {
       "get": {
-        "operationId": "FileResource.getObjectListGist+getObjectListGistAsCsv",
+        "operationId": "FileResource.getObjectListGist+getObjectListGistAsCsv+getObjectListGist+getObjectListGistAsCsv",
         "parameters": [
           {
             "$ref": "#/components/parameters/GistObjectParams.absoluteUrls"
@@ -88663,6 +88732,16 @@
               }
             }
           },
+          "403": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          },
           "404": {
             "description": "?",
             "content": {
@@ -88794,7 +88873,7 @@
     },
     "/api/fileResources/{uid}/gist": {
       "get": {
-        "operationId": "FileResource.getObjectGist+getObjectGistAsCsv",
+        "operationId": "FileResource.getObjectGist+getObjectGistAsCsv+getObjectGist+getObjectGistAsCsv",
         "parameters": [
           {
             "$ref": "#/components/parameters/GistObjectParams.absoluteUrls"
@@ -89032,7 +89111,7 @@
     },
     "/api/fileResources/{uid}/{property}/gist": {
       "get": {
-        "operationId": "FileResource.getObjectPropertyGist+getObjectPropertyGistAsCsv",
+        "operationId": "FileResource.getObjectPropertyGist+getObjectPropertyGistAsCsv+getObjectPropertyGist+getObjectPropertyGistAsCsv",
         "parameters": [
           {
             "$ref": "#/components/parameters/GistObjectParams.absoluteUrls"
@@ -89298,10 +89377,10 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "type": "number"
+                      "type": "boolean"
                     },
                     {
-                      "type": "boolean"
+                      "type": "number"
                     },
                     {
                       "type": "string"
@@ -89358,10 +89437,10 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "type": "number"
+                      "type": "boolean"
                     },
                     {
-                      "type": "boolean"
+                      "type": "number"
                     },
                     {
                       "type": "string"
@@ -89418,10 +89497,10 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "type": "number"
+                      "type": "boolean"
                     },
                     {
-                      "type": "boolean"
+                      "type": "number"
                     },
                     {
                       "type": "string"
@@ -90175,6 +90254,16 @@
             }
           },
           "404": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          },
+          "409": {
             "description": "?",
             "content": {
               "application/json": {
@@ -103490,6 +103579,16 @@
                   "items": {
                     "$ref": "#/components/schemas/JobEntry"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "?",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
                 }
               }
             }
@@ -232013,7 +232112,6 @@
         "required": [
           "headerWidth",
           "height",
-          "lastDataRow",
           "visibleWidth",
           "width"
         ],
@@ -234945,12 +235043,12 @@
             "type": "string",
             "format": "date-time"
           },
-          "id": {
-            "$ref": "#/components/schemas/UID_JobConfiguration"
-          },
           "filesize": {
             "type": "integer",
             "format": "int64"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UID_JobConfiguration"
           },
           "type": {
             "$ref": "#/components/schemas/JobType"
@@ -239414,8 +239512,7 @@
       "OrganisationUnit": {
         "type": "object",
         "required": [
-          "aggregationType",
-          "level"
+          "aggregationType"
         ],
         "properties": {
           "access": {
@@ -242025,6 +242122,9 @@
           "displayNoteLabel": {
             "type": "string"
           },
+          "displayNotesLabel": {
+            "type": "string"
+          },
           "displayOrgUnitLabel": {
             "type": "string"
           },
@@ -242037,10 +242137,16 @@
           "displayRelationshipLabel": {
             "type": "string"
           },
+          "displayRelationshipsLabel": {
+            "type": "string"
+          },
           "displayShortName": {
             "type": "string"
           },
           "displayTrackedEntityAttributeLabel": {
+            "type": "string"
+          },
+          "displayTrackedEntityAttributesLabel": {
             "type": "string"
           },
           "enableChangeLog": {
@@ -242139,6 +242245,9 @@
           "noteLabel": {
             "type": "string"
           },
+          "notesLabel": {
+            "type": "string"
+          },
           "notificationTemplates": {
             "type": "array",
             "items": {
@@ -242209,6 +242318,9 @@
           "relationshipLabel": {
             "type": "string"
           },
+          "relationshipsLabel": {
+            "type": "string"
+          },
           "selectEnrollmentDatesInFuture": {
             "type": "boolean"
           },
@@ -242228,6 +242340,9 @@
             "$ref": "#/components/schemas/ObjectStyle"
           },
           "trackedEntityAttributeLabel": {
+            "type": "string"
+          },
+          "trackedEntityAttributesLabel": {
             "type": "string"
           },
           "trackedEntityType": {
@@ -243577,6 +243692,9 @@
           "displayNoteLabel": {
             "type": "string"
           },
+          "displayNotesLabel": {
+            "type": "string"
+          },
           "displayOrgUnitLabel": {
             "type": "string"
           },
@@ -243589,10 +243707,16 @@
           "displayRelationshipLabel": {
             "type": "string"
           },
+          "displayRelationshipsLabel": {
+            "type": "string"
+          },
           "displayShortName": {
             "type": "string"
           },
           "displayTrackedEntityAttributeLabel": {
+            "type": "string"
+          },
+          "displayTrackedEntityAttributesLabel": {
             "type": "string"
           },
           "enableChangeLog": {
@@ -243697,6 +243821,9 @@
             "type": "string"
           },
           "noteLabel": {
+            "type": "string"
+          },
+          "notesLabel": {
             "type": "string"
           },
           "notificationTemplates": {
@@ -243817,6 +243944,9 @@
           "relationshipLabel": {
             "type": "string"
           },
+          "relationshipsLabel": {
+            "type": "string"
+          },
           "selectEnrollmentDatesInFuture": {
             "type": "boolean"
           },
@@ -243836,6 +243966,9 @@
             "$ref": "#/components/schemas/ObjectStyle"
           },
           "trackedEntityAttributeLabel": {
+            "type": "string"
+          },
+          "trackedEntityAttributesLabel": {
             "type": "string"
           },
           "trackedEntityType": {
@@ -249571,6 +249704,7 @@
           "jobsLogDebugBelowSeconds",
           "jobsMaxCronDelayHours",
           "jobsRescheduleAfterMinutes",
+          "jobsRescheduleAnalyticsAfterMinutes",
           "keyAnalysisDigitGroupSeparator",
           "keyAnalysisDisplayProperty",
           "keyAnalysisRelativePeriod",
@@ -249690,6 +249824,10 @@
             "format": "int32"
           },
           "jobsRescheduleAfterMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "jobsRescheduleAnalyticsAfterMinutes": {
             "type": "integer",
             "format": "int32"
           },
@@ -251640,6 +251778,9 @@
           "createdAtClient": {
             "$ref": "#/components/schemas/Instant"
           },
+          "deleted": {
+            "type": "boolean"
+          },
           "from": {
             "$ref": "#/components/schemas/TrackerRelationshipItem"
           },
@@ -252637,6 +252778,20 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "UpdatePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string"
+          },
+          "oldPassword": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
           }
         }
       },
@@ -257492,6 +257647,7 @@
           "E1004",
           "E1005",
           "E1006",
+          "E1007",
           "E1100",
           "E1101",
           "E1102",
@@ -257605,6 +257761,9 @@
           "E2046",
           "E2047",
           "E2048",
+          "E2050",
+          "E2051",
+          "E2052",
           "E2200",
           "E2201",
           "E2202",
@@ -257665,6 +257824,7 @@
           "E3050",
           "E3051",
           "E3052",
+          "E3053",
           "E4000",
           "E4001",
           "E4002",
@@ -257682,6 +257842,7 @@
           "E4014",
           "E4015",
           "E4016",
+          "E4094",
           "E4017",
           "E4018",
           "E4019",
@@ -257719,6 +257880,7 @@
           "E4056",
           "E4055",
           "E4050",
+          "E4093",
           "E4051",
           "E4052",
           "E4053",
@@ -260106,12 +260268,15 @@
           "displayIncidentDateLabel",
           "displayName",
           "displayNoteLabel",
+          "displayNotesLabel",
           "displayOrgUnitLabel",
           "displayProgramStageLabel",
           "displayProgramStagesLabel",
           "displayRelationshipLabel",
+          "displayRelationshipsLabel",
           "displayShortName",
           "displayTrackedEntityAttributeLabel",
+          "displayTrackedEntityAttributesLabel",
           "enableChangeLog",
           "enrollmentCategoryCombo",
           "enrollmentDateLabel",
@@ -260134,6 +260299,7 @@
           "minAttributesRequiredToSearch",
           "name",
           "noteLabel",
+          "notesLabel",
           "notificationTemplates",
           "onlyEnrollOnce",
           "openDaysAfterCoEndDate",
@@ -260150,6 +260316,7 @@
           "registration",
           "relatedProgram",
           "relationshipLabel",
+          "relationshipsLabel",
           "selectEnrollmentDatesInFuture",
           "selectIncidentDatesInFuture",
           "sharing",
@@ -260157,6 +260324,7 @@
           "skipOffline",
           "style",
           "trackedEntityAttributeLabel",
+          "trackedEntityAttributesLabel",
           "trackedEntityType",
           "translations",
           "useFirstStageDuringRegistration",

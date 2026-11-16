@@ -92,7 +92,9 @@ schemas:
           "description": "An array of all requsitions that have been processed successfully and an array of errors.",
           "properties": {
               "requisitions": { "type": "object", "$ref": "#/schemas/approveRequisitionDtoArray" },
-              "errors": { "type": "object", "$ref": "#/schemas/requisitionErrorArray" }
+              "errors": { "type": "object", "$ref": "#/schemas/requisitionErrorArray" },
+              "messageKey": { "type": "string", "title": "key of a message about the whole batch" },
+              "message": { "type": "string", "title": "message about the whole batch" }
           }
       }
 
@@ -1070,6 +1072,7 @@ resourceTypes:
               uriParameters:
                   format:
                       displayName: format
+                      description: One of pdf, csv, xls, xlsx or html.
                       type: string
                       required: true
                       repeat: false
@@ -1077,11 +1080,18 @@ resourceTypes:
                   is: [ secured ]
                   description: Generate report from template ID and format.
                   responses:
+                      400:
+                          body:
+                            application/json:
+                                schema: localizedMessage
                       200:
+                          headers:
+                            Keep-Alive:
                           body:
                             application/pdf:
                             text/csv:
                             application/vnd.ms-excel:
+                            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
                             text/html:
                       403:
                           body:

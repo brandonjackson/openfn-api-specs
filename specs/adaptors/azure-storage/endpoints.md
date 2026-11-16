@@ -1,4 +1,4 @@
-# Azure Blob Storage (azure-storage) v2021-12-02
+# Azure Blob Storage (azure-storage) v2026-10-06
 
 <!-- derived from openapi.json by `pnpm specs index azure-storage` — do not edit by hand -->
 
@@ -35,7 +35,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /{containerName}/{blob}#comp=copy — Blob_StartCopyFromURL: The Start Copy From URL operation copies a blob or an internet resource to a new blob.
 - PUT /{containerName}/{blob}#comp=copy&sync — Blob_CopyFromURL: The Copy From URL operation copies a blob or an internet resource to a new blob.
 - PUT /{containerName}/{blob}#comp=copy&copyid — Blob_AbortCopyFromURL: The Abort Copy From URL operation aborts a pending Copy From URL operation, and leaves a destination blob with zero length and full metadat…
-- GET /{containerName}/{blob}#restype=account&comp=properties — Blob_GetAccountInfo: Returns the sku name and account kind
+- GET /{containerName}/{blob}#restype=account&comp=properties&blob — Blob_GetAccountInfo: Returns the sku name and account kind
 - POST /{containerName}/{blob}#comp=query — Blob_Query: The Query operation enables users to select/project on blob data by providing simple query expressions.
 - GET /{containerName}/{blob}#comp=tags — Blob_GetTags: The Get Tags operation enables users to get the tags associated with a blob.
 - PUT /{containerName}/{blob}#comp=tags — Blob_SetTags: The Set Tags operation enables users to set tags on a blob.

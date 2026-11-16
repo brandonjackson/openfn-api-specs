@@ -24,6 +24,10 @@
       "description": "Form submission and export data (Server API v2)"
     },
     {
+      "name": "AI",
+      "description": "Batch AI transcription and translation operations"
+    },
+    {
       "name": "Groups",
       "description": "Group management operations"
     },
@@ -45,6 +49,196 @@
     }
   ],
   "paths": {
+    "/api/v2/ai/batch": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Submit an AI processing batch",
+        "description": "Accepts transcription and translation work for one or more forms and returns 202 Accepted with a runId. The caller needs Can use AI features permission on every named form; otherwise the whole request is rejected. The server selects matching submissions, queues their AI work, and processes it in the background. Poll GET /api/v2/ai/batch/{runId} until done is true, then check the statuses and errors for the outcome. Idempotency: send an Idempotency-Key and reuse it when retrying the same request with the same user. The key returns the existing run even after completion; reusing it for different work returns 409. Without a nonblank key, each accepted request creates a new run, including while an identical earlier run is still active.",
+        "operationId": "aiBatch",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Optional key for safely retrying a request. Reuse it with the same request and user to return the existing run, including after completion. Reusing it for different work returns 409. Keys are scoped per user and server and can contain at most 255 characters.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiBatchRequest"
+              },
+              "examples": {
+                "Transcribe audio and translate its transcripts for one form": {
+                  "summary": "Transcribe audio and translate its transcripts for one form",
+                  "value": {
+                    "items": [
+                      {
+                        "formId": "clinic_intake",
+                        "capabilities": {
+                          "transcribeAudio": true,
+                          "translateText": false,
+                          "translateTranscripts": true
+                        },
+                        "targetLanguage": "fr"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Run accepted, or an existing run returned for an idempotent retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiRunAcceptedResponse"
+                },
+                "examples": {
+                  "Accepted": {
+                    "summary": "Accepted",
+                    "description": "Abbreviated response showing the run identifier and preparation status.",
+                    "value": {
+                      "runId": 10,
+                      "status": "PENDING",
+                      "acceptedItems": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request: no items, too many forms in one batch, the same form named more than once, an item missing a formId, too many submission ids, text fields, or audio fields on an item, an item that produces no work (no capability enabled with a non-empty field scope), a translation without targetLanguage, a fromMs/untilMs inversion, or a body that cannot be read (malformed JSON, or a property this request does not define)."
+          },
+          "403": {
+            "description": "Forbidden: AI transcription and translation automations are disabled (code AI_FEATURE_NOT_ENABLED), the subscription lacks API write access, or the caller lacks Can use AI features permission on a named form."
+          },
+          "404": {
+            "description": "A named form does not exist."
+          },
+          "409": {
+            "description": "The Idempotency-Key was already used for different work. Use the original request for a retry, or a new key for a new run."
+          },
+          "429": {
+            "description": "API rate limit exceeded. Increase the delay before retrying."
+          },
+          "500": {
+            "description": "An unexpected server error."
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          },
+          {
+            "openIdAccessToken": []
+          }
+        ]
+      }
+    },
+    "/api/v2/ai/batch/{runId}": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Get AI processing run status",
+        "description": "Returns preparation and execution progress. Preparation selects submissions and queues AI work; execution processes that work. Poll until done is true, which means both stages have ended, then inspect statuses and errors to determine the outcome. While processing is blocked, blockedCode identifies the cause, guidance describes the action to take, and resumeBehavior explains how processing continues. Only the user who submitted the run can read it.",
+        "operationId": "aiBatchStatus",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "description": "The run id returned by POST /api/v2/ai/batch.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current status and per-item progress.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiRunStatusResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "API rate limit exceeded. Increase the delay before retrying."
+          },
+          "403": {
+            "description": "The subscription lacks API read access, or the run does not exist or belongs to another user."
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          },
+          {
+            "openIdAccessToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Cancel further preparation of an AI run",
+        "description": "Stops adding AI work to the queue for this run. Already queued work may still process and use credits. Continue checking status until done is true if you need the final outcome. Only the user who submitted the run can cancel it. If preparation has already ended, its status remains unchanged.",
+        "operationId": "aiBatchCancel",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "description": "The run id returned by POST /api/v2/ai/batch.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancellation recorded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiRunAcceptedResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "API rate limit exceeded. Increase the delay before retrying."
+          },
+          "403": {
+            "description": "The subscription lacks API write access, or the run does not exist or belongs to another user."
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          },
+          {
+            "openIdAccessToken": []
+          }
+        ]
+      }
+    },
     "/api/v2/datasets": {
       "get": {
         "tags": [
@@ -4773,6 +4967,22 @@
       "ProgressSummary": {
         "type": "object"
       },
+      "DatasetDataResponse": {
+        "type": "object"
+      },
+      "RemoteErrorResponse": {
+        "type": "object"
+      },
+      "DataLinkClass": {
+        "type": "string",
+        "enum": [
+          "FORM",
+          "FUSION_TABLE",
+          "SPREADSHEET",
+          "ZAPIER",
+          "WEBHOOK"
+        ]
+      },
       "FormHeaderConfigLabels": {
         "type": "object",
         "properties": {
@@ -4801,6 +5011,173 @@
         },
         "description": "Label-only subset of form_header_config used inside locale_overrides: translated header/drawer labels and custom item labels. All fields are optional; omitted fields keep their defaults."
       },
+      "Operator": {
+        "type": "string",
+        "enum": [
+          "GT",
+          "GTE",
+          "LT",
+          "LTE"
+        ]
+      },
+      "CustomItemLabelOverride": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the custom item in the base config this translation applies to. Must match an existing item id.",
+            "example": "my_cases"
+          },
+          "label": {
+            "type": "string",
+            "description": "The translated display text for the item.",
+            "example": "Mes cas"
+          }
+        },
+        "description": "Translated label for one custom item, referenced by the item's stable id in the base config's custom_items list. Only the label can be translated; the item structure stays the same."
+      },
+      "DataLinkModel": {
+        "type": "object"
+      },
+      "UserUpdateInput": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "New password. Optional; when present, confirmPassword is required and must match. Must satisfy the server's password requirements.",
+            "example": "N3w-Str0ng-Passw0rd"
+          },
+          "roleId": {
+            "type": "string",
+            "description": "New role. Optional; when present it must be an existing role and no higher than the calling user's own role.",
+            "example": "enumerator"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "Repeat of the new password. Required when password is present, ignored otherwise.",
+            "example": "N3w-Str0ng-Passw0rd"
+          }
+        },
+        "description": "Request body for updating a user. Every field is individually optional, but at least one of password or roleId must be present \u2014 an otherwise empty body is rejected with 400."
+      },
+      "OffsetPaginatedResponse": {
+        "type": "object"
+      },
+      "PublishingStatus": {
+        "type": "object"
+      },
+      "MenuConfigLabels": {
+        "type": "object",
+        "properties": {
+          "delete_saved_form_label": {
+            "type": "string",
+            "description": "Translated label for the \"Delete Saved Form\" button. Null = fall through to the base config.",
+            "example": "Supprimer un formulaire"
+          },
+          "manage_cases_label": {
+            "type": "string",
+            "description": "Translated label for the \"Manage Cases\" button. Null = fall through to the base config.",
+            "example": "Mes cas"
+          },
+          "fill_blank_form_label": {
+            "type": "string",
+            "description": "Translated label for the \"Fill Blank Form\" button. Null = fall through to the base config.",
+            "example": "Remplir un formulaire"
+          },
+          "edit_saved_form_label": {
+            "type": "string",
+            "description": "Translated label for the \"Edit Saved Form\" button. Null = fall through to the base config.",
+            "example": "Modifier un formulaire"
+          },
+          "custom_items": {
+            "type": "array",
+            "description": "Per-item label translations, matched by the stable id of the corresponding item in the base menu_config.custom_items.",
+            "items": {
+              "$ref": "#/components/schemas/CustomItemLabelOverride"
+            }
+          }
+        },
+        "description": "Label-only subset of menu_config used inside locale_overrides: translated menu button labels and custom item labels. All fields are optional; omitted fields keep their defaults."
+      },
+      "AiBatchRequestItem": {
+        "required": [
+          "capabilities",
+          "formId"
+        ],
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "description": "The form id whose submissions are processed.",
+            "example": "my_survey"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/AiBatchRequestCapabilities"
+          },
+          "targetLanguage": {
+            "type": "string",
+            "description": "The target language. Required whenever the request produces any translation (translateText or translateTranscripts with audio in scope).",
+            "example": "French"
+          },
+          "fieldScope": {
+            "$ref": "#/components/schemas/AiBatchRequestFieldScope"
+          },
+          "existingResultPolicy": {
+            "$ref": "#/components/schemas/AiBatchRequestExistingResultPolicy"
+          },
+          "submissionScope": {
+            "$ref": "#/components/schemas/AiBatchRequestSubmissionScope"
+          }
+        },
+        "description": "The AI work to perform for one form, including which submissions and fields to process."
+      },
+      "IdFormatOptions": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "description": "Prefix to be added at the beginning of the generated ID"
+          },
+          "allowCapitalLetters": {
+            "type": "boolean",
+            "description": "Whether to allow capital letters in the generated ID"
+          },
+          "suffix": {
+            "type": "string",
+            "description": "Suffix to be added at the end of the generated ID"
+          },
+          "numberOfDigits": {
+            "type": "integer",
+            "description": "Number of digits to include in the generated ID"
+          }
+        },
+        "description": "Configuration options for ID format used in auto-generation of enumerator IDs"
+      },
+      "AiBatchRequestExistingResultPolicy": {
+        "type": "object",
+        "properties": {
+          "textTranslations": {
+            "$ref": "#/components/schemas/ResultPolicy"
+          },
+          "transcriptions": {
+            "$ref": "#/components/schemas/ResultPolicy"
+          },
+          "transcriptTranslations": {
+            "$ref": "#/components/schemas/ResultPolicy"
+          }
+        },
+        "description": "Choose whether to skip or repeat processing for each kind of saved AI result."
+      },
+      "DataLinkType": {
+        "type": "string",
+        "enum": [
+          "INCOMING",
+          "OUTGOING"
+        ]
+      },
       "ThemeConfig": {
         "type": "object",
         "properties": {
@@ -4826,7 +5203,7 @@
           },
           "color_primary": {
             "type": "string",
-            "description": "Primary accent color: buttons, links, header-page background. Default: #047CC2.",
+            "description": "Primary accent color: buttons, links, header-page background. Default: #047CC1.",
             "example": "#2E7D32"
           },
           "color_link": {
@@ -4892,68 +5269,468 @@
         },
         "description": "Color scheme overrides applied across all Collect pages (main menu, form filling, cases, saved forms, delete pages). All fields optional; only non-null values are applied. Values must be valid CSS colors: hex, rgb(...), rgba(...), or a named color."
       },
-      "OffsetPaginatedResponse": {
-        "type": "object"
-      },
-      "DataStructure": {
+      "DatasetUploadMode": {
         "type": "string",
         "enum": [
-          "CSV",
-          "JSON"
+          "append",
+          "merge",
+          "clear"
         ]
       },
-      "DatasetOptionsModel": {
-        "type": "object"
+      "DatasetStatus": {
+        "type": "string",
+        "description": "**Possible values:**\n\n* **READY**: Dataset is ready for use, all data is synchronized and up-to-date\n* **DIRTY**: Dataset is currently being synchronized, data may be incomplete or in transition",
+        "enum": [
+          "READY",
+          "DIRTY"
+        ],
+        "x-enum-descriptions": [
+          "* **READY**: Dataset is ready for use, all data is synchronized and up-to-date",
+          "* **DIRTY**: Dataset is currently being synchronized, data may be incomplete or in transition"
+        ],
+        "x-enum-varnames": [
+          "READY",
+          "DIRTY"
+        ]
       },
-      "WorkflowProfileOutput": {
+      "AiRunStatusResponse": {
         "type": "object",
         "properties": {
-          "createdAt": {
+          "lastError": {
             "type": "string",
-            "description": "Creation time, ISO 8601, UTC.",
-            "readOnly": true,
-            "example": "2026-02-11T10:00:00Z"
+            "description": "Most recent run-level error, if any."
           },
-          "name": {
+          "blockedReason": {
             "type": "string",
-            "description": "Unique profile name.",
+            "description": "Human-readable reason execution is blocked, if any."
+          },
+          "tasksPending": {
+            "type": "integer",
+            "description": "Number of AI tasks waiting to start, waiting for provider results, or delayed by server load."
+          },
+          "executionStatus": {
+            "type": "string",
+            "description": "Processing status of the AI work associated with this run.",
+            "enum": [
+              "NOT_ENQUEUED",
+              "RUNNING",
+              "PAYMENT_REQUIRED",
+              "QUOTA_BLOCKED",
+              "PROVIDER_THROTTLED",
+              "SUCCEEDED",
+              "SUCCEEDED_WITH_ERRORS",
+              "FAILED",
+              "PAUSED_BY_OPERATOR",
+              "CANCELLED"
+            ]
+          },
+          "blockedCode": {
+            "type": "string",
+            "description": "Machine-readable blocked code. Funding and quota blocks report on_demand_payment_required, spend_limit_reached, on_demand_unavailable, or quota_exhausted; the provider rate limit reports provider_throttled; a user pausing or cancelling work reports operator_paused or operator_cancelled.",
+            "enum": [
+              "on_demand_payment_required",
+              "spend_limit_reached",
+              "on_demand_unavailable",
+              "quota_exhausted",
+              "provider_throttled",
+              "operator_paused",
+              "operator_cancelled"
+            ]
+          },
+          "acceptedItems": {
+            "type": "integer",
+            "description": "Number of forms accepted into the run."
+          },
+          "resumeBehavior": {
+            "type": "string",
+            "description": "How queued work resumes after the blocked condition is resolved."
+          },
+          "totalEnqueued": {
+            "type": "integer",
+            "description": "Total transcription and translation tasks queued by this run so far. This counts tasks, not submissions."
+          },
+          "message": {
+            "type": "string",
+            "description": "Progress or outcome message for this run."
+          },
+          "done": {
+            "type": "boolean",
+            "description": "True when preparation and execution have both ended. Polling can stop; inspect the statuses and errors to determine the outcome."
+          },
+          "tasksFailed": {
+            "type": "integer",
+            "description": "Number of AI tasks that failed and are not being retried automatically."
+          },
+          "executionDone": {
+            "type": "boolean",
+            "description": "True when no AI work remains to process or resume. Use done to check that preparation has also ended."
+          },
+          "guidance": {
+            "type": "string",
+            "description": "Actionable guidance for resolving a blocked execution state."
+          },
+          "itemsCompleted": {
+            "type": "integer",
+            "description": "Number of forms whose preparation has finished or failed. Cancelled runs can have unfinished form items. Compare with acceptedItems to track preparation progress."
+          },
+          "tasksClaimed": {
+            "type": "integer",
+            "description": "Number of AI tasks currently being handled by the server."
+          },
+          "translationEnqueued": {
+            "type": "integer",
+            "description": "Translation tasks queued by this run so far."
+          },
+          "transcriptionEnqueued": {
+            "type": "integer",
+            "description": "Transcription tasks queued by this run so far."
+          },
+          "runId": {
+            "type": "integer",
+            "description": "Server-generated run id. Use it with the status and cancel endpoints."
+          },
+          "tasksDone": {
+            "type": "integer",
+            "description": "Number of AI tasks completed successfully or found to need no processing."
+          },
+          "tasksSkipped": {
+            "type": "integer",
+            "description": "Number of AI tasks blocked by funding or provider limits, or paused by a user. These tasks can resume; check executionStatus for the reason."
+          },
+          "items": {
+            "type": "array",
+            "description": "Preparation progress for each form.",
+            "items": {
+              "$ref": "#/components/schemas/AiRunStatusItem"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Preparation status: progress selecting submissions and queueing AI work. DONE means preparation finished; AI processing may still be running.",
+            "enum": [
+              "NONE",
+              "PENDING",
+              "RUNNING",
+              "DONE",
+              "FAILED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "description": "Current status and per-item progress for an AI run."
+      },
+      "Direction": {
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      },
+      "CursorPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "nextCursor": {
+            "type": "string",
+            "description": "Cursor for retrieving the next page. If null, there are no more pages available."
+          },
+          "total": {
+            "type": "long",
+            "description": "Total number of items available across all pages"
+          },
+          "data": {
+            "type": "array",
+            "description": "Array of data items for the current page"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Page size limit for pagination. Maximum allowed is 1000 items per request."
+          }
+        },
+        "description": "Generic paginated response using cursor-based pagination for efficient data retrieval"
+      },
+      "WorkflowProfileInput": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "Profile name. Trimmed; must be non-blank, at most 255 characters, and unique across the server.",
             "example": "Field Worker Profile"
           },
           "description": {
+            "maxLength": 4096,
             "type": "string",
-            "description": "Optional description.",
+            "description": "Optional description. Trimmed; at most 4096 characters.",
             "example": "Simplified interface for field data collectors"
-          },
-          "id": {
-            "type": "integer",
-            "description": "Server-assigned profile ID. Use it in /{id} URLs and when attaching the profile to roles.",
-            "readOnly": true,
-            "example": "1"
           },
           "config": {
             "$ref": "#/components/schemas/WorkflowProfileConfig"
-          },
-          "version": {
-            "type": "integer",
-            "description": "Starts at 1 and is incremented by the server on every successful update. Read-only.",
-            "readOnly": true,
-            "example": "2"
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "Last-update time, ISO 8601, UTC.",
-            "readOnly": true,
-            "example": "2026-02-11T10:05:00Z"
           }
         },
-        "description": "A workflow profile as returned by the API."
+        "description": "Request body for creating or updating a workflow profile."
       },
-      "DatasetType": {
+      "CasesManagementOptions": {
+        "type": "object",
+        "properties": {
+          "otherUserCode": {
+            "type": "string",
+            "description": "Require users to enter a manager override code to view or select enumerators that aren't explicitly available to their username. Leave blank to allow all usernames to view or select all enumerators."
+          },
+          "showFinalizedSentWhenTree": {
+            "type": "boolean",
+            "description": "Whether to show finalized/sent cases when using tree view",
+            "example": "true"
+          },
+          "enumeratorDatasetId": {
+            "type": "string",
+            "description": "ID of the enumerator dataset used to filter the case list.",
+            "example": "enum_dataset_123"
+          },
+          "showColumnsWhenTable": {
+            "type": "array",
+            "description": "List of column names to display when using table view. Only applicable when displayMode is 'table'",
+            "example": "[\"id\", \"label\"]",
+            "items": {
+              "type": "string"
+            }
+          },
+          "displayMode": {
+            "type": "string",
+            "description": "Display mode for cases - either 'tree' or 'table' view",
+            "example": "table",
+            "enum": [
+              "tree",
+              "table"
+            ]
+          },
+          "entryMode": {
+            "$ref": "#/components/schemas/EnumeratorAppearanceEntryModeDef"
+          }
+        },
+        "description": "Configuration options for cases management."
+      },
+      "DatasetInput": {
+        "required": [
+          "discriminator"
+        ],
+        "type": "object",
+        "properties": {
+          "idFormatOptions": {
+            "$ref": "#/components/schemas/IdFormatOptions"
+          },
+          "allowOfflineUpdates": {
+            "type": "boolean",
+            "description": "Whether the dataset allows offline updates. "
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the dataset. Must be unique across the system."
+          },
+          "title": {
+            "type": "string",
+            "description": "Display title for the dataset."
+          },
+          "casesManagementOptions": {
+            "$ref": "#/components/schemas/CasesManagementOptions"
+          },
+          "locationContext": {
+            "$ref": "#/components/schemas/LocationContext"
+          },
+          "discriminator": {
+            "$ref": "#/components/schemas/DatasetDiscriminator"
+          },
+          "uniqueRecordField": {
+            "type": "string",
+            "description": "Field name to use for unique record identification. "
+          }
+        },
+        "description": "Input model for creating and updating datasets with all required configuration options"
+      },
+      "AiRunAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "acceptedItems": {
+            "type": "integer",
+            "description": "Number of per-form items accepted into the run."
+          },
+          "runId": {
+            "type": "integer",
+            "description": "Server-generated run id. Use it with the status and cancel endpoints."
+          },
+          "message": {
+            "type": "string",
+            "description": "Confirmation message for submission or cancellation. Use runId and status for program logic."
+          },
+          "status": {
+            "type": "string",
+            "description": "Preparation status: progress selecting submissions and queueing AI work. DONE means preparation finished; AI processing may still be running."
+          }
+        },
+        "description": "Accepted AI run."
+      },
+      "BulkUserDeletionResponse": {
+        "type": "object"
+      },
+      "DatasetRecordFieldMap": {
+        "type": "object",
+        "description": "Object whose keys are dataset field names and values are the corresponding string values for one record."
+      },
+      "BulkUserSummary": {
+        "type": "object"
+      },
+      "FormListConfig": {
+        "type": "object",
+        "properties": {
+          "show_metadata": {
+            "type": "boolean",
+            "description": "Show form metadata (form ID, version) alongside form titles. Default: true.",
+            "example": "true"
+          }
+        },
+        "description": "Form list display options for the Manage Cases and form listing pages. All fields are optional; omitted fields keep their defaults."
+      },
+      "PasswordOption": {
+        "type": "string",
+        "description": "**Possible values:**\n\n* **USER_SET_OWN**: Send the new user an invitation to choose their own password. No password is sent in this request.\n* **SET_NOW**: Set the password in this request. Requires password and confirmPassword. This is the default when passwordOption is omitted.",
+        "enum": [
+          "USER_SET_OWN",
+          "SET_NOW"
+        ],
+        "x-enum-descriptions": [
+          "* **USER_SET_OWN**: Send the new user an invitation to choose their own password. No password is sent in this request.",
+          "* **SET_NOW**: Set the password in this request. Requires password and confirmPassword. This is the default when passwordOption is omitted."
+        ],
+        "x-enum-varnames": [
+          "USER_SET_OWN",
+          "SET_NOW"
+        ]
+      },
+      "LocationContext": {
+        "required": [
+          "parentGroupId"
+        ],
+        "type": "object",
+        "properties": {
+          "parentGroupId": {
+            "type": "integer",
+            "description": "ID of the parent group where this dataset will be positioned",
+            "example": "25"
+          },
+          "siblingBelow": {
+            "$ref": "#/components/schemas/ContextItem"
+          },
+          "siblingAbove": {
+            "$ref": "#/components/schemas/ContextItem"
+          }
+        },
+        "description": "Context for positioning the dataset within the group hierarchy and relative to other items"
+      },
+      "CustomMenuItem": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "open_in_new_tab": {
+            "type": "boolean",
+            "description": "Per-item override for the link target behavior. When omitted (null), inherits the global open_links_in_new_tab setting; when true or false, overrides it for this item only.",
+            "example": "false"
+          },
+          "icon": {
+            "type": "string",
+            "description": "FontAwesome icon class name matching fa-<name>. Optional.",
+            "example": "fa-briefcase"
+          },
+          "form_id": {
+            "type": "string",
+            "description": "Form ID to link to. Required when type is \"form\", ignored otherwise.",
+            "example": "registration_v2"
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable identifier, unique within the list. Optional in general, but required to translate this item's label via locale_overrides (which references items by id, not position).",
+            "example": "my_cases"
+          },
+          "label": {
+            "type": "string",
+            "description": "Display text for the item.",
+            "example": "My Cases"
+          },
+          "page": {
+            "type": "string",
+            "description": "Standard Collect page name. Required when type is \"page\", ignored otherwise.",
+            "example": "cases",
+            "enum": [
+              "cases",
+              "forms",
+              "saved"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Item type: \"form\" (link to fill a form), \"link\" (URL), or \"page\" (standard Collect page). Required on every custom item.",
+            "example": "page",
+            "enum": [
+              "form",
+              "link",
+              "page"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to link to. Required when type is \"link\". Either a relative path starting with '/' or an absolute 'https://' URL. Plaintext http, protocol-relative URLs and other schemes are rejected. Validated whenever present, whatever the type.",
+            "example": "/collect/cases.html"
+          }
+        },
+        "description": "A custom menu/navigation item, used by both menu_config.custom_items and form_header_config.custom_items. Only type is always required; formId, url and page are each required for the matching type. All other fields are optional."
+      },
+      "DatasetDiscriminator": {
         "type": "string",
         "enum": [
-          "SERVER",
-          "CLIENT",
-          "REPORT"
+          "CASES",
+          "ENUMERATORS",
+          "DATA"
+        ]
+      },
+      "FieldInfo": {
+        "type": "object"
+      },
+      "FieldMode": {
+        "type": "string",
+        "enum": [
+          "ALL",
+          "NONE",
+          "SPECIFIC"
+        ]
+      },
+      "BulkUserFailureResult": {
+        "type": "object"
+      },
+      "AiBatchRequestCapabilities": {
+        "type": "object",
+        "properties": {
+          "transcribeAudio": {
+            "type": "boolean",
+            "description": "Transcribe audio selected by fieldScope.audio."
+          },
+          "translateText": {
+            "type": "boolean",
+            "description": "Translate text answers selected by fieldScope.text into targetLanguage."
+          },
+          "translateTranscripts": {
+            "type": "boolean",
+            "description": "Translate transcripts for audio selected by fieldScope.audio into targetLanguage. Includes saved transcripts and those this run produces when transcribeAudio is true."
+          }
+        },
+        "description": "Choose whether to transcribe audio, translate text answers, or translate transcripts."
+      },
+      "HelpPlaceholder": {
+        "type": "string",
+        "enum": [
+          "CLIENT_NAME"
         ]
       },
       "MenuConfig": {
@@ -5019,487 +5796,7 @@
         },
         "description": "Main menu configuration: which buttons appear on the Collect main menu page, their layout, custom labels, and optional custom items."
       },
-      "DataLinkClass": {
-        "type": "string",
-        "enum": [
-          "FORM",
-          "FUSION_TABLE",
-          "SPREADSHEET",
-          "ZAPIER",
-          "WEBHOOK"
-        ]
-      },
-      "CasesManagementOptions": {
-        "type": "object",
-        "properties": {
-          "otherUserCode": {
-            "type": "string",
-            "description": "Require users to enter a manager override code to view or select enumerators that aren't explicitly available to their username. Leave blank to allow all usernames to view or select all enumerators."
-          },
-          "showFinalizedSentWhenTree": {
-            "type": "boolean",
-            "description": "Whether to show finalized/sent cases when using tree view",
-            "example": "true"
-          },
-          "enumeratorDatasetId": {
-            "type": "string",
-            "description": "ID of the enumerator dataset used to filter the case list.",
-            "example": "enum_dataset_123"
-          },
-          "showColumnsWhenTable": {
-            "type": "array",
-            "description": "List of column names to display when using table view. Only applicable when displayMode is 'table'",
-            "example": "[\"id\", \"label\"]",
-            "items": {
-              "type": "string"
-            }
-          },
-          "displayMode": {
-            "type": "string",
-            "description": "Display mode for cases - either 'tree' or 'table' view",
-            "example": "table",
-            "enum": [
-              "tree",
-              "table"
-            ]
-          },
-          "entryMode": {
-            "$ref": "#/components/schemas/EnumeratorAppearanceEntryModeDef"
-          }
-        },
-        "description": "Configuration options for cases management."
-      },
-      "DataLinkModel": {
-        "type": "object"
-      },
-      "FieldInfo": {
-        "type": "object"
-      },
-      "CustomMenuItem": {
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "open_in_new_tab": {
-            "type": "boolean",
-            "description": "Per-item override for the link target behavior. When omitted (null), inherits the global open_links_in_new_tab setting; when true or false, overrides it for this item only.",
-            "example": "false"
-          },
-          "icon": {
-            "type": "string",
-            "description": "FontAwesome icon class name matching fa-<name>. Optional.",
-            "example": "fa-briefcase"
-          },
-          "form_id": {
-            "type": "string",
-            "description": "Form ID to link to. Required when type is \"form\", ignored otherwise.",
-            "example": "registration_v2"
-          },
-          "id": {
-            "type": "string",
-            "description": "Stable identifier, unique within the list. Optional in general, but required to translate this item's label via locale_overrides (which references items by id, not position).",
-            "example": "my_cases"
-          },
-          "label": {
-            "type": "string",
-            "description": "Display text for the item.",
-            "example": "My Cases"
-          },
-          "page": {
-            "type": "string",
-            "description": "Standard Collect page name. Required when type is \"page\", ignored otherwise.",
-            "example": "cases",
-            "enum": [
-              "cases",
-              "forms",
-              "saved"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "description": "Item type: \"form\" (link to fill a form), \"link\" (URL), or \"page\" (standard Collect page). Required on every custom item.",
-            "example": "page",
-            "enum": [
-              "form",
-              "link",
-              "page"
-            ]
-          },
-          "url": {
-            "type": "string",
-            "description": "URL to link to. Required when type is \"link\". Either a relative path starting with '/' or an absolute 'https://' URL. Plaintext http, protocol-relative URLs and other schemes are rejected. Validated whenever present, whatever the type.",
-            "example": "/collect/cases.html"
-          }
-        },
-        "description": "A custom menu/navigation item, used by both menu_config.custom_items and form_header_config.custom_items. Only type is always required; formId, url and page are each required for the matching type. All other fields are optional."
-      },
-      "Dataset": {
-        "type": "object"
-      },
-      "FormListConfig": {
-        "type": "object",
-        "properties": {
-          "show_metadata": {
-            "type": "boolean",
-            "description": "Show form metadata (form ID, version) alongside form titles. Default: true.",
-            "example": "true"
-          }
-        },
-        "description": "Form list display options for the Manage Cases and form listing pages. All fields are optional; omitted fields keep their defaults."
-      },
-      "UiMessages": {
-        "type": "object",
-        "properties": {
-          "empty_cases_message": {
-            "type": "string",
-            "description": "Custom message shown when there are no cases to display (on cases pages). Null = system default.",
-            "example": "No households assigned. Please check with your supervisor."
-          },
-          "empty_forms_message": {
-            "type": "string",
-            "description": "Custom message shown when there are no saved forms to display (on instances pages). Null = system default.",
-            "example": "No forms are available for you right now."
-          },
-          "main_menu_message": {
-            "type": "string",
-            "description": "Intro/landing message displayed at the top of the main menu page, below the logo and subtitle. Plain text.",
-            "example": "Welcome! Please select a form below to begin."
-          },
-          "main_menu_subtitle": {
-            "type": "string",
-            "description": "Custom subtitle for the main menu page. Replaces the default \"Secure, high-quality data collection\" text.",
-            "example": "Field Data Collection Portal"
-          }
-        },
-        "description": "Custom UI messages: empty-state messages and main menu landing text. All fields are optional; null fields use the system defaults."
-      },
-      "Direction": {
-        "type": "string",
-        "enum": [
-          "ASC",
-          "DESC"
-        ]
-      },
-      "ItemClass": {
-        "type": "string",
-        "enum": [
-          "DATASET",
-          "FORM",
-          "GROUP",
-          "FORM_WORKBOOK"
-        ]
-      },
-      "DatasetDiscriminator": {
-        "type": "string",
-        "enum": [
-          "CASES",
-          "ENUMERATORS",
-          "DATA"
-        ]
-      },
-      "UserInput": {
-        "required": [
-          "username"
-        ],
-        "type": "object",
-        "properties": {
-          "password": {
-            "type": "string",
-            "description": "Initial password. Required when passwordOption is \"SET_NOW\" (including when passwordOption is omitted), unless the username's domain is configured for external authentication. Must satisfy the server's password requirements.",
-            "example": "S0me-Str0ng-Passw0rd"
-          },
-          "roleId": {
-            "type": "string",
-            "description": "The role to assign. Required when creating a user; on a bulk edit supply it only to change the role, where at least one of roleId or password must be present. Must be an existing role, and no higher than the calling user's own role (403 otherwise); only an administrator can create an administrator.",
-            "example": "enumerator"
-          },
-          "includePasswordInEmail": {
-            "type": "boolean",
-            "description": "Whether to include the password in the account email sent to the new user. Default: false.",
-            "example": "false"
-          },
-          "confirmPassword": {
-            "type": "string",
-            "description": "Repeat of password, required whenever password is required. Must match password exactly.",
-            "example": "S0me-Str0ng-Passw0rd"
-          },
-          "passwordOption": {
-            "$ref": "#/components/schemas/PasswordOption"
-          },
-          "username": {
-            "type": "string",
-            "description": "The username to create. Must be an email address unless roleId is a data-collector role, and must not already exist on the server (409 otherwise).",
-            "example": "field.worker@example.com"
-          }
-        },
-        "description": "A user in a create or bulk-edit request. This one schema serves POST /api/v2/users, the bulk create endpoints, and the bulk edit endpoints, so only username is required on every one of them. On the create paths roleId is required as well, and password/confirmPassword follow passwordOption; on the bulk edit paths supply only the fields you want to change, with at least one of password or roleId present. Each operation's description states its own rules."
-      },
-      "DatasetRecordFieldMap": {
-        "type": "object",
-        "description": "Object whose keys are dataset field names and values are the corresponding string values for one record."
-      },
-      "RoleOutput": {
-        "type": "object"
-      },
-      "BulkUserResponse": {
-        "type": "object"
-      },
-      "DatasetDto": {
-        "type": "object"
-      },
-      "UserOutput": {
-        "type": "object"
-      },
-      "DatasetSummary": {
-        "type": "object"
-      },
-      "PublishingStatus": {
-        "type": "object"
-      },
-      "EnumeratorAppearanceEntryModeDef": {
-        "type": "string",
-        "enum": [
-          "LIST",
-          "ENTRY",
-          "SCAN"
-        ]
-      },
-      "MenuConfigLabels": {
-        "type": "object",
-        "properties": {
-          "delete_saved_form_label": {
-            "type": "string",
-            "description": "Translated label for the \"Delete Saved Form\" button. Null = fall through to the base config.",
-            "example": "Supprimer un formulaire"
-          },
-          "manage_cases_label": {
-            "type": "string",
-            "description": "Translated label for the \"Manage Cases\" button. Null = fall through to the base config.",
-            "example": "Mes cas"
-          },
-          "fill_blank_form_label": {
-            "type": "string",
-            "description": "Translated label for the \"Fill Blank Form\" button. Null = fall through to the base config.",
-            "example": "Remplir un formulaire"
-          },
-          "edit_saved_form_label": {
-            "type": "string",
-            "description": "Translated label for the \"Edit Saved Form\" button. Null = fall through to the base config.",
-            "example": "Modifier un formulaire"
-          },
-          "custom_items": {
-            "type": "array",
-            "description": "Per-item label translations, matched by the stable id of the corresponding item in the base menu_config.custom_items.",
-            "items": {
-              "$ref": "#/components/schemas/CustomItemLabelOverride"
-            }
-          }
-        },
-        "description": "Label-only subset of menu_config used inside locale_overrides: translated menu button labels and custom item labels. All fields are optional; omitted fields keep their defaults."
-      },
-      "Operator": {
-        "type": "string",
-        "enum": [
-          "GT",
-          "GTE",
-          "LT",
-          "LTE"
-        ]
-      },
-      "RemoteErrorResponse": {
-        "type": "object"
-      },
-      "BulkUserFailureResult": {
-        "type": "object"
-      },
-      "LocationContext": {
-        "required": [
-          "parentGroupId"
-        ],
-        "type": "object",
-        "properties": {
-          "parentGroupId": {
-            "type": "integer",
-            "description": "ID of the parent group where this dataset will be positioned",
-            "example": "25"
-          },
-          "siblingBelow": {
-            "$ref": "#/components/schemas/ContextItem"
-          },
-          "siblingAbove": {
-            "$ref": "#/components/schemas/ContextItem"
-          }
-        },
-        "description": "Context for positioning the dataset within the group hierarchy and relative to other items"
-      },
       "GenericResponse": {
-        "type": "object"
-      },
-      "BulkUserSummary": {
-        "type": "object"
-      },
-      "FormFillingOverride": {
-        "type": "object",
-        "properties": {
-          "skip_welcome_page": {
-            "type": "boolean",
-            "description": "Override the global skip_welcome_page for this form. Null = inherit.",
-            "example": "true"
-          },
-          "hide_finalize_checkbox": {
-            "type": "boolean",
-            "description": "Override the global hide_finalize_checkbox for this form. Null = inherit.",
-            "example": "true"
-          },
-          "hide_instance_name": {
-            "type": "boolean",
-            "description": "Override the global hide_instance_name for this form. Null = inherit.",
-            "example": "true"
-          },
-          "pinned_forms": {
-            "type": "array",
-            "description": "Override the global pinned_forms while this form is being filled. Null (or omitted) inherits the global list; an empty list explicitly shows no pinned forms for this form.",
-            "example": "[\"follow_up_v3\"]",
-            "items": {
-              "type": "string"
-            }
-          },
-          "post_submit_form_id": {
-            "type": "string",
-            "description": "Override the global post_submit_form_id for this form. Must be a valid SurveyCTO form ID. Null = inherit.",
-            "example": "follow_up_v3"
-          },
-          "post_submit_url": {
-            "type": "string",
-            "description": "Override the global post_submit_url for this form. Either a relative path starting with '/' or an absolute https URL, which may point outside this server. Null = inherit.",
-            "example": "/collect/cases.html"
-          },
-          "auto_send": {
-            "type": "boolean",
-            "description": "Override the global auto_send for this form. Null = inherit.",
-            "example": "true"
-          }
-        },
-        "description": "Per-form override of form_filling_config settings. All fields are nullable: null (or omitted) means \"inherit the global default\"."
-      },
-      "DatasetStatus": {
-        "type": "string",
-        "description": "**Possible values:**\n\n* **READY**: Dataset is ready for use, all data is synchronized and up-to-date\n* **DIRTY**: Dataset is currently being synchronized, data may be incomplete or in transition",
-        "enum": [
-          "READY",
-          "DIRTY"
-        ],
-        "x-enum-descriptions": [
-          "* **READY**: Dataset is ready for use, all data is synchronized and up-to-date",
-          "* **DIRTY**: Dataset is currently being synchronized, data may be incomplete or in transition"
-        ],
-        "x-enum-varnames": [
-          "READY",
-          "DIRTY"
-        ]
-      },
-      "WorkflowProfileConfig": {
-        "type": "object",
-        "properties": {
-          "theme_config": {
-            "$ref": "#/components/schemas/ThemeConfig"
-          },
-          "locale_overrides": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/LocaleOverride"
-            },
-            "description": "Per-language translations of profile strings. Keys are browser-language codes (e.g. \"fr\", \"es\", \"hi\") or admin-uploaded translation-table basenames; values are partial overlays -- only non-null fields replace the top-level defaults. An override section is applied only when the corresponding base section is present in the profile."
-          },
-          "form_list_config": {
-            "$ref": "#/components/schemas/FormListConfig"
-          },
-          "form_filling_config": {
-            "$ref": "#/components/schemas/FormFillingConfig"
-          },
-          "collect_entry_url": {
-            "type": "string",
-            "description": "Landing page when the user navigates to /collect. Either a relative path starting with '/' or an absolute https URL, which may point outside this server. Protocol-relative URLs ('//host/...') and any other scheme are rejected. Null or blank = default main menu (/collect/main.html).",
-            "example": "/collect/cases.html"
-          },
-          "menu_config": {
-            "$ref": "#/components/schemas/MenuConfig"
-          },
-          "ui_messages": {
-            "$ref": "#/components/schemas/UiMessages"
-          },
-          "open_links_in_new_tab": {
-            "type": "boolean",
-            "description": "Global default for whether links (form fill-out buttons, pinned forms, custom menu items) open in a new browser tab. Individual custom items can override this via their own open_in_new_tab field. Default: true.",
-            "example": "true"
-          },
-          "form_header_config": {
-            "$ref": "#/components/schemas/FormHeaderConfig"
-          }
-        },
-        "description": "Workflow profile configuration. All sections and fields are optional; omitted sections/fields use their defaults (everything visible, no custom labels, messages, or theme)."
-      },
-      "IdFormatOptions": {
-        "type": "object",
-        "properties": {
-          "prefix": {
-            "type": "string",
-            "description": "Prefix to be added at the beginning of the generated ID"
-          },
-          "allowCapitalLetters": {
-            "type": "boolean",
-            "description": "Whether to allow capital letters in the generated ID"
-          },
-          "suffix": {
-            "type": "string",
-            "description": "Suffix to be added at the end of the generated ID"
-          },
-          "numberOfDigits": {
-            "type": "integer",
-            "description": "Number of digits to include in the generated ID"
-          }
-        },
-        "description": "Configuration options for ID format used in auto-generation of enumerator IDs"
-      },
-      "ContextItem": {
-        "type": "object",
-        "properties": {
-          "itemClass": {
-            "$ref": "#/components/schemas/ItemClass"
-          },
-          "id": {
-            "type": "string",
-            "description": "Unique identifier of the item to use as a positioning reference"
-          }
-        },
-        "description": "Reference to an item in the group hierarchy used for relative positioning"
-      },
-      "DataLinkSummary": {
-        "type": "object"
-      },
-      "LocaleOverride": {
-        "type": "object",
-        "properties": {
-          "ui_messages": {
-            "$ref": "#/components/schemas/UiMessages"
-          },
-          "menu_config": {
-            "$ref": "#/components/schemas/MenuConfigLabels"
-          },
-          "form_header_config": {
-            "$ref": "#/components/schemas/FormHeaderConfigLabels"
-          }
-        },
-        "description": "Per-language partial overlay of translatable profile strings. Only non-null fields replace the top-level defaults; each section is applied only when present in the base config."
-      },
-      "HelpPlaceholder": {
-        "type": "string",
-        "enum": [
-          "CLIENT_NAME"
-        ]
-      },
-      "DatasetDataResponse": {
         "type": "object"
       },
       "FormHeaderConfig": {
@@ -5560,106 +5857,108 @@
         },
         "description": "Form-filling header/navbar configuration: button visibility, label overrides, and custom navigation items. Form-filling behavior settings (auto-send, skip welcome, etc.) are in form_filling_config. All fields are optional; omitted fields keep their defaults."
       },
-      "DataLinkType": {
-        "type": "string",
-        "enum": [
-          "INCOMING",
-          "OUTGOING"
-        ]
-      },
-      "DatasetUploadMode": {
-        "type": "string",
-        "enum": [
-          "append",
-          "merge",
-          "clear"
-        ]
-      },
-      "CursorPaginatedResponse": {
+      "AiBatchRequestSubmissionScope": {
         "type": "object",
         "properties": {
-          "nextCursor": {
-            "type": "string",
-            "description": "Cursor for retrieving the next page. If null, there are no more pages available."
-          },
-          "total": {
-            "type": "long",
-            "description": "Total number of items available across all pages"
-          },
-          "data": {
-            "type": "array",
-            "description": "Array of data items for the current page"
-          },
-          "limit": {
+          "untilMs": {
             "type": "integer",
-            "description": "Page size limit for pagination. Maximum allowed is 1000 items per request."
+            "description": "Include submissions that finished uploading before this time, in milliseconds since the Unix epoch. When both fromMs and untilMs are provided, fromMs must be before untilMs."
+          },
+          "fromMs": {
+            "type": "integer",
+            "description": "Include submissions that finished uploading at or after this time, in milliseconds since the Unix epoch."
+          },
+          "uuids": {
+            "type": "array",
+            "description": "Restrict processing to these submission instance ids. Omit (null) to process all matching submissions; an explicitly empty list processes nothing.",
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "description": "Generic paginated response using cursor-based pagination for efficient data retrieval"
+        "description": "Submission-level scope."
       },
-      "WorkflowProfileInput": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 255,
-            "type": "string",
-            "description": "Profile name. Trimmed; must be non-blank, at most 255 characters, and unique across the server.",
-            "example": "Field Worker Profile"
-          },
-          "description": {
-            "maxLength": 4096,
-            "type": "string",
-            "description": "Optional description. Trimmed; at most 4096 characters.",
-            "example": "Simplified interface for field data collectors"
-          },
-          "config": {
-            "$ref": "#/components/schemas/WorkflowProfileConfig"
-          }
-        },
-        "description": "Request body for creating or updating a workflow profile."
-      },
-      "BulkUserDeletionResponse": {
-        "type": "object"
-      },
-      "PasswordOption": {
+      "QualityCheckType": {
         "type": "string",
-        "description": "**Possible values:**\n\n* **USER_SET_OWN**: Send the new user an invitation to choose their own password. No password is sent in this request.\n* **SET_NOW**: Set the password in this request. Requires password and confirmPassword. This is the default when passwordOption is omitted.",
         "enum": [
-          "USER_SET_OWN",
-          "SET_NOW"
-        ],
-        "x-enum-descriptions": [
-          "* **USER_SET_OWN**: Send the new user an invitation to choose their own password. No password is sent in this request.",
-          "* **SET_NOW**: Set the password in this request. Requires password and confirmPassword. This is the default when passwordOption is omitted."
-        ],
-        "x-enum-varnames": [
-          "USER_SET_OWN",
-          "SET_NOW"
+          "NOT_UNIQUE_KEY",
+          "NUMERIC_DATA",
+          "VAL_TOO_LOW",
+          "VAL_TOO_HIGH",
+          "VAL_IS_OUTLIER",
+          "MEAN_TOO_LOW",
+          "MEAN_TOO_HIGH",
+          "VALUE_TOO_FREQ",
+          "VALUE_TOO_INFREQ",
+          "GROUP_MEAN_DIFFERENT",
+          "GROUP_DIST_DIFFERENT"
         ]
       },
-      "UserUpdateInput": {
+      "DataStructure": {
+        "type": "string",
+        "enum": [
+          "CSV",
+          "JSON"
+        ]
+      },
+      "LocaleOverride": {
         "type": "object",
         "properties": {
-          "password": {
-            "type": "string",
-            "description": "New password. Optional; when present, confirmPassword is required and must match. Must satisfy the server's password requirements.",
-            "example": "N3w-Str0ng-Passw0rd"
+          "ui_messages": {
+            "$ref": "#/components/schemas/UiMessages"
           },
-          "roleId": {
-            "type": "string",
-            "description": "New role. Optional; when present it must be an existing role and no higher than the calling user's own role.",
-            "example": "enumerator"
+          "menu_config": {
+            "$ref": "#/components/schemas/MenuConfigLabels"
           },
-          "confirmPassword": {
-            "type": "string",
-            "description": "Repeat of the new password. Required when password is present, ignored otherwise.",
-            "example": "N3w-Str0ng-Passw0rd"
+          "form_header_config": {
+            "$ref": "#/components/schemas/FormHeaderConfigLabels"
           }
         },
-        "description": "Request body for updating a user. Every field is individually optional, but at least one of password or roleId must be present \u2014 an otherwise empty body is rejected with 400."
+        "description": "Per-language partial overlay of translatable profile strings. Only non-null fields replace the top-level defaults; each section is applied only when present in the base config."
+      },
+      "FormFillingOverride": {
+        "type": "object",
+        "properties": {
+          "skip_welcome_page": {
+            "type": "boolean",
+            "description": "Override the global skip_welcome_page for this form. Null = inherit.",
+            "example": "true"
+          },
+          "hide_finalize_checkbox": {
+            "type": "boolean",
+            "description": "Override the global hide_finalize_checkbox for this form. Null = inherit.",
+            "example": "true"
+          },
+          "hide_instance_name": {
+            "type": "boolean",
+            "description": "Override the global hide_instance_name for this form. Null = inherit.",
+            "example": "true"
+          },
+          "pinned_forms": {
+            "type": "array",
+            "description": "Override the global pinned_forms while this form is being filled. Null (or omitted) inherits the global list; an empty list explicitly shows no pinned forms for this form.",
+            "example": "[\"follow_up_v3\"]",
+            "items": {
+              "type": "string"
+            }
+          },
+          "post_submit_form_id": {
+            "type": "string",
+            "description": "Override the global post_submit_form_id for this form. Must be a valid SurveyCTO form ID. Null = inherit.",
+            "example": "follow_up_v3"
+          },
+          "post_submit_url": {
+            "type": "string",
+            "description": "Override the global post_submit_url for this form. Either a relative path starting with '/' or an absolute https URL, which may point outside this server. Null = inherit.",
+            "example": "/collect/cases.html"
+          },
+          "auto_send": {
+            "type": "boolean",
+            "description": "Override the global auto_send for this form. Null = inherit.",
+            "example": "true"
+          }
+        },
+        "description": "Per-form override of form_filling_config settings. All fields are nullable: null (or omitted) means \"inherit the global default\"."
       },
       "DatasetOutput": {
         "type": "object",
@@ -5723,26 +6022,6 @@
           }
         }
       },
-      "QualityCheckType": {
-        "type": "string",
-        "enum": [
-          "NOT_UNIQUE_KEY",
-          "NUMERIC_DATA",
-          "VAL_TOO_LOW",
-          "VAL_TOO_HIGH",
-          "VAL_IS_OUTLIER",
-          "MEAN_TOO_LOW",
-          "MEAN_TOO_HIGH",
-          "VALUE_TOO_FREQ",
-          "VALUE_TOO_INFREQ",
-          "GROUP_MEAN_DIFFERENT",
-          "GROUP_DIST_DIFFERENT"
-        ]
-      },
-      "RecordSearchRequest": {
-        "type": "object",
-        "description": "Optional search body with \"filters\" and/or \"fields\". Dataset search: filters on dataset columns plus optional modifiedAt filters; form submissions: filters only on submission metadata fields (see Forms operation descriptions)."
-      },
       "FormFillingConfig": {
         "type": "object",
         "properties": {
@@ -5794,6 +6073,92 @@
         },
         "description": "Form-filling behavior: welcome screen, submission flow, save-and-exit screen, and post-submission navigation. Settings apply globally; per-form overrides can be specified via form_overrides. All fields are optional; omitted fields keep their defaults."
       },
+      "DatasetSummary": {
+        "type": "object"
+      },
+      "DatasetDto": {
+        "type": "object"
+      },
+      "AiRunStatusItem": {
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "description": "Form id processed by this item."
+          },
+          "phase": {
+            "type": "string",
+            "description": "Current preparation phase for this form.",
+            "enum": [
+              "AUDIO",
+              "TEXT",
+              "DONE"
+            ]
+          },
+          "lastError": {
+            "type": "string",
+            "description": "Most recent item-level error, if any."
+          },
+          "encrypted": {
+            "type": "boolean",
+            "description": "True when the form is encrypted and the server cannot read its source content."
+          },
+          "translationEnqueued": {
+            "type": "integer",
+            "description": "Translation tasks queued for this form."
+          },
+          "lastSubmissionUuid": {
+            "type": "string",
+            "description": "Submission identifier marking text-preparation progress, if available. Informational; not needed for polling or cancellation."
+          },
+          "itemIndex": {
+            "type": "integer",
+            "description": "Zero-based position of this item in the submitted request."
+          },
+          "lastAudioAttachmentId": {
+            "type": "integer",
+            "description": "Audio attachment identifier marking transcription-preparation progress, if available. Informational; not needed for polling or cancellation."
+          },
+          "transcriptionEnqueued": {
+            "type": "integer",
+            "description": "Transcription tasks queued for this form."
+          },
+          "message": {
+            "type": "string",
+            "description": "Progress or outcome message for this form."
+          },
+          "status": {
+            "type": "string",
+            "description": "Preparation status for this form.",
+            "enum": [
+              "PENDING",
+              "DONE",
+              "FAILED"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "description": "Number of consecutive temporary errors while preparing work for this form. Resets when preparation makes progress."
+          }
+        },
+        "description": "Per-form progress within an AI run."
+      },
+      "UserOutput": {
+        "type": "object"
+      },
+      "ContextItem": {
+        "type": "object",
+        "properties": {
+          "itemClass": {
+            "$ref": "#/components/schemas/ItemClass"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the item to use as a positioning reference"
+          }
+        },
+        "description": "Reference to an item in the group hierarchy used for relative positioning"
+      },
       "DatasetChanges": {
         "type": "object",
         "properties": {
@@ -5827,61 +6192,260 @@
         },
         "description": "Summary of changes made to the dataset during the upload operation"
       },
-      "DatasetInput": {
-        "required": [
-          "discriminator"
-        ],
-        "type": "object",
-        "properties": {
-          "idFormatOptions": {
-            "$ref": "#/components/schemas/IdFormatOptions"
-          },
-          "allowOfflineUpdates": {
-            "type": "boolean",
-            "description": "Whether the dataset allows offline updates. "
-          },
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the dataset. Must be unique across the system."
-          },
-          "title": {
-            "type": "string",
-            "description": "Display title for the dataset."
-          },
-          "casesManagementOptions": {
-            "$ref": "#/components/schemas/CasesManagementOptions"
-          },
-          "locationContext": {
-            "$ref": "#/components/schemas/LocationContext"
-          },
-          "discriminator": {
-            "$ref": "#/components/schemas/DatasetDiscriminator"
-          },
-          "uniqueRecordField": {
-            "type": "string",
-            "description": "Field name to use for unique record identification. "
-          }
-        },
-        "description": "Input model for creating and updating datasets with all required configuration options"
+      "DataLinkSummary": {
+        "type": "object"
       },
-      "CustomItemLabelOverride": {
+      "AiBatchRequestFieldSelection": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/FieldMode"
+          },
+          "fields": {
+            "type": "array",
+            "description": "Required when mode is SPECIFIC: a nonempty list of eligible field names. Ignored for ALL and NONE.",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "A capability's field selection."
+      },
+      "ItemClass": {
+        "type": "string",
+        "enum": [
+          "DATASET",
+          "FORM",
+          "GROUP",
+          "FORM_WORKBOOK"
+        ]
+      },
+      "DatasetType": {
+        "type": "string",
+        "enum": [
+          "SERVER",
+          "CLIENT",
+          "REPORT"
+        ]
+      },
+      "RoleOutput": {
+        "type": "object"
+      },
+      "EnumeratorAppearanceEntryModeDef": {
+        "type": "string",
+        "enum": [
+          "LIST",
+          "ENTRY",
+          "SCAN"
+        ]
+      },
+      "WorkflowProfileConfig": {
+        "type": "object",
+        "properties": {
+          "theme_config": {
+            "$ref": "#/components/schemas/ThemeConfig"
+          },
+          "locale_overrides": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LocaleOverride"
+            },
+            "description": "Per-language translations of profile strings. Keys are browser-language codes (e.g. \"fr\", \"es\", \"hi\") or admin-uploaded translation-table basenames; values are partial overlays -- only non-null fields replace the top-level defaults. An override section is applied only when the corresponding base section is present in the profile."
+          },
+          "form_list_config": {
+            "$ref": "#/components/schemas/FormListConfig"
+          },
+          "form_filling_config": {
+            "$ref": "#/components/schemas/FormFillingConfig"
+          },
+          "collect_entry_url": {
+            "type": "string",
+            "description": "Landing page when the user navigates to /collect. Either a relative path starting with '/' or an absolute https URL, which may point outside this server. Protocol-relative URLs ('//host/...') and any other scheme are rejected. Null or blank = default main menu (/collect/main.html).",
+            "example": "/collect/cases.html"
+          },
+          "menu_config": {
+            "$ref": "#/components/schemas/MenuConfig"
+          },
+          "ui_messages": {
+            "$ref": "#/components/schemas/UiMessages"
+          },
+          "open_links_in_new_tab": {
+            "type": "boolean",
+            "description": "Global default for whether links (form fill-out buttons, pinned forms, custom menu items) open in a new browser tab. Individual custom items can override this via their own open_in_new_tab field. Default: true.",
+            "example": "true"
+          },
+          "form_header_config": {
+            "$ref": "#/components/schemas/FormHeaderConfig"
+          }
+        },
+        "description": "Workflow profile configuration. All sections and fields are optional; omitted sections/fields use their defaults (everything visible, no custom labels, messages, or theme)."
+      },
+      "WorkflowProfileOutput": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "description": "Creation time, ISO 8601, UTC.",
+            "readOnly": true,
+            "example": "2026-02-11T10:00:00Z"
+          },
+          "name": {
+            "type": "string",
+            "description": "Unique profile name.",
+            "example": "Field Worker Profile"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description.",
+            "example": "Simplified interface for field data collectors"
+          },
+          "id": {
+            "type": "integer",
+            "description": "Server-assigned profile ID. Use it in /{id} URLs and when attaching the profile to roles.",
+            "readOnly": true,
+            "example": "1"
+          },
+          "config": {
+            "$ref": "#/components/schemas/WorkflowProfileConfig"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Starts at 1 and is incremented by the server on every successful update. Read-only.",
+            "readOnly": true,
+            "example": "2"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last-update time, ISO 8601, UTC.",
+            "readOnly": true,
+            "example": "2026-02-11T10:05:00Z"
+          }
+        },
+        "description": "A workflow profile as returned by the API."
+      },
+      "ResultPolicy": {
+        "type": "string",
+        "enum": [
+          "SKIP",
+          "REPROCESS"
+        ]
+      },
+      "AiBatchRequestFieldScope": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/AiBatchRequestFieldSelection"
+          },
+          "audio": {
+            "$ref": "#/components/schemas/AiBatchRequestFieldSelection"
+          }
+        },
+        "description": "Field-level scope, per capability."
+      },
+      "DatasetOptionsModel": {
+        "type": "object"
+      },
+      "BulkUserResponse": {
+        "type": "object"
+      },
+      "RecordSearchRequest": {
+        "type": "object",
+        "description": "Optional search body with \"filters\" and/or \"fields\". Dataset search: filters on dataset columns plus optional modifiedAt filters; form submissions: filters only on submission metadata fields (see Forms operation descriptions)."
+      },
+      "UserInput": {
         "required": [
-          "id"
+          "username"
         ],
         "type": "object",
         "properties": {
-          "id": {
+          "password": {
             "type": "string",
-            "description": "The id of the custom item in the base config this translation applies to. Must match an existing item id.",
-            "example": "my_cases"
+            "description": "Initial password. Required when passwordOption is \"SET_NOW\" (including when passwordOption is omitted), unless the username's domain is configured for external authentication. Must satisfy the server's password requirements.",
+            "example": "S0me-Str0ng-Passw0rd"
           },
-          "label": {
+          "roleId": {
             "type": "string",
-            "description": "The translated display text for the item.",
-            "example": "Mes cas"
+            "description": "The role to assign. Required when creating a user; on a bulk edit supply it only to change the role, where at least one of roleId or password must be present. Must be an existing role, and no higher than the calling user's own role (403 otherwise); only an administrator can create an administrator.",
+            "example": "enumerator"
+          },
+          "includePasswordInEmail": {
+            "type": "boolean",
+            "description": "Whether to include the password in the account email sent to the new user. Default: false.",
+            "example": "false"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "Repeat of password, required whenever password is required. Must match password exactly.",
+            "example": "S0me-Str0ng-Passw0rd"
+          },
+          "passwordOption": {
+            "$ref": "#/components/schemas/PasswordOption"
+          },
+          "username": {
+            "type": "string",
+            "description": "The username to create. Must be an email address unless roleId is a data-collector role, and must not already exist on the server (409 otherwise).",
+            "example": "field.worker@example.com"
           }
         },
-        "description": "Translated label for one custom item, referenced by the item's stable id in the base config's custom_items list. Only the label can be translated; the item structure stays the same."
+        "description": "A user in a create or bulk-edit request. This one schema serves POST /api/v2/users, the bulk create endpoints, and the bulk edit endpoints, so only username is required on every one of them. On the create paths roleId is required as well, and password/confirmPassword follow passwordOption; on the bulk edit paths supply only the fields you want to change, with at least one of password or roleId present. Each operation's description states its own rules."
+      },
+      "Dataset": {
+        "type": "object"
+      },
+      "AiBatchRequest": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "The per-form requests. The caller needs Can use AI features permission on every form; otherwise the whole batch is rejected.",
+            "items": {
+              "$ref": "#/components/schemas/AiBatchRequestItem"
+            }
+          }
+        },
+        "description": "A batch of AI processing requests, with one item per form. Each item specifies the transcription and translation work to perform."
+      },
+      "UiMessages": {
+        "type": "object",
+        "properties": {
+          "empty_cases_message": {
+            "type": "string",
+            "description": "Custom message shown when there are no cases to display (on cases pages). Null = system default.",
+            "example": "No households assigned. Please check with your supervisor."
+          },
+          "empty_forms_message": {
+            "type": "string",
+            "description": "Custom message shown when there are no saved forms to display (on instances pages). Null = system default.",
+            "example": "No forms are available for you right now."
+          },
+          "main_menu_message": {
+            "type": "string",
+            "description": "Intro/landing message displayed at the top of the main menu page, below the logo and subtitle. Plain text.",
+            "example": "Welcome! Please select a form below to begin."
+          },
+          "main_menu_subtitle": {
+            "type": "string",
+            "description": "Custom subtitle for the main menu page. Replaces the default \"Secure, high-quality data collection\" text.",
+            "example": "Field Data Collection Portal"
+          }
+        },
+        "description": "Custom UI messages: empty-state messages and main menu landing text. All fields are optional; null fields use the system defaults."
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "description": "Use your SurveyCTO username and password over HTTPS.",
+        "scheme": "basic"
+      },
+      "openIdAccessToken": {
+        "type": "apiKey",
+        "description": "For servers configured for OpenID authentication, supply a valid access token for your SurveyCTO user in the oauth-access-token header over HTTPS.",
+        "name": "oauth-access-token",
+        "in": "header"
       }
     }
   }

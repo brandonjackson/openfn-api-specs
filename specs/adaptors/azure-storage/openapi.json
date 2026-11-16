@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Azure Blob Storage",
-    "version": "2021-12-02",
+    "version": "2026-10-06",
     "x-ms-code-generation-settings": {
       "header": "MIT",
       "strictSpecAdherence": false
@@ -518,7 +518,13 @@
         "description": "Returns the sku name and account kind ",
         "parameters": [
           {
+            "$ref": "#/components/parameters/Timeout"
+          },
+          {
             "$ref": "#/components/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/components/parameters/ClientRequestId"
           }
         ],
         "responses": {
@@ -559,7 +565,10 @@
                     "Standard_GRS",
                     "Standard_RAGRS",
                     "Standard_ZRS",
-                    "Premium_LRS"
+                    "Premium_LRS",
+                    "Standard_GZRS",
+                    "Premium_ZRS",
+                    "Standard_RAGZRS"
                   ]
                 }
               },
@@ -649,10 +658,10 @@
           "200": {
             "description": "Success.",
             "content": {
-              "application/xml": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "format": "file"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             },
@@ -1761,10 +1770,10 @@
           "202": {
             "description": "Success.",
             "content": {
-              "application/xml": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "format": "file"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             },
@@ -2696,6 +2705,9 @@
             "$ref": "#/components/parameters/ListBlobsInclude"
           },
           {
+            "$ref": "#/components/parameters/ListBlobsStartFrom"
+          },
+          {
             "$ref": "#/components/parameters/Timeout"
           },
           {
@@ -2825,6 +2837,9 @@
             "$ref": "#/components/parameters/ListBlobsInclude"
           },
           {
+            "$ref": "#/components/parameters/ListBlobsStartFrom"
+          },
+          {
             "$ref": "#/components/parameters/Timeout"
           },
           {
@@ -2939,7 +2954,13 @@
         "description": "Returns the sku name and account kind ",
         "parameters": [
           {
+            "$ref": "#/components/parameters/Timeout"
+          },
+          {
             "$ref": "#/components/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/components/parameters/ClientRequestId"
           }
         ],
         "responses": {
@@ -2980,7 +3001,10 @@
                     "Standard_GRS",
                     "Standard_RAGRS",
                     "Standard_ZRS",
-                    "Premium_LRS"
+                    "Premium_LRS",
+                    "Standard_GZRS",
+                    "Premium_ZRS",
+                    "Standard_RAGZRS"
                   ]
                 }
               },
@@ -2995,6 +3019,12 @@
                     "FileStorage",
                     "BlockBlobStorage"
                   ]
+                }
+              },
+              "x-ms-is-hns-enabled": {
+                "description": "Version 2019-07-07 and newer. Indicates if the account has a hierarchical namespace enabled.",
+                "schema": {
+                  "type": "boolean"
                 }
               }
             }
@@ -3057,6 +3087,9 @@
             "$ref": "#/components/parameters/GetRangeContentCRC64"
           },
           {
+            "$ref": "#/components/parameters/StructuredBodyGet"
+          },
+          {
             "$ref": "#/components/parameters/EncryptionKey"
           },
           {
@@ -3091,10 +3124,10 @@
           "200": {
             "description": "Returns the content of the entire blob.",
             "content": {
-              "application/xml": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "format": "file"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             },
@@ -3397,16 +3430,54 @@
                 "schema": {
                   "type": "boolean"
                 }
+              },
+              "x-ms-structured-body": {
+                "description": "Indicates the response body contains a structured message and specifies the message schema version and properties.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-structured-content-length": {
+                "description": "The length of the blob/file content inside the message body when the response body is returned as a structured message. Will always be smaller than Content-Length.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "x-ms-access-tier": {
+                "description": "The tier of page blob on a premium storage account or tier of block blob on blob storage LRS accounts. For a list of allowed premium page blob tiers, see https://learn.microsoft.com/azure/virtual-machines/disks-types#premium-ssd. For blob storage LRS accounts, valid values are Hot/Cool/Archive.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-access-tier-inferred": {
+                "description": "For page blobs on a premium storage account only. If the access tier is not explicitly set on the blob, the tier is inferred based on its content length and this header will be returned with true value.",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "x-ms-access-tier-change-time": {
+                "description": "The time the tier was changed on the object. This is only returned if the tier on the block blob was ever set.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time-rfc1123"
+                }
+              },
+              "x-ms-smart-access-tier": {
+                "description": "The underlying tier of a smart tier blob. Only returned if the blob is in Smart tier.",
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           },
           "206": {
             "description": "Returns the content of a specified range of the blob.",
             "content": {
-              "application/xml": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "format": "file"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             },
@@ -3710,6 +3781,44 @@
                 "description": "Indicates if a legal hold is present on the blob.",
                 "schema": {
                   "type": "boolean"
+                }
+              },
+              "x-ms-structured-body": {
+                "description": "Indicates the response body contains a structured message and specifies the message schema version and properties.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-structured-content-length": {
+                "description": "The length of the blob/file content inside the message body when the response body is returned as a structured message. Will always be smaller than Content-Length.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "x-ms-access-tier": {
+                "description": "The tier of page blob on a premium storage account or tier of block blob on blob storage LRS accounts. For a list of allowed premium page blob tiers, see https://learn.microsoft.com/azure/virtual-machines/disks-types#premium-ssd. For blob storage LRS accounts, valid values are Hot/Cool/Archive.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-access-tier-inferred": {
+                "description": "For page blobs on a premium storage account only. If the access tier is not explicitly set on the blob, the tier is inferred based on its content length and this header will be returned with true value.",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "x-ms-access-tier-change-time": {
+                "description": "The time the tier was changed on the object. This is only returned if the tier on the block blob was ever set.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time-rfc1123"
+                }
+              },
+              "x-ms-smart-access-tier": {
+                "description": "The underlying tier of a smart tier blob. Only returned if the blob is in Smart tier.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -4030,7 +4139,7 @@
                 }
               },
               "x-ms-access-tier": {
-                "description": "The tier of page blob on a premium storage account or tier of block blob on blob storage LRS accounts. For a list of allowed premium page blob tiers, see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage#features. For blob storage LRS accounts, valid values are Hot/Cool/Archive.",
+                "description": "The tier of page blob on a premium storage account or tier of block blob on blob storage LRS accounts. For a list of allowed premium page blob tiers, see https://learn.microsoft.com/azure/virtual-machines/disks-types#premium-ssd. For blob storage LRS accounts, valid values are Hot/Cool/Archive.",
                 "schema": {
                   "type": "string"
                 }
@@ -4052,6 +4161,12 @@
                 "schema": {
                   "type": "string",
                   "format": "date-time-rfc1123"
+                }
+              },
+              "x-ms-smart-access-tier": {
+                "description": "The underlying tier of a smart tier blob. Only returned if the blob is in Smart tier.",
+                "schema": {
+                  "type": "string"
                 }
               },
               "x-ms-version-id": {
@@ -4189,6 +4304,12 @@
           },
           {
             "$ref": "#/components/parameters/BlobDeleteType"
+          },
+          {
+            "$ref": "#/components/parameters/AccessTierIfModifiedSince"
+          },
+          {
+            "$ref": "#/components/parameters/AccessTierIfUnmodifiedSince"
           }
         ],
         "responses": {
@@ -4781,6 +4902,12 @@
           },
           {
             "$ref": "#/components/parameters/ContentCrc64"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredBodyPut"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredContentLength"
           }
         ],
         "responses": {
@@ -4802,6 +4929,13 @@
               },
               "Content-MD5": {
                 "description": "If the blob has an MD5 hash and this operation is to read the full blob, this response header is returned so that the client can check for message content integrity.",
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              },
+              "x-ms-content-crc64": {
+                "description": "This header is returned so that the client can check for message content integrity. The value of this header is computed by the Blob service; it is not necessarily the same value specified in the request headers.",
                 "schema": {
                   "type": "string",
                   "format": "byte"
@@ -4852,6 +4986,12 @@
               },
               "x-ms-encryption-scope": {
                 "description": "Returns the name of the encryption scope used to encrypt the blob contents and application metadata.  Note that the absence of this header implies use of the default account encryption scope.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-structured-body": {
+                "description": "Indicates the structured message body was accepted and mirrors back the message schema version and properties.",
                 "schema": {
                   "type": "string"
                 }
@@ -5013,6 +5153,18 @@
           },
           {
             "$ref": "#/components/parameters/CopySourceTags"
+          },
+          {
+            "$ref": "#/components/parameters/FileRequestIntent"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKey"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKeySha256"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionAlgorithm"
           }
         ],
         "responses": {
@@ -5034,6 +5186,13 @@
               },
               "Content-MD5": {
                 "description": "If the blob has an MD5 hash and this operation is to read the full blob, this response header is returned so that the client can check for message content integrity.",
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              },
+              "x-ms-content-crc64": {
+                "description": "This header is returned so that the client can check for message content integrity. The value of this header is computed by the Blob service; it is not necessarily the same value specified in the request headers.",
                 "schema": {
                   "type": "string",
                   "format": "byte"
@@ -5103,6 +5262,17 @@
               "x-ms-error-code": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "x-ms-copy-source-error-code": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-copy-source-status-code": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -5497,6 +5667,12 @@
           },
           {
             "$ref": "#/components/parameters/ImmutabilityPolicyMode"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          },
+          {
+            "$ref": "#/components/parameters/VersionId"
           }
         ],
         "responses": {
@@ -5582,6 +5758,12 @@
           },
           {
             "$ref": "#/components/parameters/ClientRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          },
+          {
+            "$ref": "#/components/parameters/VersionId"
           }
         ],
         "responses": {
@@ -5674,6 +5856,12 @@
           },
           {
             "$ref": "#/components/parameters/LegalHoldRequired"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          },
+          {
+            "$ref": "#/components/parameters/VersionId"
           }
         ],
         "responses": {
@@ -6933,6 +7121,17 @@
                 "schema": {
                   "type": "string"
                 }
+              },
+              "x-ms-copy-source-error-code": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-copy-source-status-code": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
               }
             }
           }
@@ -7038,6 +7237,9 @@
           },
           {
             "$ref": "#/components/parameters/CopySourceTags"
+          },
+          {
+            "$ref": "#/components/parameters/FileRequestIntent"
           }
         ],
         "responses": {
@@ -7138,6 +7340,17 @@
               "x-ms-error-code": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "x-ms-copy-source-error-code": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-copy-source-status-code": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -7378,7 +7591,7 @@
         "operationId": "Blob_SetTier"
       }
     },
-    "/{containerName}/{blob}#restype=account&comp=properties": {
+    "/{containerName}/{blob}#restype=account&comp=properties&blob": {
       "parameters": [
         {
           "$ref": "#/components/parameters/ContainerName"
@@ -7418,7 +7631,13 @@
         "description": "Returns the sku name and account kind ",
         "parameters": [
           {
+            "$ref": "#/components/parameters/Timeout"
+          },
+          {
             "$ref": "#/components/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/components/parameters/ClientRequestId"
           }
         ],
         "responses": {
@@ -7459,7 +7678,10 @@
                     "Standard_GRS",
                     "Standard_RAGRS",
                     "Standard_ZRS",
-                    "Premium_LRS"
+                    "Premium_LRS",
+                    "Standard_GZRS",
+                    "Premium_ZRS",
+                    "Standard_RAGZRS"
                   ]
                 }
               },
@@ -7474,6 +7696,12 @@
                     "FileStorage",
                     "BlockBlobStorage"
                   ]
+                }
+              },
+              "x-ms-is-hns-enabled": {
+                "description": "Version 2019-07-07 and newer. Indicates if the account has a hierarchical namespace enabled.",
+                "schema": {
+                  "type": "boolean"
                 }
               }
             }
@@ -7564,6 +7792,12 @@
           },
           {
             "$ref": "#/components/parameters/ClientRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredBodyPut"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredContentLength"
           }
         ],
         "responses": {
@@ -7623,6 +7857,12 @@
               },
               "x-ms-encryption-scope": {
                 "description": "Returns the name of the encryption scope used to encrypt the blob contents and application metadata.  Note that the absence of this header implies use of the default account encryption scope.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-structured-body": {
+                "description": "Indicates the structured message body was accepted and mirrors back the message schema version and properties.",
                 "schema": {
                   "type": "string"
                 }
@@ -7733,6 +7973,18 @@
           },
           {
             "$ref": "#/components/parameters/CopySourceAuthorization"
+          },
+          {
+            "$ref": "#/components/parameters/FileRequestIntent"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKey"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKeySha256"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionAlgorithm"
           }
         ],
         "responses": {
@@ -7811,6 +8063,17 @@
               "x-ms-error-code": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "x-ms-copy-source-error-code": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-copy-source-status-code": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -8261,6 +8524,12 @@
           },
           {
             "$ref": "#/components/parameters/ClientRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredBodyPut"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredContentLength"
           }
         ],
         "responses": {
@@ -8340,6 +8609,12 @@
               },
               "x-ms-encryption-scope": {
                 "description": "Returns the name of the encryption scope used to encrypt the blob contents and application metadata.  Note that the absence of this header implies use of the default account encryption scope.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-structured-body": {
+                "description": "Indicates the structured message body was accepted and mirrors back the message schema version and properties.",
                 "schema": {
                   "type": "string"
                 }
@@ -8678,6 +8953,18 @@
           },
           {
             "$ref": "#/components/parameters/CopySourceAuthorization"
+          },
+          {
+            "$ref": "#/components/parameters/FileRequestIntent"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKey"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKeySha256"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionAlgorithm"
           }
         ],
         "responses": {
@@ -8770,6 +9057,17 @@
               "x-ms-error-code": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "x-ms-copy-source-error-code": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-copy-source-status-code": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -9578,6 +9876,12 @@
           },
           {
             "$ref": "#/components/parameters/ClientRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredBodyPut"
+          },
+          {
+            "$ref": "#/components/parameters/StructuredContentLength"
           }
         ],
         "responses": {
@@ -9662,6 +9966,12 @@
               },
               "x-ms-encryption-scope": {
                 "description": "Returns the name of the encryption scope used to encrypt the blob contents and application metadata.  Note that the absence of this header implies use of the default account encryption scope.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-structured-body": {
+                "description": "Indicates the structured message body was accepted and mirrors back the message schema version and properties.",
                 "schema": {
                   "type": "string"
                 }
@@ -9793,6 +10103,18 @@
           },
           {
             "$ref": "#/components/parameters/CopySourceAuthorization"
+          },
+          {
+            "$ref": "#/components/parameters/FileRequestIntent"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKey"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionKeySha256"
+          },
+          {
+            "$ref": "#/components/parameters/SourceEncryptionAlgorithm"
           }
         ],
         "responses": {
@@ -9890,6 +10212,17 @@
               "x-ms-error-code": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "x-ms-copy-source-error-code": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "x-ms-copy-source-status-code": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -10098,10 +10431,10 @@
           "200": {
             "description": "Returns the content of the entire blob.",
             "content": {
-              "application/xml": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "format": "file"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             },
@@ -10335,10 +10668,10 @@
           "206": {
             "description": "Returns the content of a specified range of the blob.",
             "content": {
-              "application/xml": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "format": "file"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             },
@@ -10644,6 +10977,18 @@
           },
           {
             "$ref": "#/components/parameters/LeaseIdOptional"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobModifiedSince"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobUnmodifiedSince"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobNoneMatch"
           }
         ],
         "responses": {
@@ -10735,6 +11080,18 @@
             "$ref": "#/components/parameters/LeaseIdOptional"
           },
           {
+            "$ref": "#/components/parameters/IfBlobModifiedSince"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobUnmodifiedSince"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IfBlobNoneMatch"
+          },
+          {
             "$ref": "#/components/parameters/BlobTagsBody"
           }
         ],
@@ -10808,6 +11165,10 @@
           "Expiry": {
             "description": "The date-time the key expires in ISO 8601 UTC time",
             "type": "string"
+          },
+          "DelegatedUserTid": {
+            "description": "The delegated user tenant id in Azure AD",
+            "type": "string"
           }
         }
       },
@@ -10848,6 +11209,10 @@
           },
           "SignedVersion": {
             "description": "The service version that created the key",
+            "type": "string"
+          },
+          "SignedDelegatedUserTid": {
+            "description": "The delegated user tenant id in Azure AD. Return if DelegatedUserTid is specified.",
             "type": "string"
           },
           "Value": {
@@ -10921,6 +11286,16 @@
         "properties": {
           "Message": {
             "type": "string"
+          },
+          "CopySourceStatusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "CopySourceErrorCode": {
+            "type": "string"
+          },
+          "CopySourceErrorMessage": {
+            "type": "string"
           }
         }
       },
@@ -10962,7 +11337,8 @@
           "Cool",
           "Archive",
           "Premium",
-          "Cold"
+          "Cold",
+          "Smart"
         ],
         "x-ms-enum": {
           "name": "AccessTier",
@@ -10974,7 +11350,8 @@
         "enum": [
           "rehydrate-pending-to-hot",
           "rehydrate-pending-to-cool",
-          "rehydrate-pending-to-cold"
+          "rehydrate-pending-to-cold",
+          "rehydrate-pending-to-smart"
         ],
         "x-ms-enum": {
           "name": "ArchiveStatus",
@@ -11141,6 +11518,9 @@
           },
           "ArchiveStatus": {
             "$ref": "#/components/schemas/ArchiveStatus"
+          },
+          "SmartAccessTier": {
+            "$ref": "#/components/schemas/AccessTier"
           },
           "CustomerProvidedKeySha256": {
             "type": "string"
@@ -11804,7 +12184,7 @@
           "CopyIdMismatch",
           "FeatureVersionMismatch",
           "IncrementalCopyBlobMismatch",
-          "IncrementalCopyOfEarlierVersionSnapshotNotAllowed",
+          "IncrementalCopyOfEarlierSnapshotNotAllowed",
           "IncrementalCopySourceMustBeSnapshot",
           "InfiniteLeaseDurationRequired",
           "InvalidBlobOrBlock",
@@ -11854,7 +12234,8 @@
           "AuthorizationProtocolMismatch",
           "AuthorizationPermissionMismatch",
           "AuthorizationServiceMismatch",
-          "AuthorizationResourceTypeMismatch"
+          "AuthorizationResourceTypeMismatch",
+          "BlobAccessTierNotSupportedForAccountType"
         ],
         "x-ms-enum": {
           "name": "StorageErrorCode",
@@ -12362,6 +12743,30 @@
           "type": "string"
         }
       },
+      "AccessTierIfModifiedSince": {
+        "name": "x-ms-access-tier-if-modified-since",
+        "x-ms-client-name": "accessTierIfModifiedSince",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "description": "Specify this header value to operate only on a blob if the access-tier has been modified since the specified date/time.",
+        "schema": {
+          "type": "string",
+          "format": "date-time-rfc1123"
+        }
+      },
+      "AccessTierIfUnmodifiedSince": {
+        "name": "x-ms-access-tier-if-unmodified-since",
+        "x-ms-client-name": "accessTierIfUnmodifiedSince",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "description": "Specify this header value to operate only on a blob if the access-tier has not been modified since the specified date/time.",
+        "schema": {
+          "type": "string",
+          "format": "date-time-rfc1123"
+        }
+      },
       "ApiVersionParameter": {
         "name": "x-ms-version",
         "x-ms-parameter-location": "client",
@@ -12370,10 +12775,7 @@
         "required": true,
         "description": "Specifies the version of the operation to use for this request.",
         "schema": {
-          "type": "string",
-          "enum": [
-            "2021-12-02"
-          ]
+          "type": "string"
         }
       },
       "Blob": {
@@ -12498,7 +12900,8 @@
             "Hot",
             "Cool",
             "Archive",
-            "Cold"
+            "Cold",
+            "Smart"
           ]
         }
       },
@@ -12530,7 +12933,8 @@
             "Hot",
             "Cool",
             "Archive",
-            "Cold"
+            "Cold",
+            "Smart"
           ]
         }
       },
@@ -13047,6 +13451,24 @@
           "type": "boolean"
         }
       },
+      "FileRequestIntent": {
+        "name": "x-ms-file-request-intent",
+        "x-ms-client-name": "fileRequestIntent",
+        "in": "header",
+        "description": "Valid value is backup",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-enum": {
+          "name": "FileShareTokenIntent",
+          "modelAsString": true
+        },
+        "schema": {
+          "type": "string",
+          "enum": [
+            "backup"
+          ]
+        }
+      },
       "FilterBlobsInclude": {
         "name": "include",
         "in": "query",
@@ -13100,6 +13522,40 @@
         "description": "When set to true and specified together with the Range, the service returns the CRC64 hash for the range, as long as the range is less than or equal to 4 MB in size.",
         "schema": {
           "type": "boolean"
+        }
+      },
+      "StructuredBodyGet": {
+        "name": "x-ms-structured-body",
+        "x-ms-client-name": "StructuredBodyType",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "description": "Specifies the response content should be returned as a structured message and specifies the message schema version and properties.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "StructuredBodyPut": {
+        "name": "x-ms-structured-body",
+        "x-ms-client-name": "StructuredBodyType",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "description": "Required if the request body is a structured message. Specifies the message schema version and properties.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "StructuredContentLength": {
+        "name": "x-ms-structured-content-length",
+        "x-ms-client-name": "StructuredContentLength",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "description": "Required if the request body is a structured message. Specifies the length of the blob/file content inside the message body. Will always be smaller than Content-Length.",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
         }
       },
       "IfMatch": {
@@ -13219,6 +13675,64 @@
           "type": "string"
         }
       },
+      "IfBlobMatch": {
+        "name": "x-ms-blob-if-match",
+        "x-ms-client-name": "ifMatch",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "blob-modified-access-conditions"
+        },
+        "description": "Specify an ETag value to operate only on blobs with a matching value.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IfBlobModifiedSince": {
+        "name": "x-ms-blob-if-modified-since",
+        "x-ms-client-name": "ifModifiedSince",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "blob-modified-access-conditions"
+        },
+        "description": "Specify this header value to operate only on a blob if it has been modified since the specified date/time.",
+        "schema": {
+          "type": "string",
+          "format": "date-time-rfc1123"
+        }
+      },
+      "IfBlobNoneMatch": {
+        "name": "x-ms-blob-if-none-match",
+        "x-ms-client-name": "ifNoneMatch",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "blob-modified-access-conditions"
+        },
+        "description": "Specify an ETag value to operate only on blobs without a matching value.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IfBlobUnmodifiedSince": {
+        "name": "x-ms-blob-if-unmodified-since",
+        "x-ms-client-name": "ifUnmodifiedSince",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "blob-modified-access-conditions"
+        },
+        "description": "Specify this header value to operate only on a blob if it has not been modified since the specified date/time.",
+        "schema": {
+          "type": "string",
+          "format": "date-time-rfc1123"
+        }
+      },
       "ImmutabilityPolicyExpiry": {
         "name": "x-ms-immutability-policy-until-date",
         "x-ms-client-name": "immutabilityPolicyExpiry",
@@ -13288,6 +13802,16 @@
         },
         "style": "form",
         "explode": false
+      },
+      "ListBlobsStartFrom": {
+        "name": "startFrom",
+        "in": "query",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "description": "Specifies the relative path to list paths from. For non-recursive list, only one entity level is supported; For recursive list, multiple entity levels are supported. (Inclusive)",
+        "schema": {
+          "type": "string"
+        }
       },
       "ListContainersInclude": {
         "name": "include",
@@ -13556,9 +14080,58 @@
         "in": "query",
         "required": false,
         "x-ms-parameter-location": "method",
-        "description": "The snapshot parameter is an opaque DateTime value that, when present, specifies the blob snapshot to retrieve. For more information on working with blob snapshots, see <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/creating-a-snapshot-of-a-blob\">Creating a Snapshot of a Blob.</a>",
+        "description": "The snapshot parameter is an opaque DateTime value that, when present, specifies the blob snapshot to retrieve. For more information on working with blob snapshots, see <a href=\"https://learn.microsoft.com/rest/api/storageservices/creating-a-snapshot-of-a-blob\">Creating a Snapshot of a Blob.</a>",
         "schema": {
           "type": "string"
+        }
+      },
+      "SourceEncryptionKey": {
+        "name": "x-ms-source-encryption-key",
+        "x-ms-client-name": "sourceEncryptionKey",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "source-cpk-info"
+        },
+        "description": "Optional. Specifies the source encryption key to use to encrypt the source data provided in the request.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SourceEncryptionKeySha256": {
+        "name": "x-ms-source-encryption-key-sha256",
+        "x-ms-client-name": "sourceEncryptionKeySha256",
+        "in": "header",
+        "required": false,
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "source-cpk-info"
+        },
+        "description": "The SHA-256 hash of the provided source encryption key. Must be provided if the x-ms-source-encryption-key header is provided.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SourceEncryptionAlgorithm": {
+        "name": "x-ms-source-encryption-algorithm",
+        "x-ms-client-name": "sourceEncryptionAlgorithm",
+        "in": "header",
+        "required": false,
+        "x-ms-enum": {
+          "name": "EncryptionAlgorithmType",
+          "modelAsString": false
+        },
+        "x-ms-parameter-location": "method",
+        "x-ms-parameter-grouping": {
+          "name": "source-cpk-info"
+        },
+        "description": "The algorithm used to produce the source encryption key hash. Currently, the only accepted value is \"AES256\". Must be provided if the x-ms-source-encryption-key is provided.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "AES256"
+          ]
         }
       },
       "VersionId": {
@@ -13747,7 +14320,7 @@
         "in": "query",
         "required": false,
         "x-ms-parameter-location": "method",
-        "description": "The timeout parameter is expressed in seconds. For more information, see <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/setting-timeouts-for-blob-service-operations\">Setting Timeouts for Blob Service Operations.</a>",
+        "description": "The timeout parameter is expressed in seconds. For more information, see <a href=\"https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations\">Setting Timeouts for Blob Service Operations.</a>",
         "schema": {
           "type": "integer",
           "minimum": 0

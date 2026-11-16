@@ -255,14 +255,20 @@ function convertHeaders(headers: Node): Node {
 }
 
 /** Convert one Swagger response object. */
-function convertResponse(res: Node, produces: string[]): Node {
+function convertResponse(res: Node, produces: string[], ownProduces?: string[]): Node {
   if (typeof res.$ref === 'string') return { $ref: rewriteRef(res.$ref) };
 
   const out: Node = { description: res.description ?? '' };
   if (res.schema) {
-    const schema = convertSchema(res.schema);
+    // A file response (`type: file`, or autorest's stream idiom `{type: object,
+    // format: file}`) is the stored bytes in whatever media type they have. The
+    // document-wide `produces` describes the API's structured bodies, not these,
+    // so unless the operation names its own types the content is `*/*`.
+    const isFile = res.schema.type === 'file' || res.schema.format === 'file';
+    const schema = isFile ? { type: 'string', format: 'binary' } : convertSchema(res.schema);
+    const types = isFile && !ownProduces?.length ? ['*/*'] : produces.length ? produces : ['application/json'];
     const content: Node = {};
-    for (const type of produces.length ? produces : ['application/json']) content[type] = { schema };
+    for (const type of types) content[type] = { schema };
     out.content = content;
   }
   if (res.headers) out.headers = convertHeaders(res.headers);
@@ -435,7 +441,7 @@ export function swaggerToOpenApi(doc: SwaggerDoc, adaptorName: string): SwaggerC
 
       const responses: Node = {};
       for (const [code, res] of Object.entries(op.responses ?? {})) {
-        responses[code] = convertResponse(res as Node, produces);
+        responses[code] = convertResponse(res as Node, produces, Array.isArray(op.produces) ? op.produces : undefined);
       }
       // An operation with no documented response is not a valid OpenAPI 3 doc.
       if (Object.keys(responses).length === 0) {

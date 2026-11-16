@@ -11,7 +11,7 @@ the operating manual for keeping the copy correct and current.
 days.** `manifest.json` carries the effective `completeness` and `coverage` for
 every adaptor, and `pnpm specs report` buckets them. Both are what you steer by:
 a run that doesn't move an adaptor toward `ok` hasn't moved the north star.
-As of 2026-11-15, 56 of 104 are `ok`; 47 are best effort with a stated reason
+As of 2026-11-16, 57 of 104 are `ok`; 46 are best effort with a stated reason
 (docs-only, private API, defunct vendor); 1 is a declared subset (msgraph); none
 make no claim. "No claim" counts as incomplete, not as fine.
 

@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "msupply",
   "x-source": {
     "openapi": "#/components/schemas/RequisitionLineNode",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "properties": {
@@ -150,6 +150,16 @@
         }
       ]
     },
+    "campaign": {
+      "anyOf": [
+        {
+          "$ref": "CampaignNode.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "availableStockOnHand": {
       "type": "number",
       "format": "double"
@@ -171,25 +181,30 @@
         }
       ]
     },
-    "forecastTotalDoses": {
-      "type": [
-        "number",
-        "null"
-      ],
-      "format": "double"
+    "forecastMethod": {
+      "$ref": "ForecastMethodNode.json",
+      "description": "Where the line's monthly demand comes from"
     },
-    "forecastTotalUnits": {
-      "type": [
-        "number",
-        "null"
-      ],
-      "format": "double"
+    "forecastMonthlyConsumption": {
+      "type": "number",
+      "format": "double",
+      "description": "The line's monthly demand in units: what its suggested quantity, months of stock and target stock work from, whatever its forecast method"
     },
-    "vaccineCourses": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "forecastBreakdown": {
+      "$ref": "ForecastBreakdownNode.json",
+      "description": "The inputs and steps behind the line's monthly demand"
+    },
+    "forecastMethodOptions": {
+      "type": "array",
+      "items": {
+        "$ref": "ForecastMethodOptionNode.json"
+      },
+      "description": "Every forecast method, an unavailable one with its reason. Empty on a response requisition's line, whose forecast is the customer's."
+    },
+    "targetStock": {
+      "type": "number",
+      "format": "double",
+      "description": "The requisition's target months × the line's monthly demand"
     }
   }
 }

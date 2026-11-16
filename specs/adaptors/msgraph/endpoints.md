@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index msgraph` — do not edit by hand -->
 
-base: https://graph.microsoft.com/v1.0 | auth: not declared | 2605 operations in 191 resources
+base: https://graph.microsoft.com/v1.0 | auth: not declared | 2668 operations in 193 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -459,6 +459,53 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /directory/remoteTenantGroups/{remoteTenantGroup-id} — directory.DeleteRemoteTenantGroups: Delete navigation property remoteTenantGroups for directory (deprecated)
 - GET /directory/remoteTenantGroups/$count — directory.remoteTenantGroups.GetCount-3a55: Get the number of the resource (deprecated)
 
+## directory.tenantGovernance
+- GET /directory/tenantGovernance — directory.GetTenantGovernance: Get tenantGovernance from directory
+- PATCH /directory/tenantGovernance — directory.UpdateTenantGovernance: Update the navigation property tenantGovernance in directory
+- DELETE /directory/tenantGovernance — directory.DeleteTenantGovernance: Delete navigation property tenantGovernance for directory
+- GET /directory/tenantGovernance/governanceInvitations — directory.tenantGovernance.ListGovernanceInvitations: List governanceInvitations
+- POST /directory/tenantGovernance/governanceInvitations — directory.tenantGovernance.CreateGovernanceInvitations: Create governanceInvitation
+- GET /directory/tenantGovernance/governanceInvitations/{governanceInvitation-id} — directory.tenantGovernance.GetGovernanceInvitations: Get governanceInvitation
+- PATCH /directory/tenantGovernance/governanceInvitations/{governanceInvitation-id} — directory.tenantGovernance.UpdateGovernanceInvitations: Update the navigation property governanceInvitations in directory
+- DELETE /directory/tenantGovernance/governanceInvitations/{governanceInvitation-id} — directory.tenantGovernance.DeleteGovernanceInvitations: Delete governanceInvitation
+- GET /directory/tenantGovernance/governanceInvitations/$count — directory.tenantGovernance.governanceInvitations.GetCount-6684: Get the number of the resource
+- GET /directory/tenantGovernance/governancePolicyTemplates — directory.tenantGovernance.ListGovernancePolicyTemplates: List governancePolicyTemplates
+- POST /directory/tenantGovernance/governancePolicyTemplates — directory.tenantGovernance.CreateGovernancePolicyTemplates: Create tenantGovernancePolicyTemplate
+- GET /directory/tenantGovernance/governancePolicyTemplates/{tenantGovernancePolicyTemplate-id} — directory.tenantGovernance.GetGovernancePolicyTemplates: Get tenantGovernancePolicyTemplate
+- PATCH /directory/tenantGovernance/governancePolicyTemplates/{tenantGovernancePolicyTemplate-id} — directory.tenantGovernance.UpdateGovernancePolicyTemplates: Update tenantGovernancePolicyTemplate
+- DELETE /directory/tenantGovernance/governancePolicyTemplates/{tenantGovernancePolicyTemplate-id} — directory.tenantGovernance.DeleteGovernancePolicyTemplates: Delete tenantGovernancePolicyTemplate
+- GET /directory/tenantGovernance/governancePolicyTemplates/$count — directory.tenantGovernance.governancePolicyTemplates.GetCount-daf7: Get the number of the resource
+- GET /directory/tenantGovernance/governanceRelationships — directory.tenantGovernance.ListGovernanceRelationships: List governanceRelationships
+- POST /directory/tenantGovernance/governanceRelationships — directory.tenantGovernance.CreateGovernanceRelationships: Create new navigation property to governanceRelationships for directory
+- GET /directory/tenantGovernance/governanceRelationships/{governanceRelationship-id} — directory.tenantGovernance.GetGovernanceRelationships: Get governanceRelationship
+- PATCH /directory/tenantGovernance/governanceRelationships/{governanceRelationship-id} — directory.tenantGovernance.UpdateGovernanceRelationships: Update governanceRelationship
+- DELETE /directory/tenantGovernance/governanceRelationships/{governanceRelationship-id} — directory.tenantGovernance.DeleteGovernanceRelationships: Delete navigation property governanceRelationships for directory
+- GET /directory/tenantGovernance/governanceRelationships/$count — directory.tenantGovernance.governanceRelationships.GetCount-c291: Get the number of the resource
+- GET /directory/tenantGovernance/governanceRequests — directory.tenantGovernance.ListGovernanceRequests: List governanceRequests
+- POST /directory/tenantGovernance/governanceRequests — directory.tenantGovernance.CreateGovernanceRequests: Create governanceRequest
+- GET /directory/tenantGovernance/governanceRequests/{governanceRequest-id} — directory.tenantGovernance.GetGovernanceRequests: Get governanceRequest
+- PATCH /directory/tenantGovernance/governanceRequests/{governanceRequest-id} — directory.tenantGovernance.UpdateGovernanceRequests: Update governanceRequest
+- DELETE /directory/tenantGovernance/governanceRequests/{governanceRequest-id} — directory.tenantGovernance.DeleteGovernanceRequests: Delete navigation property governanceRequests for directory
+- GET /directory/tenantGovernance/governanceRequests/{governanceRequest-id}/governancePolicyTemplate — directory.tenantGovernance.governanceRequests.GetGovernancePolicyTemplate: Get governancePolicyTemplate from directory
+- GET /directory/tenantGovernance/governanceRequests/$count — directory.tenantGovernance.governanceRequests.GetCount-ac3a: Get the number of the resource
+- GET /directory/tenantGovernance/relatedTenants — directory.tenantGovernance.ListRelatedTenants: List relatedTenants
+- POST /directory/tenantGovernance/relatedTenants — directory.tenantGovernance.CreateRelatedTenants: Create new navigation property to relatedTenants for directory
+- GET /directory/tenantGovernance/relatedTenants/{relatedTenant-id} — directory.tenantGovernance.GetRelatedTenants: Get relatedTenant
+- PATCH /directory/tenantGovernance/relatedTenants/{relatedTenant-id} — directory.tenantGovernance.UpdateRelatedTenants: Update the navigation property relatedTenants in directory
+- DELETE /directory/tenantGovernance/relatedTenants/{relatedTenant-id} — directory.tenantGovernance.DeleteRelatedTenants: Delete navigation property relatedTenants for directory
+- GET /directory/tenantGovernance/relatedTenants/{relatedTenant-id}/appB2BSignInActivityMetrics — directory.tenantGovernance.relatedTenants.GetAppB2BSignInActivityMetrics: Get appB2BSignInActivityMetrics from directory
+- GET /directory/tenantGovernance/relatedTenants/{relatedTenant-id}/b2BRegistrationMetrics — directory.tenantGovernance.relatedTenants.GetB2BRegistrationMetrics: Get b2BRegistrationMetrics from directory
+- GET /directory/tenantGovernance/relatedTenants/{relatedTenant-id}/b2BSignInActivityMetrics — directory.tenantGovernance.relatedTenants.GetB2BSignInActivityMetrics: Get b2BSignInActivityMetrics from directory
+- GET /directory/tenantGovernance/relatedTenants/{relatedTenant-id}/billingMetrics — directory.tenantGovernance.relatedTenants.GetBillingMetrics: Get billingMetrics from directory
+- GET /directory/tenantGovernance/relatedTenants/{relatedTenant-id}/multiTenantApplicationMetrics — directory.tenantGovernance.relatedTenants.GetMultiTenantApplicationMetrics: Get multiTenantApplicationMetrics from directory
+- GET /directory/tenantGovernance/relatedTenants/$count — directory.tenantGovernance.relatedTenants.GetCount-ba39: Get the number of the resource
+- POST /directory/tenantGovernance/relatedTenants/refresh — directory.tenantGovernance.relatedTenants.refresh: Invoke action refresh
+- GET /directory/tenantGovernance/relatedTenants/refreshStatus() — directory.tenantGovernance.relatedTenants.refreshStatus: Invoke function refreshStatus
+- GET /directory/tenantGovernance/settings — directory.tenantGovernance.GetSettings: Get tenantGovernanceSetting
+- PATCH /directory/tenantGovernance/settings — directory.tenantGovernance.UpdateSettings: Update tenantGovernanceSetting
+- DELETE /directory/tenantGovernance/settings — directory.tenantGovernance.DeleteSettings: Delete navigation property settings for directory
+- POST /directory/tenantGovernance/settings/enableRelatedTenants — directory.tenantGovernance.settings.enableRelatedTenants: Invoke action enableRelatedTenants
+
 ## directoryObjects.directoryObject
 - GET /directoryObjects — directoryObjects.directoryObject.ListDirectoryObject: Get entities from directoryObjects
 - POST /directoryObjects — directoryObjects.directoryObject.CreateDirectoryObject: Add new entity to directoryObjects
@@ -718,6 +765,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PATCH /drives/{drive-id}/list/subscriptions/{subscription-id} — drives.list.UpdateSubscriptions: Update the navigation property subscriptions in drives
 - DELETE /drives/{drive-id}/list/subscriptions/{subscription-id} — drives.list.DeleteSubscriptions: Delete navigation property subscriptions for drives
 - GET /drives/{drive-id}/list/subscriptions/$count — drives.list.subscriptions.GetCount-59f5: Get the number of the resource
+- GET /drives/{drive-id}/list/subscriptions/getVapidPublicKey() — drives.drive.list.subscriptions.getVapidPublicKey: Invoke function getVapidPublicKey
 
 ## drives.user
 - GET /drives/{drive-id}/createdByUser — drives.GetCreatedByUser: Get createdByUser from drives
@@ -1761,6 +1809,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PATCH /sites/{site-id}/permissions/{permission-id} — sites.UpdatePermissions: Update permission
 - DELETE /sites/{site-id}/permissions/{permission-id} — sites.DeletePermissions: Delete permission
 - POST /sites/{site-id}/permissions/{permission-id}/grant — sites.site.permissions.permission.grant: Invoke action grant
+- POST /sites/{site-id}/permissions/{permission-id}/revokeGrants — sites.site.permissions.permission.revokeGrants: Invoke action revokeGrants
 - GET /sites/{site-id}/permissions/$count — sites.permissions.GetCount-511e: Get the number of the resource
 
 ## sites.richLongRunningOperation
@@ -2208,6 +2257,10 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /users/{user-id}/authentication/platformCredentialMethods/{platformCredentialAuthenticationMethod-id} — users.authentication.GetPlatformCredentialMethods: Get platformCredentialMethods from users
 - DELETE /users/{user-id}/authentication/platformCredentialMethods/{platformCredentialAuthenticationMethod-id} — users.authentication.DeletePlatformCredentialMethods: Delete platformCredentialAuthenticationMethod
 - GET /users/{user-id}/authentication/platformCredentialMethods/$count — users.authentication.platformCredentialMethods.GetCount-66e6: Get the number of the resource
+- GET /users/{user-id}/authentication/resourceAccountKeyAuthenticationMethods — users.authentication.ListResourceAccountKeyAuthenticationMethods: List resourceAccountKeyAuthenticationMethods
+- GET /users/{user-id}/authentication/resourceAccountKeyAuthenticationMethods/{resourceAccountKeyAuthenticationMethod-id} — users.authentication.GetResourceAccountKeyAuthenticationMethods: Get resourceAccountKeyAuthenticationMethod
+- DELETE /users/{user-id}/authentication/resourceAccountKeyAuthenticationMethods/{resourceAccountKeyAuthenticationMethod-id} — users.authentication.DeleteResourceAccountKeyAuthenticationMethods: Delete resourceAccountKeyAuthenticationMethod
+- GET /users/{user-id}/authentication/resourceAccountKeyAuthenticationMethods/$count — users.authentication.resourceAccountKeyAuthenticationMethods.GetCount-f526: Get the number of the resource
 - GET /users/{user-id}/authentication/softwareOathMethods — users.authentication.ListSoftwareOathMethods: Get softwareOathMethods from users
 - GET /users/{user-id}/authentication/softwareOathMethods/{softwareOathAuthenticationMethod-id} — users.authentication.GetSoftwareOathMethods: Get softwareOathMethods from users
 - DELETE /users/{user-id}/authentication/softwareOathMethods/{softwareOathAuthenticationMethod-id} — users.authentication.DeleteSoftwareOathMethods: Delete softwareOathAuthenticationMethod
@@ -2257,6 +2310,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /users/{user-id}/calendars/{calendar-id}/getSchedule — users.user.calendars.calendar.getSchedule: Invoke action getSchedule
 - POST /users/{user-id}/calendars/{calendar-id}/permanentDelete — users.user.calendars.calendar.permanentDelete: Invoke action permanentDelete
 - GET /users/{user-id}/calendars/$count — users.calendars.GetCount-a1b5: Get the number of the resource
+- GET /users/{user-id}/calendars/delta() — users.user.calendars.delta: Invoke function delta
 
 ## users.calendarGroup
 - GET /users/{user-id}/calendarGroups — users.ListCalendarGroups: Get calendarGroups from users
@@ -2643,6 +2697,19 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /users/{user-id}/messages/{message-id}/send — users.user.messages.message.send: Invoke action send
 - GET /users/{user-id}/messages/$count — users.messages.GetCount-0f52: Get the number of the resource
 - GET /users/{user-id}/messages/delta() — users.user.messages.delta: Invoke function delta
+
+## users.note
+- GET /users/{user-id}/notes — users.ListNotes: Get notes from users
+- POST /users/{user-id}/notes — users.CreateNotes: Create new navigation property to notes for users
+- GET /users/{user-id}/notes/{note-id} — users.GetNotes: Get notes from users
+- PATCH /users/{user-id}/notes/{note-id} — users.UpdateNotes: Update the navigation property notes in users
+- DELETE /users/{user-id}/notes/{note-id} — users.DeleteNotes: Delete navigation property notes for users
+- GET /users/{user-id}/notes/{note-id}/attachments — users.notes.ListAttachments: Get attachments from users
+- POST /users/{user-id}/notes/{note-id}/attachments — users.notes.CreateAttachments: Create new navigation property to attachments for users
+- GET /users/{user-id}/notes/{note-id}/extensions — users.notes.ListExtensions: Get extensions from users
+- POST /users/{user-id}/notes/{note-id}/extensions — users.notes.CreateExtensions: Create new navigation property to extensions for users
+- GET /users/{user-id}/notes/$count — users.notes.GetCount-589b: Get the number of the resource
+- GET /users/{user-id}/notes/delta() — users.user.notes.delta: Invoke function delta
 
 ## users.oAuth2PermissionGrant
 - GET /users/{user-id}/oauth2PermissionGrants — users.ListOauth2PermissionGrants: List a user's oauth2PermissionGrants
