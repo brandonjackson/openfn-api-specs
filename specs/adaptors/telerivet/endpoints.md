@@ -1,8 +1,8 @@
-# Telerivet API (telerivet) v1.9.9
+# Telerivet API (telerivet) v1.9.10
 
 <!-- derived from openapi.json by `pnpm specs index telerivet` — do not edit by hand -->
 
-base: https://api.telerivet.com | auth: http/basic, oauth2 (authorizationCode, deviceAuthorization) | 168 operations in 18 resources
+base: https://api.telerivet.com | auth: http/basic, oauth2 (authorizationCode, deviceAuthorization) | 171 operations in 18 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -127,6 +127,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/organizations/{organization_id} — API_getOrganizationById: Get organization by ID
 - POST /v1/organizations/{organization_id} — Organization_save: Update organization settings
 - GET /v1/organizations/{organization_id}/billing — Organization_getBillingDetails: Get billing details
+- GET /v1/organizations/{organization_id}/billing_transaction_totals — Organization_getBillingTransactionTotals: Get billing transaction totals
+- GET /v1/organizations/{organization_id}/billing_transactions — Organization_queryBillingTransactions: Query billing transactions
 - GET /v1/organizations/{organization_id}/projects — Organization_queryProjects: Query projects in organization
 - GET /v1/organizations/{organization_id}/usage/{usage_type} — Organization_getUsage: Get current usage
 - GET /v1/organizations/{organization_id}/usage_history — Organization_getUsageHistory: Get usage history
@@ -162,6 +164,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/projects/{project_id}/scheduled/{id} — Project_getScheduledMessageById: Get scheduled message by ID
 - POST /v1/projects/{project_id}/scheduled/{id} — ScheduledMessage_save: Update scheduled message
 - DELETE /v1/projects/{project_id}/scheduled/{id} — ScheduledMessage_delete: Cancel a scheduled message
+- POST /v1/projects/{project_id}/scheduled/{id}/approve — ScheduledMessage_approve: Approve a scheduled message pending review
 
 ## Service
 - GET /v1/projects/{project_id}/scheduled_services — Project_queryScheduledServices: Query scheduled services

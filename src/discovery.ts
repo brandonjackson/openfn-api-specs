@@ -73,6 +73,11 @@ interface DiscoveryMethod {
   deprecated?: boolean;
   supportsMediaUpload?: boolean;
   supportsMediaDownload?: boolean;
+  mediaUpload?: {
+    accept?: string[];
+    maxSize?: string;
+    protocols?: Record<string, { path?: string; multipart?: boolean } | undefined>;
+  };
 }
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options']);
@@ -218,6 +223,12 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
   const flat: FlatMethod[] = [];
   collectMethods(discovery.resources, [], flat);
 
+  // Media-upload URIs hang off rootUrl; they need a `servers` override when the
+  // API's own base URL carries a path (Drive's `/drive/v3`).
+  const rootUrl = (discovery.rootUrl ?? '').replace(/\/+$/, '');
+  const fullBase = (discovery.baseUrl ?? (discovery.rootUrl ?? '') + (discovery.servicePath ?? '')).replace(/\/+$/, '');
+  const rootHasOwnPath = !!rootUrl && fullBase !== rootUrl;
+
   const paths: Record<string, any> = {};
   for (const { method, resourcePath } of flat) {
     const httpMethod = (method.httpMethod ?? 'GET').toLowerCase();
@@ -230,62 +241,107 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
     const rawPath = method.flatPath ?? method.path ?? '';
     const oaPath = '/' + rawPath.replace(/^\/+/, '').replace(/\{\+/g, '{');
 
-    const vars = pathVars(oaPath);
-    const methodParams = method.parameters ?? {};
+    const buildOp = (path: string): Record<string, any> => {
+      const vars = pathVars(path);
+      const methodParams = method.parameters ?? {};
 
-    // Path parameters: one per template var. Enrich from the method's parameter
-    // definition when the name matches; otherwise synthesise a string param.
-    const parameters: any[] = [];
-    for (const v of vars) {
-      const def = methodParams[v];
-      parameters.push(def ? convertParam(v, def, 'path') : { name: v, in: 'path', required: true, schema: { type: 'string' } });
-    }
-    const seen = new Set(vars);
+      // Path parameters: one per template var. Enrich from the method's parameter
+      // definition when the name matches; otherwise synthesise a string param.
+      const parameters: any[] = [];
+      for (const v of vars) {
+        const def = methodParams[v];
+        parameters.push(def ? convertParam(v, def, 'path') : { name: v, in: 'path', required: true, schema: { type: 'string' } });
+      }
+      const seen = new Set(vars);
 
-    // Query parameters: the method's non-path params, then globals (deduped).
-    for (const [name, p] of Object.entries(methodParams)) {
-      if (seen.has(name) || p.location === 'path') continue;
-      seen.add(name);
-      parameters.push(convertParam(name, p, 'query'));
-    }
-    for (const [name, p] of Object.entries(globalParams)) {
-      if (seen.has(name)) continue;
-      seen.add(name);
-      parameters.push(convertParam(name, p, 'query'));
-    }
+      // Query parameters: the method's non-path params, then globals (deduped).
+      for (const [name, p] of Object.entries(methodParams)) {
+        if (seen.has(name) || p.location === 'path') continue;
+        seen.add(name);
+        parameters.push(convertParam(name, p, 'query'));
+      }
+      for (const [name, p] of Object.entries(globalParams)) {
+        if (seen.has(name)) continue;
+        seen.add(name);
+        parameters.push(convertParam(name, p, 'query'));
+      }
 
-    const op: Record<string, any> = {
-      operationId: method.id,
-      tags: resourcePath.length ? [resourcePath.join('.')] : undefined,
-      description: method.description,
-    };
-    if (parameters.length) op.parameters = parameters;
-
-    if (method.request?.$ref) {
-      op.requestBody = {
-        required: true,
-        content: { 'application/json': { schema: { $ref: `#/components/schemas/${method.request.$ref}` } } },
+      const op: Record<string, any> = {
+        operationId: method.id,
+        tags: resourcePath.length ? [resourcePath.join('.')] : undefined,
+        description: method.description,
       };
+      if (parameters.length) op.parameters = parameters;
+
+      if (method.request?.$ref) {
+        op.requestBody = {
+          required: true,
+          content: { 'application/json': { schema: { $ref: `#/components/schemas/${method.request.$ref}` } } },
+        };
+      }
+
+      const response: Record<string, any> = { description: 'Successful response' };
+      if (method.response?.$ref) {
+        response.content = { 'application/json': { schema: { $ref: `#/components/schemas/${method.response.$ref}` } } };
+      }
+      op.responses = { '200': response };
+
+      if (Array.isArray(method.scopes) && method.scopes.length) op['x-google-scopes'] = method.scopes;
+      if (method.deprecated === true) op.deprecated = true;
+
+      // Drop undefined keys for a clean document.
+      for (const k of Object.keys(op)) if (op[k] === undefined) delete op[k];
+      return op;
+    };
+
+    const put = (path: string, op: Record<string, any>, servers?: any[]): void => {
+      const item = (paths[path] ??= {});
+      if (item[httpMethod]) {
+        warnings.push(`collision: ${httpMethod.toUpperCase()} ${path} (${item[httpMethod].operationId} vs ${op.operationId}) — kept first`);
+        return;
+      }
+      if (servers && !item.servers) item.servers = servers;
+      item[httpMethod] = op;
+    };
+
+    put(oaPath, buildOp(oaPath));
+
+    // Media upload: a method that accepts media is also served at one upload URI
+    // per protocol (`/upload/drive/v3/files`, `/resumable/upload/...`). Those
+    // are separate endpoints a client really calls, so each is an operation of
+    // its own. Upload paths are relative to rootUrl, not servicePath, so when
+    // the API's base URL has a path of its own the path item overrides `servers`.
+    for (const [protocol, proto] of Object.entries(method.mediaUpload?.protocols ?? {})) {
+      if (!proto?.path) continue;
+      let upPath = proto.path;
+      // The upload URI repeats the method's `path` (`{+name}` and all); swap in
+      // flatPath there so its variables are concrete, as for the method itself.
+      const p = (method.path ?? '').replace(/^\/+/, '');
+      const fp = (method.flatPath ?? '').replace(/^\/+/, '');
+      if (p && fp && upPath.endsWith(p)) upPath = upPath.slice(0, upPath.length - p.length) + fp;
+      upPath = '/' + upPath.replace(/^\/+/, '').replace(/\{\+/g, '{');
+
+      const op = buildOp(upPath);
+      op.operationId = `${method.id}.${protocol}Upload`;
+      const accept = method.mediaUpload?.accept?.length ? method.mediaUpload.accept : ['*/*'];
+      const content: Record<string, any> = {};
+      for (const type of accept) content[type] = { schema: { type: 'string', format: 'binary' } };
+      if (proto.multipart) {
+        content['multipart/related'] = { schema: { type: 'string', format: 'binary' } };
+      }
+      // A resumable session starts with the JSON metadata (or an empty body).
+      if (protocol === 'resumable' && method.request?.$ref) {
+        content['application/json'] = { schema: { $ref: `#/components/schemas/${method.request.$ref}` } };
+      }
+      op.requestBody = { content };
+      const note =
+        protocol === 'resumable'
+          ? 'Resumable media upload URI for this method: start a session here, then send the bytes to the session URI it returns.'
+          : 'Media upload URI for this method: send the media as the body (uploadType=media), or metadata and media together as multipart/related (uploadType=multipart).';
+      op.description = op.description ? `${op.description}\n\n${note}` : note;
+      if (method.mediaUpload?.maxSize) op['x-google-max-upload-size'] = method.mediaUpload.maxSize;
+      put(upPath, op, rootHasOwnPath ? [{ url: rootUrl }] : undefined);
     }
-
-    const response: Record<string, any> = { description: 'Successful response' };
-    if (method.response?.$ref) {
-      response.content = { 'application/json': { schema: { $ref: `#/components/schemas/${method.response.$ref}` } } };
-    }
-    op.responses = { '200': response };
-
-    if (Array.isArray(method.scopes) && method.scopes.length) op['x-google-scopes'] = method.scopes;
-    if (method.deprecated === true) op.deprecated = true;
-
-    // Drop undefined keys for a clean document.
-    for (const k of Object.keys(op)) if (op[k] === undefined) delete op[k];
-
-    const item = (paths[oaPath] ??= {});
-    if (item[httpMethod]) {
-      warnings.push(`collision: ${httpMethod.toUpperCase()} ${oaPath} (${item[httpMethod].operationId} vs ${method.id}) — kept first`);
-      continue;
-    }
-    item[httpMethod] = op;
   }
 
   const baseUrl = (discovery.baseUrl ?? (discovery.rootUrl ?? '') + (discovery.servicePath ?? '')).replace(/\/+$/, '');

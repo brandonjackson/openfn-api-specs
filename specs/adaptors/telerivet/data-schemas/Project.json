@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Project",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "properties": {
@@ -52,6 +52,21 @@
       "type": "boolean",
       "description": "If true (the default), short links in messages will include the scheme (e.g., 'https://rvt.me/xxxxxxxxx'). If false, short links will not include the scheme (e.g., 'rvt.me/xxxxxxxxx').",
       "example": true
+    },
+    "message_review": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The project's Message Review settings (read-only). Properties: `limits_enabled` (boolean) — require approval before sending more than the volume limits below; `limit_once`, `limit_day`, `limit_month` (int or null) — the maximum number of messages that can be sent without approval at one time, per day, and per month (null = no limit). When a send requires approval, the sendMessage, sendBroadcast, and sendMulti methods return `status`=`pending_review` instead of sending immediately."
+    },
+    "welcome_message": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The project's welcome message settings (read-only). Properties: `enabled` (boolean) — automatically send the welcome message to each contact the first time a text message is sent to that contact, for example to provide opt-out or compliance instructions (welcome messages may also be configured on individual routes); `content` (string or null) — content of the welcome message; `append` (boolean) — if true, the welcome message is appended to the end of the first message sent to each contact, instead of being sent as a separate message."
+    },
+    "custom_contact_routing": {
+      "type": "boolean",
+      "description": "If true, the default route can be changed per contact, and messages to a contact with a default route assigned are sent via that route",
+      "example": false
     },
     "vars": {
       "type": "object",

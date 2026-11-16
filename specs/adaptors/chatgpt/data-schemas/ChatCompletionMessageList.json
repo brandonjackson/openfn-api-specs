@@ -5,70 +5,207 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/ChatCompletionMessageList",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "An object representing a list of chat completion messages.\n",
   "properties": {
     "object": {
       "type": "string",
-      "enum": [
-        "list"
-      ],
+      "const": "list",
       "default": "list",
-      "description": "The type of this object. It is always set to \"list\".\n",
-      "x-stainless-const": true
+      "description": "The type of this object. It is always set to \"list\".\n"
     },
     "data": {
       "type": "array",
       "description": "An array of chat completion message objects.\n",
       "items": {
-        "allOf": [
-          {
-            "$ref": "ChatCompletionResponseMessage.json"
+        "properties": {
+          "id": {
+            "type": "string"
           },
-          {
-            "type": "object",
-            "required": [
-              "id"
+          "role": {
+            "enum": [
+              "user",
+              "assistant",
+              "tool",
+              "system",
+              "function",
+              "developer"
             ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "The identifier of the chat message."
+            "type": "string"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
               },
-              "content_parts": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "description": "If a content parts array was provided, this is an array of `text` and `image_url` parts.\nOtherwise, null.\n",
-                    "items": {
-                      "oneOf": [
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content_parts": {
+            "anyOf": [
+              {
+                "items": {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "text",
+                        "image_url",
+                        "input_audio",
+                        "file"
+                      ],
+                      "type": "string"
+                    },
+                    "text": {
+                      "anyOf": [
                         {
-                          "$ref": "ChatCompletionRequestMessageContentPartText.json"
+                          "type": "string"
                         },
                         {
-                          "$ref": "ChatCompletionRequestMessageContentPartImage.json"
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "image_url": {
+                      "anyOf": [
+                        {
+                          "properties": {
+                            "url": {
+                              "type": "string"
+                            },
+                            "detail": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "input_audio": {
+                      "anyOf": [
+                        {
+                          "properties": {
+                            "data": {
+                              "type": "string"
+                            },
+                            "format": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "data",
+                            "format"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "file": {
+                      "anyOf": [
+                        {
+                          "properties": {
+                            "file_data": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "filename": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "file_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
                         }
                       ]
                     }
                   },
-                  {
-                    "type": "null"
-                  }
-                ]
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
               }
-            }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
-        ]
+        },
+        "required": [
+          "id",
+          "role",
+          "content",
+          "content_parts"
+        ],
+        "type": "object"
       }
     },
     "first_id": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "The identifier of the first chat message in the data array."
     },
     "last_id": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "The identifier of the last chat message in the data array."
     },
     "has_more": {

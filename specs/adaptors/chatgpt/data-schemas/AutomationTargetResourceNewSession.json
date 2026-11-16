@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/AutomationTargetResourceNewSession",
+  "title": "AutomationTargetResourceNewSession",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/AutomationTargetResourceNewSession",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "new_session"
+      ],
+      "default": "new_session",
+      "x-stainless-const": true,
+      "description": "The type of the object. Always `new_session`."
+    },
+    "agent_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The saved agent reference, or null when an inline agent is configured."
+    },
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "AutomationAgentConfigResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The inline agent configuration, or null when agent_id is configured."
+    },
+    "environment": {
+      "$ref": "AutomationEnvironmentResource.json",
+      "description": "Configuration or references used to select the execution environment."
+    },
+    "input": {
+      "type": "array",
+      "items": {
+        "$ref": "InputMessageResource-2.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Initial input delivered to each new session."
+    },
+    "vault_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Vaults made available to each new session."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 0
+      },
+      "propertyNames": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minProperties": 0,
+      "description": "Metadata attached to each new session."
+    }
+  },
+  "required": [
+    "type",
+    "agent_id",
+    "agent",
+    "environment",
+    "input",
+    "vault_ids",
+    "metadata"
+  ],
+  "additionalProperties": false
+}

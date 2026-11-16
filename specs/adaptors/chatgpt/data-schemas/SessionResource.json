@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/SessionResource",
+  "title": "SessionResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/SessionResource",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "prompt_cache_options": {
+      "anyOf": [
+        {
+          "$ref": "PromptCacheOptionsResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Default prompt cache lifetime for turns in this session, when configured."
+    },
+    "review": {
+      "$ref": "SessionReviewResource.json",
+      "description": "Review applied to eligible actions in this session. Omitted when review is none and automatic review is not enabled. Omission means none."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 0
+      },
+      "propertyNames": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minProperties": 0,
+      "description": "Custom string key-value pairs attached to the session."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the session."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "agent.session"
+      ],
+      "default": "agent.session",
+      "x-stainless-const": true,
+      "description": "The object type. Always `agent.session`."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The Unix timestamp, in seconds, when the session was created."
+    },
+    "last_active_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The Unix timestamp, in seconds, when the session was last active."
+    },
+    "status": {
+      "$ref": "SessionStatusResource.json",
+      "description": "The current status of the session."
+    },
+    "required_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "SessionRequiredActionResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Actions that must be completed before the session can continue."
+    },
+    "error": {
+      "description": "The error that caused the session to fail, if any.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0
+    },
+    "agent": {
+      "$ref": "SessionAgentResource.json",
+      "description": "The agent running in the session."
+    },
+    "environment": {
+      "$ref": "EnvironmentResource.json",
+      "description": "The execution environment for the session."
+    },
+    "vault_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "The IDs of vaults made available to the session."
+    },
+    "usage": {
+      "anyOf": [
+        {
+          "$ref": "TokenUsageResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Best-effort token usage for the session, or null if unknown. Recorded usage may change."
+    }
+  },
+  "required": [
+    "metadata",
+    "id",
+    "object",
+    "created_at",
+    "last_active_at",
+    "status",
+    "required_actions",
+    "error",
+    "agent",
+    "environment",
+    "vault_ids",
+    "usage"
+  ],
+  "additionalProperties": false,
+  "description": "A Managed Agents session."
+}

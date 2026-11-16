@@ -5,13 +5,18 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/GenerateContentResponse",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "Response from the model supporting multiple candidate responses. Safety ratings and content filtering are reported for both prompt in `GenerateContentResponse.prompt_feedback` and for each candidate in `finish_reason` and in `safety_ratings`. The API: - Returns either all requested candidates or none of them - Returns no candidates at all only if there was something wrong with the prompt (check `prompt_feedback`) - Reports feedback on each candidate in `finish_reason` and `safety_ratings`.",
   "properties": {
-    "modelStatus": {
-      "$ref": "ModelStatus.json"
+    "modelVersion": {
+      "type": "string",
+      "description": "Output only. The model version used to generate the response.",
+      "readOnly": true
+    },
+    "usageMetadata": {
+      "$ref": "UsageMetadata.json"
     },
     "candidates": {
       "type": "array",
@@ -20,21 +25,16 @@
         "$ref": "Candidate.json"
       }
     },
-    "responseId": {
-      "type": "string",
-      "description": "Output only. response_id is used to identify each response.",
-      "readOnly": true
-    },
-    "modelVersion": {
-      "type": "string",
-      "description": "Output only. The model version used to generate the response.",
-      "readOnly": true
+    "modelStatus": {
+      "$ref": "ModelStatus.json"
     },
     "promptFeedback": {
       "$ref": "PromptFeedback.json"
     },
-    "usageMetadata": {
-      "$ref": "UsageMetadata.json"
+    "responseId": {
+      "type": "string",
+      "description": "Output only. response_id is used to identify each response.",
+      "readOnly": true
     }
   }
 }

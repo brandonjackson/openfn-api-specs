@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/ActionSendTextToContact",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "Sends a text message to the current contact.",
@@ -16,7 +16,7 @@
       "description": "Action type identifier"
     },
     "body": {
-      "$ref": "MessageBody.json",
+      "$ref": "MessageBodyWithVariants.json",
       "description": "Message body."
     },
     "route_id": {
@@ -35,6 +35,15 @@
       "type": "object",
       "additionalProperties": true,
       "description": "Schedule to send the message at a later time."
+    },
+    "on_click": {
+      "type": "string",
+      "description": "Name of a subroutine (with context `message`) to run the first time the recipient clicks a link in the message. Requires `body.track_clicks`. Within the subroutine, [[$destination_url]] is the URL that was clicked."
+    },
+    "on_click_timeout": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Runs a subroutine (with context `message`) if the recipient has not clicked a link in the message within the specified time. Requires `body.track_clicks`."
     }
   },
   "required": [

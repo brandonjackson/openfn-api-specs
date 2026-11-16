@@ -5,43 +5,25 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/CachedContent",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "Content that has been preprocessed and can be used in subsequent request to GenerativeService. Cached content can be only used with model it was created for.",
   "properties": {
-    "systemInstruction": {
-      "$ref": "Content.json"
-    },
-    "toolConfig": {
-      "$ref": "ToolConfig.json"
-    },
-    "displayName": {
-      "type": "string",
-      "description": "Optional. Immutable. The user-generated meaningful display name of the cached content. Maximum 128 Unicode characters."
-    },
-    "name": {
-      "type": "string",
-      "description": "Output only. Identifier. The resource name referring to the cached content. Format: `cachedContents/{id}`",
-      "readOnly": true
-    },
-    "ttl": {
-      "type": "string",
-      "format": "google-duration",
-      "description": "Input only. New TTL for this resource, input only."
-    },
-    "createTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. Creation time of the cache entry.",
-      "readOnly": true
-    },
     "contents": {
       "type": "array",
       "description": "Optional. Input only. Immutable. The content to cache.",
       "items": {
         "$ref": "Content.json"
       }
+    },
+    "ttl": {
+      "type": "string",
+      "format": "google-duration",
+      "description": "Input only. New TTL for this resource, input only."
+    },
+    "systemInstruction": {
+      "$ref": "Content.json"
     },
     "tools": {
       "type": "array",
@@ -50,10 +32,12 @@
         "$ref": "Tool.json"
       }
     },
-    "updateTime": {
+    "toolConfig": {
+      "$ref": "ToolConfig.json"
+    },
+    "name": {
       "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. When the cache entry was last updated in UTC time.",
+      "description": "Output only. Identifier. The resource name referring to the cached content. Format: `cachedContents/{id}`",
       "readOnly": true
     },
     "expireTime": {
@@ -61,12 +45,28 @@
       "format": "google-datetime",
       "description": "Timestamp in UTC of when this resource is considered expired. This is *always* provided on output, regardless of what was sent on input."
     },
-    "model": {
+    "displayName": {
       "type": "string",
-      "description": "Required. Immutable. The name of the `Model` to use for cached content Format: `models/{model}`"
+      "description": "Optional. Immutable. The user-generated meaningful display name of the cached content. Maximum 128 Unicode characters."
+    },
+    "createTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. Creation time of the cache entry.",
+      "readOnly": true
     },
     "usageMetadata": {
       "$ref": "CachedContentUsageMetadata.json"
+    },
+    "updateTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. When the cache entry was last updated in UTC time.",
+      "readOnly": true
+    },
+    "model": {
+      "type": "string",
+      "description": "Required. Immutable. The name of the `Model` to use for cached content Format: `models/{model}`"
     }
   }
 }

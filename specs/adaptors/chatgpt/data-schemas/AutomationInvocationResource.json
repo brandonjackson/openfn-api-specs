@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/AutomationInvocationResource",
+  "title": "AutomationInvocationResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/AutomationInvocationResource",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The invocation ID."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "agent.automation.invocation"
+      ],
+      "default": "agent.automation.invocation",
+      "x-stainless-const": true,
+      "description": "Always `agent.automation.invocation`."
+    },
+    "automation_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The automation that owns the invocation."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The creation time as a Unix timestamp in seconds."
+    },
+    "source": {
+      "$ref": "AutomationInvocationSourceResource.json",
+      "description": "Whether the invocation was manual or scheduled."
+    },
+    "scheduled_at": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "int64",
+      "description": "The intended occurrence as a Unix timestamp in seconds, or null for manual runs."
+    },
+    "session_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The target or newly created session ID, or null before one is available."
+    },
+    "status": {
+      "$ref": "AutomationInvocationStatusResource.json",
+      "description": "Delivery status; completed does not mean the agent's work has finished."
+    },
+    "skip_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "pending_delivery",
+        null
+      ],
+      "default": "pending_delivery",
+      "x-stainless-const": true,
+      "description": "Why an occurrence was skipped, or null when it was not skipped."
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "AutomationInvocationErrorResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The permanent delivery failure, or null when no failure occurred."
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "automation_id",
+    "created_at",
+    "source",
+    "scheduled_at",
+    "session_id",
+    "status",
+    "skip_reason",
+    "error"
+  ],
+  "additionalProperties": false,
+  "description": "One attempted delivery by an automation."
+}

@@ -14,23 +14,65 @@
     "specUrl": "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
     "format": "openapi-3.1",
     "contentHash": "sha256:d6b7d48944fd64e84b0cfd032ada94c2da5fa711d3fbc90c201905df43b52fbb",
-    "fetchedAt": "2026-11-13"
+    "fetchedAt": "2026-11-13",
+    "note": "Mailgun publishes one OpenAPI 3.1 document per product. specUrl/contentHash name the primary one, the Send API (upstream.yaml, with the one redaction in modifications[]). The Validate, Inspect and Optimize documents are committed verbatim as upstream-validate.yaml, upstream-inspect.yaml and upstream-optimize.yaml; their URLs and sha256 hashes are in attempts[]."
   },
   "attempts": [
     {
       "kind": "openapi",
       "url": "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
-      "result": "used"
+      "result": "used",
+      "note": "Mailgun Send API ('Mailgun API' 3.0.0): 267 operations, 332 schemas. Re-fetched 2026-11-16: byte-identical to the committed upstream.yaml once the recorded signing-key redaction is applied (fetched sha256:78d2dbf3a23eec01a909795900341eabc4b6285904674b9cd2ed406c08b5ce3b), so no drift since 2026-11-13."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_spec/docs/validate/oas/openapi-validate-final.yaml?download",
+      "result": "used",
+      "note": "Mailgun Validate ('Validations Service' 1.0.0): 26 operations, 15 schemas; single validation (/v4/address/validate), bulk validation (/v4/address/validate/bulk...), list health preview and the legacy v3 routes. Committed verbatim as upstream-validate.yaml, sha256:ead2649f12ec5aa407afb0fcb9999daf2a6fb3f00fb76cee705af25a70e49b50. All 26 operations merged."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_spec/docs/inspect/api-reference/openapi-final.yaml?download",
+      "result": "used",
+      "note": "Mailgun Inspect ('Email Preview API' 1.0.0): 59 operations, 113 schemas; email preview, code analysis, link validation, image validation, accessibility, spam testing. Committed verbatim as upstream-inspect.yaml, sha256:6b44a4034b09aab05c8bf8c3f34ebbd78a511fffc7be3c8a6a2f1597e0e801dd. All 59 operations merged."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_spec/docs/inboxready/api-reference/optimize/inboxready.yaml?download",
+      "result": "used",
+      "note": "Mailgun Optimize, formerly InboxReady (info.title 'Alerts' 0.0.1): 73 operations, 104 schemas; inboxready domains, IP and domain blocklist monitoring, spam traps, inbox placement, email health score, DMARC reports, Google Postmaster Tools, Microsoft SNDS, alerts. Committed verbatim as upstream-optimize.yaml, sha256:855fc657af1e20dcc82ae352dabc29de7c7d6626b4494acc77d7d28e94c2056f. 59 operations merged; its 14 /v1/alerts operations are identical to the ones already in the Send document and were not duplicated."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/{validate,inspect,inboxready}.yaml?download and https://documentation.mailgun.com/_spec/docs/inboxready/api-reference/optimize/{mailgun,validate,inspect}.yaml?download",
+      "result": "rejected",
+      "note": "Aliases: the Redocly site serves the same four documents under both the send/ and optimize/ reference folders, byte-identical (same sha256) to the four used above. No fifth document exists; sitemap.xml lists reference pages only under these four specs."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_spec/docs/validate/oas/openapi-validate-final.json?download",
+      "result": "rejected",
+      "note": "The site also serves a JSON rendering of each document at the .json extension; the YAML is the format the committed Send upstream already uses, so YAML was kept for all four."
     }
   ],
   "verifiedAgainst": [
-    "ast.json"
+    "ast.json",
+    "adaptor-source"
   ],
   "sources": [
     "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
-    "https://documentation.mailgun.com/docs/mailgun/api-reference/"
+    "https://documentation.mailgun.com/_spec/docs/validate/oas/openapi-validate-final.yaml?download",
+    "https://documentation.mailgun.com/_spec/docs/inspect/api-reference/openapi-final.yaml?download",
+    "https://documentation.mailgun.com/_spec/docs/inboxready/api-reference/optimize/inboxready.yaml?download",
+    "https://documentation.mailgun.com/sitemap.xml",
+    "https://documentation.mailgun.com/docs/mailgun/api-reference/",
+    "https://documentation.mailgun.com/docs/validate/api-overview",
+    "https://documentation.mailgun.com/docs/inspect/api-reference/api-overview",
+    "https://documentation.mailgun.com/docs/inboxready/api-reference/api-overview",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-mailgun/ast.json",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-mailgun/dist/index.js"
   ],
-  "capturedAt": "2026-11-13",
-  "lastCheckedAt": "2026-11-13",
-  "notes": "Complete, verbatim copy of Mailgun's official 'send' OpenAPI 3.1 document (the primary Mailgun API spec): messages, domains, events, stats, mailing lists, routes, webhooks, templates, etc. openapi.json is the upstream YAML rendered losslessly to JSON. Mailgun publishes additional separate specs (e.g. email validation) at other openapi-final URLs, NOT included here. MODIFICATION (overcommunicated): the published spec ships an EXAMPLE HTTP signing key placeholder that trips GitHub secret scanning; that one example value was replaced with 'key-REDACTED-EXAMPLE-SECRET' in upstream.yaml and openapi.json. It was documentation sample data, not a real credential; no path, operation, or schema is changed."
+  "capturedAt": "2026-11-16",
+  "lastCheckedAt": "2026-11-16",
+  "notes": "Mailgun's whole published API surface on api.mailgun.net / api.eu.mailgun.net: the four OpenAPI 3.1 documents Mailgun publishes on documentation.mailgun.com, each committed verbatim and merged into one openapi.json. Per file: Send (upstream.yaml) 267 operations / 332 schemas; Validate (upstream-validate.yaml) 26 / 15; Inspect (upstream-inspect.yaml) 59 / 113; Optimize (upstream-optimize.yaml) 73 / 104. Merged total: 411 operations on 265 paths, 540 schemas, 61 tags. Until 2026-11-16 this spec was the Send document alone (267 operations, 40 resource groups), which left the email validation endpoints (GET /v4/address/validate, GET/POST /v4/address/validate/bulk/{list_id}) off-spec. MERGE RULES: the Send document is carried unchanged (info, servers, tags, paths, components); the other three add their paths, components, tags and x-tagGroups in the order validate, inspect, optimize. All four declare the same two servers, so no path-level servers override was needed. Collisions: 27 same-named components (shared scaffold/alerts schemas and the basicAuth scheme) are deep-equal across files and kept once, none needed namespacing; 14 path+method pairs under /v1/alerts appear in both Send and Optimize with identical operation objects, the Send copy is kept (hence 73 - 14 = 59 Optimize operations added); no operationId collides otherwise. ONE DELIBERATE DIFFERENCE from the vendor text in the merged file: Optimize's tag 'Domains' (4 operations on /v1/inboxready/domains) is a different resource from Send's 'Domains' (/v4/domains), so in openapi.json it is named 'Optimize Domains' (x-displayName still 'Domains') to keep the two resource groups apart; upstream-optimize.yaml is untouched. Vendor oddities kept as published: some Validate operationIds are Go symbol names (e.g. 'api.InitV4API.(*ApiHelpers).isFreeOrFishy.func2-9' for GET /v4/address/validate/bulk/{list_id}), three tags are named openapi-*_other, and Optimize declares eight identical basic-auth schemes. ADAPTOR SURFACE: @openfn/language-mailgun 0.7.4 exports one Mailgun operation, send(), which calls mailgun.js client.messages.create(domain, body), i.e. POST /v3/{domain_name}/messages (present). It exports no generic HTTP helper of its own; other endpoints are reached through the mailgun.js client on state.client inside fn(). MODIFICATION (overcommunicated): the Send document ships an EXAMPLE HTTP signing key placeholder that trips GitHub secret scanning; that one example value was replaced with 'key-REDACTED-EXAMPLE-SECRET' in upstream.yaml and openapi.json. It was documentation sample data, not a real credential; no path, operation, or schema is changed. The three added files carry no modification."
 }

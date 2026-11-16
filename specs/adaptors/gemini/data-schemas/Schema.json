@@ -5,22 +5,11 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/Schema",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema).",
   "properties": {
-    "required": {
-      "type": "array",
-      "description": "Optional. Required properties of Type.OBJECT.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "title": {
-      "type": "string",
-      "description": "Optional. The title of the schema."
-    },
     "anyOf": {
       "type": "array",
       "description": "Optional. The value should be validated against any (one or more) of the subschemas in the list.",
@@ -28,10 +17,23 @@
         "$ref": "Schema.json"
       }
     },
-    "minItems": {
+    "maximum": {
+      "type": "number",
+      "format": "double",
+      "description": "Optional. Maximum value of the Type.INTEGER and Type.NUMBER"
+    },
+    "format": {
+      "type": "string",
+      "description": "Optional. The format of the data. Any value is allowed, but most do not trigger any special functionality."
+    },
+    "maxLength": {
       "type": "string",
       "format": "int64",
-      "description": "Optional. Minimum number of the elements for Type.ARRAY."
+      "description": "Optional. Maximum length of the Type.STRING"
+    },
+    "title": {
+      "type": "string",
+      "description": "Optional. The title of the schema."
     },
     "minimum": {
       "type": "number",
@@ -52,54 +54,47 @@
         "NULL"
       ]
     },
-    "maximum": {
-      "type": "number",
-      "format": "double",
-      "description": "Optional. Maximum value of the Type.INTEGER and Type.NUMBER"
-    },
-    "example": {
-      "description": "Optional. Example of the object. Will only populated when the object is the root."
-    },
-    "pattern": {
+    "maxProperties": {
       "type": "string",
-      "description": "Optional. Pattern of the Type.STRING to restrict a string to a regular expression."
+      "format": "int64",
+      "description": "Optional. Maximum number of the properties for Type.OBJECT."
+    },
+    "minLength": {
+      "type": "string",
+      "format": "int64",
+      "description": "Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"
+    },
+    "required": {
+      "type": "array",
+      "description": "Optional. Required properties of Type.OBJECT.",
+      "items": {
+        "type": "string"
+      }
     },
     "minProperties": {
       "type": "string",
       "format": "int64",
       "description": "Optional. Minimum number of the properties for Type.OBJECT."
     },
-    "default": {
-      "description": "Optional. Default value of the field. Per JSON Schema, this field is intended for documentation generators and doesn't affect validation. Thus it's included here and ignored so that developers who send schemas with a `default` field don't get unknown-field errors."
-    },
-    "propertyOrdering": {
-      "type": "array",
-      "description": "Optional. The order of the properties. Not a standard field in open api spec. Used to determine the order of the properties in the response.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "items": {
-      "$ref": "Schema.json"
-    },
     "maxItems": {
       "type": "string",
       "format": "int64",
       "description": "Optional. Maximum number of the elements for Type.ARRAY."
     },
-    "maxProperties": {
+    "default": {
+      "description": "Optional. Default value of the field. Per JSON Schema, this field is intended for documentation generators and doesn't affect validation. Thus it's included here and ignored so that developers who send schemas with a `default` field don't get unknown-field errors."
+    },
+    "minItems": {
       "type": "string",
       "format": "int64",
-      "description": "Optional. Maximum number of the properties for Type.OBJECT."
+      "description": "Optional. Minimum number of the elements for Type.ARRAY."
     },
     "description": {
       "type": "string",
       "description": "Optional. A brief description of the parameter. This could contain examples of use. Parameter description may be formatted as Markdown."
     },
-    "maxLength": {
-      "type": "string",
-      "format": "int64",
-      "description": "Optional. Maximum length of the Type.STRING"
+    "items": {
+      "$ref": "Schema.json"
     },
     "enum": {
       "type": "array",
@@ -108,14 +103,12 @@
         "type": "string"
       }
     },
-    "format": {
-      "type": "string",
-      "description": "Optional. The format of the data. Any value is allowed, but most do not trigger any special functionality."
-    },
-    "minLength": {
-      "type": "string",
-      "format": "int64",
-      "description": "Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"
+    "propertyOrdering": {
+      "type": "array",
+      "description": "Optional. The order of the properties. Not a standard field in open api spec. Used to determine the order of the properties in the response.",
+      "items": {
+        "type": "string"
+      }
     },
     "properties": {
       "type": "object",
@@ -123,6 +116,13 @@
       "additionalProperties": {
         "$ref": "Schema.json"
       }
+    },
+    "pattern": {
+      "type": "string",
+      "description": "Optional. Pattern of the Type.STRING to restrict a string to a regular expression."
+    },
+    "example": {
+      "description": "Optional. Example of the object. Will only populated when the object is the root."
     }
   }
 }

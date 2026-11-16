@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Phone",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "properties": {
@@ -239,6 +239,39 @@
         "null"
       ],
       "description": "Secret/API key for the external API (e.g. Twilio Auth Token, Vonage API Secret). Only applicable for routes that support external API configuration. Write-only; not returned by the API when retrieving a phone."
+    },
+    "vcard": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the Contact Card can be attached to messages sent from this route."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name shown on the Contact Card (defaults to the organization name)."
+        },
+        "version": {
+          "type": "string",
+          "description": "vCard version. `3.0` is recommended for compatibility."
+        },
+        "logo_url": {
+          "type": "string",
+          "description": "URL of the Contact Card's logo image, or null if there is no logo. Read-only."
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "Phone number stored on the Contact Card (always the route's own phone number). Read-only."
+        },
+        "logo_file_id": {
+          "type": "string",
+          "description": "To set the logo, upload a JPEG or PNG image (max 1MB) via [project.uploadFile](#Project.uploadFile) and provide the resulting file ID; set to null to remove the logo. Write-only; not returned by the API."
+        }
+      },
+      "description": "The route's Contact Card (a vCard that recipients can save to their address book). Only present for routes associated with a phone number that can send messages. When updating this field, only the provided properties are changed.\n\nTo attach the sending route's Contact Card to a message, include the media item `{\"type\": \"route_vcard\"}` in the `media` parameter of project.sendMessage and related methods."
     },
     "url": {
       "type": "string",

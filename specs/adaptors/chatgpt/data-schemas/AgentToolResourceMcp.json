@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/AgentToolResourceMcp",
+  "title": "AgentToolResourceMcp",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/AgentToolResourceMcp",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "mcp"
+      ],
+      "default": "mcp",
+      "x-stainless-const": true,
+      "description": "The type of the object. Always `mcp`."
+    },
+    "server_label": {
+      "type": "string",
+      "minLength": 0,
+      "description": "A label used to identify the MCP server in tool calls."
+    },
+    "credential_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The attached vault credential selected for this MCP server, if any. Optional when exactly one attached credential matches the server URL."
+    },
+    "transport": {
+      "$ref": "McpTransportResource.json",
+      "description": "The transport used to connect to the MCP server."
+    },
+    "request_metadata": {
+      "type": "object",
+      "additionalProperties": {},
+      "propertyNames": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minProperties": 0,
+      "description": "Metadata included with requests to this MCP server."
+    },
+    "allowed_tools": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "The MCP tools the agent may call."
+    },
+    "required": {
+      "type": "boolean",
+      "description": "Whether this MCP server must initialize before the first turn."
+    },
+    "connection_origin": {
+      "$ref": "McpConnectionOriginResource.json",
+      "description": "Where outbound MCP HTTP connections originate."
+    }
+  },
+  "required": [
+    "type",
+    "server_label",
+    "credential_id",
+    "transport",
+    "request_metadata",
+    "allowed_tools",
+    "required",
+    "connection_origin"
+  ],
+  "additionalProperties": false,
+  "description": "Tools provided by a remote MCP server."
+}

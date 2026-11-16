@@ -5,30 +5,53 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/Candidate",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "A response candidate generated from the model.",
   "properties": {
-    "tokenCount": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Output only. Token count for this candidate.",
-      "readOnly": true
+    "continuationToken": {
+      "type": "string",
+      "format": "byte",
+      "description": "An optional opaque continuation token returned when `finish_reason` is `CONTINUATION`. Clients can pass this token in a subsequent `GenerateContentRequest` to continue generation."
     },
-    "urlContextMetadata": {
-      "$ref": "UrlContextMetadata.json"
+    "safetyRatings": {
+      "type": "array",
+      "description": "List of ratings for the safety of a response candidate. There is at most one rating per category.",
+      "items": {
+        "$ref": "SafetyRating.json"
+      }
+    },
+    "citationMetadata": {
+      "$ref": "CitationMetadata.json"
+    },
+    "groundingAttributions": {
+      "type": "array",
+      "description": "Output only. Attribution information for sources that contributed to a grounded answer. This field is populated for `GenerateAnswer` calls.",
+      "readOnly": true,
+      "items": {
+        "$ref": "GroundingAttribution.json"
+      }
+    },
+    "groundingMetadata": {
+      "$ref": "GroundingMetadata.json"
     },
     "finishMessage": {
       "type": "string",
       "description": "Optional. Output only. Details the reason why the model stopped generating tokens. This is populated only when `finish_reason` is set.",
       "readOnly": true
     },
-    "avgLogprobs": {
-      "type": "number",
-      "format": "double",
-      "description": "Output only. Average log probability score of the candidate.",
+    "index": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Output only. Index of the candidate in the list of response candidates.",
       "readOnly": true
+    },
+    "logprobsResult": {
+      "$ref": "LogprobsResult.json"
+    },
+    "urlContextMetadata": {
+      "$ref": "UrlContextMetadata.json"
     },
     "content": {
       "$ref": "Content.json"
@@ -58,39 +81,22 @@
         "MISSING_THOUGHT_SIGNATURE",
         "MALFORMED_RESPONSE",
         "ESCALATION",
-        "PUP_LIMITED_DISABLED"
+        "PUP_LIMITED_DISABLED",
+        "CONTINUATION"
       ],
       "readOnly": true
     },
-    "citationMetadata": {
-      "$ref": "CitationMetadata.json"
-    },
-    "groundingAttributions": {
-      "type": "array",
-      "description": "Output only. Attribution information for sources that contributed to a grounded answer. This field is populated for `GenerateAnswer` calls.",
-      "readOnly": true,
-      "items": {
-        "$ref": "GroundingAttribution.json"
-      }
-    },
-    "groundingMetadata": {
-      "$ref": "GroundingMetadata.json"
-    },
-    "index": {
+    "tokenCount": {
       "type": "integer",
       "format": "int32",
-      "description": "Output only. Index of the candidate in the list of response candidates.",
+      "description": "Output only. Token count for this candidate.",
       "readOnly": true
     },
-    "safetyRatings": {
-      "type": "array",
-      "description": "List of ratings for the safety of a response candidate. There is at most one rating per category.",
-      "items": {
-        "$ref": "SafetyRating.json"
-      }
-    },
-    "logprobsResult": {
-      "$ref": "LogprobsResult.json"
+    "avgLogprobs": {
+      "type": "number",
+      "format": "double",
+      "description": "Output only. Average log probability score of the candidate.",
+      "readOnly": true
     }
   }
 }

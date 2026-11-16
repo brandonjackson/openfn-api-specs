@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telerivet/MessageBodyWithVariants",
+  "title": "MessageBodyWithVariants",
+  "x-openfn-adaptor": "telerivet",
+  "x-source": {
+    "openapi": "#/components/schemas/MessageBodyWithVariants",
+    "capturedAt": "2026-11-16"
+  },
+  "allOf": [
+    {
+      "$ref": "MessageBody.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "variants": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "MessageBody.json"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "conditions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "variable": {
+                          "type": "string",
+                          "description": "Variable to test, e.g. <code>[[contact.vars.language]]</code>. Not required for <code>contact_is_in_group</code> and <code>contact_not_in_group</code> condition types."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "Condition type. Values: <code>is</code>, <code>is_not</code>, <code>has_word</code>, <code>does_not_have_word</code>, <code>contains</code>, <code>does_not_contain</code>, <code>starts_with</code>, <code>does_not_start_with</code>, <code>ends_with</code>, <code>does_not_end_with</code>, <code>alpha_before</code>, <code>alpha_after</code>, <code>equals</code>, <code>does_not_equal</code>, <code>less_than</code>, <code>greater_than</code>, <code>less_or_equal</code>, <code>greater_or_equal</code>, <code>contact_is_in_group</code>, <code>contact_not_in_group</code>."
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Value to compare against (or group name for group membership condition types)."
+                        }
+                      },
+                      "required": [
+                        "variable",
+                        "type",
+                        "value"
+                      ]
+                    },
+                    "description": "Conditions for using this variant (up to 5). Required unless the variant has a <code>split_percent</code>."
+                  },
+                  "op": {
+                    "type": "string",
+                    "description": "Operator to join multiple conditions: <code>and</code> (all conditions must match) or <code>or</code> (any condition must match). Must be <code>and</code> if the variant has a <code>split_percent</code>. Default: <code>and</code>."
+                  },
+                  "split_percent": {
+                    "type": "integer",
+                    "description": "For A/B testing, the approximate percentage of recipients (1-100) matching the variant's other conditions that are randomly selected for this variant. Variants with the same conditions and a split_percent are used for separate random groups of recipients, and the remaining recipients receive the default message body (or the next matching variant). For example, a single variant with a split_percent of 50 is used for about half of the recipients. Since each recipient is selected randomly, the actual percentage of recipients receiving each variant may differ slightly from split_percent, especially for small numbers of recipients. Recipients are assigned to groups deterministically, so that each contact is in the same group for all messages in the same broadcast or campaign. The total split_percent of all variants with the same conditions can be at most 100. Variants with different conditions are separate A/B tests (e.g. one for each contact language), so their split_percent values do not count toward the same total. If split_percent is omitted, the variant is used for all recipients that match its conditions."
+                  }
+                }
+              }
+            ]
+          },
+          "description": "Allows sending different message bodies depending on the route that sends the message, or the contact that the message is sent to. Each variant has conditions and its own message body. When each message is sent, the first variant whose conditions match is used instead of the default message body; if no variant matches, the default message body is used. A variant replaces the entire message body: content, media, route_params, track_clicks and short_link_params that are not specified in the variant are empty, not inherited from the default message body. Conditions are evaluated when the message is sent by a particular basic route, and can use the same variables as outgoing message content: contact variables such as [[contact.name]] and [[contact.vars.\\*]], [[to_number]], [[time]], [[project.\\*]], and variables of the basic route sending the message: [[phone.type]] (e.g. whatsapp), [[phone.id]], [[phone.vars.\\*]], and [[phone.supports_quick_replies]], [[phone.supports_link_button]], [[phone.supports_native_attachments]] (1 if the route supports the feature, otherwise 0). Variables may include filters, e.g. [[contact.vars.language|default:\"en\"]]. For all available variables, see the <a href='https://telerivet.com/api/rest#variables'>Variable Reference</a>. In services and polls, conditions can't use variables that are only available in the service, such as [[content]] or [[state.\\*]] (to use them, first store the value in a contact field, e.g. with a set_contact_var action, and then use [[contact.vars.\\*]]). \n\nFor A/B testing, a variant can have a random split (split_percent) so that it is only used for a random percentage of recipients, e.g. a single variant with split_percent 50 is used for about half of the recipients, and the default message body for the others. A random split can be combined with other conditions to run separate A/B tests for different routes or contacts.\n\nSince the first matching variant is used, list more specific variants before more general ones. For example, a variant with a condition `[[contact.vars.language]] is 'fr'` and split_percent 50 must be listed before a variant with only the condition `[[contact.vars.language]] is 'fr'`. Up to 10 variants are supported, each with up to 5 conditions."
+        }
+      }
+    }
+  ]
+}

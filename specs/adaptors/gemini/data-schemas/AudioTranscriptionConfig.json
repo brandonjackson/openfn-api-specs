@@ -5,13 +5,18 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/AudioTranscriptionConfig",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "The audio transcription configuration.",
   "properties": {
-    "languageAuto": {
-      "$ref": "LanguageAuto.json"
+    "wordTimestamp": {
+      "type": "boolean",
+      "description": "Optional. Configures word-level timestamp generation."
+    },
+    "diarization": {
+      "type": "boolean",
+      "description": "Optional. Configures speaker diarization."
     },
     "mode": {
       "type": "string",
@@ -21,17 +26,6 @@
         "VERBATIM",
         "SMART"
       ]
-    },
-    "languageCodes": {
-      "type": "array",
-      "description": "Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "wordTimestamp": {
-      "type": "boolean",
-      "description": "Optional. Configures word-level timestamp generation."
     },
     "languageHints": {
       "$ref": "LanguageHints.json"
@@ -43,6 +37,20 @@
         "type": "string"
       }
     },
+    "sourceText": {
+      "type": "string",
+      "description": "Optional. The source text to be edited or rewritten via voice instructions. When provided in `SMART` mode, the model evaluates the audio input against this text and emits the complete replacement text in the candidate response rather than appending to it."
+    },
+    "languageCodes": {
+      "type": "array",
+      "description": "Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languageAuto": {
+      "$ref": "LanguageAuto.json"
+    },
     "adaptationPhrases": {
       "type": "array",
       "description": "Optional. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms.",
@@ -50,10 +58,6 @@
       "items": {
         "type": "string"
       }
-    },
-    "diarization": {
-      "type": "boolean",
-      "description": "Optional. Configures speaker diarization."
     }
   }
 }

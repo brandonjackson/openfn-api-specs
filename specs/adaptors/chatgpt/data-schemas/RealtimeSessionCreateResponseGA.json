@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/RealtimeSessionCreateResponseGA",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "A Realtime session configuration object.\n",
@@ -13,10 +13,7 @@
     "type": {
       "type": "string",
       "description": "The type of session to create. Always `realtime` for the Realtime API.\n",
-      "enum": [
-        "realtime"
-      ],
-      "x-stainless-const": true
+      "const": "realtime"
     },
     "id": {
       "type": "string",
@@ -25,10 +22,7 @@
     "object": {
       "type": "string",
       "description": "The object type. Always `realtime.session`.",
-      "enum": [
-        "realtime.session"
-      ],
-      "x-stainless-const": true
+      "const": "realtime.session"
     },
     "expires_at": {
       "type": "integer",
@@ -76,7 +70,27 @@
             "gpt-audio-mini",
             "gpt-audio-mini-2025-10-06",
             "gpt-audio-mini-2025-12-15"
-          ]
+          ],
+          "x-openai-enum-deprecations": {
+            "gpt-realtime-2025-08-28": {
+              "message": "Announced shutdown date: 2027-01-20. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-realtime-mini-2025-12-15": {
+              "message": "Announced shutdown date: 2027-01-20. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-audio-mini-2025-12-15": {
+              "message": "Announced shutdown date: 2027-01-20. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-realtime": {
+              "message": "Announced shutdown date: 2027-01-20. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-realtime-mini": {
+              "message": "Announced shutdown date: 2027-01-20. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-audio-mini": {
+              "message": "Announced shutdown date: 2027-01-20. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            }
+          }
         }
       ],
       "description": "The Realtime model used for this session.\n"
@@ -97,16 +111,29 @@
               "description": "The format of the input audio."
             },
             "transcription": {
-              "description": "Configuration for input audio transcription, defaults to off and can be set to `null` to turn off once on. Input audio transcription is not native to the model, since the model consumes audio directly. Transcription runs asynchronously through [the /audio/transcriptions endpoint](/docs/api-reference/audio/createTranscription) and should be treated as guidance of input audio content rather than precisely what the model heard. The client can optionally set the language and prompt for transcription, these offer additional guidance to the transcription service.\n",
-              "$ref": "AudioTranscriptionResponse.json"
+              "description": "Configuration for input audio transcription, defaults to off and can be set to `null` to turn off once on. Input audio transcription is not native to the model, since the model consumes audio directly. Transcription runs asynchronously through [the /audio/transcriptions endpoint](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) and should be treated as guidance of input audio content rather than precisely what the model heard. The client can optionally set the language and prompt for transcription, these offer additional guidance to the transcription service.\n",
+              "anyOf": [
+                {
+                  "$ref": "AudioTranscriptionResponse.json"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "noise_reduction": {
-              "type": "object",
+              "type": [
+                "object",
+                "null"
+              ],
               "default": null,
               "description": "Configuration for input audio noise reduction. This can be set to `null` to turn off.\nNoise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.\nFiltering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.\n",
               "properties": {
                 "type": {
                   "$ref": "NoiseReductionType.json"
+                },
+                "strength": {
+                  "$ref": "RealtimeNoiseReductionStrength.json"
                 }
               }
             },
@@ -139,7 +166,10 @@
       }
     },
     "include": {
-      "type": "array",
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string",
         "enum": [
@@ -160,10 +190,7 @@
               "title": "auto",
               "default": "auto",
               "description": "Enables tracing and sets default values for tracing configuration options. Always `auto`.\n",
-              "enum": [
-                "auto"
-              ],
-              "x-stainless-const": true
+              "const": "auto"
             },
             {
               "type": "object",
@@ -230,10 +257,7 @@
         },
         {
           "type": "string",
-          "enum": [
-            "inf"
-          ],
-          "x-stainless-const": true
+          "const": "inf"
         }
       ],
       "description": "Maximum number of output tokens for a single assistant response,\ninclusive of tool calls. Provide an integer between 1 and 4096 to\nlimit output tokens, or `inf` for the maximum available tokens for a\ngiven model. Defaults to `inf`.\n"

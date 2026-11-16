@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/AutomationAgentConfigResource",
+  "title": "AutomationAgentConfigResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/AutomationAgentConfigResource",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "model": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The requested model name."
+    },
+    "reasoning": {
+      "$ref": "ReasoningResource.json",
+      "description": "The configured reasoning policy."
+    },
+    "text": {
+      "$ref": "TextResource.json",
+      "description": "The configured output format and verbosity."
+    },
+    "service_tier": {
+      "$ref": "ServiceTierResource.json",
+      "description": "The configured service-tier policy."
+    },
+    "instructions": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "Custom instructions, or null when absent."
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "AgentToolResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Configured tools, excluding confidential credentials."
+    },
+    "multi_agent": {
+      "$ref": "MultiAgentConfigResource.json",
+      "description": "The configuration for creating and coordinating subagents."
+    },
+    "compaction": {
+      "$ref": "CompactionResource.json",
+      "description": "The effective context compaction settings."
+    },
+    "experimental": {
+      "$ref": "ExperimentalConfigResource.json",
+      "description": "The effective experimental settings for the agent."
+    }
+  },
+  "required": [
+    "model",
+    "reasoning",
+    "text",
+    "service_tier",
+    "instructions",
+    "tools",
+    "multi_agent"
+  ],
+  "additionalProperties": false,
+  "description": "Inline agent configuration without a generated session-local identity."
+}

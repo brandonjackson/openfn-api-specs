@@ -2,9 +2,15 @@
 
 <!-- derived from openapi.json by `pnpm specs index mailgun` — do not edit by hand -->
 
-base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic | 267 operations in 40 resources
+base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic, http/basic, http/basic, http/basic, http/basic, http/basic, http/basic, http/basic | 411 operations in 61 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
+
+## Accessibility
+- GET /v1/inspect/accessibility — GET-v1-inspect-accessibility: Get Accessibility Tests
+- POST /v1/inspect/accessibility — POST-v1-inspect-accessibility: Create Accessibility Test
+- GET /v1/inspect/accessibility/{id} — GET-v1-inspect-accessibility--id-: Get Accessibility Test
+- DELETE /v1/inspect/accessibility/{id} — DELETE-v1-inspect-accessibility--id-: Delete Accessibility Test
 
 ## Account Management
 - PUT /v5/accounts — put-v5-accounts: Update variable account settings
@@ -75,6 +81,26 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v3/{domain_name}/bounces — POST-v3--domainID--bounces: Add bounces
 - DELETE /v3/{domain_name}/bounces — DELETE-v3--domainID--bounces: Clear all bounces
 
+## Bulk Validations
+- GET /v4/address/validate/bulk/{list_id} — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func2-9: Get Job V4
+- POST /v4/address/validate/bulk/{list_id} — POST-v4-address-validate-bulk--list-id-: Create Bulk Job
+- DELETE /v4/address/validate/bulk/{list_id} — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func1-8: Delete Job V4
+- GET /v4/address/validate/bulk — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func4-11: List Jobs V4
+- GET /v3/lists/{list_id}/validate — api.InitV3API.(*ApiHelpers).isFreeOrFishy.func2-13: Get Job V3
+- POST /v3/lists/{list_id}/validate — api.InitV3API.(*ApiHelpers).isFreeOrFishy.func3-14: Create Job V3
+- DELETE /v3/lists/{list_id}/validate — api.InitV3API.(*ApiHelpers).isFreeOrFishy.func1-12: Delete Job V3
+
+## Code Analysis
+- GET /v1/inspect/analyze/dictionary — GET-v1-inspect-analyze-dictionary: Get Code Analysis Dictionary
+- GET /v1/inspect/analyze — GET-v1-inspect-analyze: List Code Analysis Jobs
+- POST /v1/inspect/analyze — POST-v1-inspect-analyze: Create a Code Analysis Test
+- GET /v1/inspect/analyze/{test_id} — GET-v1-inspect-analyze--test-id-: Get Code Analysis Results
+- POST /v1/inspect/analyze/{test_id} — POST-v1-inspect-analyze--test-id-: Create New Code Analysis Version
+- DELETE /v1/inspect/analyze/{test_id} — DELETE-v1-inspect-analyze--test-id-: Delete Code Analysis Test
+- GET /v1/inspect/analyze/{test_id}/versions/{version_id} — GET-v1-inspect-analyze--test-id--versions--version-id-: Get Code Analysis Results by Version
+- GET /v1/inspect/analyze/{test_id}/versions — GET-v1-inspect-analyze--test-id--versions: Get All Code Analysis Versions
+- POST /v1/inspect/analyze/{test_id}/resolve/{id} — POST-v1-inspect-analyze--test-id--resolve--id-: Update Resolved Status
+
 ## Complaints
 - POST /v3/{domain_name}/complaints/import — POST-v3--domainID--complaints-import: Import complaint list
 - GET /v3/{domain_name}/complaints/{address} — GET-v3--domainID--complaints--address-: Lookup complaint record
@@ -100,8 +126,28 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /v1/dkim_management/domains/{name}/rotation — PUT-v1-dkim-management-domains--name--rotation: Update Automatic Sender Security DKIM key rotation for a domain
 - POST /v1/dkim_management/domains/{name}/rotate — POST-v1-dkim-management-domains--name--rotate: Rotate Automatic Sender Security DKIM key for a domain
 
+## DMARC Reports
+- GET /v1/dmarc/records/{domain} — GET-v1-dmarc-records-domain-: Retrieves the DMARC DNS records to be used for configuration
+- GET /v1/dmarc/setup — GET-v1-dmarc-setup-: Checks if DMARC has been setup for user
+- POST /v1/dmarc/referral — POST-v1-dmarc-referral-: Gets referral link to redsift
+- GET /v1/dmarc/domains — GET-v1-dmarc-domains-: Retrieves the list of domains that have DMARC monitoring.
+- GET /v1/dmarc/domains/{domain} — GET-v1-dmarc-domains-domain-: Retrieve DMARC reporting data for a domain.
+- GET /v1/dmarc/domains/{domain}/s/{source} — GET-v1-dmarc-domains-domain-s-source-: Retrieve DMARC reporting data from a specific source.
+- GET /v1/dmarc/domains/{domain}/s/{source}/h/{host} — GET-v1-dmarc-domains-domain-s-source-h-host-: Retrieve DMARC reporting data for a hostname.
+- GET /v1/dmarc/domains/{domain}/s/{source}/h/{host}/ip/{ip} — GET-v1-dmarc-domains-domain-s-source-h-host-ip-ip-: Retrieve DMARC reporting data for an IP Address.
+
 ## Delegated DIPPs
 - GET /v5/accounts/subaccounts/ip_pools/all — GET-v5-accounts-subaccounts-ip-pools-all: List DIPPs delegated to subaccounts
+
+## Domain Blocklist Monitoring
+- GET /v1/monitoring/domains — GET-v1-monitoring-domains: Get Monitored Domains
+- GET /v1/monitoring/domains/events — GET-v1-monitoring-domains-events: Get All Events
+- GET /v1/monitoring/domains/{domain}/blocklists — GET-v1-monitoring-domains--domain--blocklists: Get Lists Domain is Listed in
+- GET /v1/monitoring/domains/{domain}/events — GET-v1-monitoring-domains--domain--events: Get Events for Domain
+- GET /v1/monitoring/hbls — GET-v1-monitoring-hbls: Get Monitored HBLs
+- POST /v1/monitoring/hbls — POST-v1-monitoring-hbls: Add HBL to Monitoring
+- DELETE /v1/monitoring/hbls — DELETE-v1-monitoring-hbls: Remove HBL from Monitoring
+- GET /v1/monitoring/hbls/events — GET-v1-monitoring-hbls-events: List HBL events
 
 ## Domain Keys
 - GET /v1/dkim/keys — GET-v1-dkim-keys: List keys for all domains
@@ -173,6 +219,37 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /v1/dynamic_pools/domains/{name}/override — DELETE-v1-dynamic-pools-domains--name--override: Remove override
 - GET /v1/dynamic_pools/history — GET-v1-dynamic-pools-history: List account history
 
+## Email Health Score
+- GET /v1/maverick-score/total — GET-v1-maverick-score-total: Get Email Health score and rates for account and subaccounts
+- GET /v1/maverick-score/grouped — GET-v1-maverick-score-grouped: List Email Health score and rates grouped by domains/ips/subaccounts/timestamps
+
+## Email Preview
+- GET /v1/preview/tests/clients — GET-v1-preview-tests-clients: List Clients
+- GET /v1/preview/tests — GET-v1-preview-tests: List Emailpreview Tests (deprecated)
+- POST /v1/preview/tests — POST-v1-preview-tests: Create Emailpreview Test (deprecated)
+- GET /v1/preview/tests/{test_id}/results — GET-v1-preview-tests--test-id--results: Get Test Results
+- GET /v1/preview/tests/{test_id} — GET-v1-preview-tests--test-id-: Get Emailpreview Test Info (deprecated)
+- DELETE /v1/preview/tests/{test_id} — DELETE-v1-preview-tests--test-id-: Delete Emailpreview Test (deprecated)
+- PUT /v1/preview/tests/{test_id}/results/reprocess — PUT-v1-preview-tests--test-id--results-reprocess: Reprocess Emailpreview Test
+- GET /v1/preview/tests/{test_id}/content — GET-v1-preview-tests--test-id--content: Get Test Content (empty)
+- GET /v1/preview/tests/{test_id}/content/{content} — GET-v1-preview-tests--test-id--content--content-: Get Test Content
+- POST /v1/preview/address — POST-v1-preview-address: Generate Preview Address
+- GET /v2/preview/tests — GET-v2-preview-tests: List/Search Tests V2
+- POST /v2/preview/tests — POST-v2-preview-tests: Create Email Preview Test V2
+- GET /v2/preview/tests/{test_id}/results/{client_id} — GET-v2-preview-tests--test-id--results--client-id-: Get Test Results by client ID V2
+- GET /v2/preview/tests/{test_id} — GET-v2-preview-tests--test-id-: Get Emailpreview Test Information V2
+- DELETE /v2/preview/tests/{test_id} — DELETE-v2-preview-tests--test-id-: Delete Emailpreview Test V2
+- GET /v2/preview/tests/{test_id}/exports/{job_id} — GET-v2-preview-tests--test-id--exports--job-id-: Retrieve Export Job Details for Email Preview Test Screenshots
+- GET /v2/preview/tests/{test_id}/exports — GET-v2-preview-tests--test-id--exports: Retrieve Export Job Details for Email Preview Test Screenshots
+- POST /v2/preview/tests/{test_id}/exports — POST-v2-preview-tests--test-id--exports: Create Export Job for Email Preview Test Screenshots
+- POST /v2/preview/address — POST-v2-preview-address: Generate Preview Address
+- POST /v1/preview/sharing — POST-v1-preview-sharing: Create PreviewShare
+- GET /v1/preview/sharing/{test_id} — GET-v1-preview-sharing--test-id-: Get PreviewShare
+- PUT /v1/preview/sharing/{test_id} — PUT-v1-preview-sharing--test-id-: Update PreviewShare
+- DELETE /v1/preview/sharing/{test_id} — DELETE-v1-preview-sharing--test-id-: Delete PreviewShare
+- POST /v1/preview/sharing/{test_id}/rotate — POST-v1-preview-sharing--test-id--rotate: Rotate PreviewShare
+- GET /v1/preview/sharing/public/{id} — GET-v1-preview-sharing-public--id-: Returns PreviewShare record by UUID.
+
 ## Events
 - GET /v3/{domain_name}/events — get-v3-domain_name-events: Retrieves a paginated list of events
 
@@ -182,6 +259,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /v3/forwards/{id} — DELETE-v3-forwards--id-: Delete a single forward rule by ID
 - GET /v3/forwards — GET-v3-forwards: List forward rules
 - POST /v3/forwards — POST-v3-forwards: Create a forward rule
+
+## Google Postmaster Tools
+- GET /v1/reputationanalytics/gpt/domains/{domain} — GET-v1-reputationanalytics-gpt-domains--domain-: Get GPT Domain
+- GET /v1/reputationanalytics/gpt/domains — GET-v1-reputationanalytics-gpt-domains: Get GPT Domains
+- GET /v1/reputationanalytics/gpt/domains_list — GET-v1-reputationanalytics-gpt-domains-list: Get GPT Domains
+- GET /v1/reputationanalytics/gpt/domainsfbl — GET-v1-reputationanalytics-gpt-domainsfbl: Get GPT FBL
+- GET /v1/reputationanalytics/gpt/domainsfbl/{domain} — GET-v1-reputationanalytics-gpt-domainsfbl--domain-: Get GPT FBL
+- GET /v2/reputationanalytics/gpt/compliances — GET-v2-reputationanalytics-gpt-compliances: Get GPT v2 Compliances
+- GET /v2/reputationanalytics/gpt/compliances/{domain} — GET-v2-reputationanalytics-gpt-compliances--domain-: Get GPT v2 Domain Compliance
 
 ## IP Address Warmup
 - GET /v3/ip_warmups — GET-v3-ip-warmups: Retrieves the list of in-flight IP address warmup statuses.
@@ -194,6 +280,13 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v2/ip_whitelist — POST-v2-ip-whitelist: Add Mailgun account IP allowlist entry
 - PUT /v2/ip_whitelist — PUT-v2-ip-whitelist: Update individual Mailgun account IP allowlist entry's description
 - DELETE /v2/ip_whitelist — DELETE-v2-ip-whitelist: Delete Mailgun account IP allowlist entry
+
+## IP Blocklist Monitoring
+- GET /v1/inboxready/ip_addresses — GET-v1-inboxready-ip-addresses: Lists monitored IP addresses
+- POST /v1/inboxready/ip_addresses — POST-v1-inboxready-ip-addresses: Register an IP address
+- GET /v1/inboxready/ip_addresses/{ip} — GET-v1-inboxready-ip-addresses--ip-: Get the IP address
+- PUT /v1/inboxready/ip_addresses/{ip} — PUT-v1-inboxready-ip-addresses--ip-: Update the IP address
+- DELETE /v1/inboxready/ip_addresses/{ip} — DELETE-v1-inboxready-ip-addresses--ip-: Removes IP from monitoring
 
 ## IP Pools
 - GET /v3/ip_pools — GET-v3-ip-pools: List dedicated IP pools of the account
@@ -226,6 +319,38 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v3/ips/details/all — GET-v3-ips-details-all: List account IPs - detailed view
 - PATCH /v3/ips/subaccounts — PATCH-v3-ips-subaccounts: Update subaccount IP assignments
 
+## Image Validation
+- GET /v1/inspect/images/{id} — GET-v1-inspect-images--id-: Get Image Validation Results
+- DELETE /v1/inspect/images/{id} — DELETE-v1-inspect-images--id-: Delete Image Validation Test
+- GET /v1/inspect/images — GET-v1-inspect-images: Get Image Validation Tests
+- POST /v1/inspect/images — POST-v1-inspect-images: Create an Image Validation Test
+- POST /v1/inspect/images/html-validate — POST-v1-inspect-images-html-validate: Create an Image Validation Test by HTML
+- POST /v1/inspect/images/upload — POST-v1-inspect-images-upload: Create an Image Validation Test by Image Upload
+- POST /v1/inspect/images/{id}/reprocess — POST-v1-inspect-images--id--reprocess: Reprocess Image Validation Test
+- POST /v1/inspect/images/{id}/optimize — POST-v1-inspect-images--id--optimize: Optimize Images By Test ID
+- POST /v1/inspect/images/{id}/optimize/{image_id} — POST-v1-inspect-images--id--optimize--image-id-: Optimize Single Image By Test ID
+
+## Inbox Placement
+- GET /v4/inbox/seedlists — GET-v4-inbox-seedlists: List Seed Lists
+- POST /v4/inbox/seedlists — POST-v4-inbox-seedlists: Generate a New Seed List
+- GET /v4/inbox/seedlists/a — GET-v4-inbox-seedlists-a: List Available Attributes for Seed Lists
+- GET /v4/inbox/seedlists/a/{attribute} — GET-v4-inbox-seedlists-a--attribute-: Get List of Values for Seed List Attribute
+- GET /v4/inbox/seedlists/_filters — GET-v4-inbox-seedlists--filters: Get List of Available Seed List Filters
+- GET /v4/inbox/seedlists/{address} — GET-v4-inbox-seedlists--address-: Get Seed List
+- PUT /v4/inbox/seedlists/{address} — PUT-v4-inbox-seedlists--address-: Update Seed List
+- DELETE /v4/inbox/seedlists/{address} — DELETE-v4-inbox-seedlists--address-: Delete a Seed List
+- GET /v4/inbox/results — GET-v4-inbox-results: List Results
+- GET /v4/inbox/results/a — GET-v4-inbox-results-a: List Available Attributes for Results
+- GET /v4/inbox/results/a/{attribute} — GET-v4-inbox-results-a--attribute-: Get List of Values for a Result Attribute
+- GET /v4/inbox/results/_filters — GET-v4-inbox-results--filters: List available filters for Results
+- GET /v4/inbox/results/{result_id} — GET-v4-inbox-results--result-id-: Get Result Details
+- DELETE /v4/inbox/results/{result_id} — DELETE-v4-inbox-results--result-id-: Delete Result
+- GET /v4/inbox/sharing/{result_id} — GET-v4-inbox-sharing--result-id-: Get Result Sharing Status
+- PUT /v4/inbox/sharing/{result_id} — PUT-v4-inbox-sharing--result-id-: Update Result Sharing Status
+- GET /v4/inbox/sharing/public/{shareid} — GET-v4-inbox-sharing-public--shareid-: Get Result by a Share ID
+- POST /v4/inbox/tests — POST-v4-inbox-tests: Run Inbox Placement Test
+- GET /v4/inbox/providers — GET-v4-inbox-providers: List Email Providers
+
 ## Keys
 - GET /v1/keys — GET-v1-keys: List Mailgun API keys
 - POST /v1/keys — POST-v1-keys: Create Mailgun API key
@@ -247,6 +372,22 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v2/thresholds/limits-primary — POST-v2-thresholds-limits-primary: Create parent-level limit warning settings for an account
 - PUT /v2/thresholds/limits-primary — PUT-v2-thresholds-limits-primary: Update parent-level limit warning settings for an account
 - DELETE /v2/thresholds/limits-primary — DELETE-v2-thresholds-limits-primary: Delete parent-level limit warning settings for an account
+
+## Link Validation
+- GET /v1/inspect/links/{id} — GET-v1-inspect-links--id-: Get Link Validation Results
+- POST /v1/inspect/links/{id} — POST-v1-inspect-links--id-: Reprocess Link Validation Test
+- DELETE /v1/inspect/links/{id} — DELETE-v1-inspect-links--id-: Delete Link Validation Test
+- GET /v1/inspect/links — GET-v1-inspect-links: List Link Validations
+- POST /v1/inspect/links — POST-v1-inspect-links: Create a Link Validation Test
+- POST /v1/inspect/links/html-validate — POST-v1-inspect-links-html-validate: Create a Link Validation Test from an html input
+- POST /v1/inspect/links/{id}/csv — POST-v1-inspect-links--id--csv: Validates link test results against the provided spreadsheet file
+
+## List Health Preview
+- GET /v4/address/validate/preview/{list_id} — GET-v4-address-validate-preview--list-id-: Get List Health Preview Job
+- POST /v4/address/validate/preview/{list_id} — POST-v4-address-validate-preview--list-id-: Create a List Health Preview Job
+- PUT /v4/address/validate/preview/{list_id} — PUT-v4-address-validate-preview--list-id-: Promote List Health Preview Job
+- DELETE /v4/address/validate/preview/{list_id} — DELETE-v4-address-validate-preview--list-id-: Delete List Health Preview Job
+- GET /v4/address/validate/preview — GET-v4-address-validate-preview: List List Health Preview Jobs
 
 ## Logs
 - POST /v1/analytics/logs — POST-v1-analytics-logs: List logs
@@ -279,6 +420,16 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/analytics/metrics — POST-v1-analytics-metrics: Query account metrics
 - POST /v1/analytics/usage/metrics — POST-v1-analytics-usage-metrics: Query account usage metrics
 
+## Microsoft SNDS
+- GET /v1/reputationanalytics/snds — GET-v1-reputationanalytics-snds: Get SNDS Address Info
+- GET /v1/reputationanalytics/snds/{ip} — GET-v1-reputationanalytics-snds--ip-: Get SNDS Address Info
+
+## Optimize Domains
+- GET /v1/inboxready/domains — GET-v1-inboxready-domains: Returns Domains on Mailgun Optimize services
+- POST /v1/inboxready/domains — POST-v1-inboxready-domains: Add a single domain to an account
+- DELETE /v1/inboxready/domains — DELETE-v1-inboxready-domains: Deletes a single domain from an account
+- PUT /v1/inboxready/domains/verify — PUT-v1-inboxready-domains-verify: Queues a domain to be processed for verification
+
 ## Routes
 - GET /v3/routes — get-v3-routes: Get all routes
 - POST /v3/routes — post-v3-routes: Create a route
@@ -294,6 +445,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /v1/thresholds/alerts/send/{name} — PUT-v1-thresholds-alerts-send--name-: Update a send alert
 - DELETE /v1/thresholds/alerts/send/{name} — DELETE-v1-thresholds-alerts-send--name-: Delete a send alert
 - GET /v1/thresholds/hits — GET-v1-thresholds-hits: List account hits
+
+## Spam Testing
+- GET /v1/inspect/spam — GET-v1-inspect-spam: List Spam Tests (V1)
+- POST /v1/inspect/spam — POST-v1-inspect-spam: Create Spam Test (V1)
+- GET /v1/inspect/spam/{spam_test_id} — GET-v1-inspect-spam--spam-test-id-: Get Spam Test (V1)
+- DELETE /v1/inspect/spam/{spam_test_id} — DELETE-v1-inspect-spam--spam-test-id-: Delete Spam Test (V1)
+- GET /v1/inspect/spam/providers — GET-v1-inspect-spam-providers: List Supported ESP Providers
+
+## Spam Traps Monitoring
+- GET /v1/spamtraps — GET-v1-spamtraps: Get Spam Trap Hits (deprecated)
+- GET /v2/spamtraps — GET-v2-spamtraps: List Spam Trap Hits
 
 ## Stats
 - GET /v3/stats/total — GET-v3-stats-total: Totals for entire account (deprecated)
@@ -344,11 +506,35 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v5/users/{user_id} — get-v5-users-user_id: Get a user's details
 - GET /v5/users/me — get-v5-users-me: Get one's own user details
 
+## Validations
+- GET /v4/address/validate — GET-v4-address-validate: Validate Address V4
+
+## openapi-bulkvalidations_other
+- OPTIONS /v4/address/validate/bulk/{list_id} — api.NoContentCall-6: Option V4
+- OPTIONS /v4/address/validate/bulk — api.NoContentCall-7: Options V4
+- GET /v4/address/validate/jobs — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func3-10: List Bulk and Preview V4 Jobs
+
 ## openapi-scout_other
 - GET /v3/domains/{domain}/tag/devices — GET-v3-domains--domain--tag-devices: List of supported devices (deprecated)
 - GET /v3/domains/{domain}/tag/providers — GET-v3-domains--domain--tag-providers: List of supported providers (deprecated)
 - GET /v3/domains/{domain}/tag/countries — GET-v3-domains--domain--tag-countries: List of supported country codes (deprecated)
 
+## openapi-spamtraps_other
+- GET /v1/spamtraps/totals — GET-v1-spamtraps-totals: Get Spam Trap Hits Total (deprecated)
+- GET /v1/spamtraps/filters — GET-v1-spamtraps-filters: Get Spam Trap Filters (deprecated)
+
 ## openapi-tower_other
 - PUT /v5/accounts/subaccounts/{subaccountId}/ip_pool — PUT-v5-accounts-subaccounts--subaccountId--ip-pool: Delegate a DIPP to a subaccount (deprecated)
 - DELETE /v5/accounts/subaccounts/{subaccountId}/ip_pool — DELETE-v5-accounts-subaccounts--subaccountId--ip-pool: Revoke a DIPP delegated to a subaccount (deprecated)
+
+## openapi-validations_other
+- GET /v3/address/validate — GET-v3-address-validate: Validate Address V3
+- POST /v3/address/validate — POST-v3-address-validate: Validate Address V3
+- GET /v3/address/private/validate — GET-v3-address-private-validate: Validate Address V3
+- POST /v3/address/private/validate — POST-v3-address-private-validate: Validate Address V3
+- GET /v3/address/parse — GET-v3-address-parse: Parse Addresses
+- POST /v3/address/parse — POST-v3-address-parse: Parse Addresses
+- GET /v3/address/private/parse — GET-v3-address-private-parse: Parse Addresses
+- POST /v3/address/private/parse — POST-v3-address-private-parse: Parse Addresses
+- GET /v3/address/public/threshold — GET-v3-address-public-threshold: Get Threshold
+- GET /v3/address/platform/threshold — GET-v3-address-platform-threshold: Get Threshold

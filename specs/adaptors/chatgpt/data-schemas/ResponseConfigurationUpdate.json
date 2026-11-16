@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ResponseConfigurationUpdate",
+  "title": "ResponseConfigurationUpdate",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ResponseConfigurationUpdate",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "description": "A configuration update for subsequent responses. Each setting stays in effect\nuntil a later update replaces that setting.\n",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the configuration update item.",
+      "example": "cnfu_123"
+    },
+    "type": {
+      "type": "string",
+      "const": "configuration_update",
+      "description": "The item type. Always `configuration_update`.",
+      "default": "configuration_update"
+    },
+    "reasoning": {
+      "type": "object",
+      "description": "The reasoning configuration applied by this update.",
+      "properties": {
+        "effort": {
+          "$ref": "ReasoningEffort.json",
+          "description": "The reasoning effort used for subsequent responses until another\nconfiguration update replaces it.\n"
+        }
+      }
+    },
+    "text": {
+      "type": "object",
+      "description": "The text output configuration for subsequent responses.",
+      "properties": {
+        "format": {
+          "description": "Use a JSON schema for structured output or text to return to plain text.",
+          "oneOf": [
+            {
+              "$ref": "ResponseFormatText.json"
+            },
+            {
+              "$ref": "TextResponseFormatJsonSchema.json"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "type"
+          }
+        }
+      },
+      "required": [
+        "format"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "type"
+  ]
+}

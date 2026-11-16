@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/RealtimeTranscriptionSessionCreateResponseGA",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "A Realtime transcription session configuration object.\n",
@@ -13,10 +13,7 @@
     "type": {
       "type": "string",
       "description": "The type of session. Always `transcription` for transcription sessions.\n",
-      "enum": [
-        "transcription"
-      ],
-      "x-stainless-const": true
+      "const": "transcription"
     },
     "id": {
       "type": "string",
@@ -32,7 +29,10 @@
       "description": "Expiration timestamp for the session, in seconds since epoch."
     },
     "include": {
-      "type": "array",
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string",
         "enum": [
@@ -53,14 +53,27 @@
             },
             "transcription": {
               "description": "Configuration of the transcription model.\n",
-              "$ref": "AudioTranscriptionResponse.json"
+              "anyOf": [
+                {
+                  "$ref": "AudioTranscriptionResponse.json"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "noise_reduction": {
-              "type": "object",
+              "type": [
+                "object",
+                "null"
+              ],
               "description": "Configuration for input audio noise reduction.\n",
               "properties": {
                 "type": {
                   "$ref": "NoiseReductionType.json"
+                },
+                "strength": {
+                  "$ref": "RealtimeNoiseReductionStrength.json"
                 }
               }
             },
@@ -107,6 +120,6 @@
   "x-oaiMeta": {
     "name": "The transcription session object",
     "group": "realtime",
-    "example": "{\n  \"id\": \"sess_BBwZc7cFV3XizEyKGDCGL\",\n  \"type\": \"transcription\",\n  \"object\": \"realtime.transcription_session\",\n  \"expires_at\": 1742188264,\n  \"include\": [\"item.input_audio_transcription.logprobs\"],\n  \"audio\": {\n    \"input\": {\n      \"format\": \"pcm16\",\n      \"transcription\": {\n        \"model\": \"gpt-4o-transcribe\",\n        \"language\": null,\n        \"prompt\": \"\"\n      },\n      \"noise_reduction\": null,\n      \"turn_detection\": {\n        \"type\": \"server_vad\",\n        \"threshold\": 0.5,\n        \"prefix_padding_ms\": 300,\n        \"silence_duration_ms\": 200\n      }\n    }\n  }\n}\n"
+    "example": "{\n  \"id\": \"sess_BBwZc7cFV3XizEyKGDCGL\",\n  \"type\": \"transcription\",\n  \"object\": \"realtime.transcription_session\",\n  \"expires_at\": 1742188264,\n  \"include\": [\"item.input_audio_transcription.logprobs\"],\n  \"audio\": {\n    \"input\": {\n      \"format\": {\"type\": \"audio/pcm\", \"rate\": 24000},\n      \"transcription\": {\n        \"model\": \"gpt-4o-transcribe\",\n        \"language\": null,\n        \"prompt\": \"\"\n      },\n      \"noise_reduction\": null,\n      \"turn_detection\": {\n        \"type\": \"server_vad\",\n        \"threshold\": 0.5,\n        \"prefix_padding_ms\": 300,\n        \"silence_duration_ms\": 200\n      }\n    }\n  }\n}\n"
   }
 }

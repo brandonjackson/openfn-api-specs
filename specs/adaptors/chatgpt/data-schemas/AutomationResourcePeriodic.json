@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/AutomationResourcePeriodic",
+  "title": "AutomationResourcePeriodic",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/AutomationResourcePeriodic",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "periodic"
+      ],
+      "default": "periodic",
+      "x-stainless-const": true,
+      "description": "The type of the object. Always `periodic`."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The automation ID."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "agent.automation"
+      ],
+      "default": "agent.automation",
+      "x-stainless-const": true,
+      "description": "Always `agent.automation`."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The creation time as a Unix timestamp in seconds."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The automation's display name."
+    },
+    "target": {
+      "$ref": "AutomationTargetResource.json",
+      "description": "The session configuration or existing session receiving invocations."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 0
+      },
+      "propertyNames": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minProperties": 0,
+      "description": "Custom string key-value pairs attached to the automation."
+    },
+    "created_by": {
+      "$ref": "AutomationCreatedByResource.json",
+      "description": "Service-recorded provenance; callers cannot supply this field."
+    },
+    "expression": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The cron expression determining scheduled occurrences."
+    },
+    "timezone": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The timezone used to interpret the expression."
+    },
+    "status": {
+      "$ref": "PeriodicAutomationStatusResource.json",
+      "description": "Whether scheduled delivery is active or paused."
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "object",
+    "created_at",
+    "name",
+    "target",
+    "metadata",
+    "created_by",
+    "expression",
+    "timezone",
+    "status"
+  ],
+  "additionalProperties": false,
+  "description": "Fields shared by periodic and one-time automations."
+}

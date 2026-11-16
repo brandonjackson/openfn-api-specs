@@ -5,11 +5,32 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/Part",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
   "description": "A datatype containing media that is part of a multi-part `Content` message. A `Part` consists of data which has an associated datatype. A `Part` can only contain one of the accepted types in `Part.data`. A `Part` must have a fixed IANA MIME type identifying the type and subtype of the media if the `inline_data` field is filled with raw bytes.",
   "properties": {
+    "executableCode": {
+      "$ref": "ExecutableCode.json"
+    },
+    "audioTranscription": {
+      "$ref": "AudioTranscription.json"
+    },
+    "thought": {
+      "type": "boolean",
+      "description": "Optional. Indicates if the part is thought from the model."
+    },
+    "thoughtSignature": {
+      "type": "string",
+      "format": "byte",
+      "description": "Optional. An opaque signature for the thought so it can be reused in subsequent requests."
+    },
+    "functionResponse": {
+      "$ref": "FunctionResponse.json"
+    },
+    "inlineData": {
+      "$ref": "Blob.json"
+    },
     "partMetadata": {
       "type": "object",
       "description": "Custom metadata associated with the Part. Agents using genai.Part as content representation may need to keep track of the additional information. For example it can be name of a file/source from which the Part originates or a way to multiplex multiple Part streams.",
@@ -17,11 +38,9 @@
         "description": "Properties of the object."
       }
     },
-    "mediaResolution": {
-      "$ref": "V1mainMediaResolution.json"
-    },
-    "fileData": {
-      "$ref": "FileData.json"
+    "text": {
+      "type": "string",
+      "description": "Inline text."
     },
     "functionCall": {
       "$ref": "FunctionCall.json"
@@ -35,42 +54,26 @@
         "AGENTIC"
       ]
     },
-    "text": {
-      "type": "string",
-      "description": "Inline text."
+    "toolCall": {
+      "$ref": "ToolCall.json"
     },
-    "executableCode": {
-      "$ref": "ExecutableCode.json"
+    "fileData": {
+      "$ref": "FileData.json"
     },
-    "audioTranscription": {
-      "$ref": "AudioTranscription.json"
+    "codeExecutionResult": {
+      "$ref": "CodeExecutionResult.json"
     },
-    "thought": {
-      "type": "boolean",
-      "description": "Optional. Indicates if the part is thought from the model."
-    },
-    "toolResponse": {
-      "$ref": "ToolResponse.json"
+    "speechMetadata": {
+      "$ref": "SpeechMetadata.json"
     },
     "videoMetadata": {
       "$ref": "VideoMetadata.json"
     },
-    "toolCall": {
-      "$ref": "ToolCall.json"
+    "mediaResolution": {
+      "$ref": "V1mainMediaResolution.json"
     },
-    "inlineData": {
-      "$ref": "Blob.json"
-    },
-    "thoughtSignature": {
-      "type": "string",
-      "format": "byte",
-      "description": "Optional. An opaque signature for the thought so it can be reused in subsequent requests."
-    },
-    "functionResponse": {
-      "$ref": "FunctionResponse.json"
-    },
-    "codeExecutionResult": {
-      "$ref": "CodeExecutionResult.json"
+    "toolResponse": {
+      "$ref": "ToolResponse.json"
     }
   }
 }

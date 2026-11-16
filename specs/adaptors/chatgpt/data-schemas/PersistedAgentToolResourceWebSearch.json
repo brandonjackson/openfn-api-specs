@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/PersistedAgentToolResourceWebSearch",
+  "title": "PersistedAgentToolResourceWebSearch",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/PersistedAgentToolResourceWebSearch",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "web_search"
+      ],
+      "default": "web_search",
+      "x-stainless-const": true,
+      "description": "The type of the object. Always `web_search`."
+    },
+    "mode": {
+      "$ref": "WebSearchModeResource.json",
+      "description": "The source used for web search results."
+    },
+    "context_size": {
+      "$ref": "WebSearchContextSizeResource.json",
+      "description": "The amount of search context made available to the model. Defaults to `medium`."
+    },
+    "allowed_domains": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Allowed search domains, or `null` when the search is unrestricted."
+    },
+    "location": {
+      "anyOf": [
+        {
+          "$ref": "WebSearchLocationResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Approximate location used to localize search results, if provided."
+    }
+  },
+  "required": [
+    "type",
+    "mode",
+    "context_size",
+    "allowed_domains",
+    "location"
+  ],
+  "additionalProperties": false,
+  "description": "Web search."
+}

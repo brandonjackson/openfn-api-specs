@@ -134,3 +134,58 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.requestBody.content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
+
+test('media upload URIs become operations of their own', () => {
+  const doc: any = {
+    name: 'demo',
+    version: 'v1',
+    rootUrl: 'https://www.googleapis.com/',
+    servicePath: 'demo/v1/',
+    schemas: { File: { id: 'File', type: 'object', properties: { id: { type: 'string' } } } },
+    resources: {
+      files: {
+        methods: {
+          create: {
+            id: 'demo.files.create',
+            path: '{+parent}/files',
+            flatPath: 'folders/{foldersId}/files',
+            httpMethod: 'POST',
+            parameters: { parent: { type: 'string', location: 'path', required: true } },
+            request: { $ref: 'File' },
+            response: { $ref: 'File' },
+            supportsMediaUpload: true,
+            mediaUpload: {
+              accept: ['image/*'],
+              maxSize: '1024',
+              protocols: {
+                simple: { multipart: true, path: '/upload/demo/v1/{+parent}/files' },
+                resumable: { multipart: true, path: '/resumable/upload/demo/v1/{+parent}/files' },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const { openapi, warnings } = discoveryToOpenApi(doc, 'demo');
+  assert.deepEqual(warnings, []);
+  assert.deepEqual(Object.keys(openapi.paths), [
+    '/folders/{foldersId}/files',
+    '/upload/demo/v1/folders/{foldersId}/files',
+    '/resumable/upload/demo/v1/folders/{foldersId}/files',
+  ]);
+  const simple = openapi.paths['/upload/demo/v1/folders/{foldersId}/files'];
+  // Upload URIs hang off rootUrl, so the path item overrides the API's base URL.
+  assert.deepEqual(simple.servers, [{ url: 'https://www.googleapis.com' }]);
+  assert.equal(simple.post.operationId, 'demo.files.create.simpleUpload');
+  assert.deepEqual(simple.post.tags, ['files']);
+  assert.deepEqual(Object.keys(simple.post.requestBody.content), ['image/*', 'multipart/related']);
+  assert.equal(simple.post.parameters[0].name, 'foldersId');
+  const resumable = openapi.paths['/resumable/upload/demo/v1/folders/{foldersId}/files'].post;
+  assert.equal(resumable.operationId, 'demo.files.create.resumableUpload');
+  assert.ok(resumable.requestBody.content['application/json']);
+  // The method itself is untouched.
+  assert.equal(openapi.paths['/folders/{foldersId}/files'].post.operationId, 'demo.files.create');
+  assert.equal(openapi.paths['/folders/{foldersId}/files'].servers, undefined);
+  assert.equal(parseSpec(openapi).operations.length, 3);
+});

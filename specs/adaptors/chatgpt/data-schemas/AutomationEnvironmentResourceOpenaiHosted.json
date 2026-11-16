@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/AutomationEnvironmentResourceOpenaiHosted",
+  "title": "AutomationEnvironmentResourceOpenaiHosted",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/AutomationEnvironmentResourceOpenaiHosted",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "openai_hosted"
+      ],
+      "default": "openai_hosted",
+      "x-stainless-const": true,
+      "description": "The type of the object. Always `openai_hosted`."
+    },
+    "environment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "An existing environment reference, or null when provisioning a new environment."
+    },
+    "environment_template_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "A template reference, or null when no template is selected."
+    },
+    "container_size": {
+      "anyOf": [
+        {
+          "$ref": "ContainerSizeResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The configured container size, or null to use the creation default."
+    },
+    "packages": {
+      "anyOf": [
+        {
+          "$ref": "EnvironmentPackagesResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Package overrides, or null to inherit the template or creation default."
+    },
+    "network": {
+      "anyOf": [
+        {
+          "$ref": "NetworkPolicyResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Network overrides, or null to inherit the template or creation default."
+    },
+    "desktop": {
+      "anyOf": [
+        {
+          "$ref": "DesktopResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Desktop overrides, or null to inherit the template or creation default."
+    },
+    "capability_directories": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Directory overrides, or null to inherit the template or creation default."
+    },
+    "skills": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "HostedTemplateSkillResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Skill overrides, excluding archive contents, or null to inherit."
+    },
+    "plugins": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "HostedPluginResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Plugin overrides, excluding archive contents, or null to inherit."
+    },
+    "files": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "HostedTemplateFileResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "File overrides, excluding contents, or null to inherit."
+    }
+  },
+  "required": [
+    "type",
+    "environment_id",
+    "environment_template_id",
+    "container_size",
+    "packages",
+    "network",
+    "desktop",
+    "capability_directories",
+    "skills",
+    "plugins",
+    "files"
+  ],
+  "additionalProperties": false,
+  "description": "Hosted environment selection with confidential setup commands and variables omitted."
+}

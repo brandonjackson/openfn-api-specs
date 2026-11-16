@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/PublicEnvironmentResource",
+  "title": "PublicEnvironmentResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/PublicEnvironmentResource",
+    "capturedAt": "2026-11-16"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "$ref": "EnvironmentTypeResource.json",
+      "description": "Whether the environment is hosted by OpenAI or by the application."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the environment."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "agent.environment"
+      ],
+      "default": "agent.environment",
+      "x-stainless-const": true,
+      "description": "The object type. Always `agent.environment`."
+    },
+    "status": {
+      "$ref": "EnvironmentStatusResource.json",
+      "description": "The current environment connection status."
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedEnvironmentFileResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Files installed in the environment, without their contents."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedSkillResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Skills installed in the environment, without their archive contents."
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedPluginResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Plugins installed in the environment, without their archive contents."
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "type",
+    "status",
+    "files",
+    "skills",
+    "plugins"
+  ],
+  "additionalProperties": false,
+  "description": "Safe metadata for a first-class execution environment."
+}
