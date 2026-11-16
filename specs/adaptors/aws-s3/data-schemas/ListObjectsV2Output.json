@@ -5,153 +5,109 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/ListObjectsV2Output",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
-  "example": {
-    "Contents": [
-      {
-        "ETag": "\"70ee1738b6b21e2c8a43f3a5ab0eee71\"",
-        "Key": "happyface.jpg",
-        "LastModified": "2014-11-21T19:40:05.000Z",
-        "Size": 11,
-        "StorageClass": "STANDARD"
-      },
-      {
-        "ETag": "\"becf17f89c30367a9a44495d62ed521a-1\"",
-        "Key": "test.jpg",
-        "LastModified": "2014-05-02T04:51:50.000Z",
-        "Size": 4192256,
-        "StorageClass": "STANDARD"
-      }
-    ],
-    "IsTruncated": true,
-    "KeyCount": "2",
-    "MaxKeys": "2",
-    "Name": "examplebucket",
-    "NextContinuationToken": "1w41l63U0xa8q7smH50vCxyTQqdxo69O3EmK28Bi5PcROI4wI/EyIJg==",
-    "Prefix": ""
-  },
   "properties": {
     "IsTruncated": {
       "allOf": [
         {
           "$ref": "IsTruncated.json"
-        },
-        {
-          "description": "Set to false if all of the results were returned. Set to true if more keys are available to return. If the number of results exceeds that specified by MaxKeys, all of the results might not be returned."
         }
-      ]
+      ],
+      "description": "<p>Set to <code>false</code> if all of the results were returned. Set to <code>true</code> if more keys\n      are available to return. If the number of results exceeds that specified by <code>MaxKeys</code>, all of\n      the results might not be returned.</p>"
     },
     "Contents": {
       "allOf": [
         {
           "$ref": "ObjectList.json"
-        },
-        {
-          "description": "Metadata about each object returned."
         }
-      ]
+      ],
+      "description": "<p>Metadata about each object returned.</p>"
     },
     "Name": {
       "allOf": [
         {
           "$ref": "BucketName.json"
-        },
-        {
-          "description": "<p>The bucket name.</p> <p>When using this action with an access point, you must direct requests to the access point hostname. The access point hostname takes the form <i>AccessPointName</i>-<i>AccountId</i>.s3-accesspoint.<i>Region</i>.amazonaws.com. When using this action with an access point through the Amazon Web Services SDKs, you provide the access point ARN in place of the bucket name. For more information about access point ARNs, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-access-points.html\">Using access points</a> in the <i>Amazon S3 User Guide</i>.</p> <p>When using this action with Amazon S3 on Outposts, you must direct requests to the S3 on Outposts hostname. The S3 on Outposts hostname takes the form <code> <i>AccessPointName</i>-<i>AccountId</i>.<i>outpostID</i>.s3-outposts.<i>Region</i>.amazonaws.com</code>. When using this action with S3 on Outposts through the Amazon Web Services SDKs, you provide the Outposts bucket ARN in place of the bucket name. For more information about S3 on Outposts ARNs, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3onOutposts.html\">Using Amazon S3 on Outposts</a> in the <i>Amazon S3 User Guide</i>.</p>"
         }
-      ]
+      ],
+      "description": "<p>The bucket name.</p>"
     },
     "Prefix": {
       "allOf": [
         {
           "$ref": "Prefix.json"
-        },
-        {
-          "description": " Keys that begin with the indicated prefix."
         }
-      ]
+      ],
+      "description": "<p>Keys that begin with the indicated prefix.</p>\n         <note>\n            <p>\n               <b>Directory buckets</b> - For directory buckets, only prefixes that end in a delimiter (<code>/</code>) are supported.</p>\n         </note>"
     },
     "Delimiter": {
       "allOf": [
         {
           "$ref": "Delimiter.json"
-        },
-        {
-          "description": "Causes keys that contain the same string between the prefix and the first occurrence of the delimiter to be rolled up into a single result element in the CommonPrefixes collection. These rolled-up keys are not returned elsewhere in the response. Each rolled-up result counts as only one return against the <code>MaxKeys</code> value."
         }
-      ]
+      ],
+      "description": "<p>Causes keys that contain the same string between the <code>prefix</code> and the first occurrence of\n      the delimiter to be rolled up into a single result element in the <code>CommonPrefixes</code>\n      collection. These rolled-up keys are not returned elsewhere in the response. Each rolled-up result\n      counts as only one return against the <code>MaxKeys</code> value.</p>\n         <note>\n            <p>\n               <b>Directory buckets</b> - For directory buckets, <code>/</code> is the only supported delimiter.</p>\n         </note>"
     },
     "MaxKeys": {
       "allOf": [
         {
           "$ref": "MaxKeys.json"
-        },
-        {
-          "description": "Sets the maximum number of keys returned in the response. By default the action returns up to 1,000 key names. The response might contain fewer keys but will never contain more."
         }
-      ]
+      ],
+      "description": "<p>Sets the maximum number of keys returned in the response. By default, the action returns up to 1,000\n      key names. The response might contain fewer keys but will never contain more.</p>"
     },
     "CommonPrefixes": {
       "allOf": [
         {
           "$ref": "CommonPrefixList.json"
-        },
-        {
-          "description": "<p>All of the keys (up to 1,000) rolled up into a common prefix count as a single return when calculating the number of returns.</p> <p>A response can contain <code>CommonPrefixes</code> only if you specify a delimiter.</p> <p> <code>CommonPrefixes</code> contains all (if there are any) keys between <code>Prefix</code> and the next occurrence of the string specified by a delimiter.</p> <p> <code>CommonPrefixes</code> lists keys that act like subdirectories in the directory specified by <code>Prefix</code>.</p> <p>For example, if the prefix is <code>notes/</code> and the delimiter is a slash (<code>/</code>) as in <code>notes/summer/july</code>, the common prefix is <code>notes/summer/</code>. All of the keys that roll up into a common prefix count as a single return when calculating the number of returns. </p>"
         }
-      ]
+      ],
+      "description": "<p>All of the keys (up to 1,000) that share the same prefix are grouped together. When counting the\n      total numbers of returns by this API operation, this group of keys is considered as one item.</p>\n         <p>A response can contain <code>CommonPrefixes</code> only if you specify a delimiter.</p>\n         <p>\n            <code>CommonPrefixes</code> contains all (if there are any) keys between <code>Prefix</code> and the\n      next occurrence of the string specified by a delimiter.</p>\n         <p>\n            <code>CommonPrefixes</code> lists keys that act like subdirectories in the directory specified by\n        <code>Prefix</code>.</p>\n         <p>For example, if the prefix is <code>notes/</code> and the delimiter is a slash (<code>/</code>) as\n      in <code>notes/summer/july</code>, the common prefix is <code>notes/summer/</code>. All of the keys that\n      roll up into a common prefix count as a single return when calculating the number of returns. </p>\n         <note>\n            <ul>\n               <li>\n                  <p>\n                     <b>Directory buckets</b> - For directory buckets, only prefixes that end in a delimiter (<code>/</code>) are supported.</p>\n               </li>\n               <li>\n                  <p>\n                     <b>Directory buckets </b> - When you query\n              <code>ListObjectsV2</code> with a delimiter during in-progress multipart uploads, the\n              <code>CommonPrefixes</code> response parameter contains the prefixes that are associated with\n            the in-progress multipart uploads. For more information about multipart uploads, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuoverview.html\">Multipart Upload\n              Overview</a> in the <i>Amazon S3 User Guide</i>.</p>\n               </li>\n            </ul>\n         </note>"
     },
     "EncodingType": {
       "allOf": [
         {
           "$ref": "EncodingType.json"
-        },
-        {
-          "description": "<p>Encoding type used by Amazon S3 to encode object key names in the XML response.</p> <p>If you specify the encoding-type request parameter, Amazon S3 includes this element in the response, and returns encoded key name values in the following response elements:</p> <p> <code>Delimiter, Prefix, Key,</code> and <code>StartAfter</code>.</p>"
         }
-      ]
+      ],
+      "description": "<p>Encoding type used by Amazon S3 to encode object key names in the XML response.</p>\n         <p>If you specify the <code>encoding-type</code> request parameter, Amazon S3 includes this element in the\n      response, and returns encoded key name values in the following response elements:</p>\n         <p>\n            <code>Delimiter, Prefix, Key,</code> and <code>StartAfter</code>.</p>"
     },
     "KeyCount": {
       "allOf": [
         {
           "$ref": "KeyCount.json"
-        },
-        {
-          "description": "KeyCount is the number of keys returned with this request. KeyCount will always be less than or equals to MaxKeys field. Say you ask for 50 keys, your result will include less than equals 50 keys "
         }
-      ]
+      ],
+      "description": "<p>\n            <code>KeyCount</code> is the number of keys returned with this request. <code>KeyCount</code> will\n      always be less than or equal to the <code>MaxKeys</code> field. For example, if you ask for 50 keys,\n      your result will include 50 keys or fewer.</p>"
     },
     "ContinuationToken": {
       "allOf": [
         {
           "$ref": "Token.json"
-        },
-        {
-          "description": " If ContinuationToken was sent with the request, it is included in the response."
         }
-      ]
+      ],
+      "description": "<p> If <code>ContinuationToken</code> was sent with the request, it is included in the response. You\n      can use the returned <code>ContinuationToken</code> for pagination of the list response.</p>"
     },
     "NextContinuationToken": {
       "allOf": [
         {
           "$ref": "NextToken.json"
-        },
-        {
-          "description": " <code>NextContinuationToken</code> is sent when <code>isTruncated</code> is true, which means there are more keys in the bucket that can be listed. The next list requests to Amazon S3 can be continued with this <code>NextContinuationToken</code>. <code>NextContinuationToken</code> is obfuscated and is not a real key"
         }
-      ]
+      ],
+      "description": "<p>\n            <code>NextContinuationToken</code> is sent when <code>isTruncated</code> is true, which means there\n      are more keys in the bucket that can be listed. The next list requests to Amazon S3 can be continued with\n      this <code>NextContinuationToken</code>. <code>NextContinuationToken</code> is obfuscated and is not a\n      real key</p>"
     },
     "StartAfter": {
       "allOf": [
         {
           "$ref": "StartAfter.json"
-        },
-        {
-          "description": "If StartAfter was sent with the request, it is included in the response."
         }
-      ]
+      ],
+      "description": "<p>If StartAfter was sent with the request, it is included in the response.</p>\n         <note>\n            <p>This functionality is not supported for directory buckets.</p>\n         </note>"
     }
+  },
+  "xml": {
+    "name": "ListBucketResult",
+    "namespace": "http://s3.amazonaws.com/doc/2006-03-01/"
   }
 }

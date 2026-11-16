@@ -51,7 +51,7 @@ adaptor's named operations. Therefore:
 | situation | source of truth | what "full" means | completeness |
 | --------- | --------------- | ----------------- | ------------ |
 | vendor OpenAPI, saved verbatim (`found-openapi`) | the upstream spec (`upstream.json`) | the vendor's own complete spec — the gold standard | `complete` (by definition; needs no separate claim) |
-| other machine spec, converted (Swagger/Discovery/GraphQL/CSDL) | the upstream spec (`upstream.json`) | the entire documented API, once the conversion covers it | `complete` when declared (conversion can lose fidelity) |
+| other machine spec, converted (Swagger/Discovery/Smithy/GraphQL/CSDL) | the upstream spec (`upstream.json`) | the entire documented API, once the conversion covers it | `complete` when declared (conversion can lose fidelity) |
 | docs only, no machine spec | the vendor docs | the entire *documented* API, best-effort | `best-effort` |
 | non-REST (SQL/Redis/SFTP/…) | the adaptor's operation surface | every operation the adaptor exposes | `complete` (bounded surface) |
 | private / undocumented API | reverse-engineered from adaptor source + mocks | as much as can be recovered | `best-effort` |
@@ -97,7 +97,7 @@ specs/adaptors/<adaptor>/
   "npm": "@openfn/language-stripe",
 
   "origin": "found-openapi",        // found-openapi | converted | generated | synthesized
-  "upstreamFormat": "openapi-3.1",  // openapi-3.1 | swagger-2.0 | google-discovery | csdl | graphql-sdl | docs | adaptor-surface
+  "upstreamFormat": "openapi-3.1",  // openapi-3.1 | swagger-2.0 | google-discovery | smithy | csdl | graphql-sdl | docs | adaptor-surface
 
   "coverage": "full",               // full | subset
   "derivedFrom": null,              // when coverage=subset: the full artifact it was derived from (e.g. "upstream.json")
@@ -180,8 +180,9 @@ conformer-matched operation to its group. The storybook shows all three.
 4. **Do the finding step.** `pnpm specs instructions <adaptor>` emits a precise
    work order. Execute it — this is the agentic part, deliberately not a scraper:
    - Prefer a machine spec. `pnpm specs convert <adaptor> --url=<specUrl>` does
-     the capture: it recognises OpenAPI 3.x (JSON or YAML), Swagger 2.0 and
-     Google Discovery, writes the fetched bytes verbatim to `upstream.<ext>`,
+     the capture: it recognises OpenAPI 3.x (JSON or YAML), Swagger 2.0,
+     Google Discovery and Smithy JSON AST (AWS service models), writes the
+     fetched bytes verbatim to `upstream.<ext>`,
      derives the full `openapi.json`, and records `origin`, `upstreamFormat` and
      `upstream.*` (incl. `contentHash`). Then verify the coverage yourself and
      claim `coverage: full` / `completeness: complete` (`--complete` writes both).

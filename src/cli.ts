@@ -384,7 +384,7 @@ const USAGE = `Usage: pnpm specs <command>
                                 Emit agentic work order(s) for finding/generating specs.
   convert <a> [--url=<specUrl>] [--from=<file>] [--complete] [--note=<text>]
                                 Capture an upstream machine spec (OpenAPI 3.x / Swagger 2.0 /
-                                Google Discovery): commit it verbatim as upstream.<ext>, derive
+                                Google Discovery / Smithy JSON AST): commit it verbatim as upstream.<ext>, derive
                                 openapi.json, record provenance + contentHash. With no --url,
                                 re-derive openapi.json from the committed upstream. --from reads
                                 the bytes from a local file (for specs behind a login) while

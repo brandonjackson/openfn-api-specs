@@ -5,49 +5,48 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/ListBucketsOutput",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-16"
   },
   "type": "object",
-  "example": {
-    "Buckets": [
-      {
-        "CreationDate": "2012-02-15T21: 03: 02.000Z",
-        "Name": "examplebucket"
-      },
-      {
-        "CreationDate": "2011-07-24T19: 33: 50.000Z",
-        "Name": "examplebucket2"
-      },
-      {
-        "CreationDate": "2010-12-17T00: 56: 49.000Z",
-        "Name": "examplebucket3"
-      }
-    ],
-    "Owner": {
-      "DisplayName": "own-display-name",
-      "ID": "examplee7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31"
-    }
-  },
   "properties": {
     "Buckets": {
       "allOf": [
         {
           "$ref": "Buckets.json"
-        },
-        {
-          "description": "The list of buckets owned by the requester."
         }
-      ]
+      ],
+      "description": "<p>The list of buckets owned by the requester.</p>",
+      "xml": {
+        "wrapped": true
+      }
     },
     "Owner": {
       "allOf": [
         {
           "$ref": "Owner.json"
-        },
-        {
-          "description": "The owner of the buckets listed."
         }
-      ]
+      ],
+      "description": "<p>The owner of the buckets listed.</p>"
+    },
+    "ContinuationToken": {
+      "allOf": [
+        {
+          "$ref": "NextToken.json"
+        }
+      ],
+      "description": "<p>\n            <code>ContinuationToken</code> is included in the response when there are more buckets that can be\n      listed with pagination. The next <code>ListBuckets</code> request to Amazon S3 can be continued with this\n        <code>ContinuationToken</code>. <code>ContinuationToken</code> is obfuscated and is not a real\n      bucket.</p>"
+    },
+    "Prefix": {
+      "allOf": [
+        {
+          "$ref": "Prefix.json"
+        }
+      ],
+      "description": "<p>If <code>Prefix</code> was sent with the request, it is included in the response.</p>\n         <p>All bucket names in the response begin with the specified bucket name prefix.</p>"
     }
+  },
+  "xml": {
+    "name": "ListAllMyBucketsResult",
+    "namespace": "http://s3.amazonaws.com/doc/2006-03-01/"
   }
 }
