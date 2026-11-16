@@ -5,305 +5,472 @@
   "x-openfn-adaptor": "flutterwave",
   "x-source": {
     "openapi": "#/components/schemas/PaymentMethod",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-16"
   },
+  "description": "A payment method. The `type` field discriminates the variant and names the sibling object that carries the type-specific details (type \"card\" comes with a `card` object, and so on).",
   "oneOf": [
     {
-      "allOf": [
-        {
+      "title": "Card payment method",
+      "type": "object",
+      "description": "Shape from the example responses in https://developer.flutterwave.com/v4/docs/card",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "enum": [
+            "card"
+          ]
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
+        },
+        "card": {
+          "type": "object",
+          "description": "Masked details of the card.",
+          "properties": {
+            "expiry_month": {
+              "type": "integer",
+              "description": "Card expiry month."
+            },
+            "expiry_year": {
+              "type": "integer",
+              "description": "Card expiry year."
+            },
+            "first6": {
+              "type": "string",
+              "description": "First six digits of the card number."
+            },
+            "last4": {
+              "type": "string",
+              "description": "Last four digits of the card number."
+            },
+            "network": {
+              "type": "string",
+              "description": "Card network, e.g. mastercard (examples show both lower and upper case)."
+            },
+            "billing_address": {
+              "description": "Billing address of the card. Only null is shown in the vendor examples; type not documented."
+            },
+            "card_holder_name": {
+              "description": "Name of the card holder. Only null is shown in the vendor examples; type not documented."
+            },
+            "cof": {
+              "description": "Card-on-file details. Only null is shown in the vendor examples; type not documented."
+            }
+          }
         }
-      ]
+      }
     },
     {
-      "allOf": [
-        {
+      "title": "Mobile money payment method",
+      "type": "object",
+      "description": "Shape from the example responses in https://developer.flutterwave.com/v4/docs/mobile-money",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "enum": [
+            "mobile_money"
+          ]
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
+        },
+        "mobile_money": {
+          "type": "object",
+          "description": "The mobile money wallet.",
+          "properties": {
+            "country_code": {
+              "type": "string",
+              "description": "Dialling country code of the wallet, e.g. 233."
+            },
+            "network": {
+              "type": "string",
+              "description": "Mobile network, e.g. MTN."
+            },
+            "phone_number": {
+              "type": "string",
+              "description": "Wallet phone number without the country code."
+            }
+          }
         }
-      ]
+      }
     },
     {
-      "allOf": [
-        {
+      "title": "OPay payment method",
+      "type": "object",
+      "description": "Shape from the example responses in https://developer.flutterwave.com/v4/docs/opay",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "enum": [
+            "opay"
+          ]
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
+        },
+        "opay": {
+          "type": "object",
+          "description": "OPay details. Empty object in the vendor examples."
         }
-      ]
+      }
     },
     {
-      "allOf": [
-        {
+      "title": "Bank account payment method",
+      "type": "object",
+      "description": "Shape from the example responses in https://developer.flutterwave.com/v4/docs/ng-bank-account",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "enum": [
+            "bank_account"
+          ]
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
+        },
+        "bank_account": {
+          "type": "object",
+          "description": "Bank account details. Empty object in the vendor examples."
         }
-      ]
+      }
     },
     {
-      "allOf": [
-        {
+      "title": "USSD payment method",
+      "type": "object",
+      "description": "Shape from the example responses in https://developer.flutterwave.com/v4/docs/ussd",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "enum": [
+            "ussd"
+          ]
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
+        },
+        "ussd": {
+          "type": "object",
+          "description": "USSD details.",
+          "properties": {
+            "account_bank": {
+              "type": "string",
+              "description": "Bank code of the customer's bank."
+            }
+          }
         }
-      ]
+      }
     },
     {
-      "allOf": [
-        {
+      "title": "Pay with bank transfer payment method",
+      "type": "object",
+      "description": "Shape from the example responses in https://developer.flutterwave.com/v4/docs/pay-with-bank-transfer",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "enum": [
+            "bank_transfer"
+          ]
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
+        },
+        "bank_transfer": {
+          "type": "object",
+          "description": "Bank transfer details. Empty object in charge payment_method_details examples.",
+          "properties": {
+            "account_display_name": {
+              "description": "Display name of the receiving account. Only null is shown in the vendor examples; type not documented."
+            },
+            "account_expires_in": {
+              "description": "Expiry of the receiving account. Only null is shown in the vendor examples; type not documented."
+            },
+            "account_type": {
+              "description": "Type of the receiving account. Only null is shown in the vendor examples; type not documented."
+            }
+          }
         }
-      ]
+      }
     },
     {
-      "allOf": [
-        {
+      "title": "Other payment method",
+      "type": "object",
+      "description": "Any other payment method type. The v4 reference lists nine variants but documents only their shared fields; the six above are the ones the vendor guides show, and the type-specific object of the others is not documented.",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
           "type": "string",
           "description": "ID of the payment method"
         },
-        {
+        "type": {
           "type": "string",
-          "description": "The type of the payment method"
+          "description": "The type of the payment method",
+          "not": {
+            "enum": [
+              "card",
+              "mobile_money",
+              "opay",
+              "bank_account",
+              "ussd",
+              "bank_transfer"
+            ]
+          }
         },
-        {
-          "type": "string",
+        "customer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "ID of the customer"
         },
-        {
-          "type": "object",
-          "description": "meta"
+        "meta": {
+          "type": "object"
         },
-        {
-          "type": "string",
+        "device_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device fingerprint"
         },
-        {
-          "type": "string",
+        "client_ip": {
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's device IP"
         },
-        {
+        "created_datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
+          "description": "The date and time when the payment method was created",
+          "format": "date-time"
         }
-      ]
-    },
-    {
-      "allOf": [
-        {
-          "type": "string",
-          "description": "ID of the payment method"
-        },
-        {
-          "type": "string",
-          "description": "The type of the payment method"
-        },
-        {
-          "type": "string",
-          "description": "ID of the customer"
-        },
-        {
-          "type": "object",
-          "description": "meta"
-        },
-        {
-          "type": "string",
-          "description": "The customer's device fingerprint"
-        },
-        {
-          "type": "string",
-          "description": "The customer's device IP"
-        },
-        {
-          "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
-        }
-      ]
-    },
-    {
-      "allOf": [
-        {
-          "type": "string",
-          "description": "ID of the payment method"
-        },
-        {
-          "type": "string",
-          "description": "The type of the payment method"
-        },
-        {
-          "type": "string",
-          "description": "ID of the customer"
-        },
-        {
-          "type": "object",
-          "description": "meta"
-        },
-        {
-          "type": "string",
-          "description": "The customer's device fingerprint"
-        },
-        {
-          "type": "string",
-          "description": "The customer's device IP"
-        },
-        {
-          "type": "string",
-          "format": "date-time",
-          "description": "The date and time when the virtual account was created"
-        }
-      ]
+      }
     }
-  ]
+  ],
+  "example": {
+    "id": "pmd_wlVhaYmkl2",
+    "type": "card",
+    "card": {
+      "expiry_month": 8,
+      "expiry_year": 32,
+      "first6": "123412",
+      "last4": "2222",
+      "network": "mastercard"
+    },
+    "meta": {},
+    "created_datetime": "2024-12-03T14:29:26.650973145Z"
+  }
 }
