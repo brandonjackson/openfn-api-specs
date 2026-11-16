@@ -471,3 +471,32 @@ test('every committed spec compiles its response schemas without error', () => {
   }
   assert.deepEqual(failures, []);
 });
+
+test('a greedy final path parameter spans slashes', () => {
+  const ok = { '200': { description: 'ok' } };
+  const c = createConformer({
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/{bucket}/{key}': {
+        get: { operationId: 'getObject', parameters: [{ name: 'key', in: 'path', required: true, 'x-greedy': true, schema: { type: 'string' } }], responses: ok },
+      },
+      '/{bucket}/{key}#tagging': {
+        get: { operationId: 'getTagging', parameters: [{ name: 'key', in: 'path', required: true, 'x-greedy': true, schema: { type: 'string' } }], responses: ok },
+      },
+      '/{container}/{blob}': {
+        // No flag, but the pattern itself admits a slash.
+        put: { operationId: 'putBlob', parameters: [{ name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z]+(?:/[a-z]+)*$' } }], responses: ok },
+      },
+      '/{a}/{b}/meta': { get: { operationId: 'getMeta', responses: ok } },
+      '/plain/{id}': { delete: { operationId: 'deletePlain', responses: ok } },
+    },
+  });
+  assert.equal(c.match('GET', '/b/dir/sub/file.txt')?.operationId, 'getObject');
+  assert.equal(c.match('GET', '/b/dir/file.txt?tagging')?.operationId, 'getTagging');
+  assert.equal(c.match('PUT', '/c/exports/latest')?.operationId, 'putBlob');
+  // A template with more literal segments still wins.
+  assert.equal(c.match('GET', '/b/k/meta')?.operationId, 'getMeta');
+  // Ordinary parameters stay single-segment.
+  assert.equal(c.match('DELETE', '/plain/a/b'), undefined);
+});

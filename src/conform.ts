@@ -229,12 +229,37 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
   });
 }
 
-function compileTemplate(template: string): { src: string; literals: number; params: number } {
+/**
+ * Path parameters of an operation that may contain slashes: flagged
+ * `x-greedy: true` (Smithy's `{Key+}`), or typed with a `pattern` that itself
+ * admits `/` (Azure's blob name).
+ */
+function greedyParams(parsed: ParsedSpec, op: ParsedOperation): Set<string> | undefined {
+  const item = parsed.raw?.paths?.[op.path];
+  const all = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
+  let out: Set<string> | undefined;
+  for (const ref of all) {
+    const param = parsed.deref(ref);
+    if (param?.in !== 'path' || typeof param.name !== 'string') continue;
+    const pattern = parsed.deref(param.schema)?.pattern;
+    if (param['x-greedy'] === true || (typeof pattern === 'string' && pattern.includes('/'))) (out ??= new Set()).add(param.name);
+  }
+  return out;
+}
+
+function compileTemplate(template: string, greedy?: Set<string>): { src: string; literals: number; params: number } {
   const segs = normalizeTemplate(template).split('/').filter(Boolean);
   let literals = 0;
   let params = 0;
   const src = segs
-    .map((seg) => {
+    .map((seg, i) => {
+      // A greedy final parameter (an S3 object key, an Azure blob name) spans
+      // the rest of the path, slashes included.
+      const name = /^\{([^}]+)\}$/.exec(seg)?.[1];
+      if (name && greedy?.has(name) && i === segs.length - 1) {
+        params++;
+        return '/.+';
+      }
       const s = segmentSource(seg);
       if (s.isParam) params++;
       else literals++;
@@ -512,7 +537,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const matchers: Matcher[] = [];
   for (const op of parsed.operations) {
     const key = `${op.method} ${op.path}`;
-    const t = compileTemplate(op.path);
+    const t = compileTemplate(op.path, greedyParams(parsed, op));
     for (const prefix of prefixes) {
       const p = prefix ? compileTemplate(prefix) : { src: '', literals: 0, params: 0 };
       matchers.push({
