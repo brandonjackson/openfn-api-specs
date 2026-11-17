@@ -494,3 +494,34 @@ test('a path parameter whose pattern admits "/" (Azure {blob}) or a {x:.+} route
   assert.equal(c.match('GET', '/files/a/b/c')?.path, '/files/{id:.+}');
   assert.equal(c.match('GET', '/items/a/b'), undefined, 'a plain parameter stays one segment');
 });
+
+test('a non-JSON request body (multipart upload) is not checked against the JSON request schema', () => {
+  const c = createConformer({
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/upload/files': {
+        post: {
+          requestBody: {
+            content: {
+              'application/json': { schema: { type: 'object' } },
+              'multipart/related': { schema: { type: 'object' } },
+              '*/*': { schema: { type: 'string', format: 'binary' } },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  });
+  const multipart = '--b\r\nContent-Type: application/json\r\n\r\n{}\r\n--b--\r\n';
+  assert.deepEqual(c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: multipart }), []);
+  assert.deepEqual(
+    c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: [1], requestContentType: 'multipart/related; boundary=b' }),
+    []
+  );
+  assert.equal(
+    c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: [1], requestContentType: 'application/json' })[0]?.kind,
+    'request-schema'
+  );
+});
