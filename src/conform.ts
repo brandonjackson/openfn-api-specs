@@ -167,15 +167,63 @@ export function normalizePath(path: string): string {
   return p;
 }
 
-/** One template segment → regex source; `{x}` (possibly embedded) becomes a non-slash run. */
-function segmentSource(seg: string): { src: string; isParam: boolean } {
+/**
+ * One template segment → regex source; `{x}` (possibly embedded) becomes a
+ * non-slash run, unless `x` is in `multi`: a parameter whose value may contain
+ * `/` (Azure's `{blob}`, whose schema pattern is `name(/name)*`) or one written
+ * with a router regex that spans segments (`{formID:.+}`).
+ */
+function segmentSource(seg: string, multi: Set<string> = new Set()): { src: string; isParam: boolean } {
   if (!seg.includes('{')) return { src: escapeRegex(seg), isParam: false };
   const src = seg
     .split(/(\{[^}]+\})/)
     .filter(Boolean)
-    .map((part) => (/^\{[^}]+\}$/.test(part) ? '[^/]+' : escapeRegex(part)))
+    .map((part) => {
+      if (!/^\{[^}]+\}$/.test(part)) return escapeRegex(part);
+      return multi.has(paramName(part)) || routerRegexSpansSegments(part) ? '.+' : '[^/]+';
+    })
     .join('');
   return { src, isParam: true };
+}
+
+/** `{formID:.+}` → `formID`; `{blob}` → `blob`. */
+const paramName = (part: string): string => part.slice(1, -1).split(':')[0];
+
+/** Does a `{name:regex}` template variable (gorilla/mux, Spring style) admit `/`? */
+function routerRegexSpansSegments(part: string): boolean {
+  const inner = part.slice(1, -1);
+  const colon = inner.indexOf(':');
+  if (colon < 0) return false;
+  try {
+    return new RegExp(`^(?:${inner.slice(colon + 1)})$`).test('a/b');
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Path parameters of an operation whose declared schema admits `/` (its
+ * `pattern` matches a two-segment value), so the template variable must match
+ * across segments. Azure Storage's `{blob}` is the motivating case: blob names
+ * are virtual paths (`exports/2026/indicators.csv`).
+ */
+function multiSegmentParams(parsed: ParsedSpec, path: string, method: string): Set<string> {
+  const out = new Set<string>();
+  const item = parsed.raw?.paths?.[path];
+  if (!item) return out;
+  const params = [...(item.parameters ?? []), ...(item[method.toLowerCase()]?.parameters ?? [])];
+  for (const raw of params) {
+    const p = parsed.deref(raw);
+    if (p?.in !== 'path') continue;
+    const schema = parsed.deref(p.schema ?? p);
+    if (typeof schema?.pattern !== 'string' || !schema.pattern.includes('/')) continue;
+    try {
+      if (new RegExp(schema.pattern).test('a/b')) out.add(p.name);
+    } catch {
+      /* an unparseable pattern says nothing about slashes */
+    }
+  }
+  return out;
 }
 
 /**
@@ -229,13 +277,16 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
   });
 }
 
-function compileTemplate(template: string): { src: string; literals: number; params: number } {
+function compileTemplate(
+  template: string,
+  multi?: Set<string>
+): { src: string; literals: number; params: number } {
   const segs = normalizeTemplate(template).split('/').filter(Boolean);
   let literals = 0;
   let params = 0;
   const src = segs
     .map((seg) => {
-      const s = segmentSource(seg);
+      const s = segmentSource(seg, multi);
       if (s.isParam) params++;
       else literals++;
       return '/' + s.src;
@@ -512,7 +563,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const matchers: Matcher[] = [];
   for (const op of parsed.operations) {
     const key = `${op.method} ${op.path}`;
-    const t = compileTemplate(op.path);
+    const t = compileTemplate(op.path, multiSegmentParams(parsed, op.path, op.method));
     for (const prefix of prefixes) {
       const p = prefix ? compileTemplate(prefix) : { src: '', literals: 0, params: 0 };
       matchers.push({

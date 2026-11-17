@@ -471,3 +471,26 @@ test('every committed spec compiles its response schemas without error', () => {
   }
   assert.deepEqual(failures, []);
 });
+
+test('a path parameter whose pattern admits "/" (Azure {blob}) or a {x:.+} router regex spans segments', () => {
+  const c = createConformer({
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/{container}/{blob}': {
+        head: {
+          parameters: [
+            { name: 'container', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$' } },
+          ],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+      '/files/{id:.+}': { get: { responses: { '200': { description: 'ok' } } } },
+      '/items/{id}': { get: { responses: { '200': { description: 'ok' } } } },
+    },
+  });
+  assert.equal(c.match('HEAD', '/c/exports/2026/a.csv')?.path, '/{container}/{blob}');
+  assert.equal(c.match('GET', '/files/a/b/c')?.path, '/files/{id:.+}');
+  assert.equal(c.match('GET', '/items/a/b'), undefined, 'a plain parameter stays one segment');
+});

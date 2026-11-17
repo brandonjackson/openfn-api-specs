@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index gemini` — do not edit by hand -->
 
-base: https://generativelanguage.googleapis.com | auth: not declared | 85 operations in 22 resources
+base: https://generativelanguage.googleapis.com | auth: not declared | 87 operations in 22 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -86,6 +86,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## media
 - POST /v1beta/files — generativelanguage.media.upload: Creates a `File`.
 - POST /v1beta/fileSearchStores/{fileSearchStoresId}:uploadToFileSearchStore — generativelanguage.media.uploadToFileSearchStore: Uploads data to a FileSearchStore, preprocesses and chunks before storing it in a FileSearchStore Document.
+- POST /upload/v1beta/fileSearchStores/{fileSearchStoresId}:uploadToFileSearchStore — generativelanguage.media.uploadToFileSearchStore.upload: Media upload for `generativelanguage.media.uploadToFileSearchStore` (simple upload path; set `uploadType` to `media`, `multipart` or `resum…
+- POST /upload/v1beta/files — generativelanguage.media.upload.upload: Media upload for `generativelanguage.media.upload` (simple upload path; set `uploadType` to `media`, `multipart` or `resumable`).
 
 ## models
 - POST /v1beta/models/{modelsId}:generateMessage — generativelanguage.models.generateMessage: Generates a response from the model given an input `MessagePrompt`. (deprecated)

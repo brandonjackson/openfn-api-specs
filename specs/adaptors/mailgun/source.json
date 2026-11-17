@@ -20,7 +20,20 @@
     {
       "kind": "openapi",
       "url": "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
-      "result": "used"
+      "result": "used",
+      "note": "re-fetched 2026-11-17: identical to upstream.yaml apart from the logged example-key redaction"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_bundle/docs/validate/oas/openapi-validate-final.yaml?download",
+      "result": "used",
+      "note": "Mailgun's Validations Service OpenAPI 3.1 (24 operations: v4 single and bulk validation, list-health preview, v3 validate/parse/threshold, v3 list validation), linked as the download on https://documentation.mailgun.com/docs/validate/oas/openapi-validate-final. Same hosts (api.mailgun.net / api.eu.mailgun.net) and basic auth as the send spec. Committed verbatim as upstream-validate.yaml, sha256:ead2649f12ec5aa407afb0fcb9999daf2a6fb3f00fb76cee705af25a70e49b50, fetched 2026-11-17. Found after adaptors-storybook snippets for /v4/address/validate matched no operation."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/docs/inspect/api-reference/openapi-final",
+      "result": "rejected",
+      "note": "Mailgun Inspect (link/image/accessibility checks) and InboxReady (deliverability) are separately billed products on other hosts' product lines; their specs are not part of the Mailgun sending/validation API the adaptor targets."
     }
   ],
   "verifiedAgainst": [
@@ -28,9 +41,10 @@
   ],
   "sources": [
     "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
-    "https://documentation.mailgun.com/docs/mailgun/api-reference/"
+    "https://documentation.mailgun.com/docs/mailgun/api-reference/",
+    "https://documentation.mailgun.com/_bundle/docs/validate/oas/openapi-validate-final.yaml?download"
   ],
-  "capturedAt": "2026-11-13",
-  "lastCheckedAt": "2026-11-13",
-  "notes": "Complete, verbatim copy of Mailgun's official 'send' OpenAPI 3.1 document (the primary Mailgun API spec): messages, domains, events, stats, mailing lists, routes, webhooks, templates, etc. openapi.json is the upstream YAML rendered losslessly to JSON. Mailgun publishes additional separate specs (e.g. email validation) at other openapi-final URLs, NOT included here. MODIFICATION (overcommunicated): the published spec ships an EXAMPLE HTTP signing key placeholder that trips GitHub secret scanning; that one example value was replaced with 'key-REDACTED-EXAMPLE-SECRET' in upstream.yaml and openapi.json. It was documentation sample data, not a real credential; no path, operation, or schema is changed."
+  "capturedAt": "2026-11-17",
+  "lastCheckedAt": "2026-11-17",
+  "notes": "Two verbatim Mailgun OpenAPI 3.1 documents merged: the primary 'send' spec (upstream.yaml: messages, domains, events, stats, mailing lists, routes, webhooks, templates, etc.) and the Validations Service spec (upstream-validate.yaml: /v4/address/validate, bulk validation, list-health preview, v3 validate/parse). Both share servers and basic auth; openapi.json is upstream.yaml rendered losslessly to JSON plus the validate spec's paths, components (two identical shared schemas and basicAuth deduplicated), tags, and a 'Validations' x-tagGroup. No path collides. Mailgun Inspect and InboxReady specs are separate products and not included. MODIFICATION (overcommunicated): the published send spec ships an EXAMPLE HTTP signing key placeholder that trips GitHub secret scanning; that one example value was replaced with 'key-REDACTED-EXAMPLE-SECRET' in upstream.yaml and openapi.json. It was documentation sample data, not a real credential; no path, operation, or schema is changed."
 }

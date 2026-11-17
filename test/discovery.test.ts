@@ -134,3 +134,66 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.requestBody.content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
+
+test('a media-upload method gains an upload twin rooted at rootUrl', () => {
+  const doc = {
+    kind: 'discovery#restDescription',
+    name: 'drive',
+    version: 'v3',
+    rootUrl: 'https://www.googleapis.com/',
+    servicePath: 'drive/v3/',
+    parameters: { uploadType: { type: 'string', location: 'query' } },
+    schemas: { File: { id: 'File', type: 'object', properties: { name: { type: 'string' } } } },
+    resources: {
+      files: {
+        methods: {
+          create: {
+            id: 'drive.files.create',
+            path: 'files',
+            flatPath: 'files',
+            httpMethod: 'POST',
+            request: { $ref: 'File' },
+            response: { $ref: 'File' },
+            supportsMediaUpload: true,
+            mediaUpload: {
+              accept: ['*/*'],
+              protocols: { simple: { multipart: true, path: '/upload/drive/v3/files' } },
+            },
+          },
+        },
+        resources: {
+          stores: {
+            methods: {
+              upload: {
+                id: 'drive.stores.upload',
+                path: 'v1/{+store}:upload',
+                flatPath: 'v1/stores/{storesId}:upload',
+                httpMethod: 'POST',
+                parameters: { store: { type: 'string', location: 'path', required: true } },
+                supportsMediaUpload: true,
+                mediaUpload: { protocols: { simple: { path: '/upload/v1/{+store}:upload' } } },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const { openapi, warnings } = discoveryToOpenApi(doc as any, 'googledrive');
+  assert.deepEqual(warnings, []);
+  const item = openapi.paths['/upload/drive/v3/files'];
+  assert.deepEqual(item.servers, [{ url: 'https://www.googleapis.com' }]);
+  assert.equal(item.post.operationId, 'drive.files.create.upload');
+  assert.deepEqual(item.post.tags, ['files']);
+  const content = item.post.requestBody.content;
+  assert.deepEqual(content['*/*'].schema, { type: 'string', format: 'binary' });
+  assert.equal(content['multipart/related'].schema.properties.metadata.$ref, '#/components/schemas/File');
+  assert.ok(openapi.paths['/files'].post, 'the metadata-only operation stays');
+  // A reserved expansion in the upload path takes the method's flat segments.
+  const flat = openapi.paths['/upload/v1/stores/{storesId}:upload'];
+  assert.ok(flat?.post, 'upload path uses the flatPath form');
+  assert.deepEqual(
+    flat.post.parameters.filter((p: any) => p.in === 'path').map((p: any) => p.name),
+    ['storesId']
+  );
+});
