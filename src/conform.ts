@@ -167,9 +167,24 @@ export function normalizePath(path: string): string {
   return p;
 }
 
-/** One template segment → regex source; `{x}` (possibly embedded) becomes a non-slash run. */
-function segmentSource(seg: string): { src: string; isParam: boolean } {
+/** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
+function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
+  const item = openapi?.paths?.[op.path];
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
+  const names = params.filter((p: any) => p?.in === 'path' && p['x-smithy-greedy'] === true).map((p: any) => String(p.name));
+  return names.length ? new Set(names) : undefined;
+}
+
+/**
+ * One template segment → regex source; `{x}` (possibly embedded) becomes a
+ * non-slash run. A whole-segment parameter named in `greedy` (a Smithy greedy
+ * label such as S3's `{Key+}`, marked `x-smithy-greedy` by src/smithy.ts)
+ * spans slashes, so `/{Bucket}/{Key}` matches `/b/reports/2026/q1.csv`.
+ */
+function segmentSource(seg: string, greedy?: Set<string>): { src: string; isParam: boolean } {
   if (!seg.includes('{')) return { src: escapeRegex(seg), isParam: false };
+  const whole = /^\{([^}]+)\}$/.exec(seg);
+  if (whole && greedy?.has(whole[1])) return { src: '.+', isParam: true };
   const src = seg
     .split(/(\{[^}]+\})/)
     .filter(Boolean)
@@ -229,13 +244,13 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
   });
 }
 
-function compileTemplate(template: string): { src: string; literals: number; params: number } {
+function compileTemplate(template: string, greedy?: Set<string>): { src: string; literals: number; params: number } {
   const segs = normalizeTemplate(template).split('/').filter(Boolean);
   let literals = 0;
   let params = 0;
   const src = segs
     .map((seg) => {
-      const s = segmentSource(seg);
+      const s = segmentSource(seg, greedy);
       if (s.isParam) params++;
       else literals++;
       return '/' + s.src;
@@ -512,7 +527,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const matchers: Matcher[] = [];
   for (const op of parsed.operations) {
     const key = `${op.method} ${op.path}`;
-    const t = compileTemplate(op.path);
+    const t = compileTemplate(op.path, greedyParams(openapi, op));
     for (const prefix of prefixes) {
       const p = prefix ? compileTemplate(prefix) : { src: '', literals: 0, params: 0 };
       matchers.push({

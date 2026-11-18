@@ -11,7 +11,7 @@ the operating manual for keeping the copy correct and current.
 days.** `manifest.json` carries the effective `completeness` and `coverage` for
 every adaptor, and `pnpm specs report` buckets them. Both are what you steer by:
 a run that doesn't move an adaptor toward `ok` hasn't moved the north star.
-As of 2026-11-15, 56 of 104 are `ok`; 47 are best effort with a stated reason
+As of 2026-11-18, 57 of 104 are `ok`; 46 are best effort with a stated reason
 (docs-only, private API, defunct vendor); 1 is a declared subset (msgraph); none
 make no claim. "No claim" counts as incomplete, not as fine.
 
@@ -180,8 +180,8 @@ conformer-matched operation to its group. The storybook shows all three.
 4. **Do the finding step.** `pnpm specs instructions <adaptor>` emits a precise
    work order. Execute it — this is the agentic part, deliberately not a scraper:
    - Prefer a machine spec. `pnpm specs convert <adaptor> --url=<specUrl>` does
-     the capture: it recognises OpenAPI 3.x (JSON or YAML), Swagger 2.0 and
-     Google Discovery, writes the fetched bytes verbatim to `upstream.<ext>`,
+     the capture: it recognises OpenAPI 3.x (JSON or YAML), Swagger 2.0,
+     Google Discovery and Smithy 2.0 (AWS's service models), writes the fetched bytes verbatim to `upstream.<ext>`,
      derives the full `openapi.json`, and records `origin`, `upstreamFormat` and
      `upstream.*` (incl. `contentHash`). Then verify the coverage yourself and
      claim `coverage: full` / `completeness: complete` (`--complete` writes both).
