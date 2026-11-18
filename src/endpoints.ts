@@ -83,7 +83,8 @@ export function resourceOf(path: string): string {
   const segs = path
     .split('/')
     .filter(Boolean)
-    .map((s) => s.replace(/#.*$/, ''))
+    .map((s) => s.replace(/[#?].*$/, ''))
+    .filter(Boolean)
     .filter((s) => !/^v\d+(\.\d+)*$/i.test(s) && !GENERIC_PREFIXES.has(s.toLowerCase()));
   const real = segs.find((s) => !s.startsWith('{'));
   if (real) return real.replace(/\.(json|xml)$/i, '');

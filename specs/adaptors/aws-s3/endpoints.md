@@ -2,109 +2,124 @@
 
 <!-- derived from openapi.json by `pnpm specs index aws-s3` — do not edit by hand -->
 
-base: http://s3{dash-or-dot}{region}.amazonaws.com, https://s3{dash-or-dot}{region}.amazonaws.com, http://s3.amazonaws.com, https://s3.amazonaws.com, http://s3.{region}.amazonaws.com, https://s3.{region}.amazonaws.com, http://s3.{region}.amazonaws.com.cn, https://s3.{region}.amazonaws.com.cn | auth: apiKey (header Authorization) | 97 operations in 3 resources
+base: https://s3.{region}.amazonaws.com, https://s3.amazonaws.com | auth: apiKey (header Authorization) | 112 operations in 3 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
 ## (root)
-- GET / — ListBuckets: Returns a list of all buckets owned by the authenticated sender of the request.
+- GET / — ListBuckets: This operation is not supported for directory buckets.
+- GET /#x-id=ListDirectoryBuckets — ListDirectoryBuckets: Returns a list of all Amazon S3 directory buckets owned by the authenticated sender of the request.
 
 ## WriteGetObjectResponse
-- POST /WriteGetObjectResponse#x-amz-request-route&x-amz-request-token — WriteGetObjectResponse: Passes transformed objects to a GetObject operation when using Object Lambda access points.
+- POST /WriteGetObjectResponse — WriteGetObjectResponse: This operation is not supported for directory buckets.
 
 ## {Bucket}
-- GET /{Bucket}/{Key}#uploadId — ListParts: Lists the parts that have been uploaded for a specific multipart upload.
-- POST /{Bucket}/{Key}#uploadId — CompleteMultipartUpload: Completes a multipart upload by assembling previously uploaded parts.
-- DELETE /{Bucket}/{Key}#uploadId — AbortMultipartUpload: This action aborts a multipart upload.
-- PUT /{Bucket}/{Key}#x-amz-copy-source — CopyObject: Creates a copy of an object that is already stored in Amazon S3.
-- GET /{Bucket} — ListObjects: Returns some or all (up to 1,000) of the objects in a bucket.
-- PUT /{Bucket} — CreateBucket: Creates a new S3 bucket.
+- GET /{Bucket} — ListObjects: This operation is not supported for directory buckets.
+- PUT /{Bucket} — CreateBucket: This action creates an Amazon S3 bucket.
 - DELETE /{Bucket} — DeleteBucket: Deletes the S3 bucket.
-- HEAD /{Bucket} — HeadBucket: This action is useful to determine if a bucket exists and you have permission to access it.
-- POST /{Bucket}/{Key}#uploads — CreateMultipartUpload: This action initiates a multipart upload and returns an upload ID.
-- GET /{Bucket}#analytics&id — GetBucketAnalyticsConfiguration: This implementation of the GET action returns an analytics configuration (identified by the analytics configuration ID) from the bucket.
-- PUT /{Bucket}#analytics&id — PutBucketAnalyticsConfiguration: Sets an analytics configuration for the bucket (specified by the analytics configuration ID).
-- DELETE /{Bucket}#analytics&id — DeleteBucketAnalyticsConfiguration: Deletes an analytics configuration for the bucket (specified by the analytics configuration ID).
-- GET /{Bucket}#cors — GetBucketCors: Returns the Cross-Origin Resource Sharing (CORS) configuration information set for the bucket.
-- PUT /{Bucket}#cors — PutBucketCors: Sets the cors configuration for your bucket.
-- DELETE /{Bucket}#cors — DeleteBucketCors: Deletes the cors configuration information set for the bucket.
+- HEAD /{Bucket} — HeadBucket: You can use this operation to determine if a bucket exists and if you have permission to access it.
+- GET /{Bucket}#abac — GetBucketAbac: Returns the attribute-based access control (ABAC) property of the general purpose bucket.
+- PUT /{Bucket}#abac — PutBucketAbac: Sets the attribute-based access control (ABAC) property of the general purpose bucket.
+- GET /{Bucket}#accelerate — GetBucketAccelerateConfiguration: This operation is not supported for directory buckets.
+- PUT /{Bucket}#accelerate — PutBucketAccelerateConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#acl — GetBucketAcl: This operation is not supported for directory buckets.
+- PUT /{Bucket}#acl — PutBucketAcl: End of support notice: As of October 1, 2025, Amazon S3 has discontinued support for Email Grantee Access Control Lists (ACLs).
+- GET /{Bucket}#analytics — ListBucketAnalyticsConfigurations: This operation is not supported for directory buckets.
+- PUT /{Bucket}#analytics — PutBucketAnalyticsConfiguration: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#analytics — DeleteBucketAnalyticsConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#analytics&id — GetBucketAnalyticsConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#cors — GetBucketCors: This operation is not supported for directory buckets.
+- PUT /{Bucket}#cors — PutBucketCors: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#cors — DeleteBucketCors: This operation is not supported for directory buckets.
+- POST /{Bucket}#delete — DeleteObjects: This operation enables you to delete multiple objects from a bucket using a single HTTP request.
 - GET /{Bucket}#encryption — GetBucketEncryption: Returns the default encryption configuration for an Amazon S3 bucket.
-- PUT /{Bucket}#encryption — PutBucketEncryption: This action uses the encryption subresource to configure default encryption and Amazon S3 Bucket Key for an existing bucket.
-- DELETE /{Bucket}#encryption — DeleteBucketEncryption: This implementation of the DELETE action removes default encryption from the bucket.
-- GET /{Bucket}#intelligent-tiering&id — GetBucketIntelligentTieringConfiguration: Gets the S3 Intelligent-Tiering configuration from the specified bucket.
-- PUT /{Bucket}#intelligent-tiering&id — PutBucketIntelligentTieringConfiguration: Puts a S3 Intelligent-Tiering configuration to the specified bucket.
-- DELETE /{Bucket}#intelligent-tiering&id — DeleteBucketIntelligentTieringConfiguration: Deletes the S3 Intelligent-Tiering configuration from the specified bucket.
-- GET /{Bucket}#inventory&id — GetBucketInventoryConfiguration: Returns an inventory configuration (identified by the inventory configuration ID) from the bucket.
-- PUT /{Bucket}#inventory&id — PutBucketInventoryConfiguration: This implementation of the PUT action adds an inventory configuration (identified by the inventory ID) to the bucket.
-- DELETE /{Bucket}#inventory&id — DeleteBucketInventoryConfiguration: Deletes an inventory configuration (identified by the inventory ID) from the bucket.
-- GET /{Bucket}#lifecycle — GetBucketLifecycleConfiguration: Bucket lifecycle configuration now supports specifying a lifecycle rule using an object key name prefix, one or more object tags, or a comb…
+- PUT /{Bucket}#encryption — PutBucketEncryption: This operation configures default encryption and Amazon S3 Bucket Keys for an existing bucket.
+- DELETE /{Bucket}#encryption — DeleteBucketEncryption: This implementation of the DELETE action resets the default encryption for the bucket as server-side encryption with Amazon S3 managed keys…
+- GET /{Bucket}#intelligent-tiering — ListBucketIntelligentTieringConfigurations: This operation is not supported for directory buckets.
+- PUT /{Bucket}#intelligent-tiering — PutBucketIntelligentTieringConfiguration: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#intelligent-tiering — DeleteBucketIntelligentTieringConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#intelligent-tiering&id — GetBucketIntelligentTieringConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#inventory — ListBucketInventoryConfigurations: Returns a list of S3 Inventory configurations for the bucket.
+- PUT /{Bucket}#inventory — PutBucketInventoryConfiguration: This implementation of the PUT action adds an S3 Inventory configuration (identified by the inventory ID) to the bucket.
+- DELETE /{Bucket}#inventory — DeleteBucketInventoryConfiguration: Deletes an S3 Inventory configuration (identified by the inventory ID) from the bucket.
+- GET /{Bucket}#inventory&id — GetBucketInventoryConfiguration: Returns an S3 Inventory configuration (identified by the inventory configuration ID) from the bucket.
+- GET /{Bucket}#lifecycle — GetBucketLifecycleConfiguration: Returns the lifecycle configuration information set on the bucket.
 - PUT /{Bucket}#lifecycle — PutBucketLifecycleConfiguration: Creates a new lifecycle configuration for the bucket or replaces an existing lifecycle configuration.
 - DELETE /{Bucket}#lifecycle — DeleteBucketLifecycle: Deletes the lifecycle configuration from the specified bucket.
+- GET /{Bucket}#list-type=2 — ListObjectsV2: Returns some or all (up to 1,000) of the objects in a bucket with each request.
+- GET /{Bucket}#location — GetBucketLocation: Using the GetBucketLocation operation is no longer a best practice.
+- GET /{Bucket}#logging — GetBucketLogging: This operation is not supported for directory buckets.
+- PUT /{Bucket}#logging — PutBucketLogging: End of support notice: As of October 1, 2025, Amazon S3 has discontinued support for Email Grantee Access Control Lists (ACLs).
+- PUT /{Bucket}#metadataAnnotationTable — UpdateBucketMetadataAnnotationTableConfiguration: Updates the annotation table configuration for an Amazon S3 bucket's metadata configuration.
+- GET /{Bucket}#metadataConfiguration — GetBucketMetadataConfiguration: Retrieves the S3 Metadata configuration for a general purpose bucket.
+- POST /{Bucket}#metadataConfiguration — CreateBucketMetadataConfiguration: Creates an S3 Metadata V2 metadata configuration for a general purpose bucket.
+- DELETE /{Bucket}#metadataConfiguration — DeleteBucketMetadataConfiguration: Deletes an S3 Metadata configuration from a general purpose bucket.
+- PUT /{Bucket}#metadataInventoryTable — UpdateBucketMetadataInventoryTableConfiguration: Enables or disables a live inventory table for an S3 Metadata configuration on a general purpose bucket.
+- PUT /{Bucket}#metadataJournalTable — UpdateBucketMetadataJournalTableConfiguration: Enables or disables journal table record expiration for an S3 Metadata configuration on a general purpose bucket.
+- GET /{Bucket}#metadataTable — GetBucketMetadataTableConfiguration: We recommend that you retrieve your S3 Metadata configurations by using the V2 GetBucketMetadataConfiguration API operation.
+- POST /{Bucket}#metadataTable — CreateBucketMetadataTableConfiguration: We recommend that you create your S3 Metadata configurations by using the V2 CreateBucketMetadataConfiguration API operation.
+- DELETE /{Bucket}#metadataTable — DeleteBucketMetadataTableConfiguration: We recommend that you delete your S3 Metadata configurations by using the V2 DeleteBucketMetadataConfiguration API operation.
+- GET /{Bucket}#metrics — ListBucketMetricsConfigurations: Lists the metrics configurations for the bucket.
+- PUT /{Bucket}#metrics — PutBucketMetricsConfiguration: Sets a metrics configuration (specified by the metrics configuration ID) for the bucket.
+- DELETE /{Bucket}#metrics — DeleteBucketMetricsConfiguration: Deletes a metrics configuration for the Amazon CloudWatch request metrics (specified by the metrics configuration ID) from the bucket.
 - GET /{Bucket}#metrics&id — GetBucketMetricsConfiguration: Gets a metrics configuration (specified by the metrics configuration ID) from the bucket.
-- PUT /{Bucket}#metrics&id — PutBucketMetricsConfiguration: Sets a metrics configuration (specified by the metrics configuration ID) for the bucket.
-- DELETE /{Bucket}#metrics&id — DeleteBucketMetricsConfiguration: Deletes a metrics configuration for the Amazon CloudWatch request metrics (specified by the metrics configuration ID) from the bucket.
-- GET /{Bucket}#ownershipControls — GetBucketOwnershipControls: Retrieves OwnershipControls for an Amazon S3 bucket.
-- PUT /{Bucket}#ownershipControls — PutBucketOwnershipControls: Creates or modifies OwnershipControls for an Amazon S3 bucket.
-- DELETE /{Bucket}#ownershipControls — DeleteBucketOwnershipControls: Removes OwnershipControls for an Amazon S3 bucket.
+- GET /{Bucket}#notification — GetBucketNotificationConfiguration: This operation is not supported for directory buckets.
+- PUT /{Bucket}#notification — PutBucketNotificationConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#object-lock — GetObjectLockConfiguration: This operation is not supported for directory buckets.
+- PUT /{Bucket}#object-lock — PutObjectLockConfiguration: This operation is not supported for directory buckets.
+- GET /{Bucket}#ownershipControls — GetBucketOwnershipControls: This operation is not supported for directory buckets.
+- PUT /{Bucket}#ownershipControls — PutBucketOwnershipControls: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#ownershipControls — DeleteBucketOwnershipControls: This operation is not supported for directory buckets.
 - GET /{Bucket}#policy — GetBucketPolicy: Returns the policy of a specified bucket.
 - PUT /{Bucket}#policy — PutBucketPolicy: Applies an Amazon S3 bucket policy to an Amazon S3 bucket.
-- DELETE /{Bucket}#policy — DeleteBucketPolicy: This implementation of the DELETE action uses the policy subresource to delete the policy of a specified bucket.
-- GET /{Bucket}#replication — GetBucketReplication: Returns the replication configuration of a bucket.
-- PUT /{Bucket}#replication — PutBucketReplication: Creates a replication configuration or replaces an existing one.
-- DELETE /{Bucket}#replication — DeleteBucketReplication: Deletes the replication configuration from the bucket.
-- GET /{Bucket}#tagging — GetBucketTagging: Returns the tag set associated with the bucket.
-- PUT /{Bucket}#tagging — PutBucketTagging: Sets the tags for a bucket.
-- DELETE /{Bucket}#tagging — DeleteBucketTagging: Deletes the tags from the bucket.
-- GET /{Bucket}#website — GetBucketWebsite: Returns the website configuration for a bucket.
-- PUT /{Bucket}#website — PutBucketWebsite: Sets the configuration of the website that is specified in the website subresource.
-- DELETE /{Bucket}#website — DeleteBucketWebsite: This action removes the website configuration for a bucket.
-- GET /{Bucket}/{Key} — GetObject: Retrieves objects from Amazon S3.
-- PUT /{Bucket}/{Key} — PutObject: Adds an object to a bucket.
-- DELETE /{Bucket}/{Key} — DeleteObject: Removes the null version (if there is one) of an object and inserts a delete marker, which becomes the latest version of the object.
-- HEAD /{Bucket}/{Key} — HeadObject: The HEAD action retrieves metadata from an object without returning the object itself.
-- GET /{Bucket}/{Key}#tagging — GetObjectTagging: Returns the tag-set of an object.
-- PUT /{Bucket}/{Key}#tagging — PutObjectTagging: Sets the supplied tag-set to an object that already exists in a bucket.
-- DELETE /{Bucket}/{Key}#tagging — DeleteObjectTagging: Removes the entire tag set from the specified object.
-- POST /{Bucket}#delete — DeleteObjects: This action enables you to delete multiple objects from a bucket using a single HTTP request.
-- GET /{Bucket}#publicAccessBlock — GetPublicAccessBlock: Retrieves the PublicAccessBlock configuration for an Amazon S3 bucket.
-- PUT /{Bucket}#publicAccessBlock — PutPublicAccessBlock: Creates or modifies the PublicAccessBlock configuration for an Amazon S3 bucket.
-- DELETE /{Bucket}#publicAccessBlock — DeletePublicAccessBlock: Removes the PublicAccessBlock configuration for an Amazon S3 bucket.
-- GET /{Bucket}#accelerate — GetBucketAccelerateConfiguration: This implementation of the GET action uses the accelerate subresource to return the Transfer Acceleration state of a bucket, which is eithe…
-- PUT /{Bucket}#accelerate — PutBucketAccelerateConfiguration: Sets the accelerate configuration of an existing bucket.
-- GET /{Bucket}#acl — GetBucketAcl: This implementation of the GET action uses the acl subresource to return the access control list (ACL) of a bucket.
-- PUT /{Bucket}#acl — PutBucketAcl: Sets the permissions on an existing bucket using access control lists (ACL).
-- GET /{Bucket}#lifecycle&deprecated! — GetBucketLifecycle: For an updated version of this API, see GetBucketLifecycleConfiguration. (deprecated)
-- PUT /{Bucket}#lifecycle&deprecated! — PutBucketLifecycle: For an updated version of this API, see PutBucketLifecycleConfiguration. (deprecated)
-- GET /{Bucket}#location — GetBucketLocation: Returns the Region the bucket resides in.
-- GET /{Bucket}#logging — GetBucketLogging: Returns the logging status of a bucket and the permissions users have to view and modify that status.
-- PUT /{Bucket}#logging — PutBucketLogging: Set the logging parameters for a bucket and to specify permissions for who can view and modify the logging parameters.
-- GET /{Bucket}#notification — GetBucketNotificationConfiguration: Returns the notification configuration of a bucket.
-- PUT /{Bucket}#notification — PutBucketNotificationConfiguration: Enables notifications of specified events for a bucket.
-- GET /{Bucket}#notification&deprecated! — GetBucketNotification: No longer used, see GetBucketNotificationConfiguration. (deprecated)
-- PUT /{Bucket}#notification&deprecated! — PutBucketNotification: No longer used, see the PutBucketNotificationConfiguration operation. (deprecated)
-- GET /{Bucket}#policyStatus — GetBucketPolicyStatus: Retrieves the policy status for an Amazon S3 bucket, indicating whether the bucket is public.
-- GET /{Bucket}#requestPayment — GetBucketRequestPayment: Returns the request payment configuration of a bucket.
-- PUT /{Bucket}#requestPayment — PutBucketRequestPayment: Sets the request payment configuration for a bucket.
-- GET /{Bucket}#versioning — GetBucketVersioning: Returns the versioning state of a bucket.
-- PUT /{Bucket}#versioning — PutBucketVersioning: Sets the versioning state of an existing bucket.
-- GET /{Bucket}/{Key}#acl — GetObjectAcl: Returns the access control list (ACL) of an object.
-- PUT /{Bucket}/{Key}#acl — PutObjectAcl: Uses the acl subresource to set the access control list (ACL) permissions for a new or existing object in an S3 bucket.
-- GET /{Bucket}/{Key}#attributes&x-amz-object-attributes — GetObjectAttributes: Retrieves all the metadata from an object without returning the object itself.
-- GET /{Bucket}/{Key}#legal-hold — GetObjectLegalHold: Gets an object's current legal hold status.
-- PUT /{Bucket}/{Key}#legal-hold — PutObjectLegalHold: Applies a legal hold configuration to the specified object.
-- GET /{Bucket}#object-lock — GetObjectLockConfiguration: Gets the Object Lock configuration for a bucket.
-- PUT /{Bucket}#object-lock — PutObjectLockConfiguration: Places an Object Lock configuration on the specified bucket.
-- GET /{Bucket}/{Key}#retention — GetObjectRetention: Retrieves an object's retention settings.
-- PUT /{Bucket}/{Key}#retention — PutObjectRetention: Places an Object Retention configuration on an object.
-- GET /{Bucket}/{Key}#torrent — GetObjectTorrent: Returns torrent files from a bucket.
-- GET /{Bucket}#analytics — ListBucketAnalyticsConfigurations: Lists the analytics configurations for the bucket.
-- GET /{Bucket}#intelligent-tiering — ListBucketIntelligentTieringConfigurations: Lists the S3 Intelligent-Tiering configuration from the specified bucket.
-- GET /{Bucket}#inventory — ListBucketInventoryConfigurations: Returns a list of inventory configurations for the bucket.
-- GET /{Bucket}#metrics — ListBucketMetricsConfigurations: Lists the metrics configurations for the bucket.
-- GET /{Bucket}#uploads — ListMultipartUploads: This action lists in-progress multipart uploads.
-- GET /{Bucket}#versions — ListObjectVersions: Returns metadata about all versions of the objects in a bucket.
-- GET /{Bucket}#list-type=2 — ListObjectsV2: Returns some or all (up to 1,000) of the objects in a bucket with each request.
-- POST /{Bucket}/{Key}#restore — RestoreObject: Restores an archived copy of an object back into Amazon S3 This action is not supported by Amazon S3 on Outposts.
-- POST /{Bucket}/{Key}#select&select-type=2 — SelectObjectContent: This action filters the contents of an Amazon S3 object based on a simple structured query language (SQL) statement.
+- DELETE /{Bucket}#policy — DeleteBucketPolicy: Deletes the policy of a specified bucket.
+- GET /{Bucket}#policyStatus — GetBucketPolicyStatus: This operation is not supported for directory buckets.
+- GET /{Bucket}#publicAccessBlock — GetPublicAccessBlock: This operation is not supported for directory buckets.
+- PUT /{Bucket}#publicAccessBlock — PutPublicAccessBlock: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#publicAccessBlock — DeletePublicAccessBlock: This operation is not supported for directory buckets.
+- GET /{Bucket}#replication — GetBucketReplication: This operation is not supported for directory buckets.
+- PUT /{Bucket}#replication — PutBucketReplication: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#replication — DeleteBucketReplication: This operation is not supported for directory buckets.
+- GET /{Bucket}#requestPayment — GetBucketRequestPayment: This operation is not supported for directory buckets.
+- PUT /{Bucket}#requestPayment — PutBucketRequestPayment: This operation is not supported for directory buckets.
+- GET /{Bucket}#session — CreateSession: Creates a session that establishes temporary security credentials to support fast authentication and authorization for the Zonal endpoint A…
+- GET /{Bucket}#tagging — GetBucketTagging: This operation is not supported for directory buckets.
+- PUT /{Bucket}#tagging — PutBucketTagging: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#tagging — DeleteBucketTagging: This operation is not supported for directory buckets.
+- GET /{Bucket}#uploads — ListMultipartUploads: This operation lists in-progress multipart uploads in a bucket.
+- GET /{Bucket}#versioning — GetBucketVersioning: This operation is not supported for directory buckets.
+- PUT /{Bucket}#versioning — PutBucketVersioning: This operation is not supported for directory buckets.
+- GET /{Bucket}#versions — ListObjectVersions: This operation is not supported for directory buckets.
+- GET /{Bucket}#website — GetBucketWebsite: This operation is not supported for directory buckets.
+- PUT /{Bucket}#website — PutBucketWebsite: This operation is not supported for directory buckets.
+- DELETE /{Bucket}#website — DeleteBucketWebsite: This operation is not supported for directory buckets.
+- GET /{Bucket}/{Key} — GetObject: Retrieves an object from Amazon S3.
+- POST /{Bucket}/{Key} — CompleteMultipartUpload: Completes a multipart upload by assembling previously uploaded parts.
+- PUT /{Bucket}/{Key} — PutObject: End of support notice: As of October 1, 2025, Amazon S3 has discontinued support for Email Grantee Access Control Lists (ACLs).
+- DELETE /{Bucket}/{Key} — DeleteObject: Removes an object from a bucket.
+- HEAD /{Bucket}/{Key} — HeadObject: The HEAD operation retrieves metadata from an object without returning the object itself.
+- GET /{Bucket}/{Key}#acl — GetObjectAcl: This operation is not supported for directory buckets.
+- PUT /{Bucket}/{Key}#acl — PutObjectAcl: End of support notice: As of October 1, 2025, Amazon S3 has discontinued support for Email Grantee Access Control Lists (ACLs).
+- GET /{Bucket}/{Key}#annotation — ListObjectAnnotations: Lists the annotations attached to an Amazon S3 object.
+- PUT /{Bucket}/{Key}#annotation — PutObjectAnnotation: Attaches an annotation to an Amazon S3 object.
+- DELETE /{Bucket}/{Key}#annotation — DeleteObjectAnnotation: Deletes a specific annotation from an Amazon S3 object.
+- GET /{Bucket}/{Key}#annotation&annotationName — GetObjectAnnotation: Retrieves an annotation from an Amazon S3 object.
+- GET /{Bucket}/{Key}#attributes — GetObjectAttributes: Retrieves all of the metadata from an object without returning the object itself.
+- PUT /{Bucket}/{Key}#encryption — UpdateObjectEncryption: This operation is not supported for directory buckets or Amazon S3 on Outposts buckets.
+- GET /{Bucket}/{Key}#legal-hold — GetObjectLegalHold: This operation is not supported for directory buckets.
+- PUT /{Bucket}/{Key}#legal-hold — PutObjectLegalHold: This operation is not supported for directory buckets.
 - PUT /{Bucket}/{Key}#partNumber&uploadId — UploadPart: Uploads a part in a multipart upload.
-- PUT /{Bucket}/{Key}#x-amz-copy-source&partNumber&uploadId — UploadPartCopy: Uploads a part by copying data from an existing object as data source.
+- PUT /{Bucket}/{Key}#partNumber&uploadId&x-amz-copy-source — UploadPartCopy: Uploads a part by copying data from an existing object as data source.
+- PUT /{Bucket}/{Key}#renameObject — RenameObject: Renames an existing object in a directory bucket that uses the S3 Express One Zone storage class.
+- POST /{Bucket}/{Key}#restore — RestoreObject: This operation is not supported for directory buckets.
+- GET /{Bucket}/{Key}#retention — GetObjectRetention: This operation is not supported for directory buckets.
+- PUT /{Bucket}/{Key}#retention — PutObjectRetention: This operation is not supported for directory buckets.
+- POST /{Bucket}/{Key}#select&select-type=2 — SelectObjectContent: This operation is not supported for directory buckets.
+- GET /{Bucket}/{Key}#tagging — GetObjectTagging: This operation is not supported for directory buckets.
+- PUT /{Bucket}/{Key}#tagging — PutObjectTagging: This operation is not supported for directory buckets.
+- DELETE /{Bucket}/{Key}#tagging — DeleteObjectTagging: This operation is not supported for directory buckets.
+- GET /{Bucket}/{Key}#torrent — GetObjectTorrent: This operation is not supported for directory buckets.
+- GET /{Bucket}/{Key}#uploadId — ListParts: Lists the parts that have been uploaded for a specific multipart upload.
+- DELETE /{Bucket}/{Key}#uploadId — AbortMultipartUpload: This operation aborts a multipart upload.
+- POST /{Bucket}/{Key}#uploads — CreateMultipartUpload: End of support notice: As of October 1, 2025, Amazon S3 has discontinued support for Email Grantee Access Control Lists (ACLs).
+- PUT /{Bucket}/{Key}#x-amz-copy-source — CopyObject: Creates a copy of an object that is already stored in Amazon S3.

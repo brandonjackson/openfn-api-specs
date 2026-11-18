@@ -5,46 +5,40 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/LambdaFunctionConfiguration",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
-  "required": [
-    "LambdaFunctionArn",
-    "Events"
-  ],
   "properties": {
     "Id": {
-      "$ref": "NotificationId.json"
+      "type": "string",
+      "description": "<p>An optional unique identifier for configurations in a notification configuration. If you don't\n      provide one, Amazon S3 will assign an ID.</p>"
     },
     "LambdaFunctionArn": {
-      "allOf": [
-        {
-          "$ref": "LambdaFunctionArn.json"
-        },
-        {
-          "xml": {
-            "name": "CloudFunction"
-          },
-          "description": "The Amazon Resource Name (ARN) of the Lambda function that Amazon S3 invokes when the specified event type occurs."
-        }
-      ]
+      "type": "string",
+      "description": "<p>The Amazon Resource Name (ARN) of the Lambda function that Amazon S3 invokes when the specified event\n      type occurs.</p>",
+      "xml": {
+        "name": "CloudFunction"
+      }
     },
     "Events": {
       "allOf": [
         {
           "$ref": "EventList.json"
-        },
-        {
-          "xml": {
-            "name": "Event"
-          },
-          "description": "The Amazon S3 bucket event for which to invoke the Lambda function. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html\">Supported Event Types</a> in the <i>Amazon S3 User Guide</i>."
         }
-      ]
+      ],
+      "description": "<p>The Amazon S3 bucket event for which to invoke the Lambda function. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html\">Supported Event Types</a> in\n      the <i>Amazon S3 User Guide</i>.</p>",
+      "xml": {
+        "name": "Event",
+        "wrapped": false
+      }
     },
     "Filter": {
       "$ref": "NotificationConfigurationFilter.json"
     }
   },
-  "description": "A container for specifying the configuration for Lambda notifications."
+  "required": [
+    "LambdaFunctionArn",
+    "Events"
+  ],
+  "description": "<p>A container for specifying the configuration for Lambda notifications.</p>"
 }

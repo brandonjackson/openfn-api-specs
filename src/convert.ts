@@ -8,7 +8,7 @@
  * hold: the upstream bytes are written exactly as fetched and hashed in the same
  * pass, so the hash can never describe a different file than the one committed.
  *
- * Three upstream formats are recognised and each maps to the origin AGENTS.md
+ * Four upstream formats are recognised and each maps to the origin AGENTS.md
  * prescribes for it:
  *
  *  | detected                    | origin         | openapi.json is…                    |
@@ -16,6 +16,7 @@
  *  | OpenAPI 3.x (JSON or YAML)  | found-openapi  | the upstream, rendered to JSON      |
  *  | Swagger 2.0                 | converted      | swaggerToOpenApi(upstream)          |
  *  | Google Discovery            | converted      | discoveryToOpenApi(upstream)        |
+ *  | Smithy 2.0 JSON AST (AWS)   | converted      | smithyToOpenApi(upstream)           |
  *
  * A YAML upstream is parsed with the `yaml` package (a devDependency, imported
  * lazily so the published runtime never needs it) and the *original YAML bytes*
@@ -24,12 +25,13 @@
 import { createHash } from 'node:crypto';
 import { existsSync, writeFileSync } from 'node:fs';
 import { discoveryToOpenApi } from './discovery.js';
+import { smithyToOpenApi } from './smithy.js';
 import { swaggerToOpenApi } from './swagger.js';
 import type { SpecOrigin } from './types.js';
 import { countOperations } from './util.js';
 
 /** What kind of machine spec the fetched bytes are. */
-export type UpstreamKind = 'openapi' | 'swagger' | 'discovery';
+export type UpstreamKind = 'openapi' | 'swagger' | 'discovery' | 'smithy';
 
 export interface DetectedUpstream {
   kind: UpstreamKind;
@@ -79,9 +81,12 @@ export function detect(doc: any, ext: 'json' | 'yaml'): Omit<DetectedUpstream, '
   if (doc?.kind === 'discovery#restDescription') {
     return { kind: 'discovery', format: 'google-discovery', origin: 'converted', ext };
   }
+  if (typeof doc?.smithy === 'string' && doc?.shapes && typeof doc.shapes === 'object') {
+    return { kind: 'smithy', format: `smithy-${doc.smithy}`, origin: 'converted', ext };
+  }
   throw new Error(
     `Unrecognised upstream spec (openapi=${doc?.openapi} swagger=${doc?.swagger} kind=${doc?.kind}). ` +
-      'Supported: OpenAPI 3.x, Swagger 2.0, Google Discovery.'
+      'Supported: OpenAPI 3.x, Swagger 2.0, Google Discovery, Smithy JSON AST.'
   );
 }
 
@@ -204,6 +209,10 @@ export function buildOpenapi(doc: any, adaptor: string, ext: 'json' | 'yaml'): B
     }
     case 'discovery': {
       const { openapi, warnings } = discoveryToOpenApi(doc, adaptor);
+      return { detected, openapi, warnings };
+    }
+    case 'smithy': {
+      const { openapi, warnings } = smithyToOpenApi(doc, adaptor);
       return { detected, openapi, warnings };
     }
   }

@@ -102,7 +102,10 @@ Then produce `openapi.json`:
   so in `notes`.
 - `converted`: use the repo converter where one exists — `src/discovery.ts` for
   Google Discovery, `src/swagger.ts` for Swagger 2.0 (it also handles Azure's
-  `x-ms-paths` and `x-ms-parameterized-host`). Both are wired into
+  `x-ms-paths` and `x-ms-parameterized-host`), `src/smithy.ts` for AWS's
+  Smithy 2.0 JSON models (github.com/aws/api-models-aws: AWS publishes no
+  OpenAPI, but every service has a current Smithy model; restXml/restJson1
+  services convert). All three are wired into
   `pnpm specs convert <adaptor> --url=<specUrl>`, which writes the verbatim
   upstream, derives `openapi.json` and records the hash in one pass; run it with
   no `--url` to re-derive after a converter change. For Postman collections use

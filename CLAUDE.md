@@ -12,7 +12,7 @@ Quick reference:
   Execute it with the `api-spec-ingestion` skill (`.claude/skills/api-spec-ingestion/SKILL.md`):
   how to hunt for a machine spec, scrape docs, write the OpenAPI, and cross-reference a spec.
 - `pnpm specs convert <adaptor> --url=<specUrl>` — capture an upstream machine spec
-  (OpenAPI 3.x / Swagger 2.0 / Google Discovery) verbatim and derive `openapi.json`.
+  (OpenAPI 3.x / Swagger 2.0 / Google Discovery / Smithy 2.0) verbatim and derive `openapi.json`.
   With no `--url`, re-derives `openapi.json` from the committed upstream.
 - `pnpm specs data-objects <adaptor>` — derive data-schemas from openapi.json.
 - `pnpm specs index <adaptor>` — derive `endpoints.md` (one line per operation, grouped by
