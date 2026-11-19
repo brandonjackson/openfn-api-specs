@@ -14,12 +14,50 @@
     "specUrl": "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
     "format": "openapi-3.1",
     "contentHash": "sha256:d6b7d48944fd64e84b0cfd032ada94c2da5fa711d3fbc90c201905df43b52fbb",
-    "fetchedAt": "2026-11-13"
+    "fetchedAt": "2026-11-13",
+    "parts": [
+      {
+        "file": "upstream-validate.yaml",
+        "specUrl": "https://documentation.mailgun.com/_bundle/docs/validate/oas/openapi-validate-final.yaml?download",
+        "format": "openapi-3.1",
+        "contentHash": "sha256:ead2649f12ec5aa407afb0fcb9999daf2a6fb3f00fb76cee705af25a70e49b50",
+        "fetchedAt": "2026-11-19"
+      },
+      {
+        "file": "upstream-inspect.yaml",
+        "specUrl": "https://documentation.mailgun.com/_bundle/docs/inspect/api-reference/openapi-final.yaml?download",
+        "format": "openapi-3.1",
+        "contentHash": "sha256:6b44a4034b09aab05c8bf8c3f34ebbd78a511fffc7be3c8a6a2f1597e0e801dd",
+        "fetchedAt": "2026-11-19"
+      },
+      {
+        "file": "upstream-inboxready.yaml",
+        "specUrl": "https://documentation.mailgun.com/_bundle/docs/inboxready/api-reference/optimize/inboxready.yaml?download",
+        "format": "openapi-3.1",
+        "contentHash": "sha256:855fc657af1e20dcc82ae352dabc29de7c7d6626b4494acc77d7d28e94c2056f",
+        "fetchedAt": "2026-11-19"
+      }
+    ]
   },
   "attempts": [
     {
       "kind": "openapi",
       "url": "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
+      "result": "used"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_bundle/docs/validate/oas/openapi-validate-final.yaml?download",
+      "result": "used"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_bundle/docs/inspect/api-reference/openapi-final.yaml?download",
+      "result": "used"
+    },
+    {
+      "kind": "openapi",
+      "url": "https://documentation.mailgun.com/_bundle/docs/inboxready/api-reference/optimize/inboxready.yaml?download",
       "result": "used"
     }
   ],
@@ -28,9 +66,12 @@
   ],
   "sources": [
     "https://documentation.mailgun.com/_spec/docs/mailgun/api-reference/send/mailgun.yaml?download",
-    "https://documentation.mailgun.com/docs/mailgun/api-reference/"
+    "https://documentation.mailgun.com/docs/mailgun/api-reference/",
+    "https://documentation.mailgun.com/_bundle/docs/validate/oas/openapi-validate-final.yaml?download",
+    "https://documentation.mailgun.com/_bundle/docs/inspect/api-reference/openapi-final.yaml?download",
+    "https://documentation.mailgun.com/_bundle/docs/inboxready/api-reference/optimize/inboxready.yaml?download"
   ],
-  "capturedAt": "2026-11-13",
-  "lastCheckedAt": "2026-11-13",
-  "notes": "Complete, verbatim copy of Mailgun's official 'send' OpenAPI 3.1 document (the primary Mailgun API spec): messages, domains, events, stats, mailing lists, routes, webhooks, templates, etc. openapi.json is the upstream YAML rendered losslessly to JSON. Mailgun publishes additional separate specs (e.g. email validation) at other openapi-final URLs, NOT included here. MODIFICATION (overcommunicated): the published spec ships an EXAMPLE HTTP signing key placeholder that trips GitHub secret scanning; that one example value was replaced with 'key-REDACTED-EXAMPLE-SECRET' in upstream.yaml and openapi.json. It was documentation sample data, not a real credential; no path, operation, or schema is changed."
+  "capturedAt": "2026-11-19",
+  "lastCheckedAt": "2026-11-19",
+  "notes": "Mailgun publishes its API as four separate OpenAPI 3.1 documents, all committed verbatim and hash-locked: the primary 'Send' spec as upstream.yaml (messages, domains, events, stats, mailing lists, routes, webhooks, templates, accounts, ...) plus upstream.parts[]: Validate (upstream-validate.yaml: /v3 and /v4 address validation, bulk validation jobs, previews, list validation), Inspect (upstream-inspect.yaml: email preview, link/image/accessibility/content checks) and InboxReady (upstream-inboxready.yaml: alerts, inbox placement, seed lists, reputation and spam traps). openapi.json is the Send spec rendered to JSON with the three parts merged in by `pnpm specs convert mailgun` (mergeOpenapi refuses any path or component a later file defines differently; the 12 /v1/alerts paths InboxReady shares with Send are identical). Earlier captures served only the Send spec, so the adaptor's validation calls (GET /v4/address/validate, POST /v4/address/validate/bulk/{list_id}) matched no operation in openfn-mocker and adaptors-storybook. 267 -> 411 operations. MODIFICATION (overcommunicated): the published Send spec ships an EXAMPLE HTTP signing key placeholder that trips GitHub secret scanning; that one example value was replaced with 'key-REDACTED-EXAMPLE-SECRET' in upstream.yaml and openapi.json. It was documentation sample data, not a real credential; no path, operation, or schema is changed. Checked 2026-11-19: the live Send spec's bytes now differ from the 2026-11-13 capture; it was not re-captured in this pass (a re-capture must repeat the redaction)."
 }

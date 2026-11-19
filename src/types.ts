@@ -28,6 +28,23 @@ export interface SpecUpstream {
   contentHash: string;
   /** ISO date (YYYY-MM-DD) the upstream spec was fetched. */
   fetchedAt: string;
+  /**
+   * Further verbatim vendor specs for the same API, when the vendor splits one
+   * API across several documents (Mailgun publishes Send, Validate and Inspect
+   * separately). Each is committed byte-for-byte beside upstream.<ext>, hashed
+   * the same way, and merged into openapi.json on every derivation.
+   */
+  parts?: SpecUpstreamPart[];
+}
+
+/** One additional verbatim upstream file (see `SpecUpstream.parts`). */
+export interface SpecUpstreamPart {
+  /** File name in the adaptor directory, e.g. `upstream-validate.yaml`. */
+  file: string;
+  specUrl: string;
+  format: string;
+  contentHash: string;
+  fetchedAt: string;
 }
 
 /** One entry in the finding-step decision trail. */

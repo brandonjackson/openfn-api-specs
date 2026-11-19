@@ -24,7 +24,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
-import { capture, staleUpstreams } from './convert.js';
+import { buildOpenapi, capture, contentHash, mergeOpenapi, parseSpec, staleUpstreams } from './convert.js';
 import { createConformer, formatConformanceReport, parseExchangesJsonl } from './conform.js';
 import { extractDataObjects } from './data-objects.js';
 import { buildEndpointIndex, renderEndpointIndex } from './endpoints.js';
@@ -42,7 +42,7 @@ import {
   sourcePath,
   upstreamPath,
 } from './paths.js';
-import type { FeedbackStatus, SpecSource } from './types.js';
+import type { FeedbackStatus, SpecSource, SpecUpstreamPart } from './types.js';
 import { readJson } from './util.js';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
@@ -185,6 +185,32 @@ function flag(argv: string[], name: string): string | undefined {
 }
 
 /**
+ * Merge every `upstream.parts[]` file into the openapi.json `capture()` just
+ * wrote. Each part must be an OpenAPI 3.x document, must still hash to its
+ * recorded `contentHash`, and must not redefine anything the primary (or an
+ * earlier part) already defines differently.
+ */
+async function applyUpstreamParts(adaptor: string, dir: string, parts: SpecUpstreamPart[] | undefined): Promise<number> {
+  if (!parts?.length) return 0;
+  const openapi = JSON.parse(readFileSync(openapiPath(adaptor), 'utf8'));
+  let added = 0;
+  for (const part of parts) {
+    const file = join(dir, part.file);
+    if (!existsSync(file)) throw new Error(`${adaptor}: upstream part ${part.file} is recorded but not committed`);
+    const text = readFileSync(file, 'utf8');
+    if (contentHash(text) !== part.contentHash) {
+      throw new Error(`${adaptor}: ${part.file} no longer matches its recorded contentHash (verbatim files are never edited)`);
+    }
+    const { doc, ext } = await parseSpec(text);
+    const built = buildOpenapi(doc, adaptor, ext);
+    if (built.detected.kind !== 'openapi') throw new Error(`${adaptor}: ${part.file} is ${built.detected.format}; parts must be OpenAPI 3.x`);
+    added += mergeOpenapi(openapi, built.openapi, part.file).operations;
+  }
+  writeFileSync(openapiPath(adaptor), JSON.stringify(openapi, null, 2) + '\n');
+  return added;
+}
+
+/**
  * `convert <adaptor> --url=<specUrl>` — the capture step of the loop. Fetches an
  * upstream machine spec, commits it verbatim as `upstream.<ext>`, derives the
  * full-coverage `openapi.json`, and records the provenance (origin, format,
@@ -201,6 +227,11 @@ function flag(argv: string[], name: string): string | undefined {
  * an authenticated endpoint on their own demo servers), and credentials must
  * never end up in a committed `specUrl`. The verbatim contract is unchanged: the
  * bytes on disk are written and hashed exactly as read.
+ *
+ * `--add-part=<specUrl> --part=<name>` captures a further vendor document for
+ * the same API (`upstream-<name>.<ext>`, recorded under `upstream.parts`), for
+ * vendors that split one API across several specs. Parts are merged into
+ * openapi.json on every derivation, including the no-`--url` rebuild.
  *
  * The `coverage`/`completeness` claims are NOT written here: whether a spec
  * really covers the whole vendor API is the agent's judgement to make and
@@ -221,6 +252,40 @@ async function cmdConvert(argv: string[]): Promise<void> {
 
   // No --url: rebuild from the upstream we already hold, and leave the curated
   // provenance (claims, notes, attempt trail) exactly as it is.
+  // --add-part: capture one more vendor document for the same API, then
+  // rebuild from the primary plus every part.
+  const partUrl = flag(argv, 'add-part');
+  if (partUrl) {
+    const name = flag(argv, 'part');
+    if (!name || !/^[a-z0-9-]+$/.test(name)) throw new Error('--add-part needs --part=<name> (lowercase, digits, dashes).');
+    if (!existing.upstream) throw new Error(`${adaptor.name} has no primary upstream; capture one with --url first.`);
+    const from = flag(argv, 'from');
+    let text: string;
+    if (from) text = readFileSync(from, 'utf8');
+    else {
+      const res = await fetch(partUrl, { headers: { accept: 'application/json, application/yaml, text/yaml, */*' } });
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText} — ${partUrl}`);
+      text = await res.text();
+    }
+    const { doc, ext } = await parseSpec(text);
+    const detected = buildOpenapi(doc, adaptor.name, ext).detected;
+    if (detected.kind !== 'openapi') throw new Error(`${partUrl} is ${detected.format}; parts must be OpenAPI 3.x`);
+    const file = `upstream-${name}.${ext}`;
+    writeFileSync(join(dir, file), text);
+    const part: SpecUpstreamPart = { file, specUrl: partUrl, format: detected.format, contentHash: contentHash(text), fetchedAt: today() };
+    const parts = [...(existing.upstream.parts ?? []).filter((p) => p.file !== file), part];
+    const source = {
+      ...existing,
+      upstream: { ...existing.upstream, parts },
+      attempts: [...(existing.attempts ?? []).filter((a) => a.url !== partUrl), { kind: 'openapi', url: partUrl, result: 'used' as const }],
+      sources: [...new Set([...(existing.sources ?? []), partUrl])],
+      lastCheckedAt: today(),
+    } as SpecSource;
+    writeJson(sourcePath(adaptor.name), source);
+    console.log(`  + ${adaptor.name}: ${file} (${detected.format}) recorded as an upstream part; re-deriving`);
+    return cmdConvert(argv.filter((a) => !/^--(add-part|part|from)=/.test(a)));
+  }
+
   const url = flag(argv, 'url');
   if (!url) {
     const committed = upstreamPath(adaptor.name);
@@ -236,11 +301,13 @@ async function cmdConvert(argv: string[]): Promise<void> {
       today: today(),
       bytes: readFileSync(committed, 'utf8'),
     });
+    const fromParts = await applyUpstreamParts(adaptor.name, dir, existing.upstream?.parts);
     const after = readFileSync(openapiPath(adaptor.name), 'utf8');
     console.log(
-      `  ${before === after ? '=' : '~'} ${adaptor.name}: re-derived from ${committed.split('/').pop()} — ` +
+      `  ${before === after ? '=' : '~'} ${adaptor.name}: re-derived from ${committed.split('/').pop()}` +
+        `${existing.upstream?.parts?.length ? ` + ${existing.upstream.parts.length} part(s)` : ''} — ` +
         `${before === after ? 'unchanged' : `rebuilt (${before.length} → ${after.length} bytes)`} ` +
-        `(${rebuilt.operations} operations)`
+        `(${rebuilt.operations + fromParts} operations)`
     );
     for (const w of rebuilt.warnings.slice(0, 10)) console.log(`    ! ${w}`);
     if (before !== after) console.log(`    next: pnpm specs data-objects ${adaptor.name} && pnpm specs index ${adaptor.name} && pnpm test`);
@@ -279,7 +346,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
     npm: adaptor.npm,
     origin: result.detected.origin,
     upstreamFormat: result.detected.format,
-    upstream: result.upstream,
+    upstream: existing.upstream?.parts?.length ? { ...result.upstream, parts: existing.upstream.parts } : result.upstream,
     attempts,
     sources: [...new Set([url, ...(existing.sources ?? [])])],
     capturedAt: today(),
@@ -292,6 +359,8 @@ async function cmdConvert(argv: string[]): Promise<void> {
   const note = flag(argv, 'note');
   if (note) source.notes = note;
   writeJson(sourcePath(adaptor.name), source);
+  const fromParts = await applyUpstreamParts(adaptor.name, dir, source.upstream?.parts);
+  if (fromParts) console.log(`  + merged ${fromParts} operation(s) from ${source.upstream!.parts!.length} upstream part(s)`);
 
   const schemas = Object.keys(result.openapi.components?.schemas ?? {}).length;
   console.log(
@@ -383,6 +452,7 @@ const USAGE = `Usage: pnpm specs <command>
   instructions <a…|--missing|--all>
                                 Emit agentic work order(s) for finding/generating specs.
   convert <a> [--url=<specUrl>] [--from=<file>] [--complete] [--note=<text>]
+  convert <a> --add-part=<specUrl> --part=<name> [--from=<file>]
                                 Capture an upstream machine spec (OpenAPI 3.x / Swagger 2.0 /
                                 Google Discovery): commit it verbatim as upstream.<ext>, derive
                                 openapi.json, record provenance + contentHash. With no --url,

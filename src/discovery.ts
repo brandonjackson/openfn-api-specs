@@ -24,6 +24,11 @@
  *  - path template vars → required string path parameters; the method's query
  *    parameters plus the doc's global parameters → query parameters.
  *  - `method.request.$ref`  → JSON request body; `method.response.$ref` → 200 body.
+ *  - `method.mediaUpload.protocols` (simple, resumable) → one extra operation per
+ *    protocol at that protocol's path, which Google roots at `rootUrl`, not at
+ *    `rootUrl + servicePath` (`/upload/drive/v3/files`). The path item carries
+ *    its own `servers: [rootUrl]` so the path resolves correctly; the operation
+ *    keeps the method's tag, so it groups with the method it uploads for.
  *
  * Lossy-but-safe normalisations (Discovery has a few non-OpenAPI-isms):
  *  - `type: "any"`            → empty schema `{}` (matches anything).
@@ -73,6 +78,12 @@ interface DiscoveryMethod {
   deprecated?: boolean;
   supportsMediaUpload?: boolean;
   supportsMediaDownload?: boolean;
+  /** Upload endpoints, each at its own absolute path under `rootUrl` (`/upload/drive/v3/files`). */
+  mediaUpload?: {
+    accept?: string[];
+    maxSize?: string;
+    protocols?: Record<string, { path?: string; multipart?: boolean }>;
+  };
 }
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options']);
@@ -286,6 +297,53 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
       continue;
     }
     item[httpMethod] = op;
+
+    // Media upload endpoints: same method, same params, at the protocol's own
+    // path. The body is raw media (uploadType=media), metadata + media
+    // (multipart/related) or JSON metadata that opens a resumable session.
+    if (method.supportsMediaUpload && method.mediaUpload?.protocols) {
+      const rootUrl = (discovery.rootUrl ?? '').replace(/\/+$/, '');
+      for (const [protocol, proto] of Object.entries(method.mediaUpload.protocols)) {
+        if (!proto?.path) continue;
+        const upPath = '/' + proto.path.replace(/^\/+/, '').replace(/\{\+/g, '{');
+        const upParams = [...(op.parameters ?? [])];
+        for (const v of pathVars(upPath)) {
+          if (!upParams.some((p: any) => p.in === 'path' && p.name === v)) {
+            upParams.push({ name: v, in: 'path', required: true, schema: { type: 'string' } });
+          }
+        }
+        upParams.push({
+          name: 'uploadType',
+          in: 'query',
+          required: true,
+          description: 'media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).',
+          schema: { type: 'string', enum: protocol === 'resumable' ? ['resumable'] : ['media', 'multipart', 'resumable'] },
+        });
+        const content: Record<string, any> = {};
+        if (method.request?.$ref) {
+          content['application/json'] = { schema: { $ref: `#/components/schemas/${method.request.$ref}` } };
+        }
+        if (proto.multipart) content['multipart/related'] = { schema: {} };
+        for (const type of method.mediaUpload.accept?.length ? method.mediaUpload.accept : ['*/*']) {
+          content[type] ??= { schema: { type: 'string', format: 'binary' } };
+        }
+        const upOp: Record<string, any> = {
+          ...op,
+          operationId: `${method.id}.${protocol}Upload`,
+          description: `${protocol === 'resumable' ? 'Resumable' : 'Simple'} media upload for ${method.id}.${method.description ? ' ' + method.description : ''}`,
+          parameters: upParams,
+          requestBody: { required: true, content },
+        };
+        if (method.mediaUpload.maxSize) upOp['x-google-max-upload-size'] = method.mediaUpload.maxSize;
+        const upItem = (paths[upPath] ??= {});
+        if (rootUrl && !upItem.servers) upItem.servers = [{ url: rootUrl }];
+        if (upItem[httpMethod]) {
+          warnings.push(`collision: ${httpMethod.toUpperCase()} ${upPath} (${upItem[httpMethod].operationId} vs ${upOp.operationId}) — kept first`);
+          continue;
+        }
+        upItem[httpMethod] = upOp;
+      }
+    }
   }
 
   const baseUrl = (discovery.baseUrl ?? (discovery.rootUrl ?? '') + (discovery.servicePath ?? '')).replace(/\/+$/, '');

@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index inform` — do not edit by hand -->
 
-base: https://data.inform.unicef.org, https://api.ona.io | auth: apiKey (header Authorization), apiKey (header Authorization), http/basic, http/bearer | 194 operations in 26 resources
+base: https://data.inform.unicef.org, https://api.ona.io | auth: apiKey (header Authorization), http/basic, http/bearer | 194 operations in 26 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 

@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index zata` — do not edit by hand -->
 
-base: https://sandbox.zata.rw | auth: apiKey (header Authorization), apiKey (header Zata-Pay-Auth), apiKey (header Authorization) | 106 operations in 19 resources
+base: https://sandbox.zata.rw | auth: apiKey (header Authorization), apiKey (header Zata-Pay-Auth) | 106 operations in 19 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 

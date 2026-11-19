@@ -499,3 +499,34 @@ test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one doe
   const plain = createConformer({ ...spec, paths: { '/things/{id}': spec.paths['/things/{id}'] } });
   assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
 });
+
+test("a path parameter whose own pattern admits '/' spans slashes, through a $ref too", () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/{containerName}/{blob}': {
+        head: {
+          operationId: 'GetProperties',
+          parameters: [{ name: 'containerName', in: 'path', required: true, schema: { type: 'string' } }, { $ref: '#/components/parameters/Blob' }],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+      '/x/{id}': {
+        get: {
+          operationId: 'GetX',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', pattern: '^[^/]+$' } }],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+    components: {
+      parameters: {
+        Blob: { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$' } },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('HEAD', '/c/config/mapping.json')?.operationId, 'GetProperties');
+  assert.equal(c.match('GET', '/x/a/b'), undefined, 'a negated class [^/] forbids a slash, it does not admit one');
+});

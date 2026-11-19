@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index gmail` — do not edit by hand -->
 
-base: https://gmail.googleapis.com | auth: not declared | 79 operations in 15 resources
+base: https://gmail.googleapis.com | auth: not declared | 91 operations in 15 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -13,11 +13,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## users.drafts
 - POST /gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.
+- POST /upload/gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send.simpleUpload: Simple media upload for gmail.users.drafts.send.
+- POST /resumable/upload/gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send.resumableUpload: Resumable media upload for gmail.users.drafts.send.
 - GET /gmail/v1/users/{userId}/drafts — gmail.users.drafts.list: Lists the drafts in the user's mailbox.
 - POST /gmail/v1/users/{userId}/drafts — gmail.users.drafts.create: Creates a draft with the `DRAFT` label.
+- POST /resumable/upload/gmail/v1/users/{userId}/drafts — gmail.users.drafts.create.resumableUpload: Resumable media upload for gmail.users.drafts.create.
+- POST /upload/gmail/v1/users/{userId}/drafts — gmail.users.drafts.create.simpleUpload: Simple media upload for gmail.users.drafts.create.
 - GET /gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.get: Gets the specified draft.
 - PUT /gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update: Replaces a draft's content.
 - DELETE /gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.delete: Immediately and permanently deletes the specified draft.
+- PUT /upload/gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update.simpleUpload: Simple media upload for gmail.users.drafts.update.
+- PUT /resumable/upload/gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update.resumableUpload: Resumable media upload for gmail.users.drafts.update.
 
 ## users.history
 - GET /gmail/v1/users/{userId}/history — gmail.users.history.list: Lists the history of all changes to the given mailbox.
@@ -35,11 +41,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /gmail/v1/users/{userId}/messages/{id} — gmail.users.messages.get: Gets the specified message.
 - DELETE /gmail/v1/users/{userId}/messages/{id} — gmail.users.messages.delete: Immediately and permanently deletes the specified message.
 - POST /gmail/v1/users/{userId}/messages/send — gmail.users.messages.send: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers.
+- POST /resumable/upload/gmail/v1/users/{userId}/messages/send — gmail.users.messages.send.resumableUpload: Resumable media upload for gmail.users.messages.send.
+- POST /upload/gmail/v1/users/{userId}/messages/send — gmail.users.messages.send.simpleUpload: Simple media upload for gmail.users.messages.send.
 - GET /gmail/v1/users/{userId}/messages — gmail.users.messages.list: Lists the messages in the user's mailbox.
 - POST /gmail/v1/users/{userId}/messages — gmail.users.messages.insert: Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification.
 - POST /gmail/v1/users/{userId}/messages/batchDelete — gmail.users.messages.batchDelete: Deletes many messages by message ID.
 - POST /gmail/v1/users/{userId}/messages/batchModify — gmail.users.messages.batchModify: Modifies the labels and the Classification Label values on the specified messages.
 - POST /gmail/v1/users/{userId}/messages/import — gmail.users.messages.import: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP.
+- POST /upload/gmail/v1/users/{userId}/messages/import — gmail.users.messages.import.simpleUpload: Simple media upload for gmail.users.messages.import.
+- POST /resumable/upload/gmail/v1/users/{userId}/messages/import — gmail.users.messages.import.resumableUpload: Resumable media upload for gmail.users.messages.import.
+- POST /resumable/upload/gmail/v1/users/{userId}/messages — gmail.users.messages.insert.resumableUpload: Resumable media upload for gmail.users.messages.insert.
+- POST /upload/gmail/v1/users/{userId}/messages — gmail.users.messages.insert.simpleUpload: Simple media upload for gmail.users.messages.insert.
 - POST /gmail/v1/users/{userId}/messages/{id}/modify — gmail.users.messages.modify: Modifies the labels and the Classification Label values on the specified message.
 - POST /gmail/v1/users/{userId}/messages/{id}/untrash — gmail.users.messages.untrash: Removes the specified message from the trash.
 

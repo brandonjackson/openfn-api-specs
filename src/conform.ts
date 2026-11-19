@@ -170,9 +170,25 @@ export function normalizePath(path: string): string {
 /** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
 function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
   const item = openapi?.paths?.[op.path];
-  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
-  const names = params.filter((p: any) => p?.in === 'path' && p['x-smithy-greedy'] === true).map((p: any) => String(p.name));
+  const deref = (p: any) => {
+    const m = typeof p?.$ref === 'string' ? /^#\/components\/parameters\/(.+)$/.exec(p.$ref) : null;
+    return m ? openapi?.components?.parameters?.[m[1]] : p;
+  };
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])].map(deref);
+  const names = params
+    .filter((p: any) => p?.in === 'path' && (p['x-smithy-greedy'] === true || admitsSlash(p.schema?.pattern)))
+    .map((p: any) => String(p.name));
   return names.length ? new Set(names) : undefined;
+}
+
+/**
+ * A path parameter whose own `pattern` matches a `/` spans segments: Azure's
+ * `blob` (`^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*…$`) names `config/mapping.json`,
+ * which a one-segment template would never match.
+ */
+function admitsSlash(pattern: unknown): boolean {
+  // Ignore negated classes (`[^/]+` forbids a slash rather than admitting one).
+  return typeof pattern === 'string' && pattern.replace(/\[\^[^\]]*\]/g, '').includes('/');
 }
 
 /**

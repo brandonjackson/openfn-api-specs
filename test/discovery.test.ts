@@ -134,3 +134,36 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.requestBody.content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
+
+test('mediaUpload protocols become upload operations rooted at rootUrl, under the same tag', () => {
+  const doc: any = {
+    kind: 'discovery#restDescription', name: 'drive', version: 'v3', title: 'Drive',
+    rootUrl: 'https://www.googleapis.com/', servicePath: 'drive/v3/',
+    schemas: { File: { id: 'File', type: 'object', properties: { id: { type: 'string' } } } },
+    resources: {
+      files: {
+        methods: {
+          create: {
+            id: 'drive.files.create', path: 'files', flatPath: 'files', httpMethod: 'POST',
+            request: { $ref: 'File' }, response: { $ref: 'File' }, supportsMediaUpload: true,
+            mediaUpload: {
+              accept: ['*/*'], maxSize: '5497558138880',
+              protocols: { simple: { multipart: true, path: '/upload/drive/v3/files' }, resumable: { multipart: true, path: '/resumable/upload/drive/v3/files' } },
+            },
+          },
+        },
+      },
+    },
+  };
+  const { openapi } = discoveryToOpenApi(doc, 'googledrive');
+  assert.equal(openapi.servers[0].url, 'https://www.googleapis.com/drive/v3');
+  assert.ok(openapi.paths['/files'].post, 'the metadata-only method is kept');
+  const up = openapi.paths['/upload/drive/v3/files'];
+  assert.deepEqual(up.servers, [{ url: 'https://www.googleapis.com' }], 'upload paths resolve against rootUrl, not servicePath');
+  assert.equal(up.post.operationId, 'drive.files.create.simpleUpload');
+  assert.deepEqual(up.post.tags, ['files']);
+  assert.ok(up.post.requestBody.content['multipart/related']);
+  assert.ok(up.post.requestBody.content['*/*']);
+  assert.ok(up.post.parameters.some((p: any) => p.name === 'uploadType' && p.required));
+  assert.equal(openapi.paths['/resumable/upload/drive/v3/files'].post.operationId, 'drive.files.create.resumableUpload');
+});
