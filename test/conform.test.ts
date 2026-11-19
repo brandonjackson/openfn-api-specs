@@ -530,3 +530,31 @@ test("a path parameter whose own pattern admits '/' spans slashes, through a $re
   assert.equal(c.match('HEAD', '/c/config/mapping.json')?.operationId, 'GetProperties');
   assert.equal(c.match('GET', '/x/a/b'), undefined, 'a negated class [^/] forbids a slash, it does not admit one');
 });
+
+test('a non-JSON request body (requestContentType) is not checked against the JSON request schema', () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/upload/files': {
+        post: {
+          operationId: 'upload',
+          requestBody: {
+            content: {
+              'application/json': { schema: { type: 'object', required: ['name'] } },
+              'multipart/related': { schema: {} },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  const multipart = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: '--b\r\n...', requestContentType: 'multipart/related; boundary=b' });
+  assert.deepEqual(multipart.filter((v) => v.kind === 'request-schema'), []);
+  const json = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: {}, requestContentType: 'application/json' });
+  assert.equal(json.filter((v) => v.kind === 'request-schema').length, 1, 'a JSON body is still checked');
+  const unknown = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: {} });
+  assert.equal(unknown.filter((v) => v.kind === 'request-schema').length, 1, 'no content type: checked as before');
+});
