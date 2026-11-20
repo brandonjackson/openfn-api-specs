@@ -5,6 +5,7 @@ import {
   createConformer,
   formatConformanceReport,
   normalizePath,
+  patternAdmitsSlash,
   parseExchangesJsonl,
   serverPathPrefixes,
   toExchangesJsonl,
@@ -498,4 +499,46 @@ test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one doe
   assert.equal(c.match('GET', '/things/a')?.operationId, 'GetThing', 'a literal segment still wins');
   const plain = createConformer({ ...spec, paths: { '/things/{id}': spec.paths['/things/{id}'] } });
   assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
+});
+
+test('patternAdmitsSlash: a literal slash outside a character class', () => {
+  assert.equal(patternAdmitsSlash('^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$'), true);
+  assert.equal(patternAdmitsSlash('^projects/[^/]+$'), true);
+  assert.equal(patternAdmitsSlash('^[^/]+$'), false);
+  assert.equal(patternAdmitsSlash('^[a-z\\/]+$'), false, 'an escaped slash inside a class is still in the class');
+  assert.equal(patternAdmitsSlash('^a\\/b$'), true);
+  assert.equal(patternAdmitsSlash('^[0-9]+$'), false);
+});
+
+test("a final $ref path parameter whose pattern admits '/' spans slashes (Azure's {blob})", () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    components: {
+      parameters: {
+        Blob: { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z0-9]+(?:/[a-z0-9]+)*(?:\\.[a-z0-9]+)?$' } },
+        Container: { name: 'container', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z0-9-]+$' } },
+      },
+    },
+    paths: {
+      '/{container}/{blob}': {
+        put: {
+          operationId: 'PutBlob',
+          parameters: [{ $ref: '#/components/parameters/Container' }, { $ref: '#/components/parameters/Blob' }],
+          responses: { '201': { description: 'ok' } },
+        },
+      },
+      '/{container}/{item}/meta': {
+        get: {
+          operationId: 'Meta',
+          parameters: [{ name: 'item', in: 'path', required: true, schema: { type: 'string', pattern: '^a/b$' } }],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('PUT', '/c/exports/2026/q1.csv')?.operationId, 'PutBlob');
+  assert.equal(c.match('PUT', '/c/q1.csv')?.operationId, 'PutBlob');
+  assert.equal(c.match('GET', '/c/x/y/meta'), undefined, 'only the final parameter is widened');
 });
