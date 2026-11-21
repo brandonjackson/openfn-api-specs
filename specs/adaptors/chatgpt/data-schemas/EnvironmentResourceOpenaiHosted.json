@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/EnvironmentResourceOpenaiHosted",
+  "title": "EnvironmentResourceOpenaiHosted",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/EnvironmentResourceOpenaiHosted",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "openai_hosted"
+      ],
+      "default": "openai_hosted",
+      "x-stainless-const": true,
+      "description": "The type of the object. Always `openai_hosted`."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The public ID of the environment."
+    },
+    "container_size": {
+      "anyOf": [
+        {
+          "$ref": "ContainerSizeResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The effective CPU and memory tier, or null when unknown or outside the public tiers."
+    },
+    "packages": {
+      "$ref": "EnvironmentPackagesResource.json",
+      "description": "Packages installed in the environment."
+    },
+    "network": {
+      "$ref": "NetworkPolicyResource.json",
+      "description": "The effective network access policy for the environment."
+    },
+    "desktop": {
+      "$ref": "DesktopResource.json",
+      "description": "The effective desktop configuration."
+    },
+    "capability_directories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Directories that contain capabilities exposed to the agent."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedSkillResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Skills installed in the environment, excluding their archive contents."
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedPluginResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Plugins installed in the environment, excluding their archive contents."
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedEnvironmentFileResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 50,
+      "description": "Files available in the environment, excluding their contents."
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "packages",
+    "network",
+    "desktop",
+    "capability_directories",
+    "skills",
+    "plugins",
+    "files"
+  ],
+  "additionalProperties": false,
+  "description": "An environment hosted by OpenAI."
+}

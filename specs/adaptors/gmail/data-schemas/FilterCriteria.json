@@ -5,23 +5,26 @@
   "x-openfn-adaptor": "gmail",
   "x-source": {
     "openapi": "#/components/schemas/FilterCriteria",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Message matching criteria.",
   "properties": {
-    "size": {
-      "type": "integer",
-      "format": "int32",
-      "description": "The size of the entire RFC822 message in bytes, including all headers and attachments."
+    "from": {
+      "type": "string",
+      "description": "The sender's display name or email address."
+    },
+    "hasAttachment": {
+      "type": "boolean",
+      "description": "Whether the message has any attachment."
     },
     "query": {
       "type": "string",
       "description": "Only return messages matching the specified query. Supports the same query format as the Gmail search box. For example, `\"from:someuser@example.com rfc822msgid: is:unread\"`."
     },
-    "hasAttachment": {
-      "type": "boolean",
-      "description": "Whether the message has any attachment."
+    "to": {
+      "type": "string",
+      "description": "The recipient's display name or email address. Includes recipients in the \"to\", \"cc\", and \"bcc\" header fields. You can use simply the local part of the email address. For example, \"example\" and \"example@\" both match \"example@gmail.com\". This field is case-insensitive."
     },
     "sizeComparison": {
       "type": "string",
@@ -32,25 +35,22 @@
         "larger"
       ]
     },
-    "from": {
+    "negatedQuery": {
       "type": "string",
-      "description": "The sender's display name or email address."
-    },
-    "excludeChats": {
-      "type": "boolean",
-      "description": "Whether the response should exclude chats."
+      "description": "Only return messages not matching the specified query. Supports the same query format as the Gmail search box. For example, `\"from:someuser@example.com rfc822msgid: is:unread\"`."
     },
     "subject": {
       "type": "string",
       "description": "Case-insensitive phrase found in the message's subject. Trailing and leading whitespace are be trimmed and adjacent spaces are collapsed."
     },
-    "to": {
-      "type": "string",
-      "description": "The recipient's display name or email address. Includes recipients in the \"to\", \"cc\", and \"bcc\" header fields. You can use simply the local part of the email address. For example, \"example\" and \"example@\" both match \"example@gmail.com\". This field is case-insensitive."
+    "excludeChats": {
+      "type": "boolean",
+      "description": "Whether the response should exclude chats."
     },
-    "negatedQuery": {
-      "type": "string",
-      "description": "Only return messages not matching the specified query. Supports the same query format as the Gmail search box. For example, `\"from:someuser@example.com rfc822msgid: is:unread\"`."
+    "size": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The size of the entire RFC822 message in bytes, including all headers and attachments."
     }
   }
 }

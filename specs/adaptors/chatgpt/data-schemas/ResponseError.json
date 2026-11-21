@@ -5,19 +5,44 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/ResponseError",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "anyOf": [
     {
       "type": "object",
       "description": "An error object returned when the model fails to generate a Response.\n",
       "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The original error type, or null if it was not recorded."
+        },
+        "param": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The request parameter associated with the error, or null if none was recorded."
+        },
         "code": {
           "$ref": "ResponseErrorCode.json"
         },
         "message": {
           "type": "string",
           "description": "A human-readable description of the error.\n"
+        },
+        "misalignment": {
+          "$ref": "MisalignmentErrorDetailsResource.json"
         }
       },
       "required": [

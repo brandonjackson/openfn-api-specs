@@ -5,10 +5,10 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/RunObject",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
-  "description": "Represents an execution run on a [thread](/docs/api-reference/threads).",
+  "description": "Represents an execution run on a [thread](https://developers.openai.com/api/docs/assistants/migration).",
   "properties": {
     "id": {
       "description": "The identifier, which can be referenced in API endpoints.",
@@ -28,11 +28,11 @@
       "format": "unixtime"
     },
     "thread_id": {
-      "description": "The ID of the [thread](/docs/api-reference/threads) that was executed on as a part of this run.",
+      "description": "The ID of the [thread](https://developers.openai.com/api/docs/assistants/migration) that was executed on as a part of this run.",
       "type": "string"
     },
     "assistant_id": {
-      "description": "The ID of the [assistant](/docs/api-reference/assistants) used for execution of this run.",
+      "description": "The ID of the [assistant](https://developers.openai.com/api/docs/assistants/migration) used for execution of this run.",
       "type": "string"
     },
     "status": {
@@ -171,15 +171,15 @@
       }
     },
     "model": {
-      "description": "The model that the [assistant](/docs/api-reference/assistants) used for this run.",
+      "description": "The model that the [assistant](https://developers.openai.com/api/docs/assistants/migration) used for this run.",
       "type": "string"
     },
     "instructions": {
-      "description": "The instructions that the [assistant](/docs/api-reference/assistants) used for this run.",
+      "description": "The instructions that the [assistant](https://developers.openai.com/api/docs/assistants/migration) used for this run.",
       "type": "string"
     },
     "tools": {
-      "description": "The list of tools that the [assistant](/docs/api-reference/assistants) used for this run.",
+      "description": "The list of tools that the [assistant](https://developers.openai.com/api/docs/assistants/migration) used for this run.",
       "default": [],
       "type": "array",
       "maxItems": 20,
@@ -234,19 +234,23 @@
       "minimum": 256
     },
     "truncation_strategy": {
-      "allOf": [
+      "anyOf": [
         {
           "$ref": "TruncationObject.json"
         },
-        {}
+        {
+          "type": "null"
+        }
       ]
     },
     "tool_choice": {
-      "allOf": [
+      "anyOf": [
         {
           "$ref": "AssistantsApiToolChoiceOption.json"
         },
-        {}
+        {
+          "type": "null"
+        }
       ]
     },
     "parallel_tool_calls": {
@@ -293,6 +297,6 @@
   "x-oaiMeta": {
     "name": "The run object",
     "beta": true,
-    "example": "{\n  \"id\": \"run_abc123\",\n  \"object\": \"thread.run\",\n  \"created_at\": 1698107661,\n  \"assistant_id\": \"asst_abc123\",\n  \"thread_id\": \"thread_abc123\",\n  \"status\": \"completed\",\n  \"started_at\": 1699073476,\n  \"expires_at\": null,\n  \"cancelled_at\": null,\n  \"failed_at\": null,\n  \"completed_at\": 1699073498,\n  \"last_error\": null,\n  \"model\": \"gpt-5\",\n  \"instructions\": null,\n  \"tools\": [{\"type\": \"file_search\"}, {\"type\": \"code_interpreter\"}],\n  \"metadata\": {},\n  \"incomplete_details\": null,\n  \"usage\": {\n    \"prompt_tokens\": 123,\n    \"completion_tokens\": 456,\n    \"total_tokens\": 579\n  },\n  \"temperature\": 1.0,\n  \"top_p\": 1.0,\n  \"max_prompt_tokens\": 1000,\n  \"max_completion_tokens\": 1000,\n  \"truncation_strategy\": {\n    \"type\": \"auto\",\n    \"last_messages\": null\n  },\n  \"response_format\": \"auto\",\n  \"tool_choice\": \"auto\",\n  \"parallel_tool_calls\": true\n}\n"
+    "example": "{\n  \"id\": \"run_abc123\",\n  \"object\": \"thread.run\",\n  \"created_at\": 1698107661,\n  \"assistant_id\": \"asst_abc123\",\n  \"thread_id\": \"thread_abc123\",\n  \"status\": \"completed\",\n  \"started_at\": 1699073476,\n  \"expires_at\": null,\n  \"cancelled_at\": null,\n  \"failed_at\": null,\n  \"completed_at\": 1699073498,\n  \"last_error\": null,\n  \"model\": \"gpt-4.1\",\n  \"instructions\": \"You are a helpful assistant.\",\n  \"tools\": [{\"type\": \"file_search\"}, {\"type\": \"code_interpreter\"}],\n  \"metadata\": {},\n  \"incomplete_details\": null,\n  \"usage\": {\n    \"prompt_tokens\": 123,\n    \"completion_tokens\": 456,\n    \"total_tokens\": 579\n  },\n  \"temperature\": 1.0,\n  \"top_p\": 1.0,\n  \"max_prompt_tokens\": 1000,\n  \"max_completion_tokens\": 1000,\n  \"truncation_strategy\": {\n    \"type\": \"auto\"\n  },\n  \"response_format\": \"auto\",\n  \"tool_choice\": \"auto\",\n  \"parallel_tool_calls\": true,\n  \"required_action\": null\n}\n"
   }
 }

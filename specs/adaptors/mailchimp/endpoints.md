@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index mailchimp` — do not edit by hand -->
 
-base: https://server.api.mailchimp.com/3.0 | auth: http/basic | 298 operations in 30 resources
+base: https://server.api.mailchimp.com/3.0 | auth: http/basic | 309 operations in 31 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -26,6 +26,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /audiences/{audience_id}/contacts — createAudienceContact: Add Contact
 - GET /audiences/{audience_id}/contacts/{contact_id} — getAudienceContact: Get Contact
 - PATCH /audiences/{audience_id}/contacts/{contact_id} — patchAudienceContact: Update Contact
+- DELETE /audiences/{audience_id}/contacts/{contact_id} — deleteAudienceContact: Delete a contact
 
 ## authorizedApps
 - GET /authorized-apps — getAuthorizedApps: List authorized apps
@@ -99,6 +100,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /connected-sites — getConnectedSites: List connected sites
 - POST /connected-sites — postConnectedSites: Add connected site
 - GET /connected-sites/{connected_site_id} — getConnectedSitesId: Get connected site
+- PATCH /connected-sites/{connected_site_id} — patchConnectedSitesId: Update connected site
 - DELETE /connected-sites/{connected_site_id} — deleteConnectedSitesId: Delete connected site
 - POST /connected-sites/{connected_site_id}/actions/verify-script-installation — postConnectedSitesIdActionsVerifyScriptInstallation: Verify connected site script
 - POST /connected-sites/{connected_site_id}/actions/enable-pixel — postConnectedSitesIdActionsEnablePixel: Enable pixel for connected site
@@ -329,6 +331,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## searchMembers
 - GET /search-members — getSearchMembers: Search members
+
+## segments
+- GET /segments — getSegmentList: List Segments
+- POST /segments — createSegment: Add Segment
+- GET /segments/{segment_id} — getSegment: Get Segment
+- PATCH /segments/{segment_id} — updateSegment: Update Segment
+- DELETE /segments/{segment_id} — deleteSegment: Delete Segment
+- POST /segments/{segment_id}/snapshots — createSegmentSnapshot: Snapshot a Segment
+- GET /segments/{segment_id}/snapshots/{snapshot_id} — getSegmentSnapshot: Get Segment Snapshot
+- GET /segments/{segment_id}/snapshots/{snapshot_id}/members — getSegmentSnapshotContactIdList: Get Snapshot Member Contact IDs
+- GET /segments/{segment_id}/count — getSegmentCount: Get Segment Member Count
 
 ## sms-campaigns
 - GET /sms-campaigns — getSmsCampaigns: List SMS campaigns

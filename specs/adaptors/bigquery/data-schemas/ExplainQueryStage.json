@@ -5,11 +5,30 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/ExplainQueryStage",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A single stage of query execution.",
   "properties": {
+    "readRatioAvg": {
+      "type": "number",
+      "format": "double",
+      "description": "Relative amount of time the average shard spent reading input."
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status for this stage."
+    },
+    "writeRatioAvg": {
+      "type": "number",
+      "format": "double",
+      "description": "Relative amount of time the average shard spent on writing output."
+    },
+    "parallelInputs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Number of parallel input segments to be processed"
+    },
     "steps": {
       "type": "array",
       "description": "List of operations within the stage in dependency order (approximately chronological).",
@@ -17,14 +36,25 @@
         "$ref": "ExplainQueryStep.json"
       }
     },
-    "id": {
+    "shuffleOutputBytesSpilled": {
       "type": "string",
       "format": "int64",
-      "description": "Unique ID for the stage within the plan."
+      "description": "Total number of bytes written to shuffle and spilled to disk."
     },
-    "name": {
+    "waitRatioAvg": {
+      "type": "number",
+      "format": "double",
+      "description": "Relative amount of time the average shard spent waiting to be scheduled."
+    },
+    "recordsRead": {
       "type": "string",
-      "description": "Human-readable name for the stage."
+      "format": "int64",
+      "description": "Number of records read into the stage."
+    },
+    "computeRatioAvg": {
+      "type": "number",
+      "format": "double",
+      "description": "Relative amount of time the average shard spent on CPU-bound tasks."
     },
     "computeMode": {
       "type": "string",
@@ -36,10 +66,44 @@
       ],
       "readOnly": true
     },
-    "computeRatioAvg": {
+    "endMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Stage end time represented as milliseconds since the epoch."
+    },
+    "id": {
+      "type": "string",
+      "format": "int64",
+      "description": "Unique ID for the stage within the plan."
+    },
+    "writeMsAvg": {
+      "type": "string",
+      "format": "int64",
+      "description": "Milliseconds the average shard spent on writing output."
+    },
+    "readRatioMax": {
       "type": "number",
       "format": "double",
-      "description": "Relative amount of time the average shard spent on CPU-bound tasks."
+      "description": "Relative amount of time the slowest shard spent reading input."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for the stage."
+    },
+    "readMsAvg": {
+      "type": "string",
+      "format": "int64",
+      "description": "Milliseconds the average shard spent reading input."
+    },
+    "slotMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Slot-milliseconds used by the stage."
+    },
+    "recordsWritten": {
+      "type": "string",
+      "format": "int64",
+      "description": "Number of records written by the stage."
     },
     "completedParallelInputs": {
       "type": "string",
@@ -51,50 +115,23 @@
       "format": "int64",
       "description": "Milliseconds the slowest shard spent reading input."
     },
-    "waitRatioMax": {
-      "type": "number",
-      "format": "double",
-      "description": "Relative amount of time the slowest shard spent waiting to be scheduled."
-    },
-    "readRatioAvg": {
-      "type": "number",
-      "format": "double",
-      "description": "Relative amount of time the average shard spent reading input."
-    },
-    "writeRatioAvg": {
-      "type": "number",
-      "format": "double",
-      "description": "Relative amount of time the average shard spent on writing output."
-    },
-    "waitRatioAvg": {
-      "type": "number",
-      "format": "double",
-      "description": "Relative amount of time the average shard spent waiting to be scheduled."
-    },
-    "readMsAvg": {
-      "type": "string",
-      "format": "int64",
-      "description": "Milliseconds the average shard spent reading input."
-    },
-    "writeRatioMax": {
-      "type": "number",
-      "format": "double",
-      "description": "Relative amount of time the slowest shard spent on writing output."
-    },
-    "computeMsAvg": {
-      "type": "string",
-      "format": "int64",
-      "description": "Milliseconds the average shard spent on CPU-bound tasks."
-    },
     "startMs": {
       "type": "string",
       "format": "int64",
       "description": "Stage start time represented as milliseconds since the epoch."
     },
-    "waitMsMax": {
+    "inputStages": {
+      "type": "array",
+      "description": "IDs for stages that are inputs to this stage.",
+      "items": {
+        "type": "string",
+        "format": "int64"
+      }
+    },
+    "computeMsAvg": {
       "type": "string",
       "format": "int64",
-      "description": "Milliseconds the slowest shard spent waiting to be scheduled."
+      "description": "Milliseconds the average shard spent on CPU-bound tasks."
     },
     "shuffleOutputBytes": {
       "type": "string",
@@ -106,72 +143,35 @@
       "format": "double",
       "description": "Relative amount of time the slowest shard spent on CPU-bound tasks."
     },
+    "waitMsAvg": {
+      "type": "string",
+      "format": "int64",
+      "description": "Milliseconds the average shard spent waiting to be scheduled."
+    },
+    "waitMsMax": {
+      "type": "string",
+      "format": "int64",
+      "description": "Milliseconds the slowest shard spent waiting to be scheduled."
+    },
+    "writeRatioMax": {
+      "type": "number",
+      "format": "double",
+      "description": "Relative amount of time the slowest shard spent on writing output."
+    },
     "computeMsMax": {
       "type": "string",
       "format": "int64",
       "description": "Milliseconds the slowest shard spent on CPU-bound tasks."
-    },
-    "recordsRead": {
-      "type": "string",
-      "format": "int64",
-      "description": "Number of records read into the stage."
-    },
-    "slotMs": {
-      "type": "string",
-      "format": "int64",
-      "description": "Slot-milliseconds used by the stage."
     },
     "writeMsMax": {
       "type": "string",
       "format": "int64",
       "description": "Milliseconds the slowest shard spent on writing output."
     },
-    "status": {
-      "type": "string",
-      "description": "Current status for this stage."
-    },
-    "readRatioMax": {
+    "waitRatioMax": {
       "type": "number",
       "format": "double",
-      "description": "Relative amount of time the slowest shard spent reading input."
-    },
-    "parallelInputs": {
-      "type": "string",
-      "format": "int64",
-      "description": "Number of parallel input segments to be processed"
-    },
-    "endMs": {
-      "type": "string",
-      "format": "int64",
-      "description": "Stage end time represented as milliseconds since the epoch."
-    },
-    "recordsWritten": {
-      "type": "string",
-      "format": "int64",
-      "description": "Number of records written by the stage."
-    },
-    "shuffleOutputBytesSpilled": {
-      "type": "string",
-      "format": "int64",
-      "description": "Total number of bytes written to shuffle and spilled to disk."
-    },
-    "inputStages": {
-      "type": "array",
-      "description": "IDs for stages that are inputs to this stage.",
-      "items": {
-        "type": "string",
-        "format": "int64"
-      }
-    },
-    "writeMsAvg": {
-      "type": "string",
-      "format": "int64",
-      "description": "Milliseconds the average shard spent on writing output."
-    },
-    "waitMsAvg": {
-      "type": "string",
-      "format": "int64",
-      "description": "Milliseconds the average shard spent waiting to be scheduled."
+      "description": "Relative amount of time the slowest shard spent waiting to be scheduled."
     }
   }
 }

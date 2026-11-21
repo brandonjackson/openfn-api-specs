@@ -7,27 +7,27 @@ base: / | auth: not declared | 86 operations in 12 resources
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
 ## Bulk
-- POST /api/v1/archive — v1ArchivePost: Enqueue documents for archiving
-- POST /api/v1/bulk-delete — v1BulkDeletePost: Bulk delete documents
 - GET /api/v1/hydrate — v1HydrateGet: Hydrate documents by id (GET)
 - POST /api/v1/hydrate — v1HydratePost: Hydrate documents by id (POST)
+- POST /api/v1/bulk-delete — v1BulkDeletePost: Bulk delete documents
+- POST /api/v1/archive — v1ArchivePost: Enqueue documents for archiving
 
 ## Config
-- PUT /api/v1/credentials/{key} — v1CredentialsKeyPut: Set a credential
-- GET /api/v1/forms — v1FormsGet: List installed forms
-- GET /api/v1/forms/{form} — v1FormsFormGet: Get a form definition
-- POST /api/v1/forms/validate — v1FormsValidatePost: Validate an XForm
 - GET /api/v1/settings — v1SettingsGet: Get app settings
 - PUT /api/v1/settings — v1SettingsPut: Update app settings
 - GET /api/v1/settings/deprecated-transitions — v1SettingsDeprecatedTransitionsGet: Get deprecated transitions
+- GET /api/v1/forms — v1FormsGet: List installed forms
+- GET /api/v1/forms/{form} — v1FormsFormGet: Get a form definition
+- POST /api/v1/forms/validate — v1FormsValidatePost: Validate an XForm
+- PUT /api/v1/credentials/{key} — v1CredentialsKeyPut: Set a credential
 
 ## Contact
+- GET /api/v1/contacts-by-phone — v1ContactsByPhoneGet: Find contacts by phone number
+- POST /api/v1/contacts-by-phone — v1ContactsByPhonePost: Find contacts by phone number (POST)
 - GET /api/v1/contact/{id} — v1ContactIdGet: Get a contact by id
 - GET /api/v1/contact/uuid — v1ContactUuidGet: Get contact UUIDs
 - GET /api/v1/contact — v1ContactGet: Get contacts
 - POST /api/v1/contact/summary — v1ContactSummaryPost: Get contact summaries by id
-- GET /api/v1/contacts-by-phone — v1ContactsByPhoneGet: Find contacts by phone number
-- POST /api/v1/contacts-by-phone — v1ContactsByPhonePost: Find contacts by phone number (POST)
 
 ## Export
 - GET /api/v2/export/dhis — v2ExportDhisGet: Export DHIS2 target data
@@ -47,9 +47,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /api/v1/express-metrics — v1ExpressMetricsGet: Get metrics for Express API endpoints
 - GET /api/info — apiInfoGet: Get the version of the CHT server
 - GET /api/deploy-info — apiDeployInfoGet: Get deploy information
-- GET /api/v1/impact — v1ImpactGet: Get impact metrics
 - GET /api/v1/monitoring — v1MonitoringGet: Get monitoring metrics (deprecated)
 - GET /api/v2/monitoring — v2MonitoringGet: Get monitoring metrics
+- GET /api/v1/impact — v1ImpactGet: Get impact metrics
 
 ## Person
 - POST /api/v1/people — v1PeoplePost: Create a person (deprecated)
@@ -75,14 +75,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /api/v1/report — v1ReportPost: Create a new report
 
 ## SMS
-- POST /api/v1/sms/africastalking/incoming-messages — v1SmsAfricasTalkingIncomingMessagesPost: Receive incoming SMS from Africa's Talking
-- POST /api/v1/sms/africastalking/delivery-reports — v1SmsAfricasTalkingDeliveryReportsPost: Receive delivery reports from Africa's Talking
-- POST /api/v1/sms/radpidpro/incoming-messages — v1SmsRadpidproIncomingMessagesPost: Receive incoming SMS from RapidPro (deprecated)
-- POST /api/v2/sms/rapidpro/incoming-messages — v2SmsRapidProIncomingMessagesPost: Receive incoming SMS from RapidPro
-- POST /api/v1/records — v1RecordsPost: Create a record (deprecated)
-- POST /api/v2/records — v2RecordsPost: Create a record
 - GET /api/sms — smsGet: Check SMS gateway connectivity
 - POST /api/sms — smsPost: Exchange SMS messages with cht-gateway
+- POST /api/v1/records — v1RecordsPost: Create a record (deprecated)
+- POST /api/v2/records — v2RecordsPost: Create a record
+- POST /api/v1/sms/radpidpro/incoming-messages — v1SmsRadpidproIncomingMessagesPost: Receive incoming SMS from RapidPro (deprecated)
+- POST /api/v2/sms/rapidpro/incoming-messages — v2SmsRapidProIncomingMessagesPost: Receive incoming SMS from RapidPro
+- POST /api/v1/sms/africastalking/incoming-messages — v1SmsAfricasTalkingIncomingMessagesPost: Receive incoming SMS from Africa's Talking
+- POST /api/v1/sms/africastalking/delivery-reports — v1SmsAfricasTalkingDeliveryReportsPost: Receive delivery reports from Africa's Talking
 
 ## Target
 - GET /api/v1/target/{id} — v1TargetIdGet: Get a target by id
@@ -102,9 +102,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /api/v2/upgrade/compare — v2UpgradeComparePost: Compare build versions
 
 ## User
-- GET /api/v1/replication-failure-logs — v1ReplicationFailureLogsGet: Get replication failure logs
-- GET /api/v1/replication-health/failed — v1ReplicationHealthFailedGet: Get users that are failing to replicate
-- GET /api/v1/users-doc-count — v1UsersDocCountGet: Get user document replication counts
 - GET /api/v1/users — v1UsersGet: List users (deprecated)
 - POST /api/v1/users — v1UsersPost: Create users (deprecated)
 - POST /api/v1/users/{username} — v1UsersUsernamePost: Update a user (deprecated)
@@ -115,3 +112,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /api/v2/users — v2UsersPost: Create users - bulk import (JSON or CSV)
 - POST /api/v3/users — v3UsersPost: Create a user
 - POST /api/v3/users/{username} — v3UsersUsernamePost: Update a user
+- GET /api/v1/users-doc-count — v1UsersDocCountGet: Get user document replication counts
+- GET /api/v1/replication-health/failed — v1ReplicationHealthFailedGet: Get users that are failing to replicate
+- GET /api/v1/replication-failure-logs — v1ReplicationFailureLogsGet: Get replication failure logs

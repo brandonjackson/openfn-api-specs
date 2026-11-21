@@ -5,20 +5,30 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/QueryTimelineSample",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Summary of the state of query execution at a given time.",
   "properties": {
+    "elapsedMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Milliseconds elapsed since the start of query execution."
+    },
+    "activeUnits": {
+      "type": "string",
+      "format": "int64",
+      "description": "Total number of active workers. This does not correspond directly to slot usage. This is the largest value observed since the last sample."
+    },
     "completedUnits": {
       "type": "string",
       "format": "int64",
       "description": "Total parallel units of work completed by this query."
     },
-    "elapsedMs": {
+    "totalSlotMs": {
       "type": "string",
       "format": "int64",
-      "description": "Milliseconds elapsed since the start of query execution."
+      "description": "Cumulative slot-ms consumed by the query."
     },
     "pendingUnits": {
       "type": "string",
@@ -29,16 +39,6 @@
       "type": "string",
       "format": "int64",
       "description": "Units of work that can be scheduled immediately. Providing additional slots for these units of work will accelerate the query, if no other query in the reservation needs additional slots."
-    },
-    "totalSlotMs": {
-      "type": "string",
-      "format": "int64",
-      "description": "Cumulative slot-ms consumed by the query."
-    },
-    "activeUnits": {
-      "type": "string",
-      "format": "int64",
-      "description": "Total number of active workers. This does not correspond directly to slot usage. This is the largest value observed since the last sample."
     },
     "shuffleRamUsageRatio": {
       "type": "number",

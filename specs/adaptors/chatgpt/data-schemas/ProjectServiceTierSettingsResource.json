@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/ProjectServiceTierSettingsResource",
+  "title": "ProjectServiceTierSettingsResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/ProjectServiceTierSettingsResource",
+    "capturedAt": "2026-11-21"
+  },
+  "properties": {
+    "object": {
+      "type": "string",
+      "enum": [
+        "project.service_tier_settings"
+      ],
+      "default": "project.service_tier_settings",
+      "x-stainless-const": true
+    },
+    "default": {
+      "$ref": "ProjectDefaultServiceTier.json",
+      "description": "Default tier for requests that omit service_tier or use auto."
+    },
+    "enabled_tiers": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "all"
+          ],
+          "default": "all",
+          "x-stainless-const": true
+        },
+        {
+          "items": {
+            "$ref": "ProjectOptionalServiceTier.json"
+          },
+          "type": "array"
+        }
+      ],
+      "description": "Additional service tiers enabled for this project. \"all\" includes future tiers. An empty array allows only Standard. Organization policy and eligibility still apply."
+    }
+  },
+  "type": "object",
+  "required": [
+    "object",
+    "default",
+    "enabled_tiers"
+  ]
+}

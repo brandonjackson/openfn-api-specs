@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Message",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "properties": {
@@ -129,6 +129,13 @@
       ],
       "additionalProperties": true,
       "description": "Route-specific parameters for the message. \n\n When sending messages via chat apps such as WhatsApp, the route_params parameter can be used to send messages with app-specific features such as quick replies and link buttons.\n\n For more details, see Route-Specific Parameters."
+    },
+    "variant": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "For outgoing messages sent with `variants`, the index (starting at 0) of the variant used to send the message. Undefined if the default message body was used."
     },
     "vars": {
       "type": "object",
@@ -274,7 +281,7 @@
           }
         }
       },
-      "description": "For text messages containing short URLs, this is an array of objects with the properties `short_url`, `link_type`, `time_clicked` (the first time that URL was clicked), and `expiration_time`. If `link_type` is \"redirect\", the object also contains a `destination_url` property. If `link_type` is \"media\", the object also contains an `media_index` property (the index in the media array). If `link_type` is \"service\", the object also contains a `service_id` property. This property is undefined for messages that do not contain short URLs."
+      "description": "For text messages containing short URLs, this is an array of objects with the properties `short_url`, `link_type`, `time_clicked` (the first time that URL was clicked), and `expiration_time`. If `link_type` is \"redirect\", the object also contains a `destination_url` property. If `link_type` is \"media\", the object also contains a `media_index` property (the index in the media array). If `link_type` is \"service\", the object also contains a `service_id` property. This property is undefined for messages that do not contain short URLs."
     },
     "network_code": {
       "type": "string",
@@ -291,7 +298,7 @@
           },
           "type": {
             "type": "string",
-            "description": "MIME type of the media file"
+            "description": "MIME type of the media file, or `route_vcard` for the Contact Card of the sending route in a message that has not been sent yet (in which case the other properties are null)"
           },
           "filename": {
             "type": "string",

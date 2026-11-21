@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index openmrs` — do not edit by hand -->
 
-base: https://demo.standard.mybahmni.in/openmrs/ws/rest/v1 | auth: http/basic | 554 operations in 99 resources
+base: http://demo.standard.mybahmni.in/openmrs/ws/rest/v1 | auth: http/basic | 554 operations in 99 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -120,26 +120,26 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /concept/{uuid} — getBahmniConcept: Fetch by uuid
 - POST /concept/{uuid} — updateBahmniConcept: Edit with given uuid, only modifying properties in request
 - DELETE /concept/{uuid} — deleteBahmniConcept: Delete or purge resource by uuid
-- GET /concept/{parent-uuid}/name — getAllConceptNames: Fetch all non-retired name subresources
-- POST /concept/{parent-uuid}/name — createConceptName: Create name subresource with properties in request
-- GET /concept/{parent-uuid}/name/{uuid} — getConceptName: Fetch name subresources by uuid
-- POST /concept/{parent-uuid}/name/{uuid} — updateConceptName: edit name subresource with given uuid, only modifying properties in request
-- DELETE /concept/{parent-uuid}/name/{uuid} — deleteConceptName: Delete or purge resource by uuid
 - GET /concept/{parent-uuid}/attribute — getAllConceptAttributes: Fetch all non-retired attribute subresources
 - POST /concept/{parent-uuid}/attribute — createConceptAttribute: Create attribute subresource with properties in request
 - GET /concept/{parent-uuid}/attribute/{uuid} — getConceptAttribute: Fetch attribute subresources by uuid
 - POST /concept/{parent-uuid}/attribute/{uuid} — updateConceptAttribute: edit attribute subresource with given uuid, only modifying properties in request
 - DELETE /concept/{parent-uuid}/attribute/{uuid} — deleteConceptAttribute: Delete or purge resource by uuid
-- GET /concept/{parent-uuid}/description — getAllConceptDescriptions: Fetch all non-retired description subresources
-- POST /concept/{parent-uuid}/description — createConceptDescription: Create description subresource with properties in request
-- GET /concept/{parent-uuid}/description/{uuid} — getConceptDescription: Fetch description subresources by uuid
-- POST /concept/{parent-uuid}/description/{uuid} — updateConceptDescription: edit description subresource with given uuid, only modifying properties in request
-- DELETE /concept/{parent-uuid}/description/{uuid} — deleteConceptDescription: Delete or purge resource by uuid
 - GET /concept/{parent-uuid}/mapping — getAllConceptMaps: Fetch all non-retired mapping subresources
 - POST /concept/{parent-uuid}/mapping — createConceptMap: Create mapping subresource with properties in request
 - GET /concept/{parent-uuid}/mapping/{uuid} — getConceptMap: Fetch mapping subresources by uuid
 - POST /concept/{parent-uuid}/mapping/{uuid} — updateConceptMap: edit mapping subresource with given uuid, only modifying properties in request
 - DELETE /concept/{parent-uuid}/mapping/{uuid} — deleteConceptMap: Delete or purge resource by uuid
+- GET /concept/{parent-uuid}/name — getAllConceptNames: Fetch all non-retired name subresources
+- POST /concept/{parent-uuid}/name — createConceptName: Create name subresource with properties in request
+- GET /concept/{parent-uuid}/name/{uuid} — getConceptName: Fetch name subresources by uuid
+- POST /concept/{parent-uuid}/name/{uuid} — updateConceptName: edit name subresource with given uuid, only modifying properties in request
+- DELETE /concept/{parent-uuid}/name/{uuid} — deleteConceptName: Delete or purge resource by uuid
+- GET /concept/{parent-uuid}/description — getAllConceptDescriptions: Fetch all non-retired description subresources
+- POST /concept/{parent-uuid}/description — createConceptDescription: Create description subresource with properties in request
+- GET /concept/{parent-uuid}/description/{uuid} — getConceptDescription: Fetch description subresources by uuid
+- POST /concept/{parent-uuid}/description/{uuid} — updateConceptDescription: edit description subresource with given uuid, only modifying properties in request
+- DELETE /concept/{parent-uuid}/description/{uuid} — deleteConceptDescription: Delete or purge resource by uuid
 
 ## conceptattributetype
 - GET /conceptattributetype — getAllConceptAttributeTypes: Fetch all non-retired conceptattributetype resources or perform search
@@ -509,6 +509,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /person/{uuid} — getPerson: Fetch by uuid
 - POST /person/{uuid} — updatePerson: Edit with given uuid, only modifying properties in request
 - DELETE /person/{uuid} — deletePerson: Delete or purge resource by uuid
+- GET /person/{parent-uuid}/name — getAllPersonNames: Fetch all non-retired name subresources
+- POST /person/{parent-uuid}/name — createPersonName: Create name subresource with properties in request
+- GET /person/{parent-uuid}/name/{uuid} — getPersonName: Fetch name subresources by uuid
+- POST /person/{parent-uuid}/name/{uuid} — updatePersonName: edit name subresource with given uuid, only modifying properties in request
+- DELETE /person/{parent-uuid}/name/{uuid} — deletePersonName: Delete or purge resource by uuid
 - GET /person/{parent-uuid}/attribute — getAllPersonAttributes: Fetch all non-retired attribute subresources
 - POST /person/{parent-uuid}/attribute — createPersonAttribute: Create attribute subresource with properties in request
 - GET /person/{parent-uuid}/attribute/{uuid} — getPersonAttribute: Fetch attribute subresources by uuid
@@ -519,11 +524,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /person/{parent-uuid}/address/{uuid} — getPersonAddress: Fetch address subresources by uuid
 - POST /person/{parent-uuid}/address/{uuid} — updatePersonAddress: edit address subresource with given uuid, only modifying properties in request
 - DELETE /person/{parent-uuid}/address/{uuid} — deletePersonAddress: Delete or purge resource by uuid
-- GET /person/{parent-uuid}/name — getAllPersonNames: Fetch all non-retired name subresources
-- POST /person/{parent-uuid}/name — createPersonName: Create name subresource with properties in request
-- GET /person/{parent-uuid}/name/{uuid} — getPersonName: Fetch name subresources by uuid
-- POST /person/{parent-uuid}/name/{uuid} — updatePersonName: edit name subresource with given uuid, only modifying properties in request
-- DELETE /person/{parent-uuid}/name/{uuid} — deletePersonName: Delete or purge resource by uuid
 
 ## personattributetype
 - GET /personattributetype — getAllPersonAttributeTypes: Fetch all non-retired personattributetype resources or perform search

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude/BetaClaudeCodeManagedSettingsConfiguration",
+  "title": "ClaudeCodeManagedSettingsConfiguration",
+  "x-openfn-adaptor": "claude",
+  "x-source": {
+    "openapi": "#/components/schemas/BetaClaudeCodeManagedSettingsConfiguration",
+    "capturedAt": "2026-11-21"
+  },
+  "properties": {
+    "mode": {
+      "$ref": "BetaClaudeCodeManagedSettingsMode.json",
+      "description": "How the organization serves managed settings. In `organization` mode every member receives the organization settings, which are set in claude.ai. In `rbac_groups` mode each member receives the settings of the first RBAC Group in `rbac_group_order` that they belong to. A member in none of them receives the default settings, or no settings if no default is set."
+    },
+    "mode_updated_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Mode Updated At",
+      "description": "When the mode last changed, in RFC 3339 format, or `null` if it never has."
+    },
+    "rbac_group_order": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Rbac Group Order",
+      "description": "The ID of every RBAC Group with settings, deleted groups included, highest precedence first.",
+      "examples": [
+        [
+          "rbac_group_012rppKaSVsmTo6NqRDXQXNF"
+        ]
+      ]
+    },
+    "rbac_group_order_version": {
+      "type": "string",
+      "title": "Rbac Group Order Version",
+      "description": "An opaque version of `rbac_group_order`, which changes whenever the order does. Send it back with a new order."
+    },
+    "type": {
+      "type": "string",
+      "const": "claude_code_managed_settings_configuration",
+      "title": "Type",
+      "description": "Always `claude_code_managed_settings_configuration`.",
+      "default": "claude_code_managed_settings_configuration"
+    }
+  },
+  "type": "object",
+  "required": [
+    "mode",
+    "mode_updated_at",
+    "rbac_group_order",
+    "rbac_group_order_version",
+    "type"
+  ]
+}

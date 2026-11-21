@@ -5,11 +5,28 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/SchemaPackage",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A schema package contains a set of schemas and type definitions.",
   "properties": {
+    "unexpectedSegmentHandling": {
+      "type": "string",
+      "description": "Optional. Determines how unexpected segments (segments not matched to the schema) are handled.",
+      "enum": [
+        "UNEXPECTED_SEGMENT_HANDLING_MODE_UNSPECIFIED",
+        "FAIL",
+        "SKIP",
+        "PARSE"
+      ]
+    },
+    "schemas": {
+      "type": "array",
+      "description": "Optional. Schema configs that are layered based on their VersionSources that match the incoming message. Schema configs present in higher indices override those in lower indices with the same message type and trigger event if their VersionSources all match an incoming message.",
+      "items": {
+        "$ref": "Hl7SchemaConfig.json"
+      }
+    },
     "schematizedParsingType": {
       "type": "string",
       "description": "Optional. Determines how messages that fail to parse are handled.",
@@ -25,23 +42,6 @@
       "items": {
         "$ref": "Hl7TypesConfig.json"
       }
-    },
-    "schemas": {
-      "type": "array",
-      "description": "Optional. Schema configs that are layered based on their VersionSources that match the incoming message. Schema configs present in higher indices override those in lower indices with the same message type and trigger event if their VersionSources all match an incoming message.",
-      "items": {
-        "$ref": "Hl7SchemaConfig.json"
-      }
-    },
-    "unexpectedSegmentHandling": {
-      "type": "string",
-      "description": "Optional. Determines how unexpected segments (segments not matched to the schema) are handled.",
-      "enum": [
-        "UNEXPECTED_SEGMENT_HANDLING_MODE_UNSPECIFIED",
-        "FAIL",
-        "SKIP",
-        "PARSE"
-      ]
     },
     "ignoreMinOccurs": {
       "type": "boolean",

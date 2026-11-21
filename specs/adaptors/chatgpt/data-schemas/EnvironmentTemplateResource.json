@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/EnvironmentTemplateResource",
+  "title": "EnvironmentTemplateResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/EnvironmentTemplateResource",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the reusable environment template."
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "An optional human-readable display name for the template."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "agent.environment.template"
+      ],
+      "default": "agent.environment.template",
+      "x-stainless-const": true,
+      "description": "The object type. Always `agent.environment.template`."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The Unix timestamp, in seconds, when the template was created."
+    },
+    "updated_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The Unix timestamp, in seconds, when the template was last updated."
+    },
+    "packages": {
+      "$ref": "EnvironmentPackagesResource.json",
+      "description": "Packages installed in each fresh OpenAI-hosted environment."
+    },
+    "network": {
+      "$ref": "NetworkPolicyResource.json",
+      "description": "Runtime network access for each OpenAI-hosted environment."
+    },
+    "desktop": {
+      "$ref": "DesktopResource.json",
+      "description": "Desktop configuration for each OpenAI-hosted environment."
+    },
+    "capability_directories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Directories that expose capabilities to the agent."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedTemplateSkillResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 200,
+      "description": "Safe skill metadata, preserving unresolved version selectors."
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedPluginResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 32,
+      "description": "Safe plugin metadata, excluding inline archive contents."
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "HostedTemplateFileResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 50,
+      "description": "Safe file metadata, excluding contents and session-scoped file IDs."
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "object",
+    "created_at",
+    "updated_at",
+    "packages",
+    "network",
+    "desktop",
+    "capability_directories",
+    "skills",
+    "plugins",
+    "files"
+  ],
+  "additionalProperties": false,
+  "description": "Reusable configuration that provisions a fresh OpenAI-hosted environment for each session."
+}
