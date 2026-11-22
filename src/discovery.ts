@@ -323,9 +323,8 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
       const binary = { schema: { type: 'string', format: 'binary' } };
       const content: Record<string, any> = { 'multipart/related': binary };
       for (const mime of method.mediaUpload?.accept ?? ['*/*']) content[mime] ??= binary;
-      if (method.request?.$ref) {
-        content['application/json'] = { schema: { $ref: `#/components/schemas/${method.request.$ref}` } };
-      }
+      // No application/json entry: an upload body is bytes (media) or
+      // multipart/related with the metadata as its first part, never bare JSON.
       const upOp: Record<string, any> = {
         operationId: `${method.id}.mediaUpload`,
         tags: op.tags,
