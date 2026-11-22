@@ -28,6 +28,23 @@ export interface SpecUpstream {
   contentHash: string;
   /** ISO date (YYYY-MM-DD) the upstream spec was fetched. */
   fetchedAt: string;
+  /**
+   * Further verbatim files of the same vendor API, for vendors that publish one
+   * API as several specs (Mailgun: sending in one document, email validation in
+   * another). Each is committed byte-for-byte beside `upstream.<ext>`, hashed,
+   * and merged into openapi.json on every derivation (`mergeUpstreamParts`).
+   */
+  parts?: SpecUpstreamPart[];
+}
+
+/** One additional verbatim upstream file (see `SpecUpstream.parts`). */
+export interface SpecUpstreamPart {
+  /** File name in the adaptor directory, `upstream-<name>.<ext>`. */
+  file: string;
+  specUrl: string;
+  format: string;
+  contentHash: string;
+  fetchedAt: string;
 }
 
 /** One entry in the finding-step decision trail. */

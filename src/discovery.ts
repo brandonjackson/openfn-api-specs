@@ -24,6 +24,12 @@
  *  - path template vars → required string path parameters; the method's query
  *    parameters plus the doc's global parameters → query parameters.
  *  - `method.request.$ref`  → JSON request body; `method.response.$ref` → 200 body.
+ *  - `supportsMediaUpload` → a second operation at `mediaUpload.protocols.simple.path`
+ *    (e.g. Drive's `POST /upload/drive/v3/files`), operationId `<id>.mediaUpload`,
+ *    tagged like the method it uploads for. That path hangs off `rootUrl`, not
+ *    `baseUrl`, so its path item carries its own `servers`. Without it the upload
+ *    form the SDKs actually send (`?uploadType=multipart|media|resumable`) matched
+ *    no operation.
  *
  * Lossy-but-safe normalisations (Discovery has a few non-OpenAPI-isms):
  *  - `type: "any"`            → empty schema `{}` (matches anything).
@@ -73,6 +79,12 @@ interface DiscoveryMethod {
   deprecated?: boolean;
   supportsMediaUpload?: boolean;
   supportsMediaDownload?: boolean;
+  /** Upload endpoint(s) for media, rooted at the doc's `rootUrl` (not `baseUrl`). */
+  mediaUpload?: {
+    accept?: string[];
+    maxSize?: string;
+    protocols?: Record<string, { multipart?: boolean; path?: string }>;
+  };
 }
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options']);
@@ -286,6 +298,55 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
       continue;
     }
     item[httpMethod] = op;
+
+    const uploadPath = method.supportsMediaUpload ? method.mediaUpload?.protocols?.simple?.path : undefined;
+    if (uploadPath) {
+      const upPath = '/' + uploadPath.replace(/^\/+/, '').replace(/\{\+/g, '{');
+      const upVars = pathVars(upPath);
+      const upParams: any[] = upVars.map((v) =>
+        methodParams[v] ? convertParam(v, methodParams[v], 'path') : { name: v, in: 'path', required: true, schema: { type: 'string' } }
+      );
+      upParams.push({
+        name: 'uploadType',
+        in: 'query',
+        required: true,
+        description: 'Upload protocol: `media` (bytes only), `multipart` (metadata + bytes as multipart/related) or `resumable`.',
+        schema: { type: 'string', enum: ['media', 'multipart', 'resumable'] },
+      });
+      const upSeen = new Set([...upVars, 'uploadType']);
+      for (const p of parameters) {
+        if (p.in === 'query' && !upSeen.has(p.name)) {
+          upSeen.add(p.name);
+          upParams.push(p);
+        }
+      }
+      const binary = { schema: { type: 'string', format: 'binary' } };
+      const content: Record<string, any> = { 'multipart/related': binary };
+      for (const mime of method.mediaUpload?.accept ?? ['*/*']) content[mime] ??= binary;
+      if (method.request?.$ref) {
+        content['application/json'] = { schema: { $ref: `#/components/schemas/${method.request.$ref}` } };
+      }
+      const upOp: Record<string, any> = {
+        operationId: `${method.id}.mediaUpload`,
+        tags: op.tags,
+        summary: `${method.id} (media upload)`,
+        description: method.description,
+        parameters: upParams,
+        requestBody: { required: true, content },
+        responses: { '200': response },
+      };
+      if (method.mediaUpload?.maxSize) upOp['x-google-max-upload-size'] = method.mediaUpload.maxSize;
+      if (op['x-google-scopes']) upOp['x-google-scopes'] = op['x-google-scopes'];
+      if (method.deprecated === true) upOp.deprecated = true;
+      for (const k of Object.keys(upOp)) if (upOp[k] === undefined) delete upOp[k];
+      const rootUrl = (discovery.rootUrl ?? '').replace(/\/+$/, '');
+      const upItem = (paths[upPath] ??= rootUrl ? { servers: [{ url: rootUrl }] } : {});
+      if (upItem[httpMethod]) {
+        warnings.push(`collision: ${httpMethod.toUpperCase()} ${upPath} (${upItem[httpMethod].operationId} vs ${upOp.operationId}) — kept first`);
+      } else {
+        upItem[httpMethod] = upOp;
+      }
+    }
   }
 
   const baseUrl = (discovery.baseUrl ?? (discovery.rootUrl ?? '') + (discovery.servicePath ?? '')).replace(/\/+$/, '');

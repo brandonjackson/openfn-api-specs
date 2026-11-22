@@ -8,6 +8,7 @@ import {
   capture,
   contentHash,
   detect,
+  mergeUpstreamParts,
   parseSpec,
   staleUpstreams,
 } from '../src/convert.js';
@@ -202,4 +203,30 @@ test('staleUpstreams finds the leftovers a format change would shadow', () => {
   writeFileSync(join(dir, 'upstream.yaml'), '{}');
   assert.deepEqual(staleUpstreams(join(dir, 'upstream'), 'yaml'), [join(dir, 'upstream.json')]);
   assert.deepEqual(staleUpstreams(join(dir, 'upstream'), 'json'), [join(dir, 'upstream.yaml')]);
+});
+
+test('mergeUpstreamParts folds a second vendor document in, refusing conflicts', () => {
+  const base = () => ({
+    openapi: '3.1.0',
+    paths: { '/v3/messages': { post: { operationId: 'send', responses: { '200': { description: 'ok' } } } } },
+    components: { schemas: { Error: { type: 'object', properties: { message: { type: 'string' } } } } },
+    tags: [{ name: 'Messages' }],
+  });
+  const part = {
+    openapi: '3.1.0',
+    paths: { '/v4/address/validate': { get: { operationId: 'validate', responses: { '200': { description: 'ok' } } } } },
+    components: { schemas: { Error: { type: 'object', properties: { message: { type: 'string' } } }, Result: { type: 'object' } } },
+    tags: [{ name: 'Messages' }, { name: 'Validations' }],
+  };
+  const doc: any = base();
+  assert.deepEqual(mergeUpstreamParts(doc, [{ file: 'upstream-validate.yaml', openapi: part }]), { operations: 1 });
+  assert.equal(doc.paths['/v4/address/validate'].get['x-openfn-upstream-part'], 'upstream-validate.yaml');
+  assert.ok(doc.components.schemas.Result);
+  assert.deepEqual(doc.tags.map((t: any) => t.name), ['Messages', 'Validations']);
+
+  assert.throws(() => mergeUpstreamParts(base(), [{ file: 'p.yaml', openapi: { paths: base().paths } }]), /already defined/);
+  assert.throws(
+    () => mergeUpstreamParts(base(), [{ file: 'p.yaml', openapi: { components: { schemas: { Error: { type: 'string' } } } } }]),
+    /differs/
+  );
 });

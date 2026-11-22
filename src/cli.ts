@@ -24,7 +24,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { loadAdaptors, type AdaptorInfo } from './adaptors.js';
-import { capture, staleUpstreams } from './convert.js';
+import { buildOpenapi, capture, contentHash, mergeUpstreamParts, parseSpec, staleUpstreams } from './convert.js';
 import { createConformer, formatConformanceReport, parseExchangesJsonl } from './conform.js';
 import { extractDataObjects } from './data-objects.js';
 import { buildEndpointIndex, renderEndpointIndex } from './endpoints.js';
@@ -42,7 +42,7 @@ import {
   sourcePath,
   upstreamPath,
 } from './paths.js';
-import type { FeedbackStatus, SpecSource } from './types.js';
+import type { FeedbackStatus, SpecSource, SpecUpstream } from './types.js';
 import { readJson } from './util.js';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
@@ -206,6 +206,24 @@ function flag(argv: string[], name: string): string | undefined {
  * really covers the whole vendor API is the agent's judgement to make and
  * record, not something a fetch can assert. Pass `--complete` once verified.
  */
+/**
+ * Fold an adaptor's further verbatim upstream files (`upstream.parts`) into the
+ * openapi.json just derived from its main upstream. Returns operations added.
+ */
+async function applyUpstreamParts(name: string, parts: SpecUpstream['parts']): Promise<number> {
+  if (!parts?.length) return 0;
+  const docs = [];
+  for (const part of parts) {
+    const { doc, ext } = await parseSpec(readFileSync(join(adaptorDir(name), part.file), 'utf8'));
+    docs.push({ file: part.file, openapi: buildOpenapi(doc, name, ext).openapi });
+  }
+  const openapi = JSON.parse(readFileSync(openapiPath(name), 'utf8'));
+  const { operations } = mergeUpstreamParts(openapi, docs);
+  writeFileSync(openapiPath(name), JSON.stringify(openapi, null, 2) + '\n');
+  console.log(`  + merged ${parts.map((p) => p.file).join(', ')} (${operations} operations)`);
+  return operations;
+}
+
 async function cmdConvert(argv: string[]): Promise<void> {
   const adaptors = await loadAdaptors();
   const targets = selectTargets(adaptors, argv);
@@ -218,6 +236,38 @@ async function cmdConvert(argv: string[]): Promise<void> {
   const existing: Partial<SpecSource> = existsSync(sourcePath(adaptor.name))
     ? JSON.parse(readFileSync(sourcePath(adaptor.name), 'utf8'))
     : {};
+
+  // --part: add (or refresh) one more verbatim file of the same vendor API, for
+  // vendors that publish one API as several specs. Then re-derive below.
+  const partUrl = flag(argv, 'part');
+  if (partUrl) {
+    const name = flag(argv, 'name');
+    if (!name || !/^[a-z0-9-]+$/.test(name)) throw new Error('--part needs --name=<slug> (lower-case letters, digits, dashes).');
+    if (!existing.upstream) throw new Error(`${adaptor.name} has no main upstream; capture one with --url first.`);
+    const from = flag(argv, 'from');
+    let text: string;
+    if (from) text = readFileSync(from, 'utf8');
+    else {
+      const res = await fetch(partUrl, { headers: { accept: 'application/json, application/yaml, text/yaml, */*' } });
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText} — ${partUrl}`);
+      text = await res.text();
+    }
+    const { doc, ext } = await parseSpec(text);
+    const file = `upstream-${name}.${ext}`;
+    writeFileSync(join(dir, file), text);
+    const part = {
+      file,
+      specUrl: partUrl,
+      format: buildOpenapi(doc, adaptor.name, ext).detected.format,
+      contentHash: contentHash(text),
+      fetchedAt: today(),
+    };
+    existing.upstream.parts = [...(existing.upstream.parts ?? []).filter((p) => p.file !== file), part];
+    existing.attempts = [...(existing.attempts ?? []).filter((a) => a.url !== partUrl), { kind: 'openapi', url: partUrl, result: 'used' }];
+    existing.sources = [...new Set([...(existing.sources ?? []), partUrl])];
+    writeJson(sourcePath(adaptor.name), existing);
+    console.log(`  + ${adaptor.name}: ${file} (${part.format}, ${part.contentHash})`);
+  }
 
   // No --url: rebuild from the upstream we already hold, and leave the curated
   // provenance (claims, notes, attempt trail) exactly as it is.
@@ -236,6 +286,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
       today: today(),
       bytes: readFileSync(committed, 'utf8'),
     });
+    rebuilt.operations += await applyUpstreamParts(adaptor.name, existing.upstream?.parts);
     const after = readFileSync(openapiPath(adaptor.name), 'utf8');
     console.log(
       `  ${before === after ? '=' : '~'} ${adaptor.name}: re-derived from ${committed.split('/').pop()} — ` +
@@ -259,6 +310,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
     today: today(),
     ...(from ? { bytes: readFileSync(from, 'utf8') } : {}),
   });
+  result.operations += await applyUpstreamParts(adaptor.name, existing.upstream?.parts);
 
   // A re-capture in a different format must not leave the old file behind:
   // upstreamPath() resolves json before yaml, so a leftover would shadow it.
@@ -279,7 +331,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
     npm: adaptor.npm,
     origin: result.detected.origin,
     upstreamFormat: result.detected.format,
-    upstream: result.upstream,
+    upstream: existing.upstream?.parts?.length ? { ...result.upstream, parts: existing.upstream.parts } : result.upstream,
     attempts,
     sources: [...new Set([url, ...(existing.sources ?? [])])],
     capturedAt: today(),
@@ -389,6 +441,10 @@ const USAGE = `Usage: pnpm specs <command>
                                 re-derive openapi.json from the committed upstream. --from reads
                                 the bytes from a local file (for specs behind a login) while
                                 still recording --url as the canonical spec URL.
+  convert <a> --part=<url> --name=<slug> [--from=<file>]
+                                Add one more verbatim file of the same vendor API (vendors that
+                                split one API across specs) as upstream-<slug>.<ext>, record it
+                                in upstream.parts, and re-derive openapi.json with it merged.
   data-objects <a…|--all>       Extract standalone data-object schemas into data-schemas/.
   index <a…|--all>              Write endpoints.md: one line per operation, grouped by resource.
   manifest                      Rebuild specs/adaptors/manifest.json.

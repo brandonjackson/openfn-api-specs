@@ -290,3 +290,62 @@ export function staleUpstreams(upstreamBase: string, keepExt: string): string[] 
     .map((ext) => `${upstreamBase}.${ext}`)
     .filter((p) => existsSync(p));
 }
+
+/** One extra upstream document to fold into a derived openapi.json. */
+export interface UpstreamPartDoc {
+  /** File name, for error messages and the `x-openfn-upstream-part` stamp. */
+  file: string;
+  /** The part, already built to OpenAPI 3.x by `buildOpenapi`. */
+  openapi: any;
+}
+
+const PART_HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
+/**
+ * Merge further upstream documents of the same vendor API into a derived
+ * openapi.json, in place. Vendors that split one API across several specs
+ * (Mailgun publishes sending and email validation separately, on the same hosts
+ * with the same auth) need the union to be "full".
+ *
+ * The merge is total and refuses to guess: a path+method both documents define,
+ * or a component name they define differently, throws. Identical components
+ * (shared error schemas, the same security scheme) are fine. Tags are appended
+ * by name. Each merged operation is stamped `x-openfn-upstream-part: <file>` so a
+ * reader can tell which verbatim file it came from.
+ */
+export function mergeUpstreamParts(openapi: any, parts: UpstreamPartDoc[]): { operations: number } {
+  let operations = 0;
+  openapi.paths ??= {};
+  for (const part of parts) {
+    for (const [path, item] of Object.entries<any>(part.openapi.paths ?? {})) {
+      const target = (openapi.paths[path] ??= {});
+      for (const [key, value] of Object.entries<any>(item)) {
+        if (PART_HTTP_METHODS.includes(key)) {
+          if (target[key]) throw new Error(`${part.file}: ${key.toUpperCase()} ${path} is already defined by another upstream file`);
+          target[key] = { ...value, 'x-openfn-upstream-part': part.file };
+          operations++;
+        } else if (target[key] === undefined) {
+          target[key] = value;
+        } else if (JSON.stringify(target[key]) !== JSON.stringify(value)) {
+          throw new Error(`${part.file}: path-level '${key}' of ${path} differs from another upstream file`);
+        }
+      }
+    }
+    for (const [section, entries] of Object.entries<any>(part.openapi.components ?? {})) {
+      openapi.components ??= {};
+      const target = (openapi.components[section] ??= {});
+      for (const [name, value] of Object.entries<any>(entries ?? {})) {
+        if (target[name] === undefined) target[name] = value;
+        else if (JSON.stringify(target[name]) !== JSON.stringify(value)) {
+          throw new Error(`${part.file}: components.${section}.${name} differs from the one already defined`);
+        }
+      }
+    }
+    if (Array.isArray(part.openapi.tags)) {
+      openapi.tags ??= [];
+      const seen = new Set(openapi.tags.map((t: any) => t?.name));
+      for (const t of part.openapi.tags) if (!seen.has(t?.name)) (seen.add(t?.name), openapi.tags.push(t));
+    }
+  }
+  return { operations };
+}

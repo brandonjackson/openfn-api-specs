@@ -167,11 +167,30 @@ export function normalizePath(path: string): string {
   return p;
 }
 
-/** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
+/**
+ * Path parameters whose value may span slashes, at path or operation level
+ * (local `$ref`s resolved): ones marked `x-smithy-greedy: true` (S3's `{Key+}`),
+ * and ones whose declared `pattern` itself admits a `/` (Azure Storage's `blob`,
+ * `^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*…$`, so `/c/exports/2026/q1.csv` is one blob).
+ */
 function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
   const item = openapi?.paths?.[op.path];
-  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
-  const names = params.filter((p: any) => p?.in === 'path' && p['x-smithy-greedy'] === true).map((p: any) => String(p.name));
+  const deref = (p: any): any => {
+    for (let i = 0; i < 5 && typeof p?.$ref === 'string' && p.$ref.startsWith('#/'); i++) {
+      p = p.$ref
+        .slice(2)
+        .split('/')
+        .reduce((o: any, k: string) => o?.[k.replace(/~1/g, '/').replace(/~0/g, '~')], openapi);
+    }
+    return p;
+  };
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])].map(deref);
+  const spansSlash = (p: any): boolean => {
+    if (p['x-smithy-greedy'] === true) return true;
+    const pattern = p.schema?.pattern ?? p.pattern;
+    return typeof pattern === 'string' && /(^|[^\\])\//.test(pattern);
+  };
+  const names = params.filter((p: any) => p?.in === 'path' && spansSlash(p)).map((p: any) => String(p.name));
   return names.length ? new Set(names) : undefined;
 }
 
@@ -223,8 +242,17 @@ function templateQuery(template: string): Matcher['query'] {
   return reqs.length ? reqs : undefined;
 }
 
-/** Does the request's query string satisfy a template's soft query requirement? */
-function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, requestBody?: unknown): boolean {
+/**
+ * How far the request's query string (or flat body) satisfies a template's soft
+ * query requirement: `all` when every requirement holds, `valued` when every
+ * `key=value` requirement holds (flag-only ones may be missing), and `count`,
+ * the number of requirements that hold.
+ */
+function querySatisfaction(
+  reqs: NonNullable<Matcher['query']>,
+  path: string,
+  requestBody?: unknown
+): { all: boolean; valued: boolean; count: number } {
   const q = path.indexOf('?');
   const params = new URLSearchParams(q < 0 ? '' : path.slice(q + 1).split('#')[0]);
   // RPC-style APIs that multiplex one URL (vtiger's POST /webservice.php with
@@ -237,11 +265,21 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
   }
   // Values compare case-insensitively: RPC dispatchers normalise them (vtiger
   // lower-cases `operation`, so the adaptor's `listTypes` is the spec's `listtypes`).
-  return reqs.every((r) => {
-    if (r.value === undefined) return params.has(r.key);
-    const want = r.value.toLowerCase();
-    return params.getAll(r.key).some((v) => v.toLowerCase() === want);
-  });
+  let all = true;
+  let valued = true;
+  let count = 0;
+  for (const r of reqs) {
+    const ok =
+      r.value === undefined
+        ? params.has(r.key)
+        : params.getAll(r.key).some((v) => v.toLowerCase() === r.value!.toLowerCase());
+    if (ok) count++;
+    else {
+      all = false;
+      if (r.value !== undefined) valued = false;
+    }
+  }
+  return { all, valued, count };
 }
 
 function compileTemplate(template: string, greedy?: Set<string>): { src: string; literals: number; params: number } {
@@ -551,16 +589,32 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
     // flag-only discriminator the request lacks (signalled out of band, e.g.
     // Azure's `#BlockBlob` via a header); a discriminator naming query
     // parameters the request lacks (`#comp=lease`), as a last resort.
+    //
+    // Within the first tier, and against a template whose `key=value`
+    // requirements all hold but whose flag-only ones are absent, the template
+    // satisfying MORE requirements wins: Azure's `?restype=container&comp=list`
+    // is ListBlobs (`#restype=container&comp=list&flat`), not GetProperties
+    // (`#restype=container`), though the `flat` flag is never sent.
     const best: Array<ParsedOperation | undefined> = [undefined, undefined, undefined, undefined];
+    let full: { op: ParsedOperation; count: number } | undefined;
+    let partial: { op: ParsedOperation; count: number } | undefined;
     for (const cand of matchers) {
       if (cand.op.method !== m || !cand.regex.test(p)) continue;
-      let tier: number;
-      if (!cand.query) tier = 1;
-      else if (querySatisfied(cand.query, path, requestBody)) tier = 0;
-      else tier = cand.query.every((r) => r.value === undefined) ? 2 : 3;
-      if (tier === 0) return cand.op;
+      if (!cand.query) {
+        best[1] ??= cand.op;
+        continue;
+      }
+      const sat = querySatisfaction(cand.query, path, requestBody);
+      if (sat.all) {
+        if (!full || sat.count > full.count) full = { op: cand.op, count: sat.count };
+      } else if (sat.valued && sat.count > 0) {
+        if (!partial || sat.count > partial.count) partial = { op: cand.op, count: sat.count };
+      }
+      const tier = cand.query.every((r) => r.value === undefined) ? 2 : 3;
       best[tier] ??= cand.op;
     }
+    if (partial && partial.count > (full?.count ?? 0)) return partial.op;
+    if (full) return full.op;
     return best[1] ?? best[2] ?? best[3];
   };
 

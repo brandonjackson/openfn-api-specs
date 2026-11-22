@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index mailgun` — do not edit by hand -->
 
-base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic | 267 operations in 40 resources
+base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic | 293 operations in 45 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -74,6 +74,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v3/{domain_name}/bounces — GET-v3--domainID--bounces: List all bounces
 - POST /v3/{domain_name}/bounces — POST-v3--domainID--bounces: Add bounces
 - DELETE /v3/{domain_name}/bounces — DELETE-v3--domainID--bounces: Clear all bounces
+
+## Bulk Validations
+- GET /v4/address/validate/bulk/{list_id} — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func2-9: Get Job V4
+- POST /v4/address/validate/bulk/{list_id} — POST-v4-address-validate-bulk--list-id-: Create Bulk Job
+- DELETE /v4/address/validate/bulk/{list_id} — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func1-8: Delete Job V4
+- GET /v4/address/validate/bulk — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func4-11: List Jobs V4
+- GET /v3/lists/{list_id}/validate — api.InitV3API.(*ApiHelpers).isFreeOrFishy.func2-13: Get Job V3
+- POST /v3/lists/{list_id}/validate — api.InitV3API.(*ApiHelpers).isFreeOrFishy.func3-14: Create Job V3
+- DELETE /v3/lists/{list_id}/validate — api.InitV3API.(*ApiHelpers).isFreeOrFishy.func1-12: Delete Job V3
 
 ## Complaints
 - POST /v3/{domain_name}/complaints/import — POST-v3--domainID--complaints-import: Import complaint list
@@ -248,6 +257,13 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /v2/thresholds/limits-primary — PUT-v2-thresholds-limits-primary: Update parent-level limit warning settings for an account
 - DELETE /v2/thresholds/limits-primary — DELETE-v2-thresholds-limits-primary: Delete parent-level limit warning settings for an account
 
+## List Health Preview
+- GET /v4/address/validate/preview/{list_id} — GET-v4-address-validate-preview--list-id-: Get List Health Preview Job
+- POST /v4/address/validate/preview/{list_id} — POST-v4-address-validate-preview--list-id-: Create a List Health Preview Job
+- PUT /v4/address/validate/preview/{list_id} — PUT-v4-address-validate-preview--list-id-: Promote List Health Preview Job
+- DELETE /v4/address/validate/preview/{list_id} — DELETE-v4-address-validate-preview--list-id-: Delete List Health Preview Job
+- GET /v4/address/validate/preview — GET-v4-address-validate-preview: List List Health Preview Jobs
+
 ## Logs
 - POST /v1/analytics/logs — POST-v1-analytics-logs: List logs
 
@@ -344,6 +360,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v5/users/{user_id} — get-v5-users-user_id: Get a user's details
 - GET /v5/users/me — get-v5-users-me: Get one's own user details
 
+## Validations
+- GET /v4/address/validate — GET-v4-address-validate: Validate Address V4
+
+## openapi-bulkvalidations_other
+- OPTIONS /v4/address/validate/bulk/{list_id} — api.NoContentCall-6: Option V4
+- OPTIONS /v4/address/validate/bulk — api.NoContentCall-7: Options V4
+- GET /v4/address/validate/jobs — api.InitV4API.(*ApiHelpers).isFreeOrFishy.func3-10: List Bulk and Preview V4 Jobs
+
 ## openapi-scout_other
 - GET /v3/domains/{domain}/tag/devices — GET-v3-domains--domain--tag-devices: List of supported devices (deprecated)
 - GET /v3/domains/{domain}/tag/providers — GET-v3-domains--domain--tag-providers: List of supported providers (deprecated)
@@ -352,3 +376,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## openapi-tower_other
 - PUT /v5/accounts/subaccounts/{subaccountId}/ip_pool — PUT-v5-accounts-subaccounts--subaccountId--ip-pool: Delegate a DIPP to a subaccount (deprecated)
 - DELETE /v5/accounts/subaccounts/{subaccountId}/ip_pool — DELETE-v5-accounts-subaccounts--subaccountId--ip-pool: Revoke a DIPP delegated to a subaccount (deprecated)
+
+## openapi-validations_other
+- GET /v3/address/validate — GET-v3-address-validate: Validate Address V3
+- POST /v3/address/validate — POST-v3-address-validate: Validate Address V3
+- GET /v3/address/private/validate — GET-v3-address-private-validate: Validate Address V3
+- POST /v3/address/private/validate — POST-v3-address-private-validate: Validate Address V3
+- GET /v3/address/parse — GET-v3-address-parse: Parse Addresses
+- POST /v3/address/parse — POST-v3-address-parse: Parse Addresses
+- GET /v3/address/private/parse — GET-v3-address-private-parse: Parse Addresses
+- POST /v3/address/private/parse — POST-v3-address-private-parse: Parse Addresses
+- GET /v3/address/public/threshold — GET-v3-address-public-threshold: Get Threshold
+- GET /v3/address/platform/threshold — GET-v3-address-platform-threshold: Get Threshold

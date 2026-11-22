@@ -71,3 +71,22 @@ test('a committed upstream file still matches its recorded contentHash (no post-
   }
   assert.deepEqual(tampered, [], `verbatim drift:\n  ${tampered.join('\n  ')}`);
 });
+
+test('every recorded upstream part is committed and still matches its contentHash', () => {
+  const bad: string[] = [];
+  for (const a of adaptors) {
+    if (!existsSync(sourcePath(a))) continue;
+    const src = readJson(sourcePath(a)) as SpecSource;
+    for (const part of src.upstream?.parts ?? []) {
+      const file = join(ROOT, a, part.file);
+      if (!/^upstream-[a-z0-9-]+\.(json|ya?ml)$/.test(part.file)) bad.push(`${a}: part file name ${part.file} is not upstream-<slug>.<ext>`);
+      if (!existsSync(file)) {
+        bad.push(`${a}: upstream part ${part.file} recorded but not committed`);
+        continue;
+      }
+      const actual = 'sha256:' + createHash('sha256').update(readFileSync(file)).digest('hex');
+      if (actual !== part.contentHash) bad.push(`${a}: ${part.file} hash ${actual} != recorded ${part.contentHash}`);
+    }
+  }
+  assert.deepEqual(bad, [], `upstream parts:\n  ${bad.join('\n  ')}`);
+});

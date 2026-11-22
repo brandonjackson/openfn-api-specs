@@ -499,3 +499,40 @@ test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one doe
   const plain = createConformer({ ...spec, paths: { '/things/{id}': spec.paths['/things/{id}'] } });
   assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
 });
+
+test('a path parameter whose declared pattern admits a slash spans segments (Azure blob, via $ref)', () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    components: {
+      parameters: {
+        Blob: { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$' } },
+      },
+    },
+    paths: {
+      '/{containerName}/{blob}': {
+        parameters: [{ name: 'containerName', in: 'path', required: true, schema: { type: 'string' } }, { $ref: '#/components/parameters/Blob' }],
+        head: { operationId: 'GetProperties', responses: { '200': { description: 'ok' } } },
+      },
+      '/{a}/{b}': { get: { operationId: 'Plain', parameters: [{ name: 'b', in: 'path', required: true, schema: { type: 'string', pattern: '^\\d+$' } }], responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('HEAD', '/c/config/2026/mapping.json')?.operationId, 'GetProperties');
+  assert.equal(c.match('GET', '/x/1/2'), undefined, 'a pattern without a slash stays one segment');
+});
+
+test('among satisfied discriminators the one matching more of the query wins, flag-only extras optional', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/{c}#restype=container': { get: { operationId: 'GetProperties', responses: { '200': { description: 'ok' } } } },
+      '/{c}#restype=container&comp=list&flat': { get: { operationId: 'ListBlobsFlat', responses: { '200': { description: 'ok' } } } },
+      '/{c}#restype=container&comp=acl': { get: { operationId: 'GetAcl', responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/c?restype=container')?.operationId, 'GetProperties');
+  assert.equal(c.match('GET', '/c?restype=container&comp=list')?.operationId, 'ListBlobsFlat');
+  assert.equal(c.match('GET', '/c?comp=acl&restype=container')?.operationId, 'GetAcl');
+});

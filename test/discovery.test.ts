@@ -134,3 +134,36 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.requestBody.content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
+
+test('media-upload methods get a second operation at the upload path, rooted at rootUrl', () => {
+  const doc = {
+    rootUrl: 'https://www.googleapis.com/',
+    servicePath: 'drive/v3/',
+    resources: {
+      files: {
+        methods: {
+          create: {
+            id: 'drive.files.create',
+            path: 'files',
+            httpMethod: 'POST',
+            request: { $ref: 'File' },
+            response: { $ref: 'File' },
+            supportsMediaUpload: true,
+            mediaUpload: { accept: ['*/*'], maxSize: '5497558138880', protocols: { simple: { multipart: true, path: '/upload/drive/v3/files' } } },
+          },
+        },
+      },
+    },
+    schemas: { File: { id: 'File', type: 'object', properties: { name: { type: 'string' } } } },
+  };
+  const { openapi } = discoveryToOpenApi(doc as any, 'googledrive');
+  assert.ok(openapi.paths['/files'].post, 'the metadata-only method is kept');
+  const item = openapi.paths['/upload/drive/v3/files'];
+  assert.deepEqual(item.servers, [{ url: 'https://www.googleapis.com' }]);
+  assert.equal(item.post.operationId, 'drive.files.create.mediaUpload');
+  assert.deepEqual(item.post.tags, ['files']);
+  const uploadType = item.post.parameters.find((p: any) => p.name === 'uploadType');
+  assert.equal(uploadType.required, true);
+  assert.ok(item.post.requestBody.content['multipart/related']);
+  assert.equal(item.post.responses['200'].content['application/json'].schema.$ref, '#/components/schemas/File');
+});
