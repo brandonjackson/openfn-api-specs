@@ -135,35 +135,39 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
 
-test('media-upload methods get a second operation at the upload path, rooted at rootUrl', () => {
-  const doc = {
-    rootUrl: 'https://www.googleapis.com/',
-    servicePath: 'drive/v3/',
-    resources: {
-      files: {
-        methods: {
-          create: {
-            id: 'drive.files.create',
-            path: 'files',
-            httpMethod: 'POST',
-            request: { $ref: 'File' },
-            response: { $ref: 'File' },
-            supportsMediaUpload: true,
-            mediaUpload: { accept: ['*/*'], maxSize: '5497558138880', protocols: { simple: { multipart: true, path: '/upload/drive/v3/files' } } },
-          },
-        },
-      },
+test('mediaUpload protocols become upload operations rooted at rootUrl', () => {
+  const withUpload = structuredClone(disc) as any;
+  withUpload.servicePath = 'demo/v1/';
+  withUpload.baseUrl = 'https://demo.googleapis.com/demo/v1/';
+  withUpload.resources.widgets.methods.create.mediaUpload = {
+    accept: ['image/*'],
+    maxSize: '1048576',
+    protocols: {
+      simple: { multipart: true, path: '/upload/demo/v1/{+parent}/widgets' },
+      resumable: { multipart: true, path: '/resumable/upload/demo/v1/{+parent}/widgets' },
     },
-    schemas: { File: { id: 'File', type: 'object', properties: { name: { type: 'string' } } } },
   };
-  const { openapi } = discoveryToOpenApi(doc as any, 'googledrive');
-  assert.ok(openapi.paths['/files'].post, 'the metadata-only method is kept');
-  const item = openapi.paths['/upload/drive/v3/files'];
-  assert.deepEqual(item.servers, [{ url: 'https://www.googleapis.com' }]);
-  assert.equal(item.post.operationId, 'drive.files.create.mediaUpload');
-  assert.deepEqual(item.post.tags, ['files']);
-  const uploadType = item.post.parameters.find((p: any) => p.name === 'uploadType');
-  assert.equal(uploadType.required, true);
-  assert.ok(item.post.requestBody.content['multipart/related']);
-  assert.equal(item.post.responses['200'].content['application/json'].schema.$ref, '#/components/schemas/File');
+  withUpload.resources.widgets.methods.create.parameters = {
+    parent: { type: 'string', location: 'path', required: true },
+  };
+  const { openapi, warnings } = discoveryToOpenApi(withUpload, 'demo');
+  assert.deepEqual(warnings, []);
+
+  const simple = openapi.paths['/upload/demo/v1/{parent}/widgets'];
+  assert.deepEqual(simple.servers, [{ url: 'https://demo.googleapis.com' }], 'upload paths are absolute from rootUrl');
+  assert.equal(simple.post.operationId, 'demo.widgets.create.upload');
+  const byName = Object.fromEntries(simple.post.parameters.map((p: any) => [p.name, p]));
+  assert.equal(byName.parent.in, 'path');
+  assert.deepEqual(byName.uploadType.schema.enum, ['media', 'multipart']);
+  assert.ok(simple.post.requestBody.content['multipart/related']);
+  assert.ok(simple.post.requestBody.content['image/*']);
+  assert.deepEqual(simple.post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
+
+  const resumable = openapi.paths['/resumable/upload/demo/v1/{parent}/widgets'].post;
+  assert.equal(resumable.operationId, 'demo.widgets.create.resumableUpload');
+  assert.ok(resumable.responses['200'].headers.Location);
+
+  // The parser sees the upload operations alongside the plain ones.
+  const ops = parseSpec(openapi).operations.map((o: any) => o.operationId);
+  assert.ok(ops.includes('demo.widgets.create') && ops.includes('demo.widgets.create.upload'));
 });

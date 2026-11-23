@@ -5,6 +5,7 @@ import {
   createConformer,
   formatConformanceReport,
   normalizePath,
+  patternAdmitsSlash,
   parseExchangesJsonl,
   serverPathPrefixes,
   toExchangesJsonl,
@@ -500,26 +501,46 @@ test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one doe
   assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
 });
 
-test('a path parameter whose declared pattern admits a slash spans segments (Azure blob, via $ref)', () => {
+test('patternAdmitsSlash: a literal slash outside a character class', () => {
+  assert.equal(patternAdmitsSlash('^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$'), true);
+  assert.equal(patternAdmitsSlash('^projects/[^/]+$'), true);
+  assert.equal(patternAdmitsSlash('^[^/]+$'), false);
+  assert.equal(patternAdmitsSlash('^[a-z\\/]+$'), false, 'an escaped slash inside a class is still in the class');
+  assert.equal(patternAdmitsSlash('^a\\/b$'), true);
+  assert.equal(patternAdmitsSlash('^[0-9]+$'), false);
+});
+
+test("a final $ref path parameter whose pattern admits '/' spans slashes (Azure's {blob})", () => {
   const spec = {
     openapi: '3.0.3',
     info: { title: 't', version: '1' },
     components: {
       parameters: {
-        Blob: { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$' } },
+        Blob: { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z0-9]+(?:/[a-z0-9]+)*(?:\\.[a-z0-9]+)?$' } },
+        Container: { name: 'container', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z0-9-]+$' } },
       },
     },
     paths: {
-      '/{containerName}/{blob}': {
-        parameters: [{ name: 'containerName', in: 'path', required: true, schema: { type: 'string' } }, { $ref: '#/components/parameters/Blob' }],
-        head: { operationId: 'GetProperties', responses: { '200': { description: 'ok' } } },
+      '/{container}/{blob}': {
+        put: {
+          operationId: 'PutBlob',
+          parameters: [{ $ref: '#/components/parameters/Container' }, { $ref: '#/components/parameters/Blob' }],
+          responses: { '201': { description: 'ok' } },
+        },
       },
-      '/{a}/{b}': { get: { operationId: 'Plain', parameters: [{ name: 'b', in: 'path', required: true, schema: { type: 'string', pattern: '^\\d+$' } }], responses: { '200': { description: 'ok' } } } },
+      '/{container}/{item}/meta': {
+        get: {
+          operationId: 'Meta',
+          parameters: [{ name: 'item', in: 'path', required: true, schema: { type: 'string', pattern: '^a/b$' } }],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
     },
   };
   const c = createConformer(spec);
-  assert.equal(c.match('HEAD', '/c/config/2026/mapping.json')?.operationId, 'GetProperties');
-  assert.equal(c.match('GET', '/x/1/2'), undefined, 'a pattern without a slash stays one segment');
+  assert.equal(c.match('PUT', '/c/exports/2026/q1.csv')?.operationId, 'PutBlob');
+  assert.equal(c.match('PUT', '/c/q1.csv')?.operationId, 'PutBlob');
+  assert.equal(c.match('GET', '/c/x/y/meta'), undefined, 'only the final parameter is widened');
 });
 
 test('among satisfied discriminators the one matching more of the query wins, flag-only extras optional', () => {

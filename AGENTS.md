@@ -76,11 +76,6 @@ Both axes move. The loop's job is to keep our copy converged on both.
 specs/adaptors/<adaptor>/
   upstream.json      verbatim upstream machine spec, exactly as fetched (source of
                      truth). Present when origin is found-openapi or converted.
-  upstream-<slug>.*  further verbatim files of the same vendor API, when the vendor
-                     splits one API across several specs (Mailgun: sending and
-                     validation). Recorded in `upstream.parts[]`, hash-checked, and
-                     merged into openapi.json on every derivation; add one with
-                     `pnpm specs convert <a> --part=<url> --name=<slug>`.
   openapi.json       full-coverage OpenAPI 3.x we serve. Equals upstream normalised
                      to 3.x, the conversion of upstream, or authored from docs/surface.
   source.json        provenance (schema below)
@@ -114,9 +109,7 @@ specs/adaptors/<adaptor>/
     "specUrl": "https://…/openapi.json",
     "format": "openapi-3.1",
     "contentHash": "sha256:…",      // hash of upstream.json as fetched — drift detector
-    "fetchedAt": "2026-07-06",
-    "parts": []                     // optional: further verbatim files of the same API
-                                    // ({file, specUrl, format, contentHash, fetchedAt})
+    "fetchedAt": "2026-07-06"
   },
 
   "attempts": [                     // the finding-step decision trail (why we landed where we did)

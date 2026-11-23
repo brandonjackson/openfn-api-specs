@@ -167,30 +167,55 @@ export function normalizePath(path: string): string {
   return p;
 }
 
+/** Resolve a local `#/components/...` `$ref` (one hop is all parameters need). */
+function resolveLocalRef(openapi: any, node: any): any {
+  if (typeof node?.$ref !== 'string' || !node.$ref.startsWith('#/')) return node;
+  let cur = openapi;
+  for (const seg of node.$ref.slice(2).split('/')) cur = cur?.[seg.replace(/~1/g, '/').replace(/~0/g, '~')];
+  return cur ?? node;
+}
+
 /**
- * Path parameters whose value may span slashes, at path or operation level
- * (local `$ref`s resolved): ones marked `x-smithy-greedy: true` (S3's `{Key+}`),
- * and ones whose declared `pattern` itself admits a `/` (Azure Storage's `blob`,
- * `^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*…$`, so `/c/exports/2026/q1.csv` is one blob).
+ * Whether a regex pattern (as a string) contains a literal `/` outside any
+ * character class: `^[a-z0-9]+(?:/[a-z0-9]+)*$` does (Azure's blob name),
+ * `^[^/]+$` does not.
+ */
+export function patternAdmitsSlash(pattern: string): boolean {
+  let inClass = false;
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '\\') {
+      if (pattern[i + 1] === '/' && !inClass) return true;
+      i++;
+      continue;
+    }
+    if (inClass) {
+      if (c === ']') inClass = false;
+    } else if (c === '[') inClass = true;
+    else if (c === '/') return true;
+  }
+  return false;
+}
+
+/**
+ * Path parameters that may span slashes: those marked `x-smithy-greedy: true`
+ * (S3's `{Key+}`), and the template's final parameter when its schema
+ * `pattern` admits a literal `/` (Azure's `{blob}`, a name like
+ * `exports/2026/q1.csv`). Parameters given as `$ref`s are resolved first.
  */
 function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
   const item = openapi?.paths?.[op.path];
-  const deref = (p: any): any => {
-    for (let i = 0; i < 5 && typeof p?.$ref === 'string' && p.$ref.startsWith('#/'); i++) {
-      p = p.$ref
-        .slice(2)
-        .split('/')
-        .reduce((o: any, k: string) => o?.[k.replace(/~1/g, '/').replace(/~0/g, '~')], openapi);
-    }
-    return p;
-  };
-  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])].map(deref);
-  const spansSlash = (p: any): boolean => {
-    if (p['x-smithy-greedy'] === true) return true;
-    const pattern = p.schema?.pattern ?? p.pattern;
-    return typeof pattern === 'string' && /(^|[^\\])\//.test(pattern);
-  };
-  const names = params.filter((p: any) => p?.in === 'path' && spansSlash(p)).map((p: any) => String(p.name));
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])]
+    .map((p: any) => resolveLocalRef(openapi, p))
+    .filter((p: any) => p?.in === 'path');
+  const last = /\{([^}]+)\}$/.exec(normalizePath(op.path))?.[1];
+  const names = params
+    .filter(
+      (p: any) =>
+        p['x-smithy-greedy'] === true ||
+        (String(p.name) === last && typeof p.schema?.pattern === 'string' && patternAdmitsSlash(p.schema.pattern))
+    )
+    .map((p: any) => String(p.name));
   return names.length ? new Set(names) : undefined;
 }
 
