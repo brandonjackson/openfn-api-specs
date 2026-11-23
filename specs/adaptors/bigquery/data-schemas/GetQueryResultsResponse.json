@@ -5,14 +5,32 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/GetQueryResultsResponse",
-    "capturedAt": "2026-11-20"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Response object of GetQueryResults.",
   "properties": {
-    "pageToken": {
+    "totalBytesProcessed": {
       "type": "string",
-      "description": "A token used for paging results. When this token is non-empty, it indicates additional results are available."
+      "format": "int64",
+      "description": "The total number of bytes processed for this query."
+    },
+    "kind": {
+      "type": "string",
+      "description": "The resource type of the response.",
+      "default": "bigquery#getQueryResultsResponse"
+    },
+    "jobReference": {
+      "$ref": "JobReference.json"
+    },
+    "cacheHit": {
+      "type": "boolean",
+      "description": "Whether the query result was fetched from the query cache."
+    },
+    "totalRows": {
+      "type": "string",
+      "format": "uint64",
+      "description": "The total number of rows in the complete query result set, which can be more than the number of rows in this single page of results. Present only when the query completes successfully."
     },
     "errors": {
       "type": "array",
@@ -22,17 +40,16 @@
         "$ref": "ErrorProto.json"
       }
     },
+    "jobComplete": {
+      "type": "boolean",
+      "description": "Whether the query has completed or not. If rows or totalRows are present, this will always be true. If this is false, totalRows will not be available."
+    },
     "schema": {
       "$ref": "TableSchema.json"
     },
-    "kind": {
+    "pageToken": {
       "type": "string",
-      "description": "The resource type of the response.",
-      "default": "bigquery#getQueryResultsResponse"
-    },
-    "cacheHit": {
-      "type": "boolean",
-      "description": "Whether the query result was fetched from the query cache."
+      "description": "A token used for paging results. When this token is non-empty, it indicates additional results are available."
     },
     "rows": {
       "type": "array",
@@ -41,32 +58,15 @@
         "$ref": "TableRow.json"
       }
     },
-    "totalRows": {
+    "etag": {
       "type": "string",
-      "format": "uint64",
-      "description": "The total number of rows in the complete query result set, which can be more than the number of rows in this single page of results. Present only when the query completes successfully."
-    },
-    "totalBytesProcessed": {
-      "type": "string",
-      "format": "int64",
-      "description": "The total number of bytes processed for this query."
+      "description": "A hash of this response."
     },
     "numDmlAffectedRows": {
       "type": "string",
       "format": "int64",
       "description": "Output only. The number of rows affected by a DML statement. Present only for DML statements INSERT, UPDATE or DELETE.",
       "readOnly": true
-    },
-    "jobComplete": {
-      "type": "boolean",
-      "description": "Whether the query has completed or not. If rows or totalRows are present, this will always be true. If this is false, totalRows will not be available."
-    },
-    "jobReference": {
-      "$ref": "JobReference.json"
-    },
-    "etag": {
-      "type": "string",
-      "description": "A hash of this response."
     }
   }
 }

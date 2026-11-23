@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/SubagentResource",
+  "title": "SubagentResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/SubagentResource",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the subagent."
+    },
+    "object": {
+      "$ref": "SubagentObjectResource.json",
+      "description": "The object type. Always `agent.session.subagent`."
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the session that owns the subagent."
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The runner-assigned nickname, or null when unavailable."
+    },
+    "instructions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "AgentContentResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "Initial task content, or null when unavailable. Text may contain placeholders for images or audio when only a preview is available."
+    },
+    "parent_agent_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the agent that created this subagent."
+    },
+    "status": {
+      "$ref": "SubagentStatusResource.json",
+      "description": "The current status of the subagent."
+    },
+    "opened_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The Unix timestamp, in seconds, when the subagent was first opened. Resuming does not change it."
+    },
+    "closed_at": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "int64",
+      "description": "The Unix timestamp, in seconds, when the subagent was closed. Null while active, including after resume."
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "session_id",
+    "name",
+    "instructions",
+    "parent_agent_id",
+    "status",
+    "opened_at",
+    "closed_at"
+  ],
+  "additionalProperties": false,
+  "description": "A subagent created within a session."
+}

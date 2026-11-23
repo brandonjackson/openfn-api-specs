@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/FunctionCallOutputItemResource",
+  "title": "FunctionCallOutputItemResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/FunctionCallOutputItemResource",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the function call output item."
+    },
+    "turn_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the turn that contains this item."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "function_call_output"
+      ],
+      "default": "function_call_output",
+      "x-stainless-const": true,
+      "description": "The item type. Always `function_call_output`."
+    },
+    "call_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the function call that produced this output."
+    },
+    "status": {
+      "$ref": "FunctionCallStatusResource.json",
+      "description": "The status of the function call."
+    },
+    "output": {
+      "anyOf": [
+        {
+          "$ref": "FunctionCallOutputResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The function result, if the call succeeded."
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The error message, if the call failed."
+    }
+  },
+  "required": [
+    "id",
+    "turn_id",
+    "type",
+    "call_id",
+    "status",
+    "output",
+    "error"
+  ],
+  "additionalProperties": false,
+  "description": "The result supplied for a function call."
+}

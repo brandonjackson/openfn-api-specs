@@ -5,18 +5,30 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/AttributeDefinition",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A client-defined consent attribute.",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Identifier. Resource name of the Attribute definition, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/attributeDefinitions/{attribute_definition_id}`. Cannot be changed after creation."
+    "allowedValues": {
+      "type": "array",
+      "description": "Required. Possible values for the attribute. The number of allowed values must not exceed 500. An empty list is invalid. The list can only be expanded after creation.",
+      "items": {
+        "type": "string"
+      }
     },
     "description": {
       "type": "string",
       "description": "Optional. A description of the attribute."
+    },
+    "category": {
+      "type": "string",
+      "description": "Required. The category of the attribute. The value of this field cannot be changed after creation.",
+      "enum": [
+        "CATEGORY_UNSPECIFIED",
+        "RESOURCE",
+        "REQUEST"
+      ]
     },
     "dataMappingDefaultValue": {
       "type": "string",
@@ -29,21 +41,9 @@
         "type": "string"
       }
     },
-    "allowedValues": {
-      "type": "array",
-      "description": "Required. Possible values for the attribute. The number of allowed values must not exceed 500. An empty list is invalid. The list can only be expanded after creation.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "category": {
+    "name": {
       "type": "string",
-      "description": "Required. The category of the attribute. The value of this field cannot be changed after creation.",
-      "enum": [
-        "CATEGORY_UNSPECIFIED",
-        "RESOURCE",
-        "REQUEST"
-      ]
+      "description": "Identifier. Resource name of the Attribute definition, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/attributeDefinitions/{attribute_definition_id}`. Cannot be changed after creation."
     }
   }
 }

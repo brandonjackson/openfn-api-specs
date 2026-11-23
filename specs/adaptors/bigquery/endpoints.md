@@ -16,15 +16,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /projects/{projectsId}/datasets/{datasetsId}:undelete — bigquery.datasets.undelete: Undeletes a dataset which is within time travel window based on datasetId.
 
 ## jobs
-- POST /projects/{projectsId}/queries — bigquery.jobs.query: Runs a BigQuery SQL query synchronously and returns query results if the query completes within a specified timeout.
-- GET /projects/{projectsId}/jobs/{jobsId} — bigquery.jobs.get: Returns information about a specific job.
-- DELETE /projects/{projectsId}/jobs/{jobsId}/delete — bigquery.jobs.delete: Requests the deletion of the metadata of a job.
 - GET /projects/{projectsId}/jobs — bigquery.jobs.list: Lists all jobs that you started in the specified project.
 - POST /projects/{projectsId}/jobs — bigquery.jobs.insert: Starts a new asynchronous job.
 - POST /upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.upload: Starts a new asynchronous job (media upload)
 - POST /resumable/upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.resumableUpload: Starts a new asynchronous job (resumable upload session)
-- POST /projects/{projectsId}/jobs/{jobsId}/cancel — bigquery.jobs.cancel: Requests that a job be cancelled.
+- DELETE /projects/{projectsId}/jobs/{jobsId}/delete — bigquery.jobs.delete: Requests the deletion of the metadata of a job.
 - GET /projects/{projectsId}/queries/{queriesId} — bigquery.jobs.getQueryResults: RPC to get the results of a query job.
+- POST /projects/{projectsId}/queries — bigquery.jobs.query: Runs a BigQuery SQL query synchronously and returns query results if the query completes within a specified timeout.
+- POST /projects/{projectsId}/jobs/{jobsId}/cancel — bigquery.jobs.cancel: Requests that a job be cancelled.
+- GET /projects/{projectsId}/jobs/{jobsId} — bigquery.jobs.get: Returns information about a specific job.
 
 ## models
 - GET /projects/{projectsId}/datasets/{datasetsId}/models/{modelsId} — bigquery.models.get: Gets the specified model resource by model ID.
@@ -40,33 +40,33 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId} — bigquery.routines.get: Gets the specified routine resource by routine ID.
 - PUT /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId} — bigquery.routines.update: Updates information in an existing routine.
 - DELETE /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId} — bigquery.routines.delete: Deletes the routine specified by routineId from the dataset.
-- POST /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:setIamPolicy — bigquery.routines.setIamPolicy: Sets the access control policy on the specified resource.
 - GET /projects/{projectsId}/datasets/{datasetsId}/routines — bigquery.routines.list: Lists all routines in the specified dataset.
 - POST /projects/{projectsId}/datasets/{datasetsId}/routines — bigquery.routines.insert: Creates a new routine in the dataset.
 - POST /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:getIamPolicy — bigquery.routines.getIamPolicy: Gets the access control policy for a resource.
+- POST /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:setIamPolicy — bigquery.routines.setIamPolicy: Sets the access control policy on the specified resource.
 - POST /projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:testIamPermissions — bigquery.routines.testIamPermissions: Returns permissions that a caller has on the specified resource.
 
 ## rowAccessPolicies
+- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies:batchDelete — bigquery.rowAccessPolicies.batchDelete: Deletes provided row access policies.
+- GET /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies — bigquery.rowAccessPolicies.list: Lists all row access policies on the specified table.
+- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies — bigquery.rowAccessPolicies.insert: Creates a row access policy.
 - GET /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId} — bigquery.rowAccessPolicies.get: Gets the specified row access policy by policy ID.
 - PUT /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId} — bigquery.rowAccessPolicies.update: Updates a row access policy.
 - DELETE /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId} — bigquery.rowAccessPolicies.delete: Deletes a row access policy.
-- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:testIamPermissions — bigquery.rowAccessPolicies.testIamPermissions: Returns permissions that a caller has on the specified resource.
 - POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:getIamPolicy — bigquery.rowAccessPolicies.getIamPolicy: Gets the access control policy for a resource.
-- GET /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies — bigquery.rowAccessPolicies.list: Lists all row access policies on the specified table.
-- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies — bigquery.rowAccessPolicies.insert: Creates a row access policy.
-- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies:batchDelete — bigquery.rowAccessPolicies.batchDelete: Deletes provided row access policies.
+- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:testIamPermissions — bigquery.rowAccessPolicies.testIamPermissions: Returns permissions that a caller has on the specified resource.
 
 ## tabledata
-- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/insertAll — bigquery.tabledata.insertAll: Streams data into BigQuery one record at a time without needing to run a load job.
 - GET /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/data — bigquery.tabledata.list: List the content of a table in rows.
+- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/insertAll — bigquery.tabledata.insertAll: Streams data into BigQuery one record at a time without needing to run a load job.
 
 ## tables
+- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}:getIamPolicy — bigquery.tables.getIamPolicy: Gets the access control policy for a resource.
+- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}:setIamPolicy — bigquery.tables.setIamPolicy: Sets the access control policy on the specified resource.
 - GET /projects/{projectsId}/datasets/{datasetsId}/tables — bigquery.tables.list: Lists all tables in the specified dataset.
 - POST /projects/{projectsId}/datasets/{datasetsId}/tables — bigquery.tables.insert: Creates a new, empty table in the dataset.
 - GET /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId} — bigquery.tables.get: Gets the specified table resource by table ID.
 - PUT /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId} — bigquery.tables.update: Updates information in an existing table.
 - PATCH /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId} — bigquery.tables.patch: Updates information in an existing table.
 - DELETE /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId} — bigquery.tables.delete: Deletes the table specified by tableId from the dataset.
-- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}:getIamPolicy — bigquery.tables.getIamPolicy: Gets the access control policy for a resource.
-- POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}:setIamPolicy — bigquery.tables.setIamPolicy: Sets the access control policy on the specified resource.
 - POST /projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}:testIamPermissions — bigquery.tables.testIamPermissions: Returns permissions that a caller has on the specified resource.

@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/Response",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "allOf": [
     {
@@ -17,6 +17,9 @@
     {
       "type": "object",
       "properties": {
+        "image": {
+          "$ref": "ResolvedImageOptions.json"
+        },
         "service_tier": {
           "$ref": "ServiceTierResponses.json"
         },
@@ -24,7 +27,7 @@
           "anyOf": [
             {
               "type": "string",
-              "description": "The truncation strategy to use for the model response.\n- `auto`: If the input to this Response exceeds\n  the model's context window size, the model will truncate the\n  response to fit the context window by dropping items from the beginning of the conversation.\n- `disabled` (default): If the input size will exceed the context window\n  size for a model, the request will fail with a 400 error.\n",
+              "description": "The truncation strategy to use for the model response.\n- `auto`: If the input to this Response exceeds\n  the model's context window size, the model will truncate the\n  response to fit the context window by dropping items from the beginning of the conversation.\n  On some models, trimming can begin earlier because the API subtracts the model's\n  maximum output allowance from its input limit, even if you set a lower `max_output_tokens`.\n- `disabled` (default): If the input size will exceed the context window\n  size for a model, the request will fail with a 400 error.\n",
               "enum": [
                 "auto",
                 "disabled"
@@ -43,10 +46,7 @@
         "object": {
           "type": "string",
           "description": "The object type of this resource - always set to `response`.\n",
-          "enum": [
-            "response"
-          ],
-          "x-stainless-const": true
+          "const": "response"
         },
         "status": {
           "type": "string",
@@ -58,6 +58,16 @@
             "cancelled",
             "queued",
             "incomplete"
+          ]
+        },
+        "access_programs": {
+          "anyOf": [
+            {
+              "$ref": "AccessProgramsBody.json"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "created_at": {
@@ -88,11 +98,12 @@
               "properties": {
                 "reason": {
                   "type": "string",
-                  "description": "The reason why the response is incomplete.",
+                  "description": "The reason why the response is incomplete. `steered` means\nthe response stopped at a safe output boundary after a\nWebSocket `response.steer` event. The server can then create\na successor response automatically with the queued input.\n",
                   "enum": [
                     "max_output_tokens",
                     "max_messages",
-                    "content_filter"
+                    "content_filter",
+                    "steered"
                   ]
                 }
               }
@@ -101,6 +112,13 @@
               "type": "null"
             }
           ]
+        },
+        "input_transformations": {
+          "type": "array",
+          "description": "Reasoning inputs withheld from the model, in input order.",
+          "items": {
+            "$ref": "ReasoningInputTransformation.json"
+          }
         },
         "output": {
           "type": "array",
@@ -159,10 +177,24 @@
           ]
         },
         "usage": {
-          "$ref": "ResponseUsage.json"
+          "anyOf": [
+            {
+              "$ref": "ResponseUsage.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tool_usage": {
+          "$ref": "ResponseToolUsage.json",
+          "description": "Usage reported by hosted tools, separate from base model `usage`. The field\ncan be omitted when tool usage is unavailable. When present, tool families\nwith no recorded usage have zero counts.\n\n`image_gen` sums available token counts across image generation calls.\nCalls with missing or incomplete usage records may be skipped. Output\ntoken details and cached input counts can be omitted. An omitted cache\ncount means cache usage is unknown.\n\n`web_search.num_requests` counts billable searches. Discounted searches\nand actions such as opening a page are excluded. Use billing records to\nreconcile final charges.\n"
         },
         "prompt_cache_options": {
           "$ref": "PromptCacheOptions.json"
+        },
+        "prompt_cache_diagnostics": {
+          "$ref": "PromptCacheDiagnostics.json"
         },
         "moderation": {
           "anyOf": [
@@ -194,7 +226,7 @@
         "max_output_tokens": {
           "anyOf": [
             {
-              "description": "An upper bound for the number of tokens that can be generated for a response, including visible output tokens and [reasoning tokens](/docs/guides/reasoning).\n",
+              "description": "An upper bound for the number of tokens that can be generated for a response, including visible output tokens and [reasoning tokens](https://developers.openai.com/api/docs/guides/reasoning).\n",
               "type": "integer"
             },
             {
@@ -204,6 +236,7 @@
         }
       },
       "required": [
+        "access_programs",
         "id",
         "object",
         "created_at",
@@ -224,6 +257,7 @@
   "example": {
     "id": "resp_67ccd3a9da748190baa7f1570fe91ac604becb25c45c1d41",
     "object": "response",
+    "access_programs": null,
     "created_at": 1741476777,
     "status": "completed",
     "completed_at": 1741476778,
@@ -231,7 +265,7 @@
     "incomplete_details": null,
     "instructions": null,
     "max_output_tokens": null,
-    "model": "gpt-5.6-sol",
+    "model": "gpt-6.2-astra",
     "output": [
       {
         "type": "message",
@@ -242,7 +276,8 @@
           {
             "type": "output_text",
             "text": "The image depicts a scenic landscape with a wooden boardwalk or pathway leading through lush, green grass under a blue sky with some clouds. The setting suggests a peaceful natural area, possibly a park or nature reserve. There are trees and shrubs in the background.",
-            "annotations": []
+            "annotations": [],
+            "logprobs": []
           }
         ]
       }
@@ -276,6 +311,24 @@
         "reasoning_tokens": 0
       },
       "total_tokens": 380
+    },
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "text_tokens": 0,
+          "image_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "text_tokens": 0,
+          "image_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
     },
     "user": null,
     "metadata": {}

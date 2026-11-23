@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/GraderScoreModel",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A ScoreModelGrader object that uses a model to assign a score to the input.\n",
@@ -92,11 +92,9 @@
     "range": {
       "type": "array",
       "items": {
-        "type": "number",
-        "min_items": 2,
-        "max_items": 2
+        "type": "number"
       },
-      "description": "The range of the score. Defaults to `[0, 1]`."
+      "description": "The service requires two numbers for the score range. Defaults to `[0, 1]`.\n"
     }
   },
   "required": [
@@ -108,6 +106,6 @@
   "x-oaiMeta": {
     "name": "Score Model Grader",
     "group": "graders",
-    "example": "{\n    \"type\": \"score_model\",\n    \"name\": \"Example score model grader\",\n    \"input\": [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"input_text\",\n                    \"text\": (\n                        \"Score how close the reference answer is to the model answer. Score 1.0 if they are the same and 0.0 if they are different.\"\n                        \" Return just a floating point score\\n\\n\"\n                        \" Reference answer: {{item.label}}\\n\\n\"\n                        \" Model answer: {{sample.output_text}}\"\n                    )\n                },\n                {\n                    \"type\": \"input_image\",\n                    \"image_url\": \"https://example.com/reference.png\",\n                    \"file_id\": null,\n                    \"detail\": \"auto\"\n                }\n            ],\n        }\n    ],\n    \"model\": \"gpt-5-mini\",\n    \"sampling_params\": {\n        \"temperature\": 1,\n        \"top_p\": 1,\n        \"seed\": 42,\n        \"max_completions_tokens\": 32768,\n        \"reasoning_effort\": \"medium\"\n    },\n}\n"
+    "example": "{\n    \"type\": \"score_model\",\n    \"name\": \"Example score model grader\",\n    \"input\": [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"input_text\",\n                    \"text\": \"Score how close the reference answer is to the model answer. Score 1.0 if they are the same and 0.0 if they are different. Return just a floating point score\\n\\n Reference answer: {{item.label}}\\n\\n Model answer: {{sample.output_text}}\"\n                },\n                {\n                    \"type\": \"input_image\",\n                    \"image_url\": \"https://example.com/reference.png\",\n                    \"file_id\": null,\n                    \"detail\": \"auto\"\n                }\n            ]\n        }\n    ],\n    \"model\": \"gpt-4.1-mini-2025-04-14\",\n    \"sampling_params\": {\n        \"temperature\": 1,\n        \"top_p\": 1,\n        \"seed\": 42,\n        \"max_completions_tokens\": 32768\n    }\n}\n"
   }
 }

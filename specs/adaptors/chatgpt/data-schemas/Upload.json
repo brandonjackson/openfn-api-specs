@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/Upload",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "The Upload object can accept byte chunks in the form of Parts.\n",
@@ -29,7 +29,7 @@
     },
     "purpose": {
       "type": "string",
-      "description": "The intended purpose of the file. [Please refer here](/docs/api-reference/files/object#files/object-purpose) for acceptable values."
+      "description": "The intended purpose of the file. [Please refer here](https://developers.openai.com/api/reference/resources/files#%28resource%29%20files%20%3E%20%28model%29%20file_object%20%3E%20%28schema%29%20%3E%20%28property%29%20purpose) for acceptable values."
     },
     "status": {
       "type": "string",
@@ -49,18 +49,16 @@
     "object": {
       "type": "string",
       "description": "The object type, which is always \"upload\".",
-      "enum": [
-        "upload"
-      ],
-      "x-stainless-const": true
+      "const": "upload"
     },
     "file": {
-      "allOf": [
+      "description": "The ready File object after the Upload is completed.",
+      "anyOf": [
         {
           "$ref": "OpenAIFile.json"
         },
         {
-          "description": "The ready File object after the Upload is completed."
+          "type": "null"
         }
       ]
     }
@@ -76,6 +74,6 @@
   ],
   "x-oaiMeta": {
     "name": "The upload object",
-    "example": "{\n  \"id\": \"upload_abc123\",\n  \"object\": \"upload\",\n  \"bytes\": 2147483648,\n  \"created_at\": 1719184911,\n  \"filename\": \"training_examples.jsonl\",\n  \"purpose\": \"fine-tune\",\n  \"status\": \"completed\",\n  \"expires_at\": 1719127296,\n  \"file\": {\n    \"id\": \"file-xyz321\",\n    \"object\": \"file\",\n    \"bytes\": 2147483648,\n    \"created_at\": 1719186911,\n    \"filename\": \"training_examples.jsonl\",\n    \"purpose\": \"fine-tune\",\n  }\n}\n"
+    "example": "{\n  \"id\": \"upload_abc123\",\n  \"object\": \"upload\",\n  \"bytes\": 2147483648,\n  \"created_at\": 1719184911,\n  \"filename\": \"training_examples.jsonl\",\n  \"purpose\": \"fine-tune\",\n  \"status\": \"completed\",\n  \"expires_at\": 1719127296,\n  \"file\": {\n    \"id\": \"file-xyz321\",\n    \"object\": \"file\",\n    \"bytes\": 2147483648,\n    \"created_at\": 1719186911,\n    \"filename\": \"training_examples.jsonl\",\n    \"purpose\": \"fine-tune\",\n    \"status\": \"processed\"\n  }\n}\n"
   }
 }

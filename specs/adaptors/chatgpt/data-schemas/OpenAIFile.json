@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/OpenAIFile",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "description": "The `File` object represents a document that has been uploaded to OpenAI.",
   "properties": {
@@ -14,8 +14,11 @@
       "description": "The file identifier, which can be referenced in the API endpoints."
     },
     "bytes": {
-      "type": "integer",
-      "description": "The size of the file, in bytes."
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "The size of the file, in bytes. In a completed file upload response, this can\nbe null when the file size is not yet available.\n"
     },
     "created_at": {
       "type": "integer",
@@ -25,7 +28,7 @@
     "expires_at": {
       "type": "integer",
       "format": "unixtime",
-      "description": "The Unix timestamp (in seconds) for when the file will expire."
+      "description": "The Unix timestamp (in seconds) for when the file will expire. In a\ncompleted file upload response, this can be null when no expiry is set.\n"
     },
     "filename": {
       "type": "string",
@@ -34,10 +37,7 @@
     "object": {
       "type": "string",
       "description": "The object type, which is always `file`.",
-      "enum": [
-        "file"
-      ],
-      "x-stainless-const": true
+      "const": "file"
     },
     "purpose": {
       "type": "string",
@@ -66,7 +66,7 @@
     "status_details": {
       "type": "string",
       "deprecated": true,
-      "description": "Deprecated. For details on why a fine-tuning training file failed validation, see the `error` field on `fine_tuning.job`."
+      "description": "Deprecated. For details on why a fine-tuning training file failed validation, see the `error` field on `fine_tuning.job`. Completed file upload responses can return null when these details are unset."
     }
   },
   "required": [
@@ -80,6 +80,6 @@
   ],
   "x-oaiMeta": {
     "name": "The file object",
-    "example": "{\n  \"id\": \"file-abc123\",\n  \"object\": \"file\",\n  \"bytes\": 120000,\n  \"created_at\": 1677610602,\n  \"expires_at\": 1680202602,\n  \"filename\": \"salesOverview.pdf\",\n  \"purpose\": \"assistants\",\n}\n"
+    "example": "{\n  \"id\": \"file-abc123\",\n  \"object\": \"file\",\n  \"bytes\": 120000,\n  \"created_at\": 1677610602,\n  \"expires_at\": 1680202602,\n  \"filename\": \"salesOverview.pdf\",\n  \"purpose\": \"assistants\",\n  \"status\": \"processed\"\n}\n"
   }
 }

@@ -5,28 +5,31 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/StagePerformanceStandaloneInsight",
-    "capturedAt": "2026-11-20"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Standalone performance insights for a specific stage.",
   "properties": {
-    "insufficientShuffleQuota": {
+    "slotContention": {
       "type": "boolean",
-      "description": "Output only. True if the stage has insufficient shuffle quota.",
-      "readOnly": true
-    },
-    "stageId": {
-      "type": "string",
-      "format": "int64",
-      "description": "Output only. The stage id that the insight mapped to.",
+      "description": "Output only. True if the stage has a slot contention issue.",
       "readOnly": true
     },
     "partitionSkew": {
       "$ref": "PartitionSkew.json"
     },
-    "slotContention": {
-      "type": "boolean",
-      "description": "Output only. True if the stage has a slot contention issue.",
+    "highCardinalityJoins": {
+      "type": "array",
+      "description": "Output only. High cardinality joins in the stage.",
+      "readOnly": true,
+      "items": {
+        "$ref": "HighCardinalityJoin.json"
+      }
+    },
+    "stageId": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The stage id that the insight mapped to.",
       "readOnly": true
     },
     "biEngineReasons": {
@@ -37,13 +40,10 @@
         "$ref": "BiEngineReason.json"
       }
     },
-    "highCardinalityJoins": {
-      "type": "array",
-      "description": "Output only. High cardinality joins in the stage.",
-      "readOnly": true,
-      "items": {
-        "$ref": "HighCardinalityJoin.json"
-      }
+    "insufficientShuffleQuota": {
+      "type": "boolean",
+      "description": "Output only. True if the stage has insufficient shuffle quota.",
+      "readOnly": true
     }
   }
 }

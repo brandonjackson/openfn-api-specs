@@ -5,14 +5,11 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/EmbedContentRequest",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Request containing the `Content` for the model to embed.",
   "properties": {
-    "content": {
-      "$ref": "Content.json"
-    },
     "taskType": {
       "type": "string",
       "description": "Optional. Deprecated: Please use EmbedContentConfig.task_type instead. Optional task type for which the embeddings will be used. Not supported on earlier models (`models/embedding-001`).",
@@ -29,9 +26,17 @@
       ],
       "deprecated": true
     },
+    "title": {
+      "type": "string",
+      "description": "Optional. Deprecated: Please use EmbedContentConfig.title instead. An optional title for the text. Only applicable when TaskType is `RETRIEVAL_DOCUMENT`. Note: Specifying a `title` for `RETRIEVAL_DOCUMENT` provides better quality embeddings for retrieval.",
+      "deprecated": true
+    },
     "model": {
       "type": "string",
       "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`"
+    },
+    "embedContentConfig": {
+      "$ref": "EmbedContentConfig.json"
     },
     "outputDimensionality": {
       "type": "integer",
@@ -39,13 +44,8 @@
       "description": "Optional. Deprecated: Please use EmbedContentConfig.output_dimensionality instead. Optional reduced dimension for the output embedding. If set, excessive values in the output embedding are truncated from the end. Supported by newer models since 2024 only. You cannot set this value if using the earlier model (`models/embedding-001`).",
       "deprecated": true
     },
-    "embedContentConfig": {
-      "$ref": "EmbedContentConfig.json"
-    },
-    "title": {
-      "type": "string",
-      "description": "Optional. Deprecated: Please use EmbedContentConfig.title instead. An optional title for the text. Only applicable when TaskType is `RETRIEVAL_DOCUMENT`. Note: Specifying a `title` for `RETRIEVAL_DOCUMENT` provides better quality embeddings for retrieval.",
-      "deprecated": true
+    "content": {
+      "$ref": "Content.json"
     }
   }
 }

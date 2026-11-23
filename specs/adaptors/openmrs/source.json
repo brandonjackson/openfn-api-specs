@@ -10,8 +10,8 @@
   "upstream": {
     "specUrl": "https://demo.standard.mybahmni.in/openmrs/module/webservices/rest/swagger.json",
     "format": "swagger-2.0",
-    "contentHash": "sha256:45c5bb694e4a44362465a492f8b32ee9bd8cd1d6b40be444785642889ec6c71b",
-    "fetchedAt": "2026-09-13"
+    "contentHash": "sha256:6d1580cd2702f40c5e4b0416ce41afd48dffd5de4140b9738b1f2f399ea65f27",
+    "fetchedAt": "2026-11-21"
   },
   "attempts": [
     {
@@ -54,7 +54,7 @@
       "kind": "openapi",
       "url": "https://rest.openmrs.org/",
       "result": "rejected",
-      "note": "The official REST reference is a static Slate site with no underlying spec file; used for the cross-reference pass (\u00a75b) instead."
+      "note": "The official REST reference is a static Slate site with no underlying spec file; used for the cross-reference pass (§5b) instead."
     },
     {
       "kind": "openapi",
@@ -66,7 +66,7 @@
       "kind": "swaggerhub",
       "url": "https://api.swaggerhub.com/specs?query=openmrs",
       "result": "rejected",
-      "note": "23 hits, none owned by OpenMRS (owners are individuals: nick_randolph/OpenMRS 2.2.0, MichaelBTR/open-mrs_api_docs 2.1.4, amfics-213/openmrs-oas30, ...). https://api.swaggerhub.com/apis/openmrs is 404, so there is no vendor SwaggerHub account. Third-party copies are a lead, not a source (SKILL.md \u00a72)."
+      "note": "23 hits, none owned by OpenMRS (owners are individuals: nick_randolph/OpenMRS 2.2.0, MichaelBTR/open-mrs_api_docs 2.1.4, amfics-213/openmrs-oas30, ...). https://api.swaggerhub.com/apis/openmrs is 404, so there is no vendor SwaggerHub account. Third-party copies are a lead, not a source (SKILL.md §2)."
     },
     {
       "kind": "postman",
@@ -94,7 +94,7 @@
     "https://cdn.jsdelivr.net/npm/@openfn/language-openmrs/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/openmrs"
   ],
-  "capturedAt": "2026-09-13",
-  "lastCheckedAt": "2026-09-13",
+  "capturedAt": "2026-11-21",
+  "lastCheckedAt": "2026-11-21",
   "notes": "OpenMRS exposes its REST API from the webservices.rest module, which generates its own Swagger 2.0 document at /openmrs/module/webservices/rest/swagger.json on each running server; there is no static vendor-published file anywhere. This is that document (module 2.5.14), re-captured anonymously on 2026-09-13 and converted to OpenAPI 3.0.3 by src/swagger.ts: 244 paths / 554 operations / 646 schemas, of which 240 GETs carry a JSON response schema and the 205 creates (201) and 109 deletes (204) carry none because the generator itself emits none - so the served spec is upstream-faithful, not lossy. Full coverage matters here because @openfn/language-openmrs is a generic CRUD wrapper (get/create/update/upsert/destroy) over an arbitrary /ws/rest/v1/<resource> path: it names no endpoints of its own, so any path in this file is reachable from a job. Why best-effort/third-party-spec rather than complete: the generator is OpenMRS's own code but the only server that would run it for us is a Bahmni distribution, because every OpenMRS-operated instance is either behind a Cloudflare JS challenge (demo, o3, o2, test3, qa-refapp - 403 to any non-browser client) or cannot emit its spec at all (dev3 throws NoClassDefFoundError com/fasterxml/jackson/dataformat/yaml/YAMLFactory). Against the official reference at rest.openmrs.org the capture is a superset with a known hole: 46 of the 58 documented resource roots are present, 41 extra roots come from that server's add-on modules (bahmni*, bed*, surgical*, admissionLocation, apptemplate, app, entitymapping, drugreferencemap, obstree, patientdiagnoses, patientprofile, reportingrest, openconceptlab, metadatamapping, idgen, hl7, field, specimen, ...), and 12 documented roots are absent - session, loggedinusers, password, implementationid, searchindexupdate, localeandthemeconfiguration, visitconfiguration and systeminformation because they are plain Spring controllers (SessionController1_9, LoggedInUsersController2_0, PasswordResetController2_2, ImplementationIdController2_0, SearchIndexController2_0, ...) rather than DelegatingResourceHandlers, and SwaggerSpecificationCreator.addPaths() only walks the registered resource handlers, so they are structurally absent from ANY OpenMRS-generated swagger, not just this capture; queue, queueroom, roomprovidermap and emrapi are missing because those modules are not installed there. Two further adaptor-surface gaps are recorded rather than patched (openapi.json must stay equal to the normalised upstream): the adaptor's fhir namespace calls GET {instanceUrl}/ws/fhir2/{R4}/<resource>, a separate FHIR module API this REST spec does not describe at all, and GET /ws/rest/v1/session - both show up as unknown-operation in the mock conformance run. Upstream fidelity traits preserved rather than tidied: schema names keep the generator's Get/GetRef/Create/Update suffixes (PatientGet, ConceptGetRef); every list response is the generator's single generic FetchAll envelope ({results:[{uuid,display,links}]}) instead of a typed <Resource>List; 40 operationIds on core paths read as Bahmni* (getAllBahmniEncounters for GET /encounter) because Bahmni's handlers override the core ones on that server, though the paths and response schemas are the core ones; and reference properties on create bodies are typed string-only (PatientCreate.person, PatientIdentifierCreate.identifierType) even though the OpenMRS docs show a nested object being accepted for the same fields - that mismatch is the whole of the mock's request-schema conformance report. Re-check caveat: this document's schemes and security fields vary per request (the scheme is echoed from the request, and the generator appends a duplicate basic_auth entry), so upstream.contentHash can differ on re-fetch with no real API change - diff paths/definitions before calling it drift. servers[0].url is the capture host because OpenMRS is self-hosted with no canonical base URL; the adaptor takes the host from state.configuration.instanceUrl and appends /ws/rest/v1."
 }
