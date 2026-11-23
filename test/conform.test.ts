@@ -543,6 +543,21 @@ test("a final $ref path parameter whose pattern admits '/' spans slashes (Azure'
   assert.equal(c.match('GET', '/c/x/y/meta'), undefined, 'only the final parameter is widened');
 });
 
+test('among satisfied discriminators the one matching more of the query wins, flag-only extras optional', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/{c}#restype=container': { get: { operationId: 'GetProperties', responses: { '200': { description: 'ok' } } } },
+      '/{c}#restype=container&comp=list&flat': { get: { operationId: 'ListBlobsFlat', responses: { '200': { description: 'ok' } } } },
+      '/{c}#restype=container&comp=acl': { get: { operationId: 'GetAcl', responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/c?restype=container')?.operationId, 'GetProperties');
+  assert.equal(c.match('GET', '/c?restype=container&comp=list')?.operationId, 'ListBlobsFlat');
+  assert.equal(c.match('GET', '/c?comp=acl&restype=container')?.operationId, 'GetAcl');
+});
+
 test('a {x:.+} router-regex path variable spans segments; a plain one does not', () => {
   const c = createConformer({
     openapi: '3.0.3',
