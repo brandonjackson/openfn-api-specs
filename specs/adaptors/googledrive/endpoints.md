@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index googledrive` — do not edit by hand -->
 
-base: https://www.googleapis.com/drive/v3 | auth: not declared | 64 operations in 14 resources
+base: https://www.googleapis.com/drive/v3 | auth: not declared | 68 operations in 14 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -58,6 +58,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /files/{fileId} — drive.files.get: Gets a file's metadata or content by ID.
 - PATCH /files/{fileId} — drive.files.update: Updates a file's metadata, content, or both.
 - DELETE /files/{fileId} — drive.files.delete: Permanently deletes a file owned by the user without moving it to the trash.
+- PATCH /upload/drive/v3/files/{fileId} — drive.files.update.upload: Updates a file's metadata, content, or both (media upload)
+- PATCH /resumable/upload/drive/v3/files/{fileId} — drive.files.update.resumableUpload: Updates a file's metadata, content, or both (resumable upload session)
 - POST /files/{fileId}/download — drive.files.download: Downloads the content of a file.
 - POST /files/{fileId}/modifyLabels — drive.files.modifyLabels: Modifies the set of labels applied to a file.
 - POST /files/{fileId}/watch — drive.files.watch: Subscribes to changes to a file.
@@ -67,6 +69,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /files/generateIds — drive.files.generateIds: Generates a set of file IDs which can be provided in create or copy requests.
 - DELETE /files/trash — drive.files.emptyTrash: Permanently deletes all of the user's trashed files.
 - POST /files/{fileId}/copy — drive.files.copy: Creates a copy of a file and applies any requested updates with patch semantics.
+- POST /resumable/upload/drive/v3/files — drive.files.create.resumableUpload: Creates a file (resumable upload session)
+- POST /upload/drive/v3/files — drive.files.create.upload: Creates a file (media upload)
 
 ## operations
 - GET /operations/{name} — drive.operations.get: Gets the latest state of a long-running operation.

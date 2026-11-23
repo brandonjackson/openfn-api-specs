@@ -1394,6 +1394,419 @@
         ]
       }
     },
+    "/resumable/upload/gmail/v1/users/{userId}/messages": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.messages.insert.resumableUpload",
+        "tags": [
+          "users.messages"
+        ],
+        "summary": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification (resumable upload session)",
+        "description": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for Google Workspace accounts."
+          },
+          {
+            "name": "internalDateSource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "receivedTime",
+                "dateHeader"
+              ],
+              "default": "receivedTime"
+            },
+            "description": "Source for Gmail's internal date of the message."
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Message"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.insert",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
+    "/upload/gmail/v1/users/{userId}/messages": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.messages.insert.upload",
+        "tags": [
+          "users.messages"
+        ],
+        "summary": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification (media upload)",
+        "description": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for Google Workspace accounts."
+          },
+          {
+            "name": "internalDateSource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "receivedTime",
+                "dateHeader"
+              ],
+              "default": "receivedTime"
+            },
+            "description": "Source for Gmail's internal date of the message."
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/related": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "message/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.insert",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
     "/gmail/v1/users/{userId}/messages/{id}/untrash": {
       "post": {
         "operationId": "gmail.users.messages.untrash",
@@ -1912,6 +2325,459 @@
         ]
       }
     },
+    "/upload/gmail/v1/users/{userId}/messages/import": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.messages.import.upload",
+        "tags": [
+          "users.messages"
+        ],
+        "summary": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP (media upload)",
+        "description": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note that the maximum size of the message is 150 MB.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
+          {
+            "name": "internalDateSource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "receivedTime",
+                "dateHeader"
+              ],
+              "default": "dateHeader"
+            },
+            "description": "Source for Gmail's internal date of the message."
+          },
+          {
+            "name": "processForCalendar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Process calendar invites in the email and add any extracted meetings to the Google Calendar for this user."
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for Google Workspace accounts."
+          },
+          {
+            "name": "neverMarkSpam",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Ignore the Gmail spam classifier decision and never mark this email as SPAM in the mailbox."
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/related": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "message/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.insert",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
+    "/resumable/upload/gmail/v1/users/{userId}/messages/import": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.messages.import.resumableUpload",
+        "tags": [
+          "users.messages"
+        ],
+        "summary": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP (resumable upload session)",
+        "description": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note that the maximum size of the message is 150 MB.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
+          {
+            "name": "internalDateSource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "receivedTime",
+                "dateHeader"
+              ],
+              "default": "dateHeader"
+            },
+            "description": "Source for Gmail's internal date of the message."
+          },
+          {
+            "name": "processForCalendar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Process calendar invites in the email and add any extracted meetings to the Google Calendar for this user."
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for Google Workspace accounts."
+          },
+          {
+            "name": "neverMarkSpam",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "false"
+            },
+            "description": "Ignore the Gmail spam classifier decision and never mark this email as SPAM in the mailbox."
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Message"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.insert",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
     "/gmail/v1/users/{userId}/messages/{id}/modify": {
       "post": {
         "operationId": "gmail.users.messages.modify",
@@ -2231,6 +3097,377 @@
               }
             }
           }
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.modify",
+          "https://www.googleapis.com/auth/gmail.send",
+          "https://www.googleapis.com/auth/gmail.send.self"
+        ]
+      }
+    },
+    "/resumable/upload/gmail/v1/users/{userId}/messages/send": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.messages.send.resumableUpload",
+        "tags": [
+          "users.messages"
+        ],
+        "summary": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers (resumable upload session)",
+        "description": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Message"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.modify",
+          "https://www.googleapis.com/auth/gmail.send",
+          "https://www.googleapis.com/auth/gmail.send.self"
+        ]
+      }
+    },
+    "/upload/gmail/v1/users/{userId}/messages/send": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.messages.send.upload",
+        "tags": [
+          "users.messages"
+        ],
+        "summary": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers (media upload)",
+        "description": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/related": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "message/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
         },
         "x-google-scopes": [
           "https://mail.google.com/",
@@ -5036,6 +6273,377 @@
         ]
       }
     },
+    "/resumable/upload/gmail/v1/users/{userId}/drafts": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.drafts.create.resumableUpload",
+        "tags": [
+          "users.drafts"
+        ],
+        "summary": "Creates a draft with the `DRAFT` label (resumable upload session)",
+        "description": "Creates a draft with the `DRAFT` label. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Draft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.drafts",
+          "https://www.googleapis.com/auth/gmail.drafts.create",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
+    "/upload/gmail/v1/users/{userId}/drafts": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.drafts.create.upload",
+        "tags": [
+          "users.drafts"
+        ],
+        "summary": "Creates a draft with the `DRAFT` label (media upload)",
+        "description": "Creates a draft with the `DRAFT` label. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/related": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "message/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.drafts",
+          "https://www.googleapis.com/auth/gmail.drafts.create",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
     "/gmail/v1/users/{userId}/drafts/{id}": {
       "get": {
         "operationId": "gmail.users.drafts.get",
@@ -5529,6 +7137,393 @@
         ]
       }
     },
+    "/upload/gmail/v1/users/{userId}/drafts/{id}": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "put": {
+        "operationId": "gmail.users.drafts.update.upload",
+        "tags": [
+          "users.drafts"
+        ],
+        "summary": "Replaces a draft's content (media upload)",
+        "description": "Replaces a draft's content. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the draft to update."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/related": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "message/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.drafts",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
+    "/resumable/upload/gmail/v1/users/{userId}/drafts/{id}": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "put": {
+        "operationId": "gmail.users.drafts.update.resumableUpload",
+        "tags": [
+          "users.drafts"
+        ],
+        "summary": "Replaces a draft's content (resumable upload session)",
+        "description": "Replaces a draft's content. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the draft to update."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Draft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.drafts",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
     "/gmail/v1/users/{userId}/drafts/send": {
       "post": {
         "operationId": "gmail.users.drafts.send",
@@ -5679,6 +7674,373 @@
               }
             }
           }
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
+    "/upload/gmail/v1/users/{userId}/drafts/send": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.drafts.send.upload",
+        "tags": [
+          "users.drafts"
+        ],
+        "summary": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers (media upload)",
+        "description": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/related": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "message/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
+        "x-google-scopes": [
+          "https://mail.google.com/",
+          "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/gmail.modify"
+        ]
+      }
+    },
+    "/resumable/upload/gmail/v1/users/{userId}/drafts/send": {
+      "servers": [
+        {
+          "url": "https://gmail.googleapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "gmail.users.drafts.send.resumableUpload",
+        "tags": [
+          "users.drafts"
+        ],
+        "summary": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers (resumable upload session)",
+        "description": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "me"
+            },
+            "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
+          {
+            "name": "oauth_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth 2.0 token for the current user."
+          },
+          {
+            "name": "alt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "media",
+                "proto"
+              ],
+              "default": "json"
+            },
+            "description": "Data format for response."
+          },
+          {
+            "name": "upload_protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "OAuth access token."
+          },
+          {
+            "name": "$.xgafv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            },
+            "description": "V1 error format."
+          },
+          {
+            "name": "quotaUser",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "description": "Returns response with indentations and line breaks."
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSONP"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Selector specifying which fields to include in a partial response."
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Draft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
         },
         "x-google-scopes": [
           "https://mail.google.com/",
