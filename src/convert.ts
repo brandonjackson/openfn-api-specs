@@ -337,6 +337,13 @@ export function mergeOpenapi(target: any, part: any, label: string): { paths: nu
     (target.tags ??= []).push(tag);
     tagNames.add(tag?.name);
   }
+  // Redoc's x-tagGroups: keep each document's own groups (by name, first wins).
+  const groupNames = new Set((target['x-tagGroups'] ?? []).map((g: any) => g?.name));
+  for (const group of part['x-tagGroups'] ?? []) {
+    if (groupNames.has(group?.name)) continue;
+    (target['x-tagGroups'] ??= []).push(group);
+    groupNames.add(group?.name);
+  }
   return { paths, operations };
 }
 

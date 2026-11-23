@@ -173,28 +173,56 @@ export function normalizePath(path: string): string {
   return p;
 }
 
-/** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
-function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
-  const item = openapi?.paths?.[op.path];
-  const deref = (p: any) => {
-    const m = typeof p?.$ref === 'string' ? /^#\/components\/parameters\/(.+)$/.exec(p.$ref) : null;
-    return m ? openapi?.components?.parameters?.[m[1]] : p;
-  };
-  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])].map(deref);
-  const names = params
-    .filter((p: any) => p?.in === 'path' && (p['x-smithy-greedy'] === true || admitsSlash(p.schema?.pattern)))
-    .map((p: any) => String(p.name));
-  return names.length ? new Set(names) : undefined;
+/** Resolve a local `#/components/...` `$ref` (one hop is all parameters need). */
+function resolveLocalRef(openapi: any, node: any): any {
+  if (typeof node?.$ref !== 'string' || !node.$ref.startsWith('#/')) return node;
+  let cur = openapi;
+  for (const seg of node.$ref.slice(2).split('/')) cur = cur?.[seg.replace(/~1/g, '/').replace(/~0/g, '~')];
+  return cur ?? node;
 }
 
 /**
- * A path parameter whose own `pattern` matches a `/` spans segments: Azure's
- * `blob` (`^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*…$`) names `config/mapping.json`,
- * which a one-segment template would never match.
+ * Whether a regex pattern (as a string) contains a literal `/` outside any
+ * character class: `^[a-z0-9]+(?:/[a-z0-9]+)*$` does (Azure's blob name),
+ * `^[^/]+$` does not.
  */
-function admitsSlash(pattern: unknown): boolean {
-  // Ignore negated classes (`[^/]+` forbids a slash rather than admitting one).
-  return typeof pattern === 'string' && pattern.replace(/\[\^[^\]]*\]/g, '').includes('/');
+export function patternAdmitsSlash(pattern: string): boolean {
+  let inClass = false;
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '\\') {
+      if (pattern[i + 1] === '/' && !inClass) return true;
+      i++;
+      continue;
+    }
+    if (inClass) {
+      if (c === ']') inClass = false;
+    } else if (c === '[') inClass = true;
+    else if (c === '/') return true;
+  }
+  return false;
+}
+
+/**
+ * Path parameters that may span slashes: those marked `x-smithy-greedy: true`
+ * (S3's `{Key+}`), and the template's final parameter when its schema
+ * `pattern` admits a literal `/` (Azure's `{blob}`, a name like
+ * `exports/2026/q1.csv`). Parameters given as `$ref`s are resolved first.
+ */
+function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
+  const item = openapi?.paths?.[op.path];
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])]
+    .map((p: any) => resolveLocalRef(openapi, p))
+    .filter((p: any) => p?.in === 'path');
+  const last = /\{([^}]+)\}$/.exec(normalizePath(op.path))?.[1];
+  const names = params
+    .filter(
+      (p: any) =>
+        p['x-smithy-greedy'] === true ||
+        (String(p.name) === last && typeof p.schema?.pattern === 'string' && patternAdmitsSlash(p.schema.pattern))
+    )
+    .map((p: any) => String(p.name));
+  return names.length ? new Set(names) : undefined;
 }
 
 /**

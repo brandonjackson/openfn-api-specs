@@ -55,15 +55,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## files
 - GET /files — drive.files.list: Lists the user's files.
 - POST /files — drive.files.create: Creates a file.
-- POST /resumable/upload/drive/v3/files — drive.files.create.resumableUpload: Resumable media upload for drive.files.create.
-- POST /upload/drive/v3/files — drive.files.create.simpleUpload: Simple media upload for drive.files.create.
+- POST /resumable/upload/drive/v3/files — drive.files.create.resumableUpload: Creates a file (resumable upload session)
+- POST /upload/drive/v3/files — drive.files.create.upload: Creates a file (media upload)
 - POST /files/{fileId}/modifyLabels — drive.files.modifyLabels: Modifies the set of labels applied to a file.
 - POST /files/{fileId}/download — drive.files.download: Downloads the content of a file.
 - GET /files/{fileId} — drive.files.get: Gets a file's metadata or content by ID.
 - PATCH /files/{fileId} — drive.files.update: Updates a file's metadata, content, or both.
 - DELETE /files/{fileId} — drive.files.delete: Permanently deletes a file owned by the user without moving it to the trash.
-- PATCH /resumable/upload/drive/v3/files/{fileId} — drive.files.update.resumableUpload: Resumable media upload for drive.files.update.
-- PATCH /upload/drive/v3/files/{fileId} — drive.files.update.simpleUpload: Simple media upload for drive.files.update.
+- PATCH /resumable/upload/drive/v3/files/{fileId} — drive.files.update.resumableUpload: Updates a file's metadata, content, or both (resumable upload session)
+- PATCH /upload/drive/v3/files/{fileId} — drive.files.update.upload: Updates a file's metadata, content, or both (media upload)
 - GET /files/generateIds — drive.files.generateIds: Generates a set of file IDs which can be provided in create or copy requests.
 - GET /files/{fileId}/listLabels — drive.files.listLabels: Lists the labels on a file.
 - GET /files/generateCseToken — drive.files.generateCseToken: Generates a CSE token which can be used to create or update CSE files.

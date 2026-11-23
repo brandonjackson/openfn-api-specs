@@ -11,7 +11,7 @@ the operating manual for keeping the copy correct and current.
 days.** `manifest.json` carries the effective `completeness` and `coverage` for
 every adaptor, and `pnpm specs report` buckets them. Both are what you steer by:
 a run that doesn't move an adaptor toward `ok` hasn't moved the north star.
-As of 2026-11-19, 57 of 104 are `ok`; 46 are best effort with a stated reason
+As of 2026-11-18, 57 of 104 are `ok`; 46 are best effort with a stated reason
 (docs-only, private API, defunct vendor); 1 is a declared subset (msgraph); none
 make no claim. "No claim" counts as incomplete, not as fine.
 
@@ -186,7 +186,7 @@ conformer-matched operation to its group. The storybook shows all three.
      `upstream.*` (incl. `contentHash`). Then verify the coverage yourself and
      claim `coverage: full` / `completeness: complete` (`--complete` writes both).
    - Vendor splits one API across several specs (Mailgun: Send, Validate,
-     Inspect, InboxReady)? Capture the primary with `--url`, then each other file
+     Inspect, Optimize)? Capture the primary with `--url`, then each other file
      with `pnpm specs convert <adaptor> --add-part=<specUrl> --part=<name>`. Each
      part is committed verbatim as `upstream-<name>.<ext>`, hash-locked under
      `upstream.parts[]`, and merged into `openapi.json` on every derivation; a

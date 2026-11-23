@@ -213,12 +213,14 @@ test('mergeOpenapi adds a further vendor document and refuses conflicting redefi
   };
   const part: any = {
     openapi: '3.1.0', info: { title: 'Validate', version: '1' },
+    'x-tagGroups': [{ name: 'Mailgun Validate', tags: ['Validations'] }],
     paths: { '/v4/address/validate': { get: { operationId: 'validate', responses: { '200': { description: 'ok' } } }, post: { operationId: 'validatePost', responses: { '200': { description: 'ok' } } } } },
     components: { securitySchemes: { basicAuth: { scheme: 'basic', type: 'http' } }, schemas: { Err: { type: 'object' }, Result: { type: 'object' } } },
   };
   const added = mergeOpenapi(base, part, 'upstream-validate.yaml');
   assert.deepEqual(added, { paths: 1, operations: 2 });
   assert.ok(base.paths['/v4/address/validate'].post);
+  assert.deepEqual(base['x-tagGroups'], [{ name: 'Mailgun Validate', tags: ['Validations'] }]);
   assert.ok(base.components.schemas.Result, 'new components are added; identical ones (in any key order) are shared');
   const clash: any = { paths: {}, components: { schemas: { Err: { type: 'string' } } } };
   assert.throws(() => mergeOpenapi(base, clash, 'x.yaml'), /components\.schemas\.Err is already defined differently/);

@@ -2873,8 +2873,21 @@
         "tags": [
           "files"
         ],
-        "description": "Resumable media upload for drive.files.create.  Creates a file. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file). This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads). Apps creating shortcuts with the `create` method must specify the MIME type `application/vnd.google-apps.shortcut`. Apps should specify a file extension in the `name` property when inserting files with the API. For example, an operation to insert a JPEG file should specify something like `\"name\": \"cat.jpg\"` in the metadata. Subsequent `GET` requests include the read-only `fileExtension` property populated with the extension originally specified in the `name` property. When a Google Drive user requests to download a file, or when the file is downloaded through the sync client, Drive builds a full filename (with extension) based on the name. In cases where the extension is missing, Drive attempts to determine the extension based on the file's MIME type.",
+        "summary": "Creates a file (resumable upload session)",
+        "description": " Creates a file. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file). This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads). Apps creating shortcuts with the `create` method must specify the MIME type `application/vnd.google-apps.shortcut`. Apps should specify a file extension in the `name` property when inserting files with the API. For example, an operation to insert a JPEG file should specify something like `\"name\": \"cat.jpg\"` in the metadata. Subsequent `GET` requests include the read-only `fileExtension` property populated with the extension originally specified in the `name` property. When a Google Drive user requests to download a file, or when the file is downloaded through the sync client, Drive builds a full filename (with extension) based on the name. In cases where the extension is missing, Drive attempts to determine the extension based on the file's MIME type.",
         "parameters": [
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
+          },
           {
             "name": "includePermissionsForView",
             "in": "query",
@@ -3014,15 +3027,6 @@
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
           },
           {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
-          },
-          {
             "name": "alt",
             "in": "query",
             "required": false,
@@ -3073,57 +3077,43 @@
               "type": "string"
             },
             "description": "OAuth 2.0 token for the current user."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/File"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "*/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/File"
+                  "type": "string"
                 }
               }
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "*/*"
+          ],
+          "maxSize": "5497558138880"
+        },
         "x-google-scopes": [
           "https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.appdata",
           "https://www.googleapis.com/auth/drive.file"
-        ],
-        "x-google-max-upload-size": "5497558138880"
+        ]
       }
     },
     "/upload/drive/v3/files": {
@@ -3133,12 +3123,26 @@
         }
       ],
       "post": {
-        "operationId": "drive.files.create.simpleUpload",
+        "operationId": "drive.files.create.upload",
         "tags": [
           "files"
         ],
-        "description": "Simple media upload for drive.files.create.  Creates a file. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file). This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads). Apps creating shortcuts with the `create` method must specify the MIME type `application/vnd.google-apps.shortcut`. Apps should specify a file extension in the `name` property when inserting files with the API. For example, an operation to insert a JPEG file should specify something like `\"name\": \"cat.jpg\"` in the metadata. Subsequent `GET` requests include the read-only `fileExtension` property populated with the extension originally specified in the `name` property. When a Google Drive user requests to download a file, or when the file is downloaded through the sync client, Drive builds a full filename (with extension) based on the name. In cases where the extension is missing, Drive attempts to determine the extension based on the file's MIME type.",
+        "summary": "Creates a file (media upload)",
+        "description": " Creates a file. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file). This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads). Apps creating shortcuts with the `create` method must specify the MIME type `application/vnd.google-apps.shortcut`. Apps should specify a file extension in the `name` property when inserting files with the API. For example, an operation to insert a JPEG file should specify something like `\"name\": \"cat.jpg\"` in the metadata. Subsequent `GET` requests include the read-only `fileExtension` property populated with the extension originally specified in the `name` property. When a Google Drive user requests to download a file, or when the file is downloaded through the sync client, Drive builds a full filename (with extension) based on the name. In cases where the extension is missing, Drive attempts to determine the extension based on the file's MIME type.",
         "parameters": [
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
+          },
           {
             "name": "includePermissionsForView",
             "in": "query",
@@ -3278,15 +3282,6 @@
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
           },
           {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
-          },
-          {
             "name": "alt",
             "in": "query",
             "required": false,
@@ -3337,32 +3332,24 @@
               "type": "string"
             },
             "description": "OAuth 2.0 token for the current user."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/File"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/File"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "*/*": {
               "schema": {
@@ -3384,12 +3371,18 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "*/*"
+          ],
+          "maxSize": "5497558138880"
+        },
         "x-google-scopes": [
           "https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.appdata",
           "https://www.googleapis.com/auth/drive.file"
-        ],
-        "x-google-max-upload-size": "5497558138880"
+        ]
       }
     },
     "/files/{fileId}/modifyLabels": {
@@ -4350,7 +4343,8 @@
         "tags": [
           "files"
         ],
-        "description": "Resumable media upload for drive.files.update.  Updates a file's metadata, content, or both. When calling this method, only populate fields in the request that you want to modify. When updating fields, some fields might be changed automatically, such as `modifiedDate`. This method supports patch semantics. This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads).",
+        "summary": "Updates a file's metadata, content, or both (resumable upload session)",
+        "description": " Updates a file's metadata, content, or both. When calling this method, only populate fields in the request that you want to modify. When updating fields, some fields might be changed automatically, such as `modifiedDate`. This method supports patch semantics. This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads).",
         "parameters": [
           {
             "name": "fileId",
@@ -4360,6 +4354,18 @@
               "type": "string"
             },
             "description": "The ID of the file."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "enforceSingleParent",
@@ -4508,15 +4514,6 @@
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
           },
           {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
-          },
-          {
             "name": "alt",
             "in": "query",
             "required": false,
@@ -4567,50 +4564,37 @@
               "type": "string"
             },
             "description": "OAuth 2.0 token for the current user."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/File"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "*/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/File"
+                  "type": "string"
                 }
               }
             }
           }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "*/*"
+          ],
+          "maxSize": "5497558138880"
         },
         "x-google-scopes": [
           "https://www.googleapis.com/auth/drive",
@@ -4618,8 +4602,7 @@
           "https://www.googleapis.com/auth/drive.file",
           "https://www.googleapis.com/auth/drive.metadata",
           "https://www.googleapis.com/auth/drive.scripts"
-        ],
-        "x-google-max-upload-size": "5497558138880"
+        ]
       }
     },
     "/upload/drive/v3/files/{fileId}": {
@@ -4629,11 +4612,12 @@
         }
       ],
       "patch": {
-        "operationId": "drive.files.update.simpleUpload",
+        "operationId": "drive.files.update.upload",
         "tags": [
           "files"
         ],
-        "description": "Simple media upload for drive.files.update.  Updates a file's metadata, content, or both. When calling this method, only populate fields in the request that you want to modify. When updating fields, some fields might be changed automatically, such as `modifiedDate`. This method supports patch semantics. This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads).",
+        "summary": "Updates a file's metadata, content, or both (media upload)",
+        "description": " Updates a file's metadata, content, or both. When calling this method, only populate fields in the request that you want to modify. When updating fields, some fields might be changed automatically, such as `modifiedDate`. This method supports patch semantics. This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads).",
         "parameters": [
           {
             "name": "fileId",
@@ -4643,6 +4627,19 @@
               "type": "string"
             },
             "description": "The ID of the file."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "enforceSingleParent",
@@ -4791,15 +4788,6 @@
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
           },
           {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
-          },
-          {
             "name": "alt",
             "in": "query",
             "required": false,
@@ -4850,32 +4838,24 @@
               "type": "string"
             },
             "description": "OAuth 2.0 token for the current user."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/File"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/File"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "*/*": {
               "schema": {
@@ -4897,14 +4877,20 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "*/*"
+          ],
+          "maxSize": "5497558138880"
+        },
         "x-google-scopes": [
           "https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.appdata",
           "https://www.googleapis.com/auth/drive.file",
           "https://www.googleapis.com/auth/drive.metadata",
           "https://www.googleapis.com/auth/drive.scripts"
-        ],
-        "x-google-max-upload-size": "5497558138880"
+        ]
       }
     },
     "/files/generateIds": {

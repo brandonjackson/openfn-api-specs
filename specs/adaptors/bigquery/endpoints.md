@@ -21,8 +21,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /projects/{projectsId}/jobs/{jobsId}/delete — bigquery.jobs.delete: Requests the deletion of the metadata of a job.
 - GET /projects/{projectsId}/jobs — bigquery.jobs.list: Lists all jobs that you started in the specified project.
 - POST /projects/{projectsId}/jobs — bigquery.jobs.insert: Starts a new asynchronous job.
-- POST /upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.simpleUpload: Simple media upload for bigquery.jobs.insert.
-- POST /resumable/upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.resumableUpload: Resumable media upload for bigquery.jobs.insert.
+- POST /upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.upload: Starts a new asynchronous job (media upload)
+- POST /resumable/upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.resumableUpload: Starts a new asynchronous job (resumable upload session)
 - POST /projects/{projectsId}/jobs/{jobsId}/cancel — bigquery.jobs.cancel: Requests that a job be cancelled.
 - GET /projects/{projectsId}/queries/{queriesId} — bigquery.jobs.getQueryResults: RPC to get the results of a query job.
 

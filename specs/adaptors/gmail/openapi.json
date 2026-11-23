@@ -9096,7 +9096,8 @@
         "tags": [
           "users.messages"
         ],
-        "description": "Resumable media upload for gmail.users.messages.send. Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "summary": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers (resumable upload session)",
+        "description": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
         "parameters": [
           {
             "name": "userId",
@@ -9107,6 +9108,18 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -9143,15 +9156,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -9217,50 +9221,37 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Message"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "message/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/Message"
+                  "type": "string"
                 }
               }
             }
           }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
         },
         "x-google-scopes": [
           "https://mail.google.com/",
@@ -9269,8 +9260,7 @@
           "https://www.googleapis.com/auth/gmail.modify",
           "https://www.googleapis.com/auth/gmail.send",
           "https://www.googleapis.com/auth/gmail.send.self"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/upload/gmail/v1/users/{userId}/messages/send": {
@@ -9280,11 +9270,12 @@
         }
       ],
       "post": {
-        "operationId": "gmail.users.messages.send.simpleUpload",
+        "operationId": "gmail.users.messages.send.upload",
         "tags": [
           "users.messages"
         ],
-        "description": "Simple media upload for gmail.users.messages.send. Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "summary": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers (media upload)",
+        "description": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
         "parameters": [
           {
             "name": "userId",
@@ -9295,6 +9286,19 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -9331,15 +9335,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -9405,32 +9400,24 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Message"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "message/*": {
               "schema": {
@@ -9452,6 +9439,13 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
@@ -9459,8 +9453,7 @@
           "https://www.googleapis.com/auth/gmail.modify",
           "https://www.googleapis.com/auth/gmail.send",
           "https://www.googleapis.com/auth/gmail.send.self"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/gmail/v1/users/{userId}/messages": {
@@ -10358,11 +10351,12 @@
         }
       ],
       "post": {
-        "operationId": "gmail.users.messages.import.simpleUpload",
+        "operationId": "gmail.users.messages.import.upload",
         "tags": [
           "users.messages"
         ],
-        "description": "Simple media upload for gmail.users.messages.import. Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note that the maximum size of the message is 150 MB.",
+        "summary": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP (media upload)",
+        "description": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note that the maximum size of the message is 150 MB.",
         "parameters": [
           {
             "name": "userId",
@@ -10373,6 +10367,19 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "internalDateSource",
@@ -10455,15 +10462,6 @@
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
           },
           {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
-          },
-          {
             "name": "alt",
             "in": "query",
             "required": false,
@@ -10527,32 +10525,24 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Message"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "message/*": {
               "schema": {
@@ -10574,12 +10564,18 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.insert",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "157286400"
+        ]
       }
     },
     "/resumable/upload/gmail/v1/users/{userId}/messages/import": {
@@ -10593,7 +10589,8 @@
         "tags": [
           "users.messages"
         ],
-        "description": "Resumable media upload for gmail.users.messages.import. Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note that the maximum size of the message is 150 MB.",
+        "summary": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP (resumable upload session)",
+        "description": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note that the maximum size of the message is 150 MB.",
         "parameters": [
           {
             "name": "userId",
@@ -10604,6 +10601,18 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "internalDateSource",
@@ -10686,15 +10695,6 @@
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
           },
           {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
-          },
-          {
             "name": "alt",
             "in": "query",
             "required": false,
@@ -10758,57 +10758,43 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Message"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "message/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/Message"
+                  "type": "string"
                 }
               }
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.insert",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "157286400"
+        ]
       }
     },
     "/resumable/upload/gmail/v1/users/{userId}/messages": {
@@ -10822,7 +10808,8 @@
         "tags": [
           "users.messages"
         ],
-        "description": "Resumable media upload for gmail.users.messages.insert. Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "summary": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification (resumable upload session)",
+        "description": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
         "parameters": [
           {
             "name": "userId",
@@ -10833,6 +10820,18 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "internalDateSource",
@@ -10893,15 +10892,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -10967,57 +10957,43 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Message"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "message/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/Message"
+                  "type": "string"
                 }
               }
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.insert",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "157286400"
+        ]
       }
     },
     "/upload/gmail/v1/users/{userId}/messages": {
@@ -11027,11 +11003,12 @@
         }
       ],
       "post": {
-        "operationId": "gmail.users.messages.insert.simpleUpload",
+        "operationId": "gmail.users.messages.insert.upload",
         "tags": [
           "users.messages"
         ],
-        "description": "Simple media upload for gmail.users.messages.insert. Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
+        "summary": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification (media upload)",
+        "description": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
         "parameters": [
           {
             "name": "userId",
@@ -11042,6 +11019,19 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "internalDateSource",
@@ -11102,15 +11092,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -11176,32 +11157,24 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Message"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "message/*": {
               "schema": {
@@ -11223,12 +11196,18 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "157286400"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.insert",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "157286400"
+        ]
       }
     },
     "/gmail/v1/users/{userId}/messages/{id}/modify": {
@@ -13127,11 +13106,12 @@
         }
       ],
       "post": {
-        "operationId": "gmail.users.drafts.send.simpleUpload",
+        "operationId": "gmail.users.drafts.send.upload",
         "tags": [
           "users.drafts"
         ],
-        "description": "Simple media upload for gmail.users.drafts.send. Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "summary": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers (media upload)",
+        "description": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
         "parameters": [
           {
             "name": "userId",
@@ -13142,6 +13122,19 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -13178,15 +13171,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -13252,32 +13236,24 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Draft"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "message/*": {
               "schema": {
@@ -13299,13 +13275,19 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
           "https://www.googleapis.com/auth/gmail.compose",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/resumable/upload/gmail/v1/users/{userId}/drafts/send": {
@@ -13319,7 +13301,8 @@
         "tags": [
           "users.drafts"
         ],
-        "description": "Resumable media upload for gmail.users.drafts.send. Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "summary": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers (resumable upload session)",
+        "description": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
         "parameters": [
           {
             "name": "userId",
@@ -13330,6 +13313,18 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -13366,15 +13361,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -13440,58 +13426,44 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Draft"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "message/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/Message"
+                  "type": "string"
                 }
               }
             }
           }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
         },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
           "https://www.googleapis.com/auth/gmail.compose",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/gmail/v1/users/{userId}/drafts": {
@@ -13854,7 +13826,8 @@
         "tags": [
           "users.drafts"
         ],
-        "description": "Resumable media upload for gmail.users.drafts.create. Creates a draft with the `DRAFT` label. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "summary": "Creates a draft with the `DRAFT` label (resumable upload session)",
+        "description": "Creates a draft with the `DRAFT` label. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
         "parameters": [
           {
             "name": "userId",
@@ -13865,6 +13838,18 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -13901,15 +13886,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -13975,50 +13951,37 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Draft"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "message/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/Draft"
+                  "type": "string"
                 }
               }
             }
           }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
         },
         "x-google-scopes": [
           "https://mail.google.com/",
@@ -14027,8 +13990,7 @@
           "https://www.googleapis.com/auth/gmail.drafts",
           "https://www.googleapis.com/auth/gmail.drafts.create",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/upload/gmail/v1/users/{userId}/drafts": {
@@ -14038,11 +14000,12 @@
         }
       ],
       "post": {
-        "operationId": "gmail.users.drafts.create.simpleUpload",
+        "operationId": "gmail.users.drafts.create.upload",
         "tags": [
           "users.drafts"
         ],
-        "description": "Simple media upload for gmail.users.drafts.create. Creates a draft with the `DRAFT` label. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "summary": "Creates a draft with the `DRAFT` label (media upload)",
+        "description": "Creates a draft with the `DRAFT` label. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
         "parameters": [
           {
             "name": "userId",
@@ -14053,6 +14016,19 @@
               "default": "me"
             },
             "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -14089,15 +14065,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -14163,32 +14130,24 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Draft"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "message/*": {
               "schema": {
@@ -14210,6 +14169,13 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
@@ -14217,8 +14183,7 @@
           "https://www.googleapis.com/auth/gmail.drafts",
           "https://www.googleapis.com/auth/gmail.drafts.create",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/gmail/v1/users/{userId}/drafts/{id}": {
@@ -14721,11 +14686,12 @@
         }
       ],
       "put": {
-        "operationId": "gmail.users.drafts.update.simpleUpload",
+        "operationId": "gmail.users.drafts.update.upload",
         "tags": [
           "users.drafts"
         ],
-        "description": "Simple media upload for gmail.users.drafts.update. Replaces a draft's content. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "summary": "Replaces a draft's content (media upload)",
+        "description": "Replaces a draft's content. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
         "parameters": [
           {
             "name": "userId",
@@ -14745,6 +14711,19 @@
               "type": "string"
             },
             "description": "The ID of the draft to update."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "media",
+                "multipart"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -14781,15 +14760,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -14855,32 +14825,24 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "media",
-                "multipart",
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Draft"
-              }
-            },
             "multipart/related": {
-              "schema": {}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
             },
             "message/*": {
               "schema": {
@@ -14902,14 +14864,20 @@
             }
           }
         },
+        "x-google-media-upload": {
+          "protocol": "simple",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
+        },
         "x-google-scopes": [
           "https://mail.google.com/",
           "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
           "https://www.googleapis.com/auth/gmail.compose",
           "https://www.googleapis.com/auth/gmail.drafts",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     },
     "/resumable/upload/gmail/v1/users/{userId}/drafts/{id}": {
@@ -14923,7 +14891,8 @@
         "tags": [
           "users.drafts"
         ],
-        "description": "Resumable media upload for gmail.users.drafts.update. Replaces a draft's content. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
+        "summary": "Replaces a draft's content (resumable upload session)",
+        "description": "Replaces a draft's content. For more information, see [Create and send draft emails](https://developers.google.com/workspace/gmail/api/guides/drafts).",
         "parameters": [
           {
             "name": "userId",
@@ -14943,6 +14912,18 @@
               "type": "string"
             },
             "description": "The ID of the draft to update."
+          },
+          {
+            "name": "uploadType",
+            "in": "query",
+            "required": true,
+            "description": "Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "resumable"
+              ]
+            }
           },
           {
             "name": "quotaUser",
@@ -14979,15 +14960,6 @@
               "type": "string"
             },
             "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
           },
           {
             "name": "alt",
@@ -15053,50 +15025,37 @@
               ]
             },
             "description": "V1 error format."
-          },
-          {
-            "name": "uploadType",
-            "in": "query",
-            "required": true,
-            "description": "media (raw bytes), multipart (metadata + media, multipart/related) or resumable (start a session).",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "resumable"
-              ]
-            }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Draft"
-              }
-            },
-            "multipart/related": {
-              "schema": {}
-            },
-            "message/*": {
-              "schema": {
-                "type": "string",
-                "format": "binary"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
+            "description": "Upload session opened; PUT the media to the URI in `Location`.",
+            "headers": {
+              "Location": {
+                "description": "The resumable session URI.",
                 "schema": {
-                  "$ref": "#/components/schemas/Draft"
+                  "type": "string"
                 }
               }
             }
           }
+        },
+        "x-google-media-upload": {
+          "protocol": "resumable",
+          "accept": [
+            "message/*"
+          ],
+          "maxSize": "36700160"
         },
         "x-google-scopes": [
           "https://mail.google.com/",
@@ -15104,8 +15063,7 @@
           "https://www.googleapis.com/auth/gmail.compose",
           "https://www.googleapis.com/auth/gmail.drafts",
           "https://www.googleapis.com/auth/gmail.modify"
-        ],
-        "x-google-max-upload-size": "36700160"
+        ]
       }
     }
   },
