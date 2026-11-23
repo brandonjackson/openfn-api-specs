@@ -5,16 +5,24 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/CachedContent",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Content that has been preprocessed and can be used in subsequent request to GenerativeService. Cached content can be only used with model it was created for.",
   "properties": {
-    "systemInstruction": {
-      "$ref": "Content.json"
+    "tools": {
+      "type": "array",
+      "description": "Optional. Input only. Immutable. A list of `Tools` the model may use to generate the next response",
+      "items": {
+        "$ref": "Tool.json"
+      }
     },
-    "toolConfig": {
-      "$ref": "ToolConfig.json"
+    "contents": {
+      "type": "array",
+      "description": "Optional. Input only. Immutable. The content to cache.",
+      "items": {
+        "$ref": "Content.json"
+      }
     },
     "displayName": {
       "type": "string",
@@ -25,30 +33,18 @@
       "description": "Output only. Identifier. The resource name referring to the cached content. Format: `cachedContents/{id}`",
       "readOnly": true
     },
-    "ttl": {
+    "model": {
       "type": "string",
-      "format": "google-duration",
-      "description": "Input only. New TTL for this resource, input only."
+      "description": "Required. Immutable. The name of the `Model` to use for cached content Format: `models/{model}`"
     },
-    "createTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. Creation time of the cache entry.",
-      "readOnly": true
+    "toolConfig": {
+      "$ref": "ToolConfig.json"
     },
-    "contents": {
-      "type": "array",
-      "description": "Optional. Input only. Immutable. The content to cache.",
-      "items": {
-        "$ref": "Content.json"
-      }
+    "usageMetadata": {
+      "$ref": "CachedContentUsageMetadata.json"
     },
-    "tools": {
-      "type": "array",
-      "description": "Optional. Input only. Immutable. A list of `Tools` the model may use to generate the next response",
-      "items": {
-        "$ref": "Tool.json"
-      }
+    "systemInstruction": {
+      "$ref": "Content.json"
     },
     "updateTime": {
       "type": "string",
@@ -56,17 +52,21 @@
       "description": "Output only. When the cache entry was last updated in UTC time.",
       "readOnly": true
     },
+    "ttl": {
+      "type": "string",
+      "format": "google-duration",
+      "description": "Input only. New TTL for this resource, input only."
+    },
     "expireTime": {
       "type": "string",
       "format": "google-datetime",
       "description": "Timestamp in UTC of when this resource is considered expired. This is *always* provided on output, regardless of what was sent on input."
     },
-    "model": {
+    "createTime": {
       "type": "string",
-      "description": "Required. Immutable. The name of the `Model` to use for cached content Format: `models/{model}`"
-    },
-    "usageMetadata": {
-      "$ref": "CachedContentUsageMetadata.json"
+      "format": "google-datetime",
+      "description": "Output only. Creation time of the cache entry.",
+      "readOnly": true
     }
   }
 }

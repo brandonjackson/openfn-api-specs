@@ -101,6 +101,9 @@ specs/adaptors/<adaptor>/
 
   "coverage": "full",               // full | subset
   "derivedFrom": null,              // when coverage=subset: the full artifact it was derived from (e.g. "upstream.json")
+  "subsetRule": null,               // when coverage=subset: the mechanical narrowing rule (resources, maxSegments,
+                                    // include, title, note) that `convert` re-applies after every capture
+                                    // (src/subset.ts), so a refreshed upstream re-derives the subset (msgraph)
 
   "completeness": "complete",       // complete | best-effort
   "completenessReason": null,       // required when best-effort: docs-only | private-api | partial-docs | ...
@@ -189,6 +192,12 @@ conformer-matched operation to its group. The storybook shows all three.
      `completeness: best-effort` with a reason.
    - Non-REST → synthesize the full operation surface from the adaptor.
    - Record every `attempt` (including the misses) and `verifiedAgainst`.
+   - Re-capturing a drifted upstream: `convert --url` merges into `source.json`
+     but drops the curated note on the re-used attempt; restore it. An adaptor
+     whose `openapi.json` merges several upstreams (surveycto, sunbird-rc) or
+     whose upstream carries `modifications[]` (mailgun) needs that step redone
+     by hand after `convert`; check that it reproduces the committed
+     `openapi.json` from the old upstream before trusting it on the new one.
    The standard procedure for this step — spec hunting, docs scraping, the
    OpenAPI house rules, and the cross-reference pass — is the
    [`api-spec-ingestion` skill](./.claude/skills/api-spec-ingestion/SKILL.md).

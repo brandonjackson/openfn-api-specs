@@ -5,11 +5,24 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/IterationResult",
-    "capturedAt": "2026-11-20"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Information about a single iteration of the training run.",
   "properties": {
+    "trainingLoss": {
+      "type": "number",
+      "format": "double",
+      "description": "Loss computed on the training data at the end of iteration."
+    },
+    "durationMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Time taken to run the iteration in milliseconds."
+    },
+    "arimaResult": {
+      "$ref": "ArimaResult.json"
+    },
     "clusterInfos": {
       "type": "array",
       "description": "Information about top clusters for clustering models.",
@@ -17,15 +30,20 @@
         "$ref": "ClusterInfo.json"
       }
     },
-    "trainingLoss": {
-      "type": "number",
-      "format": "double",
-      "description": "Loss computed on the training data at the end of iteration."
-    },
     "evalLoss": {
       "type": "number",
       "format": "double",
       "description": "Loss computed on the eval data at the end of iteration."
+    },
+    "learnRate": {
+      "type": "number",
+      "format": "double",
+      "description": "Learn rate used for this iteration."
+    },
+    "index": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Index of the iteration, 0 based."
     },
     "principalComponentInfos": {
       "type": "array",
@@ -33,24 +51,6 @@
       "items": {
         "$ref": "PrincipalComponentInfo.json"
       }
-    },
-    "arimaResult": {
-      "$ref": "ArimaResult.json"
-    },
-    "learnRate": {
-      "type": "number",
-      "format": "double",
-      "description": "Learn rate used for this iteration."
-    },
-    "durationMs": {
-      "type": "string",
-      "format": "int64",
-      "description": "Time taken to run the iteration in milliseconds."
-    },
-    "index": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Index of the iteration, 0 based."
     }
   }
 }

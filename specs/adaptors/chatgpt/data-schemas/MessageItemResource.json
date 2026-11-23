@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/MessageItemResource",
+  "title": "MessageItemResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/MessageItemResource",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "message"
+      ],
+      "default": "message",
+      "x-stainless-const": true,
+      "description": "The item type. Always `message`."
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The ID of this item, or null for legacy user messages whose ID was not recorded."
+    },
+    "turn_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the turn that contains this item."
+    },
+    "role": {
+      "$ref": "SessionMessageRoleResource.json",
+      "description": "The role of the message author."
+    },
+    "content": {
+      "type": "array",
+      "items": {
+        "$ref": "MessageContentResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "The content of the message. User messages contain input text or images; assistant messages contain output text."
+    },
+    "status": {
+      "$ref": "OutputItemStatusResource.json",
+      "description": "The status of the message. User messages are always `completed`."
+    },
+    "phase": {
+      "anyOf": [
+        {
+          "$ref": "MessagePhaseResource.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The phase of an assistant message. Null for user messages."
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "turn_id",
+    "role",
+    "content",
+    "status",
+    "phase"
+  ],
+  "additionalProperties": false,
+  "description": "A user or assistant message recorded in a session."
+}

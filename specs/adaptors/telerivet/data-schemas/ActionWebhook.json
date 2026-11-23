@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/ActionWebhook",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Makes a HTTP POST request to a URL on your server, passing several POST parameters with information about the current message and contact.\n\nYour webhook script may optionally return a JSON response with a 'messages' property containing an array of messages to send, and a 'variables' property containing variable names and values to update.\n\nFor details, see the [Webhook API documentation](/api/webhook).",
@@ -22,6 +22,28 @@
     "secret": {
       "type": "string",
       "description": "Secret string passed as POST parameter for request verification."
+    },
+    "params": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "POST parameter name (max 100 characters)."
+          },
+          "value": {
+            "type": "string",
+            "description": "Parameter value. May contain [[variables]].",
+            "x-supports-variables": true
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "description": "Custom POST parameters to include in the webhook request, in addition to the standard parameters (max 20). A custom parameter with the same name as a standard parameter (including <code>secret</code>) takes precedence over the standard value."
     }
   },
   "required": [

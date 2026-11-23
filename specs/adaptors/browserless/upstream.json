@@ -2,7 +2,7 @@
   "customSiteTitle": "Browserless Documentation",
   "info": {
     "title": "Browserless",
-    "version": "2.60.0",
+    "version": "2.63.2",
     "description": "This is the API reference for **Browserless Enterprise and Cloud** deployments. You'll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.\n\nThe API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and [CDP extensions](https://docs.browserless.io/api-reference/cdp-extensions) that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the [GitHub repository](https://github.com/browserless/browserless).\n\n## Just Getting Started?\n\nCheck out the [Quick Start guide](https://docs.browserless.io/baas/start) to launch your first session, or explore the [BrowserQL IDE](https://docs.browserless.io/browserql/start) for a GraphQL-based automation workflow.\n\n## Base URL\n\nAll API requests go to your deployment's base URL. For Browserless Cloud:\n\n```plaintext\nhttps://production-sfo.browserless.io\n```\n\nSelf-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).\n\n## Authentication\n\nInclude your API token as a query parameter on every request:\n\n```plaintext\nhttps://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN\n```\n\nTokens are managed from the [Account dashboard](https://www.browserless.io/account). Self-hosted deployments set the token via the `TOKEN` environment variable. See [connection details](https://docs.browserless.io/baas/connection) for all authentication options.\n\n## Changelog\n\nFor release notes and version history, see the [Enterprise Changelog](https://docs.browserless.io/enterprise/changelog).\n\n## Software keys\n\nSelf-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can't be reverse engineered. When a key expires, the container exits with a semantic error code.\n\nTo use a software key, set the `KEY` environment variable when running the container:\n\n```bash\ndocker run -e KEY=your-generated-key browserless/enterprise\n```"
   },
   "openapi": "3.0.0",
@@ -8250,7 +8250,7 @@
     },
     "/chromium/download": {
       "post": {
-        "description": "Runs a Puppeteer or Playwright script and returns any files the browser downloaded during execution.\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back with the appropriate content-type header.\n\n**Note:** Also available at `/download` as a convenience alias.",
+        "description": "Runs a Puppeteer or Playwright script and returns any files the browser downloaded during execution.\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back with the appropriate content-type header.\nFailed downloads return a JSON object with an \"error\" message and the upstream HTTP\nerror status when observed, or 502 for a browser cancellation without an observed\nHTTP error or a browser disconnection before completion. Download setup failures return 500.\nIf no download starts within 30 seconds after the function returns, the response is 404.\nThe configured request TIMEOUT (or timeout query parameter) may return 408 sooner.\nCleanup is awaited; if cancellation or page closure fails, the browser is stopped\nbefore its download directory is removed, even when keepalive was requested.\nDisconnects and timeouts during running user code also stop the browser.\n\n**Note:** Also available at `/download` as a convenience alias.",
         "parameters": [
           {
             "in": "query",
@@ -8479,6 +8479,11 @@
             "code": 500,
             "description": "An internal error occurred when handling the request.",
             "message": "HTTP/1.1 500 Internal Server Error"
+          },
+          "502": {
+            "code": 502,
+            "description": "The browser disconnected or canceled the download without an observed upstream HTTP error status.",
+            "message": "HTTP/1.1 502 Bad Gateway"
           },
           "503": {
             "code": 503,
@@ -8738,7 +8743,7 @@
     },
     "/edge/download": {
       "post": {
-        "description": "Runs a Puppeteer or Playwright script in Edge and returns any files the browser downloaded during execution.\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back with the appropriate content-type header.",
+        "description": "Runs a Puppeteer or Playwright script in Edge and returns any files the browser downloaded during execution.\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back with the appropriate content-type header.\nFailed downloads return a JSON object with an \"error\" message and the upstream HTTP\nerror status when observed, or 502 for a browser cancellation without an observed\nHTTP error or a browser disconnection before completion. Download setup failures return 500.\nIf no download starts within 30 seconds after the function returns, the response is 404.\nThe configured request TIMEOUT (or timeout query parameter) may return 408 sooner.\nCleanup is awaited; if cancellation or page closure fails, the browser is stopped\nbefore its download directory is removed, even when keepalive was requested.\nDisconnects and timeouts during running user code also stop the browser.",
         "parameters": [
           {
             "in": "query",
@@ -8967,6 +8972,11 @@
             "code": 500,
             "description": "An internal error occurred when handling the request.",
             "message": "HTTP/1.1 500 Internal Server Error"
+          },
+          "502": {
+            "code": 502,
+            "description": "The browser disconnected or canceled the download without an observed upstream HTTP error status.",
+            "message": "HTTP/1.1 502 Bad Gateway"
           },
           "503": {
             "code": 503,
@@ -9511,6 +9521,16 @@
                       "type": "string"
                     }
                   },
+                  "credentialOrigins": {
+                    "description": "Optional alias → origins map. When set, each credential alias may only be\nfilled on its own origins and unlisted aliases are refused.",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
                   "label": {
                     "description": "An optional, caller-supplied label for the session. Stored on the session\nrecord for the caller's own bookkeeping; does not affect behavior.",
                     "type": "string"
@@ -9552,7 +9572,11 @@
                       "type": "string"
                     },
                     "cloudEndpointId": {
-                      "description": "The encrypted cloud endpoint ID for the session when ran in the browserless cloud.\nThis is a cloud-specific property and is only present when using browserless cloud.",
+                      "description": "The legacy encrypted /e/ cloud endpoint ID; null unless the session URLs are /e/ URLs.\nUse the complete returned URLs or routingBase instead of constructing an /e/ URL.",
+                      "type": "string"
+                    },
+                    "routingBase": {
+                      "description": "The routing base for this session, including its routing scheme and owner reference.",
                       "type": "string"
                     }
                   },
@@ -9562,6 +9586,7 @@
                     "cloudEndpointId",
                     "connect",
                     "id",
+                    "routingBase",
                     "stop",
                     "ttl"
                   ],
@@ -11796,6 +11821,16 @@
                     "type": "array",
                     "items": {
                       "type": "string"
+                    }
+                  },
+                  "credentialOrigins": {
+                    "description": "Optional alias → origins map. When set, each credential alias may only be\nfilled on its own origins and unlisted aliases are refused.",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
                   }
                 },
@@ -20924,7 +20959,7 @@
     },
     "/chrome/download": {
       "post": {
-        "description": "Runs a Puppeteer or Playwright script in Chrome and returns any files the browser downloaded during execution.\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back with the appropriate content-type header.",
+        "description": "Runs a Puppeteer or Playwright script in Chrome and returns any files the browser downloaded during execution.\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back with the appropriate content-type header.\nFailed downloads return a JSON object with an \"error\" message and the upstream HTTP\nerror status when observed, or 502 for a browser cancellation without an observed\nHTTP error or a browser disconnection before completion. Download setup failures return 500.\nIf no download starts within 30 seconds after the function returns, the response is 404.\nThe configured request TIMEOUT (or timeout query parameter) may return 408 sooner.\nCleanup is awaited; if cancellation or page closure fails, the browser is stopped\nbefore its download directory is removed, even when keepalive was requested.\nDisconnects and timeouts during running user code also stop the browser.",
         "parameters": [
           {
             "in": "query",
@@ -21153,6 +21188,11 @@
             "code": 500,
             "description": "An internal error occurred when handling the request.",
             "message": "HTTP/1.1 500 Internal Server Error"
+          },
+          "502": {
+            "code": 502,
+            "description": "The browser disconnected or canceled the download without an observed upstream HTTP error status.",
+            "message": "HTTP/1.1 502 Bad Gateway"
           },
           "503": {
             "code": 503,
@@ -25337,6 +25377,9 @@
                     "description": "Allow the viewer to click and type. Defaults to false.",
                     "type": "boolean"
                   },
+                  "fileUpload": {
+                    "type": "boolean"
+                  },
                   "timeout": {
                     "description": "Link lifetime in milliseconds, capped at 15 minutes, the plan maximum, and remaining session time.",
                     "type": "number"
@@ -27393,22 +27436,27 @@
                                 {
                                   "type": "string",
                                   "const": "screenshot"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "snapshot"
                                 }
                               ],
-                              "minItems": 5,
-                              "maxItems": 5,
+                              "minItems": 6,
+                              "maxItems": 6,
                               "default": [
                                 "loadSecret",
                                 "saveSecret",
                                 "clearSecrets",
                                 "goto",
-                                "screenshot"
+                                "screenshot",
+                                "snapshot"
                               ]
                             },
                             "ordering": {
                               "type": "string",
-                              "const": "Run screenshots before loadSecret, or explicitly run clearSecrets once secret-bearing content is gone from all tabs before capturing. Navigation does not clear capture protection. saveSecret is not gated by the capture gate and may run at any point.",
-                              "default": "Run screenshots before loadSecret, or explicitly run clearSecrets once secret-bearing content is gone from all tabs before capturing. Navigation does not clear capture protection. saveSecret is not gated by the capture gate and may run at any point."
+                              "const": "Run screenshots and snapshots before loadSecret, or explicitly run clearSecrets once secret-bearing content is gone from all tabs before capturing. Navigation does not clear capture protection. An accepted clearSecrets invalidates snapshots already in flight; request a fresh snapshot after unlocking. saveSecret is not gated by the capture gate and may run at any point.",
+                              "default": "Run screenshots and snapshots before loadSecret, or explicitly run clearSecrets once secret-bearing content is gone from all tabs before capturing. Navigation does not clear capture protection. An accepted clearSecrets invalidates snapshots already in flight; request a fresh snapshot after unlocking. saveSecret is not gated by the capture gate and may run at any point."
                             },
                             "availableAt": {
                               "type": "array",
@@ -29230,7 +29278,7 @@
     },
     "/integrations/script-generator": {
       "post": {
-        "description": "Generates a Browserless automation script (BrowserQL / Playwright JS /\nPlaywright Python / Puppeteer / BAP TypeScript) from a natural-language task. A managed agent drives a\nbrowser session; its ordered tool-call transcript is rendered into the\nrequested script(s). Streams Server-Sent Events: status, script, complete,\nerror.",
+        "description": "Generates a Browserless automation script (BrowserQL / Playwright JS /\nPlaywright Python / Puppeteer / BAP TypeScript / BAP Python) from a natural-language task. A managed agent drives a\nbrowser session; its ordered tool-call transcript is rendered into the\nrequested script(s). Streams Server-Sent Events: status, script, complete,\nerror.",
         "parameters": [],
         "requestBody": {
           "content": {}

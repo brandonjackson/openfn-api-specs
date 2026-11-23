@@ -2,9 +2,14 @@
 
 <!-- derived from openapi.json by `pnpm specs index surveycto` — do not edit by hand -->
 
-base: https://your-server.surveycto.com | auth: not declared | 50 operations in 9 resources
+base: https://your-server.surveycto.com | auth: http/basic, apiKey (header oauth-access-token) | 53 operations in 10 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
+
+## AI
+- POST /api/v2/ai/batch — aiBatch: Submit an AI processing batch
+- GET /api/v2/ai/batch/{runId} — aiBatchStatus: Get AI processing run status
+- DELETE /api/v2/ai/batch/{runId} — aiBatchCancel: Cancel further preparation of an AI run
 
 ## Dataset Records
 - GET /api/v2/datasets/{datasetId}/record — getRecord: Get record by ID

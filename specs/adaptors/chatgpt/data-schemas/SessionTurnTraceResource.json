@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/SessionTurnTraceResource",
+  "title": "SessionTurnTraceResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/SessionTurnTraceResource",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The root turn ID. Use this ID as the pagination anchor."
+    },
+    "object": {
+      "type": "string",
+      "enum": [
+        "agent.session.trace"
+      ],
+      "default": "agent.session.trace",
+      "x-stainless-const": true,
+      "description": "The object type, which is always `agent.session.trace`."
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The session that owns this trace."
+    },
+    "created_at": {
+      "type": "integer",
+      "format": "int64",
+      "description": "The Unix timestamp in seconds when the root turn was created."
+    },
+    "otlp": {
+      "type": "object",
+      "additionalProperties": {},
+      "propertyNames": {
+        "type": "string",
+        "minLength": 0
+      },
+      "minProperties": 0,
+      "description": "An OTLP JSON ExportTraceServiceRequest containing resourceSpans. Only currently published data is returned; later trace updates are not awaited."
+    }
+  },
+  "required": [
+    "id",
+    "object",
+    "session_id",
+    "created_at",
+    "otlp"
+  ],
+  "additionalProperties": false
+}
