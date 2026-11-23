@@ -543,6 +543,35 @@ test("a final $ref path parameter whose pattern admits '/' spans slashes (Azure'
   assert.equal(c.match('GET', '/c/x/y/meta'), undefined, 'only the final parameter is widened');
 });
 
+test('a non-JSON request body (requestContentType) is not checked against the JSON request schema', () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/upload/files': {
+        post: {
+          operationId: 'upload',
+          requestBody: {
+            content: {
+              'application/json': { schema: { type: 'object', required: ['name'] } },
+              'multipart/related': { schema: {} },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  const multipart = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: '--b\r\n...', requestContentType: 'multipart/related; boundary=b' });
+  assert.deepEqual(multipart.filter((v) => v.kind === 'request-schema'), []);
+  const json = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: {}, requestContentType: 'application/json' });
+  assert.equal(json.filter((v) => v.kind === 'request-schema').length, 1, 'a JSON body is still checked');
+  const unknown = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: {} });
+  assert.equal(unknown.filter((v) => v.kind === 'request-schema').length, 1, 'no content type: checked as before');
+});
+
+
 test('among satisfied discriminators the one matching more of the query wins, flag-only extras optional', () => {
   const spec = {
     openapi: '3.0.3',

@@ -14,6 +14,7 @@ Quick reference:
 - `pnpm specs convert <adaptor> --url=<specUrl>` — capture an upstream machine spec
   (OpenAPI 3.x / Swagger 2.0 / Google Discovery / Smithy 2.0) verbatim and derive `openapi.json`.
   With no `--url`, re-derives `openapi.json` from the committed upstream.
+  `--add-part=<specUrl> --part=<name>` adds a further vendor spec for the same API (merged, hash-locked).
 - `pnpm specs data-objects <adaptor>` — derive data-schemas from openapi.json.
 - `pnpm specs index <adaptor>` — derive `endpoints.md` (one line per operation, grouped by
   resource) from openapi.json. The compact view an AI assistant reads instead of the full spec.

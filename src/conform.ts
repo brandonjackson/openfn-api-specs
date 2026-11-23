@@ -46,6 +46,12 @@ export interface Exchange {
   status: number;
   /** Parsed request body, when one was sent. */
   requestBody?: unknown;
+  /**
+   * Request Content-Type, when known. A non-JSON body (multipart/related,
+   * form data, raw bytes) is not checked against the operation's JSON schema,
+   * the same way non-JSON responses are not.
+   */
+  requestContentType?: string;
   /** Parsed response body. Omit (undefined) when the response had none. */
   responseBody?: unknown;
   /** Response Content-Type, when known. Non-JSON responses are not schema-checked. */
@@ -728,7 +734,8 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
     const methodLower = op.method.toLowerCase();
 
     // Request body.
-    if (checkRequests && ex.requestBody !== undefined && raw?.requestBody) {
+    const jsonRequest = ex.requestContentType === undefined || isJsonMedia(ex.requestContentType);
+    if (checkRequests && jsonRequest && ex.requestBody !== undefined && raw?.requestBody) {
       const rb = parsed.deref(raw.requestBody);
       const media = pickJsonMedia(rb?.content);
       // Only a JSON body is checked against the JSON schema. Without a request

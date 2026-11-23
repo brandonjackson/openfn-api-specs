@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index chatgpt` — do not edit by hand -->
 
-base: https://api.openai.com/v1 | auth: http/bearer, http/bearer | 388 operations in 47 resources
+base: https://api.openai.com/v1 | auth: http/bearer | 388 operations in 47 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 

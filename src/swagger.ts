@@ -254,12 +254,25 @@ function convertHeaders(headers: Node): Node {
   return out;
 }
 
+/**
+ * Swagger 2.0's `type: file` response, or AutoRest's spelling of the same
+ * stream (`type: object, format: file`, used throughout Azure's specs).
+ */
+function isFileSchema(schema: Node): boolean {
+  return schema?.type === 'file' || (schema?.format === 'file' && (schema.type === undefined || schema.type === 'object' || schema.type === 'string'));
+}
+
 /** Convert one Swagger response object. */
 function convertResponse(res: Node, produces: string[]): Node {
   if (typeof res.$ref === 'string') return { $ref: rewriteRef(res.$ref) };
 
   const out: Node = { description: res.description ?? '' };
-  if (res.schema) {
+  if (res.schema && isFileSchema(res.schema)) {
+    // A file response is raw bytes in the stored object's own media type, not
+    // the operation's `produces` (Azure's blob.json declares application/xml
+    // document-wide, which would make every blob download "XML").
+    out.content = { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } };
+  } else if (res.schema) {
     const schema = convertSchema(res.schema);
     const content: Node = {};
     for (const type of produces.length ? produces : ['application/json']) content[type] = { schema };

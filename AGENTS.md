@@ -188,6 +188,12 @@ conformer-matched operation to its group. The storybook shows all three.
      derives the full `openapi.json`, and records `origin`, `upstreamFormat` and
      `upstream.*` (incl. `contentHash`). Then verify the coverage yourself and
      claim `coverage: full` / `completeness: complete` (`--complete` writes both).
+   - Vendor splits one API across several specs (Mailgun: Send, Validate,
+     Inspect, Optimize)? Capture the primary with `--url`, then each other file
+     with `pnpm specs convert <adaptor> --add-part=<specUrl> --part=<name>`. Each
+     part is committed verbatim as `upstream-<name>.<ext>`, hash-locked under
+     `upstream.parts[]`, and merged into `openapi.json` on every derivation; a
+     part that redefines a path or component differently fails the merge.
    - No machine spec → author the full documented API from vendor docs.
      `completeness: best-effort` with a reason.
    - Non-REST → synthesize the full operation surface from the adaptor.

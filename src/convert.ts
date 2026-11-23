@@ -277,6 +277,76 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
   };
 }
 
+/** The component sections an OpenAPI 3.x document can carry. */
+const COMPONENT_SECTIONS = [
+  'schemas', 'responses', 'parameters', 'examples', 'requestBodies', 'headers',
+  'securitySchemes', 'links', 'callbacks', 'pathItems',
+];
+
+const PATH_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
+/**
+ * Merge one more vendor OpenAPI document (an `upstream.parts[]` file) into the
+ * served document, in place. Paths and components are added as they are;
+ * anything that would overwrite a different definition throws, because two
+ * vendor files disagreeing about the same operation or schema is a finding to
+ * resolve by hand, never something to paper over. Identical duplicates (a
+ * shared `basicAuth` scheme, a common `Error` schema) are fine.
+ */
+export function mergeOpenapi(target: any, part: any, label: string): { paths: number; operations: number } {
+  // Key order is presentation, not meaning: `{type, scheme}` equals `{scheme, type}`.
+  const canon = (v: any): any =>
+    Array.isArray(v) ? v.map(canon) : v && typeof v === 'object'
+      ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon(v[k])])) : v;
+  const same = (a: unknown, b: unknown) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+  let paths = 0;
+  let operations = 0;
+  target.paths ??= {};
+  for (const [path, item] of Object.entries<any>(part.paths ?? {})) {
+    const existing = target.paths[path];
+    if (!existing) {
+      target.paths[path] = item;
+      paths++;
+      operations += PATH_METHODS.filter((m) => item?.[m]).length;
+      continue;
+    }
+    for (const [key, value] of Object.entries<any>(item ?? {})) {
+      if (existing[key] === undefined) {
+        existing[key] = value;
+        if (PATH_METHODS.includes(key)) operations++;
+      } else if (!same(existing[key], value)) {
+        throw new Error(`${label}: ${PATH_METHODS.includes(key) ? key.toUpperCase() : key} ${path} is already defined differently`);
+      }
+    }
+  }
+  for (const section of COMPONENT_SECTIONS) {
+    const from = part.components?.[section];
+    if (!from) continue;
+    target.components ??= {};
+    const into = (target.components[section] ??= {});
+    for (const [name, value] of Object.entries(from)) {
+      if (into[name] === undefined) into[name] = value;
+      else if (!same(into[name], value)) {
+        throw new Error(`${label}: components.${section}.${name} is already defined differently`);
+      }
+    }
+  }
+  const tagNames = new Set((target.tags ?? []).map((t: any) => t?.name));
+  for (const tag of part.tags ?? []) {
+    if (tagNames.has(tag?.name)) continue;
+    (target.tags ??= []).push(tag);
+    tagNames.add(tag?.name);
+  }
+  // Redoc's x-tagGroups: keep each document's own groups (by name, first wins).
+  const groupNames = new Set((target['x-tagGroups'] ?? []).map((g: any) => g?.name));
+  for (const group of part['x-tagGroups'] ?? []) {
+    if (groupNames.has(group?.name)) continue;
+    (target['x-tagGroups'] ??= []).push(group);
+    groupNames.add(group?.name);
+  }
+  return { paths, operations };
+}
+
 /**
  * Verbatim upstream files left over from a previous capture in a different
  * format (e.g. re-capturing as YAML a spec that used to be JSON). The caller
