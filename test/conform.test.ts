@@ -472,31 +472,46 @@ test('every committed spec compiles its response schemas without error', () => {
   assert.deepEqual(failures, []);
 });
 
-test('a greedy final path parameter spans slashes', () => {
+test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one does not', () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/{Bucket}': { get: { operationId: 'ListObjects', responses: { '200': { description: 'ok' } } } },
+      '/{Bucket}/{Key}': {
+        get: {
+          operationId: 'GetObject',
+          parameters: [
+            { name: 'Bucket', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'Key', in: 'path', required: true, schema: { type: 'string' }, 'x-smithy-greedy': true },
+          ],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+      '/things/{id}': { get: { operationId: 'GetThing', responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/b/reports/2026/q1.csv')?.operationId, 'GetObject');
+  assert.equal(c.match('GET', '/b/q1.csv')?.operationId, 'GetObject');
+  assert.equal(c.match('GET', '/b')?.operationId, 'ListObjects');
+  assert.equal(c.match('GET', '/things/a')?.operationId, 'GetThing', 'a literal segment still wins');
+  const plain = createConformer({ ...spec, paths: { '/things/{id}': spec.paths['/things/{id}'] } });
+  assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
+});
+
+test('a path parameter whose pattern admits a slash spans slashes', () => {
   const ok = { '200': { description: 'ok' } };
   const c = createConformer({
     openapi: '3.0.3',
     info: { title: 't', version: '1' },
     paths: {
-      '/{bucket}/{key}': {
-        get: { operationId: 'getObject', parameters: [{ name: 'key', in: 'path', required: true, 'x-greedy': true, schema: { type: 'string' } }], responses: ok },
-      },
-      '/{bucket}/{key}#tagging': {
-        get: { operationId: 'getTagging', parameters: [{ name: 'key', in: 'path', required: true, 'x-greedy': true, schema: { type: 'string' } }], responses: ok },
-      },
       '/{container}/{blob}': {
-        // No flag, but the pattern itself admits a slash.
         put: { operationId: 'putBlob', parameters: [{ name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z]+(?:/[a-z]+)*$' } }], responses: ok },
       },
-      '/{a}/{b}/meta': { get: { operationId: 'getMeta', responses: ok } },
       '/plain/{id}': { delete: { operationId: 'deletePlain', responses: ok } },
     },
   });
-  assert.equal(c.match('GET', '/b/dir/sub/file.txt')?.operationId, 'getObject');
-  assert.equal(c.match('GET', '/b/dir/file.txt?tagging')?.operationId, 'getTagging');
   assert.equal(c.match('PUT', '/c/exports/latest')?.operationId, 'putBlob');
-  // A template with more literal segments still wins.
-  assert.equal(c.match('GET', '/b/k/meta')?.operationId, 'getMeta');
-  // Ordinary parameters stay single-segment.
   assert.equal(c.match('DELETE', '/plain/a/b'), undefined);
 });

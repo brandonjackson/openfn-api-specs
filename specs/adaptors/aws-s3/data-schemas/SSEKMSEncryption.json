@@ -5,30 +5,25 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/SSEKMSEncryption",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
-  "required": [
-    "KMSKeyArn"
-  ],
   "properties": {
     "KMSKeyArn": {
-      "allOf": [
-        {
-          "$ref": "NonEmptyKmsKeyArnString.json"
-        }
-      ],
+      "type": "string",
+      "pattern": "^arn:aws[a-zA-Z0-9-]*:kms:[a-z0-9-]+:[0-9]{12}:key/[a-zA-Z0-9-]+$",
+      "minLength": 20,
+      "maxLength": 2048,
       "description": "<p>\n      Specifies the Amazon Web Services KMS key Amazon Resource Name (ARN) to use for the updated server-side encryption \n      type. Required if <code>ObjectEncryption</code> specifies <code>SSEKMS</code>. \n    </p>\n         <note>\n            <p>You must specify the full Amazon Web Services KMS key ARN. The KMS key ID and KMS key alias aren't \n        supported.</p>\n         </note>\n         <p>Pattern: (<code>arn:aws[-a-z0-9]*:kms:[-a-z0-9]*:[0-9]{12}:key/.+</code>)</p>"
     },
     "BucketKeyEnabled": {
-      "allOf": [
-        {
-          "$ref": "BucketKeyEnabled.json"
-        }
-      ],
+      "type": "boolean",
       "description": "<p>\n      Specifies whether Amazon S3 should use an S3 Bucket Key for object encryption with server-side encryption \n      using Key Management Service (KMS) keys (SSE-KMS). If this value isn't specified, it defaults to <code>false</code>. \n      Setting this value to <code>true</code> causes Amazon S3 to use an S3 Bucket Key for object encryption with \n      SSE-KMS. For more information, see \n      <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html\">\n        Using Amazon S3 Bucket Keys</a> in the <i>Amazon S3 User Guide</i>.\n    </p>\n         <p>Valid Values: <code>true</code> | <code>false</code>\n         </p>"
     }
   },
+  "required": [
+    "KMSKeyArn"
+  ],
   "description": "<p>\n      If <code>SSEKMS</code> is specified for <code>ObjectEncryption</code>, this data type specifies\n      the Amazon Web Services KMS key Amazon Resource Name (ARN) to use and whether to use an S3 Bucket Key for \n      server-side encryption using Key Management Service (KMS) keys (SSE-KMS).\n    </p>",
   "xml": {
     "name": "SSE-KMS"

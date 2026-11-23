@@ -29,7 +29,7 @@ Decide once, up front, and record the decision in `source.json.attempts[]`.
 | you found | origin | upstreamFormat | completeness |
 | --- | --- | --- | --- |
 | the vendor's own OpenAPI 3.x (JSON or YAML) | `found-openapi` | `openapi-3.0` / `openapi-3.1` | `complete` (implied) |
-| Swagger 2.0, Google Discovery, Smithy JSON AST, Postman, WSDL, GraphQL SDL, OData CSDL | `converted` | `swagger-2.0`, `google-discovery`, `smithy`, `postman`, `wsdl`, `graphql-sdl`, `csdl` | `complete` once the conversion covers everything |
+| Swagger 2.0, Google Discovery, Postman, WSDL, GraphQL SDL, OData CSDL | `converted` | `swagger-2.0`, `google-discovery`, `postman`, `wsdl`, `graphql-sdl`, `csdl` | `complete` once the conversion covers everything |
 | prose docs only | `generated` | `docs` | `best-effort`, reason `docs-only` (or `partial-docs`) |
 | no vendor REST API (DB, protocol, internal) | `synthesized` | `adaptor-surface` | `complete` once every adaptor op is modelled |
 
@@ -102,9 +102,10 @@ Then produce `openapi.json`:
   so in `notes`.
 - `converted`: use the repo converter where one exists — `src/discovery.ts` for
   Google Discovery, `src/swagger.ts` for Swagger 2.0 (it also handles Azure's
-  `x-ms-paths` and `x-ms-parameterized-host`), `src/smithy.ts` for a Smithy JSON
-  AST (the service models AWS publishes in `github.com/aws/api-models-aws`;
-  restXml / restJson1 services). All are wired into
+  `x-ms-paths` and `x-ms-parameterized-host`), `src/smithy.ts` for AWS's
+  Smithy 2.0 JSON models (github.com/aws/api-models-aws: AWS publishes no
+  OpenAPI, but every service has a current Smithy model; restXml/restJson1
+  services convert). All three are wired into
   `pnpm specs convert <adaptor> --url=<specUrl>`, which writes the verbatim
   upstream, derives `openapi.json` and records the hash in one pass; run it with
   no `--url` to re-derive after a converter change. For Postman collections use

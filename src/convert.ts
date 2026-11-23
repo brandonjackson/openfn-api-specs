@@ -16,7 +16,7 @@
  *  | OpenAPI 3.x (JSON or YAML)  | found-openapi  | the upstream, rendered to JSON      |
  *  | Swagger 2.0                 | converted      | swaggerToOpenApi(upstream)          |
  *  | Google Discovery            | converted      | discoveryToOpenApi(upstream)        |
- *  | Smithy JSON AST (AWS)       | converted      | smithyToOpenApi(upstream)           |
+ *  | Smithy 2.0 JSON AST (AWS)   | converted      | smithyToOpenApi(upstream)           |
  *
  * A YAML upstream is parsed with the `yaml` package (a devDependency, imported
  * lazily so the published runtime never needs it) and the *original YAML bytes*
@@ -81,9 +81,8 @@ export function detect(doc: any, ext: 'json' | 'yaml'): Omit<DetectedUpstream, '
   if (doc?.kind === 'discovery#restDescription') {
     return { kind: 'discovery', format: 'google-discovery', origin: 'converted', ext };
   }
-  // A Smithy JSON AST: a `smithy` version string and a map of shapes.
   if (typeof doc?.smithy === 'string' && doc?.shapes && typeof doc.shapes === 'object') {
-    return { kind: 'smithy', format: 'smithy', origin: 'converted', ext };
+    return { kind: 'smithy', format: `smithy-${doc.smithy}`, origin: 'converted', ext };
   }
   throw new Error(
     `Unrecognised upstream spec (openapi=${doc?.openapi} swagger=${doc?.swagger} kind=${doc?.kind}). ` +

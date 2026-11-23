@@ -33,7 +33,7 @@ export interface SpecUpstream {
 /** One entry in the finding-step decision trail. */
 export interface SpecAttempt {
   /** What kind of source was tried. */
-  kind: 'openapi' | 'swagger' | 'discovery' | 'smithy' | 'postman' | 'wsdl' | 'graphql' | 'docs' | string;
+  kind: 'openapi' | 'swagger' | 'discovery' | 'postman' | 'wsdl' | 'graphql' | 'docs' | string;
   url?: string;
   result: 'used' | 'not-found' | 'rejected';
   note?: string;
@@ -51,7 +51,7 @@ export interface SpecSource {
   npm: string;
   origin: SpecOrigin;
   /** The upstream format before any conversion (e.g. 'openapi-3.1', 'swagger-2.0',
-   *  'google-discovery', 'smithy', 'graphql-sdl', 'docs', 'adaptor-surface'). */
+   *  'google-discovery', 'graphql-sdl', 'docs', 'adaptor-surface'). */
   upstreamFormat: string;
   /** Whether openapi.json is the full API ('full') or a derived view ('subset'). */
   coverage?: SpecCoverage;

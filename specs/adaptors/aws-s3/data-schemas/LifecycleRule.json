@@ -5,12 +5,9 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/LifecycleRule",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
-  "required": [
-    "Status"
-  ],
   "properties": {
     "Expiration": {
       "allOf": [
@@ -21,19 +18,11 @@
       "description": "<p>Specifies the expiration for the lifecycle of the object in the form of date, days and, whether the\n      object has a delete marker.</p>"
     },
     "ID": {
-      "allOf": [
-        {
-          "$ref": "ID.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Unique identifier for the rule. The value cannot be longer than 255 characters.</p>"
     },
     "Prefix": {
-      "allOf": [
-        {
-          "$ref": "Prefix.json"
-        }
-      ],
+      "type": "string",
       "description": "<p> The general purpose bucket prefix that identifies one or more objects to which the rule applies. We recommend using <code>Filter</code> instead of <code>Prefix</code> for new PUTs. Previous configurations where a prefix is defined will continue to operate as before.</p>\n         <important>\n            <p>Replacement must be made for object keys containing special characters (such as carriage returns) when using \n         XML requests. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints\">\n            XML related object key constraints</a>.</p>\n         </important>",
       "deprecated": true
     },
@@ -61,7 +50,8 @@
       ],
       "description": "<p>Specifies when an Amazon S3 object transitions to a specified storage class.</p>\n         <note>\n            <p>This parameter applies to general purpose buckets only. It is not supported for directory bucket\n        lifecycle configurations.</p>\n         </note>",
       "xml": {
-        "name": "Transition"
+        "name": "Transition",
+        "wrapped": false
       }
     },
     "NoncurrentVersionTransitions": {
@@ -72,7 +62,8 @@
       ],
       "description": "<p>Specifies the transition rule for the lifecycle rule that describes when noncurrent objects\n      transition to a specific storage class. If your bucket is versioning-enabled (or versioning is\n      suspended), you can set this action to request that Amazon S3 transition noncurrent object versions to a\n      specific storage class at a set period in the object's lifetime.</p>\n         <note>\n            <p>This parameter applies to general purpose buckets only. It is not supported for directory bucket\n        lifecycle configurations.</p>\n         </note>",
       "xml": {
-        "name": "NoncurrentVersionTransition"
+        "name": "NoncurrentVersionTransition",
+        "wrapped": false
       }
     },
     "NoncurrentVersionExpiration": {
@@ -82,5 +73,8 @@
       "$ref": "AbortIncompleteMultipartUpload.json"
     }
   },
+  "required": [
+    "Status"
+  ],
   "description": "<p>A lifecycle rule for individual objects in an Amazon S3 bucket.</p>\n         <p>For more information see, <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html\">Managing your storage lifecycle</a> in\n      the <i>Amazon S3 User Guide</i>.</p>"
 }

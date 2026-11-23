@@ -2,55 +2,54 @@
   "adaptor": "aws-s3",
   "npm": "@openfn/language-aws-s3",
   "origin": "converted",
-  "upstreamFormat": "smithy",
+  "upstreamFormat": "smithy-2.0",
   "coverage": "full",
   "derivedFrom": null,
   "completeness": "complete",
+  "completenessReason": null,
   "upstream": {
-    "specUrl": "https://raw.githubusercontent.com/aws/api-models-aws/main/models/s3/service/2006-03-01/s3-2006-03-01.json",
-    "format": "smithy",
-    "contentHash": "sha256:73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
-    "fetchedAt": "2026-11-16"
+    "specUrl": "https://raw.githubusercontent.com/aws/api-models-aws/00963cb6e3bd2cee061a279682a744bf54e544b2/models/s3/service/2006-03-01/s3-2006-03-01.json",
+    "format": "smithy-2.0",
+    "contentHash": "sha256:8b5efc1968e1023288391a9676ce7cbb0a56d080326cfa74d49a713a43d99c0b",
+    "fetchedAt": "2026-11-18"
   },
   "attempts": [
     {
       "kind": "openapi",
-      "url": "AWS publishes no OpenAPI document for S3; its own machine spec is the SDK service model",
-      "result": "not-found"
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html",
+      "result": "not-found",
+      "note": "AWS publishes no OpenAPI document for S3; its own machine spec is the Smithy service model the SDKs are generated from."
     },
     {
-      "kind": "openapi",
+      "kind": "aws-api-model",
       "url": "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/s3-2006-03-01.normal.json",
       "result": "rejected",
-      "note": "AWS's own service model in the legacy SDK v2 JSON format. Rejected on 2026-09-03 for want of a converter; superseded on 2026-11-16 by the Smithy form of the same model, which src/smithy.ts converts"
+      "note": "AWS SDK v2 model (99 operations); SDK v2 is end-of-support and its model stopped tracking S3 (no metadata-configuration, RenameObject, ABAC or object-annotation operations)."
     },
     {
       "kind": "openapi",
       "url": "https://api.apis.guru/v2/specs/amazonaws.com/s3/2006-03-01/openapi.json",
       "result": "rejected",
-      "note": "apis.guru's aws2openapi rendering of the AWS model: third-party and frozen at about 2021 (97 operations). Used from 2026-09-03 until 2026-11-16, then superseded by AWS's own model"
+      "note": "apis.guru aws2openapi rendering of the v2 model (97 operations, ~2021): third-party and lagging. Was used until 2026-11-18."
     },
     {
       "kind": "smithy",
-      "url": "https://raw.githubusercontent.com/aws/api-models-aws/main/models/s3/service/2006-03-01/s3-2006-03-01.json",
+      "url": "https://raw.githubusercontent.com/aws/api-models-aws/00963cb6e3bd2cee061a279682a744bf54e544b2/models/s3/service/2006-03-01/s3-2006-03-01.json",
       "result": "used",
-      "note": "AWS's own Smithy JSON AST for S3, from the AWS-owned github.com/aws/api-models-aws repository (README: Smithy models for all public AWS API services; NOTICE: Copyright Amazon.com, Inc.). The jsDelivr mirror https://cdn.jsdelivr.net/gh/aws/api-models-aws@main/models/s3/service/2006-03-01/s3-2006-03-01.json returned byte-identical content"
+      "note": "AWS-published Smithy 2.0 JSON AST for S3 (aws/api-models-aws, pinned to commit 00963cb), the model @aws-sdk/client-s3 v3 is generated from: 112 operations. Converted by src/smithy.ts."
     }
   ],
   "verifiedAgainst": [
     "ast.json",
-    "adaptor-source",
-    "upstream.json"
+    "adaptor-source"
   ],
   "modifications": [],
   "sources": [
-    "https://raw.githubusercontent.com/aws/api-models-aws/main/models/s3/service/2006-03-01/s3-2006-03-01.json",
-    "https://github.com/aws/api-models-aws",
+    "https://github.com/aws/api-models-aws/tree/main/models/s3",
     "https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-aws-s3/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-aws-s3/dist/index.js"
+    "https://www.npmjs.com/package/@openfn/language-aws-s3"
   ],
-  "capturedAt": "2026-11-16",
-  "lastCheckedAt": "2026-11-16",
-  "notes": "Full coverage of the Amazon S3 REST API (2006-03-01), converted by src/smithy.ts from AWS's own Smithy service model, saved verbatim as upstream.json. COUNTS: the model has 112 operations, all bound with smithy.api#http, and openapi.json has 112 operations over 59 path keys; none were skipped and the converter raised no warnings. The model has 710 data shapes; openapi.json has 559 component schemas: 529 shapes carried as they are, plus 30 body schemas for operation inputs/outputs that have an XML body. The other 151 operation input/output structures have no schema of their own because every member is a path, query or header parameter, a response header or a raw payload. DIFF against the apis.guru rendering this replaces (97 operations, 574 schemas): 19 operations added (CreateSession, ListDirectoryBuckets, RenameObject, UpdateObjectEncryption, GetBucketAbac, PutBucketAbac, the four object-annotation operations and the nine bucket metadata-configuration operations) and 4 removed, the legacy GetBucketLifecycle, PutBucketLifecycle, GetBucketNotification and PutBucketNotification, which AWS's current model no longer declares. Those four shared their request URI with the current GetBucketLifecycleConfiguration, PutBucketLifecycleConfiguration, GetBucketNotificationConfiguration and PutBucketNotificationConfiguration (GET/PUT /{Bucket}?lifecycle and ?notification), so no URL is lost. 13 path keys changed spelling for the same operationId (for example GET / is now GET /#x-id=ListBuckets because ListDirectoryBuckets shares that URI, and PUT /{Bucket}#analytics&id is now PUT /{Bucket}#analytics). ADAPTOR SURFACE: @openfn/language-aws-s3 1.1.4 exposes put, list and get, which send PutObjectCommand, ListObjectsV2Command and GetObjectCommand; PutObject (PUT /{Bucket}/{Key}), ListObjectsV2 (GET /{Bucket}#list-type=2) and GetObject (GET /{Bucket}/{Key}) are all present. PATH KEYS: operations that share a method and path are told apart by a # fragment carrying the URI's literal query (#acl, #list-type=2), then required query parameters (#uploadId), then required headers (#x-amz-copy-source). The SDK-only x-id hint is kept as an optional query parameter and used in a key only for ListBuckets and ListDirectoryBuckets. GROUPING: the model declares no resources, so the 15 endpoints.md groups come from a tag table in src/smithy.ts (was 3 path-derived groups). MODELLED LOOSELY: paths are path-style (/{Bucket}/...) on https://s3.{region}.amazonaws.com, while real clients mostly use virtual-hosted hosts resolved by endpoint rules that are not carried; {Key+} is written {Key}, so the conformer does not match a key that contains a slash (also true of the previous spec); XML bodies are JSON-Schema objects under application/xml with xml.name/attribute/wrapped where the model states them, not a full XML binding; object bodies are binary application/octet-stream; SelectObjectContent's event stream is a schema under application/vnd.amazon.eventstream, not a framed stream; x-amz-meta-* prefix headers are one header named x-amz-meta-*; SigV4 is declared as an Authorization apiKey scheme; only the errors the model lists per operation are documented (20 operations), and an error with no httpError (NotFound) takes Smithy's default of 400 although S3 answers 404; smithy.api#examples, waiters and checksum traits are not carried. Descriptions keep AWS's HTML."
+  "capturedAt": "2026-11-18",
+  "lastCheckedAt": "2026-11-18",
+  "notes": "Full coverage of the Amazon S3 REST API, converted from AWS's own Smithy 2.0 model (aws/api-models-aws, the source @aws-sdk/client-s3 v3 is generated from and which @openfn/language-aws-s3 bundles): 112 operations over 59 path keys and every shape they reach, including the 2023+ operations the earlier apis.guru rendering lacked (CreateSession, ListDirectoryBuckets, RenameObject, bucket metadata configuration, ABAC, object annotations, UpdateObjectEncryption). Converter rules (src/smithy.ts): restXml bindings map to path/query/header parameters and XML bodies; operations that share a method and path are keyed by their literal query as a #a&b suffix (the conformer's discriminator form), with the SDK-only x-id dropped unless nothing else tells them apart (then required query params, then required headers, e.g. CopyObject is #x-amz-copy-source). Paths are path-style (/{Bucket}/{Key}); AWS SDK v3 defaults to virtual-hosted style ({Bucket}.s3.{region}.amazonaws.com/{Key}), which carries the bucket in the host. Greedy {Key+} labels are {Key} with x-smithy-greedy: true. Endpoint rules, waiters and examples are client concerns and are not carried over. The adaptor (put/list/get) calls PutObject, ListObjectsV2 and GetObject, all present."
 }

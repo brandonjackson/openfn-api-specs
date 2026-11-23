@@ -5,32 +5,20 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/ListObjectsOutput",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
   "properties": {
     "IsTruncated": {
-      "allOf": [
-        {
-          "$ref": "IsTruncated.json"
-        }
-      ],
+      "type": "boolean",
       "description": "<p>A flag that indicates whether Amazon S3 returned all of the results that satisfied the search\n      criteria.</p>"
     },
     "Marker": {
-      "allOf": [
-        {
-          "$ref": "Marker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Indicates where in the bucket listing begins. Marker is included in the response if it was sent with\n      the request.</p>"
     },
     "NextMarker": {
-      "allOf": [
-        {
-          "$ref": "NextMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>When the response is truncated (the <code>IsTruncated</code> element value in the response is\n        <code>true</code>), you can use the key name in this field as the <code>marker</code> parameter in the\n      subsequent request to get the next set of objects. Amazon S3 lists objects in alphabetical order. </p>\n         <note>\n            <p>This element is returned only if you have the <code>delimiter</code> request parameter specified.\n        If the response does not include the <code>NextMarker</code> element and it is truncated, you can use\n        the value of the last <code>Key</code> element in the response as the <code>marker</code> parameter in\n        the subsequent request to get the next set of object keys.</p>\n         </note>"
     },
     "Contents": {
@@ -39,38 +27,26 @@
           "$ref": "ObjectList.json"
         }
       ],
-      "description": "<p>Metadata about each object returned.</p>"
+      "description": "<p>Metadata about each object returned.</p>",
+      "xml": {
+        "wrapped": false
+      }
     },
     "Name": {
-      "allOf": [
-        {
-          "$ref": "BucketName.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The bucket name.</p>"
     },
     "Prefix": {
-      "allOf": [
-        {
-          "$ref": "Prefix.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Keys that begin with the indicated prefix.</p>"
     },
     "Delimiter": {
-      "allOf": [
-        {
-          "$ref": "Delimiter.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Causes keys that contain the same string between the prefix and the first occurrence of the\n      delimiter to be rolled up into a single result element in the <code>CommonPrefixes</code> collection.\n      These rolled-up keys are not returned elsewhere in the response. Each rolled-up result counts as only\n      one return against the <code>MaxKeys</code> value.</p>"
     },
     "MaxKeys": {
-      "allOf": [
-        {
-          "$ref": "MaxKeys.json"
-        }
-      ],
+      "type": "integer",
+      "format": "int32",
       "description": "<p>The maximum number of keys returned in the response body.</p>"
     },
     "CommonPrefixes": {
@@ -79,7 +55,10 @@
           "$ref": "CommonPrefixList.json"
         }
       ],
-      "description": "<p>All of the keys (up to 1,000) rolled up in a common prefix count as a single return when calculating\n      the number of returns. </p>\n         <p>A response can contain <code>CommonPrefixes</code> only if you specify a delimiter.</p>\n         <p>\n            <code>CommonPrefixes</code> contains all (if there are any) keys between <code>Prefix</code> and the\n      next occurrence of the string specified by the delimiter.</p>\n         <p>\n            <code>CommonPrefixes</code> lists keys that act like subdirectories in the directory specified by\n        <code>Prefix</code>.</p>\n         <p>For example, if the prefix is <code>notes/</code> and the delimiter is a slash (<code>/</code>), as\n      in <code>notes/summer/july</code>, the common prefix is <code>notes/summer/</code>. All of the keys that\n      roll up into a common prefix count as a single return when calculating the number of returns.</p>"
+      "description": "<p>All of the keys (up to 1,000) rolled up in a common prefix count as a single return when calculating\n      the number of returns. </p>\n         <p>A response can contain <code>CommonPrefixes</code> only if you specify a delimiter.</p>\n         <p>\n            <code>CommonPrefixes</code> contains all (if there are any) keys between <code>Prefix</code> and the\n      next occurrence of the string specified by the delimiter.</p>\n         <p>\n            <code>CommonPrefixes</code> lists keys that act like subdirectories in the directory specified by\n        <code>Prefix</code>.</p>\n         <p>For example, if the prefix is <code>notes/</code> and the delimiter is a slash (<code>/</code>), as\n      in <code>notes/summer/july</code>, the common prefix is <code>notes/summer/</code>. All of the keys that\n      roll up into a common prefix count as a single return when calculating the number of returns.</p>",
+      "xml": {
+        "wrapped": false
+      }
     },
     "EncodingType": {
       "allOf": [
@@ -91,7 +70,6 @@
     }
   },
   "xml": {
-    "name": "ListBucketResult",
-    "namespace": "http://s3.amazonaws.com/doc/2006-03-01/"
+    "name": "ListBucketResult"
   }
 }

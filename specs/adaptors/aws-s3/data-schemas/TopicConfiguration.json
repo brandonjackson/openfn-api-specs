@@ -5,23 +5,16 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/TopicConfiguration",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
-  "required": [
-    "TopicArn",
-    "Events"
-  ],
   "properties": {
     "Id": {
-      "$ref": "NotificationId.json"
+      "type": "string",
+      "description": "<p>An optional unique identifier for configurations in a notification configuration. If you don't\n      provide one, Amazon S3 will assign an ID.</p>"
     },
     "TopicArn": {
-      "allOf": [
-        {
-          "$ref": "TopicArn.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The Amazon Resource Name (ARN) of the Amazon SNS topic to which Amazon S3 publishes a message when it\n      detects events of the specified type.</p>",
       "xml": {
         "name": "Topic"
@@ -35,12 +28,17 @@
       ],
       "description": "<p>The Amazon S3 bucket event about which to send notifications. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html\">Supported Event Types</a> in\n      the <i>Amazon S3 User Guide</i>.</p>",
       "xml": {
-        "name": "Event"
+        "name": "Event",
+        "wrapped": false
       }
     },
     "Filter": {
       "$ref": "NotificationConfigurationFilter.json"
     }
   },
+  "required": [
+    "TopicArn",
+    "Events"
+  ],
   "description": "<p>A container for specifying the configuration for publication of messages to an Amazon Simple\n      Notification Service (Amazon SNS) topic when Amazon S3 detects specified events.</p>"
 }

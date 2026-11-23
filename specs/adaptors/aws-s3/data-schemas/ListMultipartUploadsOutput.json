@@ -5,80 +5,45 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/ListMultipartUploadsOutput",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
   "properties": {
     "Bucket": {
-      "allOf": [
-        {
-          "$ref": "BucketName.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The name of the bucket to which the multipart upload was initiated. Does not return the access point ARN or\n      access point alias if used.</p>"
     },
     "KeyMarker": {
-      "allOf": [
-        {
-          "$ref": "KeyMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The key at or after which the listing began.</p>"
     },
     "UploadIdMarker": {
-      "allOf": [
-        {
-          "$ref": "UploadIdMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Together with key-marker, specifies the multipart upload after which listing should begin. If\n      key-marker is not specified, the upload-id-marker parameter is ignored. Otherwise, any multipart uploads\n      for a key equal to the key-marker might be included in the list only if they have an upload ID\n      lexicographically greater than the specified <code>upload-id-marker</code>.</p>\n         <note>\n            <p>This functionality is not supported for directory buckets.</p>\n         </note>"
     },
     "NextKeyMarker": {
-      "allOf": [
-        {
-          "$ref": "NextKeyMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>When a list is truncated, this element specifies the value that should be used for the key-marker\n      request parameter in a subsequent request.</p>"
     },
     "Prefix": {
-      "allOf": [
-        {
-          "$ref": "Prefix.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>When a prefix is provided in the request, this field contains the specified prefix. The result\n      contains only keys starting with the specified prefix.</p>\n         <note>\n            <p>\n               <b>Directory buckets</b> - For directory buckets, only prefixes that end in a delimiter (<code>/</code>) are supported.</p>\n         </note>"
     },
     "Delimiter": {
-      "allOf": [
-        {
-          "$ref": "Delimiter.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Contains the delimiter you specified in the request. If you don't specify a delimiter in your\n      request, this element is absent from the response.</p>\n         <note>\n            <p>\n               <b>Directory buckets</b> - For directory buckets, <code>/</code> is the only supported delimiter.</p>\n         </note>"
     },
     "NextUploadIdMarker": {
-      "allOf": [
-        {
-          "$ref": "NextUploadIdMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>When a list is truncated, this element specifies the value that should be used for the\n        <code>upload-id-marker</code> request parameter in a subsequent request.</p>\n         <note>\n            <p>This functionality is not supported for directory buckets.</p>\n         </note>"
     },
     "MaxUploads": {
-      "allOf": [
-        {
-          "$ref": "MaxUploads.json"
-        }
-      ],
+      "type": "integer",
+      "format": "int32",
       "description": "<p>Maximum number of multipart uploads that could have been included in the response.</p>"
     },
     "IsTruncated": {
-      "allOf": [
-        {
-          "$ref": "IsTruncated.json"
-        }
-      ],
+      "type": "boolean",
       "description": "<p>Indicates whether the returned list of multipart uploads is truncated. A value of true indicates\n      that the list was truncated. The list can be truncated if the number of multipart uploads exceeds the\n      limit allowed or specified by max uploads.</p>"
     },
     "Uploads": {
@@ -89,7 +54,8 @@
       ],
       "description": "<p>Container for elements related to a particular multipart upload. A response can contain zero or more\n        <code>Upload</code> elements.</p>",
       "xml": {
-        "name": "Upload"
+        "name": "Upload",
+        "wrapped": false
       }
     },
     "CommonPrefixes": {
@@ -98,7 +64,10 @@
           "$ref": "CommonPrefixList.json"
         }
       ],
-      "description": "<p>If you specify a delimiter in the request, then the result returns each distinct key prefix\n      containing the delimiter in a <code>CommonPrefixes</code> element. The distinct key prefixes are\n      returned in the <code>Prefix</code> child element.</p>\n         <note>\n            <p>\n               <b>Directory buckets</b> - For directory buckets, only prefixes that end in a delimiter (<code>/</code>) are supported.</p>\n         </note>"
+      "description": "<p>If you specify a delimiter in the request, then the result returns each distinct key prefix\n      containing the delimiter in a <code>CommonPrefixes</code> element. The distinct key prefixes are\n      returned in the <code>Prefix</code> child element.</p>\n         <note>\n            <p>\n               <b>Directory buckets</b> - For directory buckets, only prefixes that end in a delimiter (<code>/</code>) are supported.</p>\n         </note>",
+      "xml": {
+        "wrapped": false
+      }
     },
     "EncodingType": {
       "allOf": [
@@ -110,7 +79,6 @@
     }
   },
   "xml": {
-    "name": "ListMultipartUploadsResult",
-    "namespace": "http://s3.amazonaws.com/doc/2006-03-01/"
+    "name": "ListMultipartUploadsResult"
   }
 }

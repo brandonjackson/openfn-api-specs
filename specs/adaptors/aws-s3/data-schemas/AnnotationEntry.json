@@ -5,37 +5,21 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/AnnotationEntry",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
-  "required": [
-    "AnnotationName",
-    "LastModified",
-    "Size"
-  ],
   "properties": {
     "AnnotationName": {
-      "allOf": [
-        {
-          "$ref": "AnnotationName.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The name of the annotation.</p>"
     },
     "LastModified": {
-      "allOf": [
-        {
-          "$ref": "LastModified.json"
-        }
-      ],
+      "type": "string",
+      "format": "date-time",
       "description": "<p>The date and time the annotation was last modified.</p>"
     },
     "ETag": {
-      "allOf": [
-        {
-          "$ref": "ETag.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The entity tag of the annotation.</p>"
     },
     "ChecksumAlgorithm": {
@@ -44,14 +28,14 @@
           "$ref": "ChecksumAlgorithmList.json"
         }
       ],
-      "description": "<p>The checksum algorithm used for the annotation.</p>"
+      "description": "<p>The checksum algorithm used for the annotation.</p>",
+      "xml": {
+        "wrapped": false
+      }
     },
     "Size": {
-      "allOf": [
-        {
-          "$ref": "Size.json"
-        }
-      ],
+      "type": "integer",
+      "format": "int64",
       "description": "<p>The size of the annotation payload, in bytes.</p>"
     },
     "ReplicationStatus": {
@@ -63,5 +47,10 @@
       "description": "<p>The replication status of the annotation.</p>"
     }
   },
+  "required": [
+    "AnnotationName",
+    "LastModified",
+    "Size"
+  ],
   "description": "<p>Describes a single annotation attached to an object, including its name, last modified time,\n      size, ETag, checksum algorithm, and replication status. Returned in the response from\n      <code>ListObjectAnnotations</code>.</p>"
 }

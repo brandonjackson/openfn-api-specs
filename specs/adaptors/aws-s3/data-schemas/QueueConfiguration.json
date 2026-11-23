@@ -5,23 +5,16 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/QueueConfiguration",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
-  "required": [
-    "QueueArn",
-    "Events"
-  ],
   "properties": {
     "Id": {
-      "$ref": "NotificationId.json"
+      "type": "string",
+      "description": "<p>An optional unique identifier for configurations in a notification configuration. If you don't\n      provide one, Amazon S3 will assign an ID.</p>"
     },
     "QueueArn": {
-      "allOf": [
-        {
-          "$ref": "QueueArn.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The Amazon Resource Name (ARN) of the Amazon SQS queue to which Amazon S3 publishes a message when it\n      detects events of the specified type.</p>",
       "xml": {
         "name": "Queue"
@@ -35,12 +28,17 @@
       ],
       "description": "<p>A collection of bucket events for which to send notifications</p>",
       "xml": {
-        "name": "Event"
+        "name": "Event",
+        "wrapped": false
       }
     },
     "Filter": {
       "$ref": "NotificationConfigurationFilter.json"
     }
   },
+  "required": [
+    "QueueArn",
+    "Events"
+  ],
   "description": "<p>Specifies the configuration for publishing messages to an Amazon Simple Queue Service (Amazon SQS)\n      queue when Amazon S3 detects specified events.</p>"
 }

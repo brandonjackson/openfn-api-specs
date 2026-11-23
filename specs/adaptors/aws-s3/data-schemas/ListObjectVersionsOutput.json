@@ -5,48 +5,28 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/ListObjectVersionsOutput",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
   "properties": {
     "IsTruncated": {
-      "allOf": [
-        {
-          "$ref": "IsTruncated.json"
-        }
-      ],
+      "type": "boolean",
       "description": "<p>A flag that indicates whether Amazon S3 returned all of the results that satisfied the search criteria.\n      If your results were truncated, you can make a follow-up paginated request by using the\n        <code>NextKeyMarker</code> and <code>NextVersionIdMarker</code> response parameters as a starting\n      place in another request to return the rest of the results.</p>"
     },
     "KeyMarker": {
-      "allOf": [
-        {
-          "$ref": "KeyMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Marks the last key returned in a truncated response.</p>"
     },
     "VersionIdMarker": {
-      "allOf": [
-        {
-          "$ref": "VersionIdMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Marks the last version of the key returned in a truncated response.</p>"
     },
     "NextKeyMarker": {
-      "allOf": [
-        {
-          "$ref": "NextKeyMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>When the number of responses exceeds the value of <code>MaxKeys</code>, <code>NextKeyMarker</code>\n      specifies the first key not returned that satisfies the search criteria. Use this value for the\n      key-marker request parameter in a subsequent request.</p>"
     },
     "NextVersionIdMarker": {
-      "allOf": [
-        {
-          "$ref": "NextVersionIdMarker.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>When the number of responses exceeds the value of <code>MaxKeys</code>,\n        <code>NextVersionIdMarker</code> specifies the first object version not returned that satisfies the\n      search criteria. Use this value for the <code>version-id-marker</code> request parameter in a subsequent\n      request.</p>"
     },
     "Versions": {
@@ -57,7 +37,8 @@
       ],
       "description": "<p>Container for version information.</p>",
       "xml": {
-        "name": "Version"
+        "name": "Version",
+        "wrapped": false
       }
     },
     "DeleteMarkers": {
@@ -68,39 +49,25 @@
       ],
       "description": "<p>Container for an object that is a delete marker. To learn more about delete markers, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/DeleteMarker.html\">Working with delete\n        markers</a>.</p>",
       "xml": {
-        "name": "DeleteMarker"
+        "name": "DeleteMarker",
+        "wrapped": false
       }
     },
     "Name": {
-      "allOf": [
-        {
-          "$ref": "BucketName.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The bucket name.</p>"
     },
     "Prefix": {
-      "allOf": [
-        {
-          "$ref": "Prefix.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>Selects objects that start with the value supplied by this parameter.</p>"
     },
     "Delimiter": {
-      "allOf": [
-        {
-          "$ref": "Delimiter.json"
-        }
-      ],
+      "type": "string",
       "description": "<p>The delimiter grouping the included keys. A delimiter is a character that you specify to group keys.\n      All keys that contain the same string between the prefix and the first occurrence of the delimiter are\n      grouped under a single result element in <code>CommonPrefixes</code>. These groups are counted as one\n      result against the <code>max-keys</code> limitation. These keys are not returned elsewhere in the\n      response.</p>"
     },
     "MaxKeys": {
-      "allOf": [
-        {
-          "$ref": "MaxKeys.json"
-        }
-      ],
+      "type": "integer",
+      "format": "int32",
       "description": "<p>Specifies the maximum number of objects to return.</p>"
     },
     "CommonPrefixes": {
@@ -109,7 +76,10 @@
           "$ref": "CommonPrefixList.json"
         }
       ],
-      "description": "<p>All of the keys rolled up into a common prefix count as a single return when calculating the number\n      of returns.</p>"
+      "description": "<p>All of the keys rolled up into a common prefix count as a single return when calculating the number\n      of returns.</p>",
+      "xml": {
+        "wrapped": false
+      }
     },
     "EncodingType": {
       "allOf": [
@@ -121,7 +91,6 @@
     }
   },
   "xml": {
-    "name": "ListVersionsResult",
-    "namespace": "http://s3.amazonaws.com/doc/2006-03-01/"
+    "name": "ListVersionsResult"
   }
 }

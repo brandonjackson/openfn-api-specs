@@ -1,693 +1,580 @@
 /**
- * Convert a **Smithy JSON AST** service model into a full-coverage OpenAPI 3.0.3
- * document.
+ * Convert a **Smithy 2.0 JSON AST** model (the machine spec AWS publishes for
+ * every service in github.com/aws/api-models-aws, and the source its SDKs are
+ * generated from) into a full-coverage OpenAPI 3.0.3 document.
  *
- * Smithy is the machine spec AWS publishes for every service
- * (`github.com/aws/api-models-aws`, `models/<service>/service/<version>/*.json`):
- * AWS hosts no OpenAPI for S3, so the Smithy model *is* the vendor spec. Per
- * AGENTS.md such an adaptor is `origin: converted`, `upstreamFormat: smithy`: the
- * model is saved verbatim as `upstream.json` (the source of truth) and the served
- * `openapi.json` is derived from it by this converter.
+ * AWS publishes no OpenAPI for most services. The Smithy model is the vendor's
+ * own, current, complete description of the API, so per AGENTS.md we save it
+ * verbatim as `upstream.json` (origin `converted`, upstreamFormat `smithy-2.0`)
+ * and derive `openapi.json` from it here. Every operation bound to the service
+ * becomes an OpenAPI operation; every shape an operation reaches becomes a
+ * component schema. No subsetting.
  *
- * It handles services whose operations are bound to HTTP with the
- * `smithy.api#http` trait (the `restXml` and `restJson1` protocols). Every such
- * operation and every data shape in the model appears in the output:
+ * Supported protocols are the HTTP-binding ones (`aws.protocols#restXml`,
+ * `aws.protocols#restJson1`): each operation carries `smithy.api#http`
+ * `{method, uri, code}` and its input/output members carry binding traits.
  *
- *  - `smithy.api#http` (method, uri, code)  → a path + operation + success status
- *  - `httpLabel` members                    → path parameters (`{Key+}` → `{Key}`)
- *  - `httpQuery` / `httpQueryParams`        → query parameters
- *  - `httpHeader` / `httpPrefixHeaders`     → header parameters / response headers
- *  - `httpPayload`, or the unbound members  → `requestBody` / response `content`
- *    (`application/xml` for restXml, `application/json` for restJson1,
- *    `application/octet-stream` for blobs, `text/plain` for strings)
- *  - operation `errors`                     → responses keyed by `httpError`
- *  - structure / union / list / map / enum / intEnum / scalar shapes
- *                                           → `components.schemas`
- *  - `documentation`, `deprecated`, `required`, `default`, `length`, `range`,
- *    `pattern`, `timestampFormat`, `xmlName` / `xmlAttribute` / `xmlFlattened` /
- *    `xmlNamespace`                         → their OpenAPI spellings
+ *  - `uri` `/{Bucket}/{Key+}?uploads` → path `/{Bucket}/{Key}` plus the literal
+ *    query `uploads`. Greedy labels lose their `+` (OpenAPI has no greedy
+ *    template; the parameter says so in `x-smithy-greedy`).
+ *  - Several operations share one method+path and differ only in their query
+ *    (the S3 pattern). OpenAPI cannot key two operations on one path, so the
+ *    literal query becomes a `#a&b=c` suffix on the path key — the same
+ *    discriminator form the conformance engine already reads for Azure's
+ *    `x-ms-paths` and DHIS2's variants. Smithy's `x-id=<Operation>` literal is
+ *    only an SDK-side disambiguator the server ignores, so it is dropped unless
+ *    nothing else tells two operations apart; see `discriminate()`.
+ *  - `httpLabel` → path parameter; `httpQuery` → query parameter; `httpHeader`
+ *    → header parameter (request) or response header (output).
+ *    `httpPrefixHeaders` (e.g. `x-amz-meta-*`) has no OpenAPI form and is
+ *    recorded in the operation's `x-smithy-prefix-headers`.
+ *  - `httpPayload` → the body is that member (structure → XML/JSON document;
+ *    blob → `application/octet-stream`; string → `text/plain`). Otherwise the
+ *    unbound members form the body document.
+ *  - `errors[]` → responses keyed by each error's `httpError` code.
+ *  - Shapes → schemas: structure → object, list → array, map → object with
+ *    `additionalProperties`, union → object with exactly one property, enum /
+ *    intEnum → `enum`, timestamp → `date-time` string, blob → binary/byte
+ *    string. `xmlName` / `xmlFlattened` / `xmlAttribute` / `xmlNamespace` become
+ *    OpenAPI `xml` objects; `documentation` becomes `description`.
  *
- * **Query-string literals.** A Smithy URI may carry literal query parameters
- * that select the operation (`/{Bucket}?acl`, `/{Bucket}?list-type=2`), so many
- * operations share one method + path, which OpenAPI `paths` cannot key. Following
- * the registry's convention (see `swagger.ts` on Azure's `x-ms-paths`, and how
- * `conform.ts` matches such keys), the literal query is carried in the path key
- * after a `#`: `/{Bucket}#acl`. The literal is also declared as a required query
- * parameter on the operation. AWS URIs additionally carry `x-id=<Operation>`, an
- * SDK-side hint that a plain HTTP client does not send; it is kept as an
- * optional query parameter but left out of the key. Operations that still share
- * a key are told apart by their required query parameters (`#uploadId`), then
- * their required headers (`#x-amz-copy-source`), and only as a last resort by
- * the `x-id` literal itself.
- *
- * **What is modelled loosely** (OpenAPI 3.0 has no exact form): a
- * `httpPrefixHeaders` map becomes one header named `<prefix>*`; a greedy label
- * loses its `+` (flagged `x-greedy`); a union becomes an object allowing one
- * property; an event stream is a schema under
- * `application/vnd.amazon.eventstream`, not a framed stream; XML element naming
- * is carried where Smithy states it (`xml.name`, `attribute`, `wrapped`) but
- * list-item and map-entry element names are not exhaustive; `smithy.api#examples`,
- * waiters, endpoint rule sets and checksum traits are not carried. Operations
- * with no `smithy.api#http` trait (the awsJson / awsQuery RPC protocols) are
- * skipped with a warning.
+ * Endpoint rule sets, waiters, examples and checksum/auth customisations are
+ * client concerns with no OpenAPI equivalent and are not carried over.
  */
 
-/** A loosely-typed Smithy node — we only read the fields we convert. */
-type Node = Record<string, any>;
+type Shape = Record<string, any>;
+type Traits = Record<string, any>;
 
-/** A Smithy JSON AST document (the fields this converter reads). */
-export interface SmithyDoc {
-  smithy?: string;
-  metadata?: Node;
-  shapes?: Record<string, Node>;
+export interface SmithyModel {
+  smithy: string;
+  metadata?: Record<string, any>;
+  shapes: Record<string, Shape>;
 }
 
 export interface SmithyConvertResult {
   openapi: any;
-  /** Human-readable notes about anything lossy or skipped, for logging. */
   warnings: string[];
 }
 
-const T = (name: string): string => `smithy.api#${name}`;
-
-/** Member traits that bind a member to somewhere other than the body. */
-const BINDING_TRAITS = ['httpLabel', 'httpQuery', 'httpQueryParams', 'httpHeader', 'httpPrefixHeaders', 'httpPayload', 'httpResponseCode'].map(T);
-
-/** Shape types that are not data and never become a schema. */
-const NON_DATA = new Set(['service', 'operation', 'resource']);
-
-/**
- * Literal query parameters that are a client-side hint rather than part of the
- * request a plain HTTP client makes. AWS SDKs add `x-id=<Operation>` to tell
- * same-URI operations apart in logs and presigned URLs.
- */
-const HINT_QUERY = new Set(['x-id']);
-
-/**
- * Tag rules for services whose model declares no `resource` shapes, keyed by
- * `aws.api#service.sdkId`. The tag is what `endpoints.md` groups by, and S3's
- * model is a flat list of 100+ operations on two URL shapes, so without this
- * every operation would land in one `{Bucket}` group. First matching rule wins;
- * the last rule is the catch-all. Kept in code (not in the adaptor directory) so
- * a re-derivation from the committed upstream is deterministic.
- */
-const SERVICE_TAG_RULES: Record<string, Array<[RegExp, string]>> = {
-  S3: [
-    [/MultipartUpload|^UploadPart|^ListParts$/, 'Multipart uploads'],
-    [/BucketMetadata/, 'Metadata tables'],
-    [/ObjectAnnotation/, 'Object annotations'],
-    [/Tagging$/, 'Tagging'],
-    [/Acl$|Policy|PublicAccessBlock|OwnershipControls|Abac$/, 'Access control'],
-    [/LegalHold|Retention|ObjectLock/, 'Object Lock'],
-    [/Encryption$/, 'Encryption'],
-    [/Lifecycle|IntelligentTiering/, 'Lifecycle and tiering'],
-    [/Replication$/, 'Replication'],
-    [/BucketVersioning$/, 'Versioning'],
-    [/Logging$|Notification/, 'Logging and notifications'],
-    [/Analytics|Metrics|Inventory/, 'Analytics, metrics and inventory'],
-    [/Cors$|Website$|Accelerate|RequestPayment$/, 'Bucket configuration'],
-    [/Object/, 'Objects'],
-    [/./, 'Buckets'],
-  ],
+const PRELUDE: Record<string, any> = {
+  'smithy.api#String': { type: 'string' },
+  'smithy.api#Boolean': { type: 'boolean' },
+  'smithy.api#PrimitiveBoolean': { type: 'boolean' },
+  'smithy.api#Integer': { type: 'integer', format: 'int32' },
+  'smithy.api#PrimitiveInteger': { type: 'integer', format: 'int32' },
+  'smithy.api#Long': { type: 'integer', format: 'int64' },
+  'smithy.api#PrimitiveLong': { type: 'integer', format: 'int64' },
+  'smithy.api#Short': { type: 'integer' },
+  'smithy.api#Byte': { type: 'integer' },
+  'smithy.api#Float': { type: 'number', format: 'float' },
+  'smithy.api#Double': { type: 'number', format: 'double' },
+  'smithy.api#BigInteger': { type: 'integer' },
+  'smithy.api#BigDecimal': { type: 'number' },
+  'smithy.api#Timestamp': { type: 'string', format: 'date-time' },
+  'smithy.api#Blob': { type: 'string', format: 'byte' },
+  'smithy.api#Document': {},
+  'smithy.api#Unit': { type: 'object' },
 };
 
-/** Smithy prelude shapes (`smithy.api#String` …) → an inline OpenAPI schema. */
-function preludeSchema(target: string): Node | undefined {
-  switch (target.replace(/^smithy\.api#(Primitive)?/, '')) {
-    case 'String': return { type: 'string' };
-    case 'Blob': return { type: 'string', format: 'byte' };
-    case 'Boolean': return { type: 'boolean' };
-    case 'Byte':
-    case 'Short': return { type: 'integer' };
-    case 'Integer': return { type: 'integer', format: 'int32' };
-    case 'Long': return { type: 'integer', format: 'int64' };
-    case 'BigInteger': return { type: 'integer' };
-    case 'Float': return { type: 'number', format: 'float' };
-    case 'Double': return { type: 'number', format: 'double' };
-    case 'BigDecimal': return { type: 'number' };
-    case 'Timestamp': return { type: 'string', format: 'date-time' };
-    case 'Document': return {};
-    case 'Unit': return { type: 'object' };
-    default: return undefined;
-  }
+const BINDING_TRAITS = [
+  'smithy.api#httpLabel',
+  'smithy.api#httpQuery',
+  'smithy.api#httpQueryParams',
+  'smithy.api#httpHeader',
+  'smithy.api#httpPrefixHeaders',
+  'smithy.api#httpPayload',
+  'smithy.api#httpResponseCode',
+];
+
+const localName = (id: string): string => id.slice(id.indexOf('#') + 1);
+
+/** Smithy `documentation` is HTML; keep it as the description, trimmed. */
+const doc = (traits: Traits | undefined): string | undefined => {
+  const d = traits?.['smithy.api#documentation'];
+  return typeof d === 'string' && d.trim() ? d.trim() : undefined;
+};
+
+const isBound = (traits: Traits | undefined): boolean => BINDING_TRAITS.some((t) => traits && t in traits);
+
+interface Literal {
+  key: string;
+  value?: string;
 }
 
-/** Strip HTML tags and collapse whitespace (Smithy documentation is HTML). */
-function plain(text: unknown): string {
-  return typeof text === 'string' ? text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : '';
+interface Bound {
+  id: string;
+  name: string;
+  method: string;
+  path: string;
+  literals: Literal[];
+  shape: Shape;
 }
 
-/**
- * First sentence of a documentation string, capped, for `summary`. AWS opens
- * many operations with a `<note>`/`<important>` callout ("not supported for
- * directory buckets", an end-of-support notice); the sentence that says what
- * the operation does is the first one after those.
- */
-function summaryOf(text: unknown): string {
-  const body = typeof text === 'string' ? text.replace(/^(\s*<(note|important)>[\s\S]*?<\/\2>)+/, '') : text;
-  const t = plain(body) || plain(text);
-  const s = (t.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? t).trim();
-  return s.length > 140 ? s.slice(0, 139).trimEnd() + '…' : s;
+function parseUri(uri: string): { path: string; literals: Literal[] } {
+  const q = uri.indexOf('?');
+  const rawPath = q < 0 ? uri : uri.slice(0, q);
+  const literals = (q < 0 ? '' : uri.slice(q + 1))
+    .split('&')
+    .filter(Boolean)
+    .map((pair) => {
+      const eq = pair.indexOf('=');
+      return eq < 0 ? { key: pair } : { key: pair.slice(0, eq), value: pair.slice(eq + 1) };
+    });
+  return { path: rawPath.replace(/\{([^}]+?)\+\}/g, '{$1}'), literals };
 }
 
-/** A timestamp in the given Smithy `timestampFormat`. */
-function timestampSchema(format: string): Node {
-  if (format === 'epoch-seconds') return { type: 'number' };
-  if (format === 'http-date') return { type: 'string', 'x-timestamp-format': 'http-date' };
-  return { type: 'string', format: 'date-time' };
-}
+const fmt = (lits: Literal[]): string => lits.map((l) => (l.value === undefined ? l.key : `${l.key}=${l.value}`)).join('&');
 
-/** A member's `smithy.api#<name>` trait value. */
-const trait = (node: Node | undefined, name: string): any => node?.traits?.[T(name)];
-const has = (node: Node | undefined, name: string): boolean => trait(node, name) !== undefined;
-
-/**
- * Convert a Smithy JSON AST to a full-coverage OpenAPI 3.0.3 spec.
- * `adaptorName` is stamped as `info.x-openfn-adaptor` so the file self-identifies.
- */
-export function smithyToOpenApi(doc: SmithyDoc, adaptorName: string): SmithyConvertResult {
+export function smithyToOpenApi(model: SmithyModel, adaptorName: string): SmithyConvertResult {
   const warnings: string[] = [];
-  const shapes = doc.shapes ?? {};
-
-  const services = Object.entries(shapes).filter(([, s]) => s?.type === 'service');
-  if (!services.length) throw new Error('Smithy model declares no service shape.');
-  if (services.length > 1) warnings.push(`model declares ${services.length} services — converted ${services[0][0]} only`);
+  const shapes = model.shapes ?? {};
+  const services = Object.entries(shapes).filter(([, s]) => s.type === 'service');
+  if (services.length !== 1) throw new Error(`Smithy model must define exactly one service (found ${services.length}).`);
   const [serviceId, service] = services[0];
-
-  const protocol = Object.keys(service.traits ?? {}).find((t) => /#(restXml|restJson1)$/.test(t));
-  const isXml = !!protocol && protocol.endsWith('#restXml');
-  if (!protocol) warnings.push('service declares neither restXml nor restJson1 — bodies are described as application/json');
-  const bodyMedia = isXml ? 'application/xml' : 'application/json';
-  const bodyTimestamp = isXml ? 'date-time' : 'epoch-seconds';
-
-  // --- naming -----------------------------------------------------------------
-  // A shape id is `namespace#Name`; the schema is `Name`, qualified with the
-  // namespace only when two namespaces define the same name.
-  const bare = (id: string): string => id.slice(id.indexOf('#') + 1);
-  const seenNames = new Map<string, number>();
-  for (const [id, s] of Object.entries(shapes)) if (!NON_DATA.has(s?.type)) seenNames.set(bare(id), (seenNames.get(bare(id)) ?? 0) + 1);
-  const nameOf = (id: string): string =>
-    (seenNames.get(bare(id)) ?? 0) > 1 ? `${id.slice(0, id.indexOf('#')).split('.').pop()}_${bare(id)}` : bare(id);
-
-  // --- operations in the service closure --------------------------------------
-  const opResource = new Map<string, string>();
-  const operationIds: string[] = [];
-  const addOp = (ref: any, resource?: string) => {
-    const id = ref?.target;
-    if (typeof id !== 'string' || operationIds.includes(id)) return;
-    operationIds.push(id);
-    if (resource) opResource.set(id, resource);
-  };
-  const walkResource = (ref: any, guard: Set<string>) => {
-    const id = ref?.target;
-    const r = shapes[id];
-    if (!r || guard.has(id)) return;
-    guard.add(id);
-    for (const k of ['create', 'put', 'read', 'update', 'delete', 'list']) addOp(r[k], bare(id));
-    for (const k of ['operations', 'collectionOperations']) for (const o of r[k] ?? []) addOp(o, bare(id));
-    for (const sub of r.resources ?? []) walkResource(sub, guard);
-  };
-  for (const o of service.operations ?? []) addOp(o);
-  for (const r of service.resources ?? []) walkResource(r, new Set());
-
-  // Structures that are an operation's input or output are dissolved into
-  // parameters, headers and a body; they are only a schema of their own when
-  // something else references them as data.
-  const ioShapes = new Set<string>();
-  for (const id of operationIds) {
-    for (const k of ['input', 'output']) {
-      const t = shapes[id]?.[k]?.target;
-      if (typeof t === 'string' && shapes[t]) ioShapes.add(t);
-    }
+  const st: Traits = service.traits ?? {};
+  const protocol = ['aws.protocols#restXml', 'aws.protocols#restJson1'].find((p) => p in st);
+  if (!protocol) {
+    throw new Error(`Unsupported Smithy protocol on ${serviceId}: only restXml / restJson1 (HTTP-binding) services convert to OpenAPI.`);
   }
-  const referenced = new Set<string>();
-  for (const s of Object.values(shapes)) {
-    for (const m of [...Object.values<Node>(s?.members ?? {}), s?.member, s?.key, s?.value]) {
-      if (typeof m?.target === 'string') referenced.add(m.target);
+  const xml = protocol === 'aws.protocols#restXml';
+  const docMedia = xml ? 'application/xml' : 'application/json';
+  const xmlNs = st['smithy.api#xmlNamespace']?.uri as string | undefined;
+
+  // ---- schemas ------------------------------------------------------------
+  const schemas: Record<string, any> = {};
+  const target = (id: string): Shape | undefined => shapes[id];
+
+  /** Schema for a shape id: a $ref for named aggregate/enum shapes, inline for simple ones. */
+  function schemaFor(id: string): any {
+    if (id in PRELUDE) return { ...PRELUDE[id] };
+    const s = target(id);
+    if (!s) {
+      warnings.push(`unresolved shape ${id}`);
+      return {};
     }
-    for (const e of s?.errors ?? []) if (typeof e?.target === 'string') referenced.add(e.target);
+    if (['structure', 'union', 'list', 'map', 'enum', 'intEnum'].includes(s.type)) {
+      const name = localName(id);
+      if (!(name in schemas)) {
+        schemas[name] = {}; // reserve first: shapes are recursive
+        schemas[name] = buildShape(s);
+      }
+      return { $ref: `#/components/schemas/${name}` };
+    }
+    return simpleSchema(s);
   }
 
-  // --- schemas ----------------------------------------------------------------
-  const schemas: Record<string, Node> = {};
-  const ref = (target: string): Node => {
-    const prelude = preludeSchema(target);
-    if (prelude && !shapes[target]) return prelude;
-    if (!shapes[target]) {
-      warnings.push(`reference to undeclared shape ${target} — described as any`);
-      return { description: `Shape ${target} is not declared in the model.` };
-    }
-    return { $ref: `#/components/schemas/${nameOf(target)}` };
-  };
-
-  /** XML facts Smithy states about a member, as an OpenAPI `xml` object. */
-  const memberXml = (member: Node): Node | undefined => {
-    if (!isXml) return undefined;
-    const xml: Node = {};
-    if (typeof trait(member, 'xmlName') === 'string') xml.name = trait(member, 'xmlName');
-    if (has(member, 'xmlAttribute')) xml.attribute = true;
-    const ns = trait(member, 'xmlNamespace');
-    if (ns?.uri) {
-      xml.namespace = ns.uri;
-      if (ns.prefix) xml.prefix = ns.prefix;
-    }
-    const target = shapes[member.target];
-    if ((target?.type === 'list' || target?.type === 'set') && !has(member, 'xmlFlattened')) xml.wrapped = true;
-    return Object.keys(xml).length ? xml : undefined;
-  };
-
-  /** The schema for a structure/union member: its target plus the member's own traits. */
-  const memberSchema = (member: Node): Node => {
-    const base = ref(member.target);
-    const extra: Node = {};
-    const docs = trait(member, 'documentation');
-    if (typeof docs === 'string' && docs) extra.description = docs;
-    if (has(member, 'deprecated')) extra.deprecated = true;
-    const def = trait(member, 'default');
-    const targetType = shapes[member.target]?.type;
-    if (def !== undefined && def !== null && targetType !== 'blob') extra.default = def;
-    const tsFormat = trait(member, 'timestampFormat');
-    const xml = memberXml(member);
-    if (xml) extra.xml = xml;
-    if (typeof tsFormat === 'string') return { ...timestampSchema(tsFormat), ...extra };
-    if (!Object.keys(extra).length) return base;
-    // OpenAPI 3.0 ignores siblings of `$ref`, so a described reference is an allOf.
-    return base.$ref ? { allOf: [base], ...extra } : { ...base, ...extra };
-  };
-
-  /** An object schema over a chosen subset of a structure's members. */
-  const objectSchema = (shape: Node, memberNames: string[]): Node => {
-    const out: Node = { type: 'object' };
-    const required = memberNames.filter((m) => has(shape.members[m], 'required'));
-    if (required.length) out.required = required;
-    if (memberNames.length) out.properties = Object.fromEntries(memberNames.map((m) => [m, memberSchema(shape.members[m])]));
-    return out;
-  };
-
-  const withCommon = (shape: Node, schema: Node): Node => {
-    const docs = trait(shape, 'documentation');
-    if (typeof docs === 'string' && docs) schema.description = docs;
-    if (has(shape, 'deprecated')) schema.deprecated = true;
-    if (isXml && typeof trait(shape, 'xmlName') === 'string') schema.xml = { ...(schema.xml ?? {}), name: trait(shape, 'xmlName') };
-    return schema;
-  };
-
-  const shapeSchema = (id: string, shape: Node): Node | undefined => {
-    switch (shape.type) {
-      case 'structure':
-        return withCommon(shape, objectSchema(shape, Object.keys(shape.members ?? {})));
-      case 'union': {
-        const s = objectSchema(shape, Object.keys(shape.members ?? {}));
-        s.minProperties = 1;
-        s.maxProperties = 1;
-        if (has(shape, 'streaming')) s['x-event-stream'] = true;
-        return withCommon(shape, s);
-      }
-      case 'list':
-      case 'set': {
-        const items = shape.member ? memberSchema(shape.member) : {};
-        const s: Node = { type: 'array', items };
-        if (shape.type === 'set' || has(shape, 'uniqueItems')) s.uniqueItems = true;
-        const len = trait(shape, 'length');
-        if (typeof len?.min === 'number') s.minItems = len.min;
-        if (typeof len?.max === 'number') s.maxItems = len.max;
-        return withCommon(shape, s);
-      }
-      case 'map':
-        return withCommon(shape, { type: 'object', additionalProperties: shape.value ? memberSchema(shape.value) : {} });
-      case 'enum':
-      case 'intEnum': {
-        const values = Object.entries<Node>(shape.members ?? {}).map(([name, m]) => trait(m, 'enumValue') ?? name);
-        return withCommon(shape, { type: shape.type === 'enum' ? 'string' : 'integer', enum: values });
-      }
-      case 'string': {
-        const s: Node = { type: 'string' };
-        // Smithy 1.0 spelling of an enum: a trait on a string shape.
-        const legacy = trait(shape, 'enum');
-        if (Array.isArray(legacy)) s.enum = legacy.map((e: any) => e?.value).filter((v: any) => v !== undefined);
-        const len = trait(shape, 'length');
-        if (typeof len?.min === 'number') s.minLength = len.min;
-        if (typeof len?.max === 'number') s.maxLength = len.max;
-        if (typeof trait(shape, 'pattern') === 'string') s.pattern = trait(shape, 'pattern');
-        if (has(shape, 'sensitive')) s['x-sensitive'] = true;
-        return withCommon(shape, s);
-      }
-      case 'blob':
-        // A streaming blob is only ever a raw payload; any other blob is base64 inside a body.
-        return withCommon(shape, { type: 'string', format: has(shape, 'streaming') ? 'binary' : 'byte' });
-      case 'timestamp':
-        return withCommon(shape, timestampSchema(trait(shape, 'timestampFormat') ?? bodyTimestamp));
+  function simpleSchema(s: Shape): any {
+    const t: Traits = s.traits ?? {};
+    let out: any;
+    switch (s.type) {
+      case 'string':
+        out = { type: 'string' };
+        if (t['smithy.api#pattern']) out.pattern = t['smithy.api#pattern'];
+        if (t['smithy.api#length']?.min !== undefined) out.minLength = t['smithy.api#length'].min;
+        if (t['smithy.api#length']?.max !== undefined) out.maxLength = t['smithy.api#length'].max;
+        break;
       case 'boolean':
+        out = { type: 'boolean' };
+        break;
       case 'byte':
       case 'short':
       case 'integer':
+        out = { type: 'integer', format: 'int32' };
+        break;
       case 'long':
+        out = { type: 'integer', format: 'int64' };
+        break;
       case 'bigInteger':
+        out = { type: 'integer' };
+        break;
       case 'float':
+        out = { type: 'number', format: 'float' };
+        break;
       case 'double':
+        out = { type: 'number', format: 'double' };
+        break;
       case 'bigDecimal':
-      case 'document': {
-        const s = preludeSchema(T(shape.type[0].toUpperCase() + shape.type.slice(1))) ?? {};
-        const range = trait(shape, 'range');
-        if (typeof range?.min === 'number') s.minimum = range.min;
-        if (typeof range?.max === 'number') s.maximum = range.max;
-        return withCommon(shape, s);
-      }
+        out = { type: 'number' };
+        break;
+      case 'timestamp':
+        // The wire format depends on where the value travels (XML/JSON body:
+        // date-time; headers: http-date) — OpenAPI has one `format`, so the
+        // body form is recorded and the trait, when set, is kept alongside.
+        out = { type: 'string', format: 'date-time' };
+        if (t['smithy.api#timestampFormat']) out['x-smithy-timestamp-format'] = t['smithy.api#timestampFormat'];
+        break;
+      case 'blob':
+        out = t['smithy.api#streaming'] !== undefined ? { type: 'string', format: 'binary' } : { type: 'string', format: 'byte' };
+        break;
+      case 'document':
+        out = {};
+        break;
       default:
-        warnings.push(`shape ${id} has unsupported type "${shape.type}" — described as any`);
-        return withCommon(shape, {});
+        warnings.push(`unhandled simple shape type ${s.type}`);
+        out = {};
     }
-  };
-
-  for (const [id, shape] of Object.entries(shapes)) {
-    if (!shape || NON_DATA.has(shape.type)) continue;
-    if (ioShapes.has(id) && !referenced.has(id)) continue; // dissolved into its operation
-    const s = shapeSchema(id, shape);
-    if (s) schemas[nameOf(id)] = s;
-  }
-
-  // --- security ---------------------------------------------------------------
-  const securitySchemes: Record<string, Node> = {};
-  const st = service.traits ?? {};
-  if (st['aws.auth#sigv4']) {
-    securitySchemes.sigv4 = {
-      type: 'apiKey',
-      name: 'Authorization',
-      in: 'header',
-      'x-amazon-apigateway-authtype': 'awsSigv4',
-      description: `AWS Signature Version 4, signing name "${st['aws.auth#sigv4'].name}".`,
-    };
-  }
-  if (st[T('httpBearerAuth')]) securitySchemes.httpBearerAuth = { type: 'http', scheme: 'bearer' };
-  if (st[T('httpBasicAuth')]) securitySchemes.httpBasicAuth = { type: 'http', scheme: 'basic' };
-  if (st[T('httpApiKeyAuth')]) {
-    const k = st[T('httpApiKeyAuth')];
-    securitySchemes.httpApiKeyAuth = { type: 'apiKey', name: k.name, in: k.in };
-  }
-  const schemeName = (authTrait: string): string => authTrait.slice(authTrait.indexOf('#') + 1);
-
-  // --- operations -------------------------------------------------------------
-  interface Pending {
-    id: string;
-    name: string;
-    method: string;
-    path: string;
-    /** Literal query pairs from the URI, hints (`x-id`) excluded. */
-    literals: Array<{ key: string; value?: string }>;
-    hint?: { key: string; value?: string };
-    requiredQuery: string[];
-    requiredHeaders: string[];
-    operation: Node;
-  }
-  const pending: Pending[] = [];
-  const tagRules = SERVICE_TAG_RULES[st['aws.api#service']?.sdkId ?? ''];
-  const tagsUsed: string[] = [];
-
-  /** Body members of an input/output structure: those with no HTTP binding. */
-  const bodyMembers = (shape: Node): string[] =>
-    Object.entries<Node>(shape.members ?? {})
-      .filter(([, m]) => !BINDING_TRAITS.some((b) => m?.traits?.[b] !== undefined))
-      .map(([name]) => name);
-
-  /** A parameter/header schema for a bound member (headers default timestamps to http-date). */
-  const boundSchema = (member: Node, where: 'header' | 'query' | 'path'): Node => {
-    const target = shapes[member.target];
-    if (target?.type === 'timestamp' || /#(Timestamp)$/.test(member.target)) {
-      const format = trait(member, 'timestampFormat') ?? trait(target, 'timestampFormat') ?? (where === 'header' ? 'http-date' : 'date-time');
-      return timestampSchema(format);
+    if (t['smithy.api#range']) {
+      if (t['smithy.api#range'].min !== undefined) out.minimum = t['smithy.api#range'].min;
+      if (t['smithy.api#range'].max !== undefined) out.maximum = t['smithy.api#range'].max;
     }
-    return ref(member.target);
-  };
+    const d = doc(t);
+    if (d) out.description = d;
+    return out;
+  }
 
-  /**
-   * The `content` for a payload member or for the unbound members of an
-   * input/output structure. Registers a body schema when one has to be minted.
-   */
-  const bodyContent = (shapeId: string, shape: Node): { content?: Node; required: boolean } => {
-    const payload = Object.entries<Node>(shape.members ?? {}).find(([, m]) => has(m, 'httpPayload'));
-    if (payload) {
-      const [, member] = payload;
-      const target = shapes[member.target];
-      const type = target?.type ?? (preludeSchema(member.target)?.format === 'byte' ? 'blob' : 'string');
-      const required = has(member, 'required');
-      const explicit = trait(target, 'mediaType');
-      if (type === 'blob') {
-        return { content: { [explicit ?? 'application/octet-stream']: { schema: { type: 'string', format: 'binary' } } }, required };
+  /** A member's schema: the target's, with the member's own docs/xml naming layered on. */
+  function memberSchema(member: Shape): any {
+    const mt: Traits = member.traits ?? {};
+    let sch = schemaFor(member.target);
+    const extra: any = {};
+    const d = doc(mt);
+    if (d) extra.description = d;
+    const xmlObj: any = {};
+    if (xml) {
+      if (mt['smithy.api#xmlName']) xmlObj.name = mt['smithy.api#xmlName'];
+      if (mt['smithy.api#xmlAttribute'] !== undefined) xmlObj.attribute = true;
+      if (mt['smithy.api#xmlNamespace']) {
+        xmlObj.namespace = mt['smithy.api#xmlNamespace'].uri;
+        if (mt['smithy.api#xmlNamespace'].prefix) xmlObj.prefix = mt['smithy.api#xmlNamespace'].prefix;
       }
-      if (type === 'string' || type === 'enum') return { content: { [explicit ?? 'text/plain']: { schema: ref(member.target) } }, required };
-      if (type === 'union' && has(target, 'streaming')) {
-        return { content: { 'application/vnd.amazon.eventstream': { schema: ref(member.target) } }, required };
+      const tgt = target(member.target);
+      if (tgt && (tgt.type === 'list' || tgt.type === 'map')) {
+        // Smithy lists/maps are wrapped unless the *member* says xmlFlattened.
+        xmlObj.wrapped = mt['smithy.api#xmlFlattened'] === undefined;
       }
-      // A structure/union/document payload: the member may rename the root element.
-      const base = ref(member.target);
-      const rootName = trait(member, 'xmlName');
-      const schema = isXml && typeof rootName === 'string' && rootName !== (trait(target, 'xmlName') ?? bare(member.target)) && base.$ref
-        ? { allOf: [base], xml: { name: rootName } }
-        : base;
-      return { content: { [bodyMedia]: { schema } }, required };
     }
-    const members = bodyMembers(shape);
-    if (!members.length) return { required: false };
-    const all = members.length === Object.keys(shape.members ?? {}).length;
-    // Referenced elsewhere as data, so the full shape already has the plain name.
-    let name = nameOf(shapeId);
-    if (referenced.has(shapeId) && !all) name = `${name}Body`;
-    if (!(referenced.has(shapeId) && all)) {
-      const s = withCommon(shape, objectSchema(shape, members));
-      const ns = st[T('xmlNamespace')]?.uri;
-      if (isXml) s.xml = { name: bare(shapeId), ...(s.xml ?? {}), ...(ns ? { namespace: ns } : {}) };
-      schemas[name] = s;
-    }
-    const required = members.some((m) => has(shape.members[m], 'required'));
-    return { content: { [bodyMedia]: { schema: { $ref: `#/components/schemas/${name}` } } }, required };
-  };
+    if (Object.keys(xmlObj).length) extra.xml = xmlObj;
+    if (mt['smithy.api#default'] !== undefined && mt['smithy.api#default'] !== null) extra.default = mt['smithy.api#default'];
+    if (mt['smithy.api#deprecated'] !== undefined) extra.deprecated = true;
+    if (!Object.keys(extra).length) return sch;
+    // OpenAPI 3.0 ignores siblings of $ref, so wrap it.
+    if (sch.$ref) sch = { allOf: [sch] };
+    return { ...sch, ...extra };
+  }
 
-  for (const id of operationIds) {
-    const op = shapes[id];
-    if (!op || op.type !== 'operation') {
-      warnings.push(`service lists ${id}, which is not an operation shape — skipped`);
+  function objectOf(members: Record<string, Shape>, opts: { skipBound: boolean }): any {
+    const properties: Record<string, any> = {};
+    const required: string[] = [];
+    for (const [name, m] of Object.entries(members)) {
+      if (opts.skipBound && isBound(m.traits)) continue;
+      properties[name] = memberSchema(m);
+      if (m.traits?.['smithy.api#required'] !== undefined) required.push(name);
+    }
+    const out: any = { type: 'object', properties };
+    if (required.length) out.required = required;
+    return out;
+  }
+
+  function buildShape(s: Shape): any {
+    const t: Traits = s.traits ?? {};
+    let out: any;
+    switch (s.type) {
+      case 'structure':
+        // Bound members (headers, labels, query, payload) of an operation's
+        // input/output travel outside the body document, so the schema of the
+        // structure is its body members only.
+        out = objectOf(s.members ?? {}, { skipBound: true });
+        break;
+      case 'union':
+        out = { ...objectOf(s.members ?? {}, { skipBound: false }), minProperties: 1, maxProperties: 1 };
+        delete out.required;
+        break;
+      case 'list': {
+        const m = s.member;
+        let items = schemaFor(m.target);
+        const mt: Traits = m.traits ?? {};
+        if (xml && mt['smithy.api#xmlName']) items = { ...(items.$ref ? { allOf: [items] } : items), xml: { name: mt['smithy.api#xmlName'] } };
+        out = { type: 'array', items };
+        if (t['smithy.api#uniqueItems'] !== undefined) out.uniqueItems = true;
+        break;
+      }
+      case 'map':
+        out = { type: 'object', additionalProperties: schemaFor(s.value.target) };
+        break;
+      case 'enum':
+        out = {
+          type: 'string',
+          enum: Object.entries<Shape>(s.members ?? {}).map(([k, m]) => m.traits?.['smithy.api#enumValue'] ?? k),
+        };
+        break;
+      case 'intEnum':
+        out = {
+          type: 'integer',
+          enum: Object.values<Shape>(s.members ?? {}).map((m) => m.traits?.['smithy.api#enumValue']),
+        };
+        break;
+    }
+    const d = doc(t);
+    if (d) out.description = d;
+    if (xml && t['smithy.api#xmlName']) out.xml = { ...(out.xml ?? {}), name: t['smithy.api#xmlName'] };
+    if (t['smithy.api#error']) out['x-smithy-error'] = t['smithy.api#error'];
+    return out;
+  }
+
+  // ---- operations ---------------------------------------------------------
+  const opIds: string[] = [];
+  const seenOps = new Set<string>();
+  const addOp = (id: string) => {
+    if (!seenOps.has(id)) {
+      seenOps.add(id);
+      opIds.push(id);
+    }
+  };
+  for (const o of service.operations ?? []) addOp(o.target);
+  // Resource-bound operations (other AWS services model CRUD as resources).
+  const walkResource = (rid: string) => {
+    const r = target(rid);
+    if (!r) return;
+    for (const k of ['create', 'put', 'read', 'update', 'delete', 'list']) if (r[k]) addOp(r[k].target);
+    for (const o of r.operations ?? []) addOp(o.target);
+    for (const o of r.collectionOperations ?? []) addOp(o.target);
+    for (const c of r.resources ?? []) walkResource(c.target);
+  };
+  for (const r of service.resources ?? []) walkResource(r.target);
+
+  const bound: Bound[] = [];
+  for (const id of opIds) {
+    const op = target(id);
+    const http = op?.traits?.['smithy.api#http'];
+    if (!op || !http) {
+      warnings.push(`${id}: no smithy.api#http binding, skipped`);
       continue;
     }
-    const http = trait(op, 'http');
-    if (!http?.method || typeof http.uri !== 'string') {
-      warnings.push(`operation ${bare(id)} has no smithy.api#http binding — skipped`);
-      continue;
+    const { path, literals } = parseUri(http.uri);
+    bound.push({ id, name: localName(id), method: String(http.method).toLowerCase(), path, literals, shape: op });
+  }
+
+  const keys = discriminate(bound, shapes);
+
+  const paths: Record<string, any> = {};
+  for (const b of bound) {
+    const key = keys.get(b.id)!;
+    const op = b.shape;
+    const ot: Traits = op.traits ?? {};
+    const http = ot['smithy.api#http'];
+    const input = op.input && op.input.target !== 'smithy.api#Unit' ? target(op.input.target) : undefined;
+    const output = op.output && op.output.target !== 'smithy.api#Unit' ? target(op.output.target) : undefined;
+
+    const parameters: any[] = [];
+    const prefixHeaders: string[] = [];
+    let requestBody: any;
+    for (const [name, m] of Object.entries<Shape>(input?.members ?? {})) {
+      const mt: Traits = m.traits ?? {};
+      const base = (where: string, wire: string, required: boolean) => {
+        const p: any = { name: wire, in: where, required };
+        const d = doc(mt);
+        if (d) p.description = d;
+        p.schema = schemaFor(m.target);
+        if (wire !== name) p['x-smithy-member'] = name;
+        return p;
+      };
+      if (mt['smithy.api#httpLabel'] !== undefined) {
+        const p = base('path', name, true);
+        if (new RegExp(`\\{${name}\\+\\}`).test(http.uri)) p['x-smithy-greedy'] = true;
+        parameters.push(p);
+      } else if (mt['smithy.api#httpQuery'] !== undefined) {
+        parameters.push(base('query', mt['smithy.api#httpQuery'], mt['smithy.api#required'] !== undefined));
+      } else if (mt['smithy.api#httpHeader'] !== undefined) {
+        parameters.push(base('header', mt['smithy.api#httpHeader'], mt['smithy.api#required'] !== undefined));
+      } else if (mt['smithy.api#httpPrefixHeaders'] !== undefined) {
+        prefixHeaders.push(mt['smithy.api#httpPrefixHeaders']);
+      } else if (mt['smithy.api#httpQueryParams'] !== undefined) {
+        // A map spread into the query string: no OpenAPI form beyond "any extra query".
+      }
     }
+    const reqPayload = payloadOf(input, op.input?.target, true);
+    if (reqPayload) requestBody = reqPayload;
 
-    const [rawPath, rawQuery = ''] = http.uri.split('?');
-    const greedy = new Set<string>();
-    const path = rawPath.replace(/\{([^}+]+)\+\}/g, (_: string, label: string) => {
-      greedy.add(label);
-      return `{${label}}`;
-    });
-    const pairs = rawQuery
-      .split('&')
-      .filter(Boolean)
-      .map((p: string) => {
-        const eq = p.indexOf('=');
-        return eq < 0 ? { key: p } : { key: p.slice(0, eq), value: p.slice(eq + 1) };
-      });
-    const literals = pairs.filter((p: { key: string }) => !HINT_QUERY.has(p.key));
-    const hint = pairs.find((p: { key: string }) => HINT_QUERY.has(p.key));
-
-    const input: Node | undefined = shapes[op.input?.target];
-    const output: Node | undefined = shapes[op.output?.target];
-
-    // Parameters.
-    const parameters: Node[] = [];
-    for (const lit of literals) {
+    // Literal query keys (other than x-id) are required, fixed-value parameters.
+    for (const l of b.literals) {
+      if (l.key === 'x-id') continue;
+      if (parameters.some((p) => p.in === 'query' && p.name === l.key)) continue;
       parameters.push({
-        name: lit.key,
+        name: l.key,
         in: 'query',
         required: true,
-        ...(lit.value === undefined ? { allowEmptyValue: true } : {}),
-        description: lit.value === undefined ? 'Selects this operation; sent with no value.' : 'Selects this operation; always this value.',
-        schema: { type: 'string', enum: [lit.value ?? ''] },
+        allowEmptyValue: l.value === undefined,
+        schema: l.value === undefined ? { type: 'string', enum: [''] } : { type: 'string', enum: [l.value] },
+        description: 'Fixed by the operation URI.',
       });
     }
-    if (hint) {
-      parameters.push({
-        name: hint.key,
-        in: 'query',
-        required: false,
-        description: 'Operation hint that SDKs add to the request URI. Optional for a plain HTTP client.',
-        schema: { type: 'string', enum: [hint.value ?? ''] },
-      });
-    }
-    const requiredQuery: string[] = [];
-    const requiredHeaders: string[] = [];
-    for (const [name, member] of Object.entries<Node>(input?.members ?? {})) {
-      const common: Node = {};
-      const docs = trait(member, 'documentation');
-      if (typeof docs === 'string' && docs) common.description = docs;
-      const required = has(member, 'required');
-      if (has(member, 'deprecated')) common.deprecated = true;
-      if (has(member, 'httpLabel')) {
-        parameters.push({ name, in: 'path', ...common, required: true, ...(greedy.has(name) ? { 'x-greedy': true } : {}), schema: boundSchema(member, 'path') });
-      } else if (has(member, 'httpQuery')) {
-        const qn = trait(member, 'httpQuery');
-        if (required) requiredQuery.push(qn);
-        parameters.push({ name: qn, in: 'query', ...common, required, schema: boundSchema(member, 'query') });
-      } else if (has(member, 'httpQueryParams')) {
-        parameters.push({ name, in: 'query', ...common, required, style: 'form', explode: true, schema: ref(member.target) });
-      } else if (has(member, 'httpHeader')) {
-        const hn = trait(member, 'httpHeader');
-        if (required) requiredHeaders.push(hn);
-        parameters.push({ name: hn, in: 'header', ...common, required, schema: boundSchema(member, 'header') });
-      } else if (has(member, 'httpPrefixHeaders')) {
-        const prefix = trait(member, 'httpPrefixHeaders');
-        parameters.push({
-          name: `${prefix}*`,
-          in: 'header',
-          ...common,
-          required: false,
-          'x-prefix-headers': prefix,
-          schema: { type: 'string' },
-        });
+
+    const responses: Record<string, any> = {};
+    const okCode = String(http.code ?? 200);
+    const ok: any = { description: 'Success' };
+    const headers: Record<string, any> = {};
+    for (const [, m] of Object.entries<Shape>(output?.members ?? {})) {
+      const mt: Traits = m.traits ?? {};
+      if (mt['smithy.api#httpHeader'] !== undefined) {
+        const h: any = { schema: schemaFor(m.target) };
+        const d = doc(mt);
+        if (d) h.description = d;
+        headers[mt['smithy.api#httpHeader']] = h;
       }
     }
+    if (Object.keys(headers).length) ok.headers = headers;
+    const resPayload = payloadOf(output, op.output?.target, false);
+    if (resPayload) ok.content = resPayload.content;
+    responses[okCode] = ok;
 
-    const operation: Node = { operationId: bare(id) };
-    const docs = trait(op, 'documentation');
-    const summary = summaryOf(docs);
-    if (summary) operation.summary = summary;
-    if (typeof docs === 'string' && docs) operation.description = docs;
-    if (has(op, 'deprecated')) operation.deprecated = true;
-    const tag = opResource.get(id) ?? tagRules?.find(([re]) => re.test(bare(id)))?.[1];
-    if (tag) {
-      operation.tags = [tag];
-      if (!tagsUsed.includes(tag)) tagsUsed.push(tag);
-    }
-    if (parameters.length) operation.parameters = parameters;
-
-    if (input) {
-      const body = bodyContent(op.input.target, input);
-      if (body.content) operation.requestBody = { required: body.required, content: body.content };
-    }
-
-    // Responses: the success status, then one per error status.
-    const responses: Record<string, Node> = {};
-    const success: Node = { description: 'Success' };
-    if (output) {
-      const headers: Record<string, Node> = {};
-      for (const [, member] of Object.entries<Node>(output.members ?? {})) {
-        const d = trait(member, 'documentation');
-        const described = typeof d === 'string' && d ? { description: d } : {};
-        if (has(member, 'httpHeader')) headers[trait(member, 'httpHeader')] = { ...described, schema: boundSchema(member, 'header') };
-        else if (has(member, 'httpPrefixHeaders')) {
-          const prefix = trait(member, 'httpPrefixHeaders');
-          headers[`${prefix}*`] = { ...described, 'x-prefix-headers': prefix, schema: { type: 'string' } };
-        }
-      }
-      if (Object.keys(headers).length) success.headers = headers;
-      const body = bodyContent(op.output.target, output);
-      if (body.content) success.content = body.content;
-    }
-    responses[String(http.code ?? 200)] = success;
-
-    const byStatus = new Map<string, string[]>();
     for (const e of op.errors ?? []) {
-      const err = shapes[e?.target];
-      if (!err) continue;
-      const status = String(trait(err, 'httpError') ?? (trait(err, 'error') === 'server' ? 500 : 400));
-      byStatus.set(status, [...(byStatus.get(status) ?? []), e.target]);
+      const es = target(e.target);
+      const code = String(es?.traits?.['smithy.api#httpError'] ?? (es?.traits?.['smithy.api#error'] === 'server' ? 500 : 400));
+      const name = localName(e.target);
+      const content = { [docMedia]: { schema: schemaFor(e.target) } };
+      if (responses[code]) {
+        responses[code].description += `, ${name}`;
+        const prior = responses[code].content[docMedia].schema;
+        responses[code].content[docMedia].schema = { oneOf: [...(prior.oneOf ?? [prior]), schemaFor(e.target)] };
+      } else {
+        responses[code] = { description: name, content };
+      }
     }
-    for (const [status, ids] of [...byStatus].sort(([a], [b]) => (a < b ? -1 : 1))) {
-      const refs = ids.map((e) => ref(e));
-      responses[status] = {
-        description: ids.map((e) => bare(e)).join(' / '),
-        content: { [bodyMedia]: { schema: refs.length === 1 ? refs[0] : { oneOf: refs } } },
-      };
-    }
+
+    const operation: any = { operationId: b.name };
+    const d = doc(ot);
+    if (d) operation.description = d;
+    if (parameters.length) operation.parameters = parameters;
+    if (requestBody) operation.requestBody = requestBody;
     operation.responses = responses;
+    if (prefixHeaders.length) operation['x-smithy-prefix-headers'] = prefixHeaders;
+    if (ot['smithy.api#paginated']) operation['x-smithy-paginated'] = ot['smithy.api#paginated'];
+    if (ot['smithy.api#deprecated'] !== undefined) operation.deprecated = true;
 
-    // Operation-level auth overrides.
-    const auth = trait(op, 'auth');
-    if (Array.isArray(auth)) operation.security = auth.map((a: string) => ({ [schemeName(a)]: [] })).filter((s) => securitySchemes[Object.keys(s)[0]]);
-    if (has(op, 'optionalAuth')) operation.security = [...(operation.security ?? Object.keys(securitySchemes).map((n) => ({ [n]: [] }))), {}];
-
-    const paginated = trait(op, 'paginated');
-    if (paginated) operation['x-paginated'] = paginated;
-    const endpoint = trait(op, 'endpoint');
-    if (endpoint?.hostPrefix) operation['x-host-prefix'] = endpoint.hostPrefix;
-
-    pending.push({ id, name: bare(id), method: String(http.method).toLowerCase(), path, literals, hint, requiredQuery, requiredHeaders, operation });
+    paths[key] ??= {};
+    if (paths[key][b.method]) {
+      warnings.push(`${b.name}: ${b.method.toUpperCase()} ${key} already taken by ${paths[key][b.method].operationId}, skipped`);
+      continue;
+    }
+    paths[key][b.method] = operation;
   }
 
-  // --- path keys --------------------------------------------------------------
-  // Start from the path plus its literal query; operations that still collide
-  // add their required query names, then required headers, then the hint.
-  const fragments = new Map<Pending, string[]>(pending.map((p) => [p, p.literals.map((l) => (l.value === undefined ? l.key : `${l.key}=${l.value}`))]));
-  const keyOf = (p: Pending): string => {
-    const f = fragments.get(p)!;
-    return `${p.method} ${p.path}${f.length ? `#${f.join('&')}` : ''}`;
+  /** The request/response body for an operation's input or output structure. */
+  function payloadOf(struct: Shape | undefined, structId: string | undefined, isRequest: boolean): any {
+    if (!struct || !structId) return undefined;
+    const members = Object.entries<Shape>(struct.members ?? {});
+    const payload = members.find(([, m]) => m.traits?.['smithy.api#httpPayload'] !== undefined);
+    if (payload) {
+      const [, m] = payload;
+      const tgt = m.target in PRELUDE ? { type: localName(m.target).toLowerCase() } : target(m.target);
+      let media = docMedia;
+      let schema = schemaFor(m.target);
+      if (tgt?.type === 'blob') {
+        media = m.traits?.['smithy.api#mediaType'] ?? tgt.traits?.['smithy.api#mediaType'] ?? 'application/octet-stream';
+        schema = { type: 'string', format: 'binary' };
+      } else if (tgt?.type === 'string' || tgt?.type === 'enum') {
+        media = tgt.traits?.['smithy.api#mediaType'] ?? 'text/plain';
+      } else if (tgt?.type === 'union' && tgt.traits?.['smithy.api#streaming'] !== undefined) {
+        media = 'application/vnd.amazon.eventstream';
+      } else if (xml && m.traits?.['smithy.api#xmlName']) {
+        // A structure payload's root element is named by the member's xmlName.
+        schema = { allOf: [schema], xml: { name: m.traits['smithy.api#xmlName'], ...(xmlNs ? { namespace: xmlNs } : {}) } };
+      }
+      const out: any = { content: { [media]: { schema } } };
+      if (isRequest) out.required = m.traits?.['smithy.api#required'] !== undefined;
+      return out;
+    }
+    const body = members.filter(([, m]) => !isBound(m.traits));
+    if (!body.length) return undefined;
+    // Unbound members form a document whose root element is the structure.
+    let schema = schemaFor(structId);
+    if (xml && !struct.traits?.['smithy.api#xmlName']) {
+      schema = { allOf: [schema], xml: { name: localName(structId).replace(/(Request|Output)$/, ''), ...(xmlNs ? { namespace: xmlNs } : {}) } };
+    }
+    const out: any = { content: { [docMedia]: { schema } } };
+    if (isRequest) out.required = body.some(([, m]) => m.traits?.['smithy.api#required'] !== undefined);
+    return out;
+  }
+
+  // ---- document -----------------------------------------------------------
+  const title: string = st['smithy.api#title'] ?? localName(serviceId);
+  const sdkId: string | undefined = st['aws.api#service']?.sdkId;
+  const endpointPrefix: string | undefined = st['aws.api#service']?.endpointPrefix;
+  const servers = endpointPrefix
+    ? [
+        {
+          url: `https://${endpointPrefix}.{region}.amazonaws.com`,
+          variables: { region: { default: 'us-east-1', description: 'AWS region' } },
+          description: `${title} regional endpoint`,
+        },
+        { url: `https://${endpointPrefix}.amazonaws.com`, description: `${title} global endpoint` },
+      ]
+    : [];
+
+  const openapi: any = {
+    openapi: '3.0.3',
+    info: {
+      title,
+      version: service.version ?? 'unknown',
+      'x-openfn-adaptor': adaptorName,
+      'x-smithy-service': serviceId,
+      ...(sdkId ? { 'x-aws-sdk-id': sdkId } : {}),
+      ...(doc(st) ? { description: doc(st) } : {}),
+    },
+    servers,
+    security: [{ sigv4: [] }],
+    paths: Object.fromEntries(Object.entries(paths).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))),
+    components: {
+      securitySchemes: {
+        sigv4: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'Authorization',
+          description: 'AWS Signature Version 4 (aws.auth#sigv4): an `AWS4-HMAC-SHA256 Credential=…, SignedHeaders=…, Signature=…` header computed from the request.',
+        },
+      },
+      schemas: Object.fromEntries(Object.entries(schemas).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))),
+    },
   };
-  const collisions = (): Pending[][] => {
-    const groups = new Map<string, Pending[]>();
-    for (const p of pending) groups.set(keyOf(p), [...(groups.get(keyOf(p)) ?? []), p]);
-    return [...groups.values()].filter((g) => g.length > 1);
+  if (xmlNs) openapi.info['x-xml-namespace'] = xmlNs;
+  return { openapi, warnings };
+}
+
+/**
+ * The path key for each operation. Start from path + literal query minus
+ * `x-id`; where two operations still share a method and key, add (in order)
+ * their required query parameter names, then their required header names,
+ * then — for S3 Express control-plane operations, which live on a different
+ * host — `x-id`, and finally `x-id` for everyone still colliding.
+ */
+function discriminate(bound: Bound[], shapes: Record<string, Shape>): Map<string, string> {
+  const lits = new Map<string, Literal[]>(bound.map((b) => [b.id, b.literals.filter((l) => l.key !== 'x-id')]));
+  const keyOf = (b: Bound) => {
+    const l = lits.get(b.id)!;
+    return l.length ? `${b.path}#${fmt(l)}` : b.path;
   };
-  const steps: Array<(p: Pending, group: Pending[]) => string[]> = [
-    (p) => p.requiredQuery,
-    // Only headers that tell the group apart: ones every member requires say nothing.
-    (p, group) => p.requiredHeaders.filter((h) => !group.every((g) => g.requiredHeaders.includes(h))),
-    (p) => [p.hint ? `${p.hint.key}=${p.hint.value}` : `x-id=${p.name}`],
+  const required = (b: Bound, binding: 'smithy.api#httpQuery' | 'smithy.api#httpHeader'): string[] => {
+    const input = b.shape.input ? shapes[b.shape.input.target] : undefined;
+    return Object.values<Shape>(input?.members ?? {})
+      .filter((m) => m.traits?.[binding] !== undefined && m.traits?.['smithy.api#required'] !== undefined)
+      .map((m) => String(m.traits[binding]))
+      .sort();
+  };
+  const xId = (b: Bound): Literal => b.literals.find((l) => l.key === 'x-id') ?? { key: 'x-id', value: b.name };
+  const steps: Array<(b: Bound) => Literal[]> = [
+    (b) => required(b, 'smithy.api#httpQuery').map((key) => ({ key })),
+    (b) => required(b, 'smithy.api#httpHeader').map((key) => ({ key })),
+    (b) => (b.shape.traits?.['smithy.rules#staticContextParams']?.UseS3ExpressControlEndpoint?.value === true ? [xId(b)] : []),
+    (b) => [xId(b)],
   ];
   for (const step of steps) {
-    for (const group of collisions()) {
-      for (const p of group) {
-        const f = fragments.get(p)!;
-        for (const extra of step(p, group)) if (!f.includes(extra)) f.push(extra);
+    const groups = new Map<string, Bound[]>();
+    for (const b of bound) {
+      const k = `${b.method} ${keyOf(b)}`;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(b);
+    }
+    let collided = false;
+    for (const g of groups.values()) {
+      if (g.length < 2) continue;
+      collided = true;
+      for (const b of g) {
+        const cur = lits.get(b.id)!;
+        const add = step(b).filter((l) => !cur.some((c) => c.key === l.key));
+        lits.set(b.id, [...cur, ...add]);
       }
     }
+    if (!collided) break;
   }
-  for (const group of collisions()) warnings.push(`operations still share a path key: ${group.map((p) => p.name).join(', ')} — kept the first`);
-
-  // Within one path, the key with the most requirements goes first: the
-  // conformer takes the first template a request satisfies, and a request for
-  // `?analytics&id=1` satisfies both `#analytics` and `#analytics&id`.
-  const firstSeen = new Map<string, number>();
-  pending.forEach((p, i) => firstSeen.has(p.path) || firstSeen.set(p.path, i));
-  const ordered = pending
-    .map((p, i) => ({ p, i }))
-    .sort((a, b) => firstSeen.get(a.p.path)! - firstSeen.get(b.p.path)! || fragments.get(b.p)!.length - fragments.get(a.p)!.length || a.i - b.i)
-    .map(({ p }) => p);
-
-  const paths: Record<string, Node> = {};
-  for (const p of ordered) {
-    const key = keyOf(p).slice(p.method.length + 1);
-    paths[key] ??= {};
-    if (paths[key][p.method]) continue;
-    paths[key][p.method] = p.operation;
-  }
-
-  // --- document ---------------------------------------------------------------
-  const info: Node = {
-    title: trait(service, 'title') ?? bare(serviceId),
-    version: service.version ?? '',
-  };
-  if (typeof trait(service, 'documentation') === 'string') info.description = trait(service, 'documentation');
-  info['x-openfn-adaptor'] = adaptorName;
-  info['x-smithy-service'] = serviceId;
-  if (protocol) info['x-smithy-protocol'] = protocol;
-
-  const openapi: Node = { openapi: '3.0.3', info };
-  const prefix = st['aws.api#service']?.endpointPrefix;
-  if (prefix) {
-    openapi.servers = [
-      {
-        url: `https://${prefix}.{region}.amazonaws.com`,
-        description: 'Regional endpoint. The service model resolves the real host with endpoint rules that OpenAPI cannot express.',
-        variables: { region: { default: 'us-east-1', description: 'AWS region' } },
-      },
-    ];
-  } else {
-    warnings.push('service declares no endpoint — no servers[] written');
-  }
-  if (tagsUsed.length) openapi.tags = tagsUsed.map((name) => ({ name }));
-  openapi.paths = paths;
-  openapi.components = { schemas, ...(Object.keys(securitySchemes).length ? { securitySchemes } : {}) };
-  if (Object.keys(securitySchemes).length) openapi.security = Object.keys(securitySchemes).map((n) => ({ [n]: [] }));
-
-  return { openapi, warnings };
+  return new Map(bound.map((b) => [b.id, keyOf(b)]));
 }
