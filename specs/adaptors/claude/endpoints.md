@@ -2,27 +2,25 @@
 
 <!-- derived from openapi.json by `pnpm specs index claude` — do not edit by hand -->
 
-base: https://api.anthropic.com | auth: not declared | 385 operations in 29 resources
+base: https://api.anthropic.com | auth: not declared | 385 operations in 15 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
 ## agents
+- GET /v1/agents?beta=true — BetaListAgents: List Agents
+- POST /v1/agents?beta=true — BetaCreateAgent: Create Agent
 - GET /v1/agents/{agent_id}?beta=true — BetaGetAgent: Get Agent
 - POST /v1/agents/{agent_id}?beta=true — BetaUpdateAgent: Update Agent
 - POST /v1/agents/{agent_id}/archive?beta=true — BetaArchiveAgent: Archive Agent
 - GET /v1/agents/{agent_id}/versions?beta=true — BetaListAgentVersions: List Agent Versions
 
-## agents?beta=true
-- GET /v1/agents?beta=true — BetaListAgents: List Agents
-- POST /v1/agents?beta=true — BetaCreateAgent: Create Agent
-
 ## deployment_runs
+- GET /v1/deployment_runs?beta=true — BetaListDeploymentRuns: List Deployment Runs
 - GET /v1/deployment_runs/{deployment_run_id}?beta=true — BetaGetDeploymentRun: Get Deployment Run
 
-## deployment_runs?beta=true
-- GET /v1/deployment_runs?beta=true — BetaListDeploymentRuns: List Deployment Runs
-
 ## deployments
+- GET /v1/deployments?beta=true — BetaListDeployments: List Deployments
+- POST /v1/deployments?beta=true — BetaCreateDeployment: Create Deployment
 - GET /v1/deployments/{deployment_id}?beta=true — BetaGetDeployment: Get Deployment
 - POST /v1/deployments/{deployment_id}?beta=true — BetaUpdateDeployment: Update Deployment
 - POST /v1/deployments/{deployment_id}/archive?beta=true — BetaArchiveDeployment: Archive Deployment
@@ -30,20 +28,16 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/deployments/{deployment_id}/unpause?beta=true — BetaUnpauseDeployment: Unpause Deployment
 - POST /v1/deployments/{deployment_id}/run?beta=true — BetaRunDeploymentNow: Run Deployment Now
 
-## deployments?beta=true
-- GET /v1/deployments?beta=true — BetaListDeployments: List Deployments
-- POST /v1/deployments?beta=true — BetaCreateDeployment: Create Deployment
-
 ## dreams
+- GET /v1/dreams?beta=true — BetaListDreams: List Dreams
+- POST /v1/dreams?beta=true — BetaCreateDream: Create a Dream
 - GET /v1/dreams/{dream_id}?beta=true — BetaGetDream: Get a Dream
 - POST /v1/dreams/{dream_id}/cancel?beta=true — BetaCancelDream: Cancel a Dream
 - POST /v1/dreams/{dream_id}/archive?beta=true — BetaArchiveDream: Archive a Dream
 
-## dreams?beta=true
-- GET /v1/dreams?beta=true — BetaListDreams: List Dreams
-- POST /v1/dreams?beta=true — BetaCreateDream: Create a Dream
-
 ## environments
+- GET /v1/environments?beta=true — beta_list_environments_v1_environments_get: List Environments
+- POST /v1/environments?beta=true — beta_create_environment_v1_environments_post: Create Environment
 - GET /v1/environments/{environment_id}?beta=true — beta_get_environment_v1_environments__environment_id__get: Get Environment
 - POST /v1/environments/{environment_id}?beta=true — beta_update_environment_v1_environments__environment_id__post: Update Environment
 - DELETE /v1/environments/{environment_id}?beta=true — beta_delete_environment_v1_environments__environment_id__delete: Delete Environment
@@ -57,23 +51,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/environments/{environment_id}/work/{work_id}?beta=true — beta_update_work_v1_environments__environment_id__work__work_id__post: Update Work Item
 - GET /v1/environments/{environment_id}/work?beta=true — beta_list_work_v1_environments__environment_id__work_get: List Work Items
 
-## environments?beta=true
-- GET /v1/environments?beta=true — beta_list_environments_v1_environments_get: List Environments
-- POST /v1/environments?beta=true — beta_create_environment_v1_environments_post: Create Environment
-
 ## files
 - GET /v1/files — list_files_v1_files_get: List Files
 - POST /v1/files — upload_file_v1_files_post: Upload File
 - GET /v1/files/{file_id} — get_file_metadata_v1_files__file_id__get: Get File Metadata
 - DELETE /v1/files/{file_id} — delete_file_v1_files__file_id__delete: Delete File
 - GET /v1/files/{file_id}/content — download_file_v1_files__file_id__content_get: Download File
+- GET /v1/files?beta=true — beta_list_files_v1_files_get: List Files
+- POST /v1/files?beta=true — beta_upload_file_v1_files_post: Upload File
 - GET /v1/files/{file_id}?beta=true — beta_get_file_metadata_v1_files__file_id__get: Get File Metadata
 - DELETE /v1/files/{file_id}?beta=true — beta_delete_file_v1_files__file_id__delete: Delete File
 - GET /v1/files/{file_id}/content?beta=true — beta_download_file_v1_files__file_id__content_get: Download File
-
-## files?beta=true
-- GET /v1/files?beta=true — beta_list_files_v1_files_get: List Files
-- POST /v1/files?beta=true — beta_upload_file_v1_files_post: Upload File
 
 ## memory_stores
 - GET /v1/memory_stores/{memory_store_id}/memories?beta=true — BetaListMemories: List Memories
@@ -84,14 +72,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/memory_stores/{memory_store_id}/memory_versions?beta=true — BetaListMemoryVersions: List Memory Versions
 - GET /v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}?beta=true — BetaGetMemoryVersion: Retrieve a Memory Version
 - POST /v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}/redact?beta=true — BetaRedactMemoryVersion: Redact a Memory Version
+- GET /v1/memory_stores?beta=true — BetaListMemoryStores: List Memory Stores
+- POST /v1/memory_stores?beta=true — BetaCreateMemoryStore: Create a Memory Store
 - GET /v1/memory_stores/{memory_store_id}?beta=true — BetaGetMemoryStore: Retrieve a Memory Store
 - POST /v1/memory_stores/{memory_store_id}?beta=true — BetaUpdateMemoryStore: Update a Memory Store
 - DELETE /v1/memory_stores/{memory_store_id}?beta=true — BetaDeleteMemoryStore: Delete a Memory Store
 - POST /v1/memory_stores/{memory_store_id}/archive?beta=true — BetaArchiveMemoryStore: Archive a Memory Store
-
-## memory_stores?beta=true
-- GET /v1/memory_stores?beta=true — BetaListMemoryStores: List Memory Stores
-- POST /v1/memory_stores?beta=true — BetaCreateMemoryStore: Create a Memory Store
 
 ## messages
 - POST /v1/messages — messages_post: Create a Message
@@ -102,6 +88,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/messages/batches/{message_batch_id}/cancel — message_batches_cancel: Cancel a Message Batch
 - GET /v1/messages/batches/{message_batch_id}/results — message_batches_results: Retrieve Message Batch results
 - POST /v1/messages/count_tokens — messages_count_tokens_post: Count tokens in a Message
+- POST /v1/messages?beta=true — beta_messages_post: Create a Message
 - GET /v1/messages/batches?beta=true — beta_message_batches_list: List Message Batches
 - POST /v1/messages/batches?beta=true — beta_message_batches_post: Create a Message Batch
 - GET /v1/messages/batches/{message_batch_id}?beta=true — beta_message_batches_retrieve: Retrieve a Message Batch
@@ -110,16 +97,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/messages/batches/{message_batch_id}/results?beta=true — beta_message_batches_results: Retrieve Message Batch results
 - POST /v1/messages/count_tokens?beta=true — beta_messages_count_tokens_post: Count tokens in a Message
 
-## messages?beta=true
-- POST /v1/messages?beta=true — beta_messages_post: Create a Message
-
 ## models
 - GET /v1/models — models_list: List Models
 - GET /v1/models/{model_id} — models_get: Get a Model
-- GET /v1/models/{model_id}?beta=true — beta_models_get: Get a Model
-
-## models?beta=true
 - GET /v1/models?beta=true — beta_models_list: List Models
+- GET /v1/models/{model_id}?beta=true — beta_models_get: Get a Model
 
 ## organizations
 - GET /v1/organizations/telemetry_destinations?beta=true — BetaListTelemetryDestinations: List Telemetry Destinations
@@ -358,6 +340,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/organizations/analytics/artifacts — get_artifacts_v1_organizations_analytics_artifacts_get: Get Artifact Activity
 
 ## sessions
+- GET /v1/sessions?beta=true — BetaListSessions: List Sessions
+- POST /v1/sessions?beta=true — BetaCreateSession: Create Session
 - GET /v1/sessions/{session_id}?beta=true — BetaGetSession: Get Session
 - POST /v1/sessions/{session_id}?beta=true — BetaUpdateSession: Update Session
 - DELETE /v1/sessions/{session_id}?beta=true — BetaDeleteSession: Delete Session
@@ -376,10 +360,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/sessions/{session_id}/resources/{resource_id}?beta=true — BetaUpdateResource: Update Session Resource
 - DELETE /v1/sessions/{session_id}/resources/{resource_id}?beta=true — BetaDeleteResource: Delete Session Resource
 
-## sessions?beta=true
-- GET /v1/sessions?beta=true — BetaListSessions: List Sessions
-- POST /v1/sessions?beta=true — BetaCreateSession: Create Session
-
 ## skills
 - GET /v1/skills — list_skills_v1_skills_get: List Skills
 - POST /v1/skills — create_skill_v1_skills_post: Create Skill
@@ -389,6 +369,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/skills/{skill_id}/versions — create_skill_version_v1_skills__skill_id__versions_post: Create Skill Version
 - GET /v1/skills/{skill_id}/versions/{version} — get_skill_version_v1_skills__skill_id__versions__version__get: Get Skill Version
 - DELETE /v1/skills/{skill_id}/versions/{version} — delete_skill_version_v1_skills__skill_id__versions__version__delete: Delete Skill Version
+- GET /v1/skills?beta=true — beta_list_skills_v1_skills_get: List Skills
+- POST /v1/skills?beta=true — beta_create_skill_v1_skills_post: Create Skill
 - GET /v1/skills/{skill_id}?beta=true — beta_get_skill_v1_skills__skill_id__get: Get Skill
 - DELETE /v1/skills/{skill_id}?beta=true — beta_delete_skill_v1_skills__skill_id__delete: Delete Skill
 - GET /v1/skills/{skill_id}/versions?beta=true — beta_list_skill_versions_v1_skills__skill_id__versions_get: List Skill Versions
@@ -397,11 +379,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /v1/skills/{skill_id}/versions/{version}?beta=true — beta_delete_skill_version_v1_skills__skill_id__versions__version__delete: Delete Skill Version
 - GET /v1/skills/{skill_id}/versions/{version}/content?beta=true — beta_download_skill_version_content_v1_skills__skill_id__versions__version__content_get: Download Skill Version Content
 
-## skills?beta=true
-- GET /v1/skills?beta=true — beta_list_skills_v1_skills_get: List Skills
-- POST /v1/skills?beta=true — beta_create_skill_v1_skills_post: Create Skill
-
 ## tunnels
+- GET /v1/tunnels?beta=true — BetaListTunnels: List Tunnels
+- POST /v1/tunnels?beta=true — BetaCreateTunnel: Create Tunnel
 - GET /v1/tunnels/{tunnel_id}?beta=true — BetaGetTunnel: Get Tunnel
 - POST /v1/tunnels/{tunnel_id}/archive?beta=true — BetaArchiveTunnel: Archive Tunnel
 - POST /v1/tunnels/{tunnel_id}/reveal_token?beta=true — BetaRevealTunnelToken: Reveal Tunnel Token
@@ -411,10 +391,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/tunnels/{tunnel_id}/certificates/{certificate_id}?beta=true — BetaGetTunnelCertificate: Get Tunnel Certificate
 - POST /v1/tunnels/{tunnel_id}/certificates/{certificate_id}/archive?beta=true — BetaArchiveTunnelCertificate: Archive Tunnel Certificate
 
-## tunnels?beta=true
-- GET /v1/tunnels?beta=true — BetaListTunnels: List Tunnels
-- POST /v1/tunnels?beta=true — BetaCreateTunnel: Create Tunnel
-
 ## user_profiles
 - GET /v1/user_profiles — ListUserProfiles: List User Profiles
 - POST /v1/user_profiles — CreateUserProfile: Create User Profile
@@ -422,17 +398,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/user_profiles/{user_profile_id} — UpdateUserProfile: Update User Profile
 - DELETE /v1/user_profiles/{user_profile_id} — DeleteUserProfile: Delete User Profile
 - POST /v1/user_profiles/{user_profile_id}/action_urls — CreateUserProfileActionUrl: Create Action URL
+- GET /v1/user_profiles?beta=true — BetaListUserProfiles: List User Profiles
+- POST /v1/user_profiles?beta=true — BetaCreateUserProfile: Create User Profile
 - GET /v1/user_profiles/{user_profile_id}?beta=true — BetaGetUserProfile: Get User Profile
 - POST /v1/user_profiles/{user_profile_id}?beta=true — BetaUpdateUserProfile: Update User Profile
 - DELETE /v1/user_profiles/{user_profile_id}?beta=true — BetaDeleteUserProfile: Delete User Profile
 - POST /v1/user_profiles/{user_profile_id}/enrollment_url?beta=true — BetaCreateEnrollmentUrl: Create Enrollment URL
 - POST /v1/user_profiles/{user_profile_id}/action_urls?beta=true — BetaCreateUserProfileActionUrl: Create Action URL
 
-## user_profiles?beta=true
-- GET /v1/user_profiles?beta=true — BetaListUserProfiles: List User Profiles
-- POST /v1/user_profiles?beta=true — BetaCreateUserProfile: Create User Profile
-
 ## vaults
+- GET /v1/vaults?beta=true — BetaListVaults: List Vaults
+- POST /v1/vaults?beta=true — BetaCreateVault: Create a Vault
 - GET /v1/vaults/{vault_id}?beta=true — BetaGetVault: Retrieve a Vault
 - POST /v1/vaults/{vault_id}?beta=true — BetaUpdateVault: Update a Vault
 - DELETE /v1/vaults/{vault_id}?beta=true — BetaDeleteVault: Delete a Vault
@@ -444,7 +420,3 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /v1/vaults/{vault_id}/credentials/{credential_id}?beta=true — BetaDeleteCredential: Delete a Credential
 - POST /v1/vaults/{vault_id}/credentials/{credential_id}/archive?beta=true — BetaArchiveCredential: Archive a Credential
 - POST /v1/vaults/{vault_id}/credentials/{credential_id}/mcp_oauth_validate?beta=true — BetaValidateCredential: Validate an MCP OAuth Credential
-
-## vaults?beta=true
-- GET /v1/vaults?beta=true — BetaListVaults: List Vaults
-- POST /v1/vaults?beta=true — BetaCreateVault: Create a Vault

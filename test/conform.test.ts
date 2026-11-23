@@ -472,6 +472,34 @@ test('every committed spec compiles its response schemas without error', () => {
   assert.deepEqual(failures, []);
 });
 
+test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one does not', () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/{Bucket}': { get: { operationId: 'ListObjects', responses: { '200': { description: 'ok' } } } },
+      '/{Bucket}/{Key}': {
+        get: {
+          operationId: 'GetObject',
+          parameters: [
+            { name: 'Bucket', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'Key', in: 'path', required: true, schema: { type: 'string' }, 'x-smithy-greedy': true },
+          ],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+      '/things/{id}': { get: { operationId: 'GetThing', responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/b/reports/2026/q1.csv')?.operationId, 'GetObject');
+  assert.equal(c.match('GET', '/b/q1.csv')?.operationId, 'GetObject');
+  assert.equal(c.match('GET', '/b')?.operationId, 'ListObjects');
+  assert.equal(c.match('GET', '/things/a')?.operationId, 'GetThing', 'a literal segment still wins');
+  const plain = createConformer({ ...spec, paths: { '/things/{id}': spec.paths['/things/{id}'] } });
+  assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
+});
+
 test('a path parameter whose pattern admits "/" (Azure {blob}) or a {x:.+} router regex spans segments', () => {
   const c = createConformer({
     openapi: '3.0.3',

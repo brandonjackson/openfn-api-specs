@@ -45,6 +45,8 @@ test('resourceOf skips version and generic API prefixes, and path parameters', (
   assert.equal(resourceOf('/api/v2/contacts.json'), 'contacts');
   assert.equal(resourceOf('/{Bucket}/{Key}#uploadId'), '{Bucket}', 'all-parameter path: first parameter names the group');
   assert.equal(resourceOf('/'), ROOT_GROUP);
+  assert.equal(resourceOf('/#x-id=ListDirectoryBuckets'), ROOT_GROUP, 'a discriminator on the root is still the root');
+  assert.equal(resourceOf('/v1/agents?beta=true'), 'agents', 'a query-style discriminator does not split the group');
 });
 
 test('every operation lands in exactly one group; tag wins over path segment', () => {

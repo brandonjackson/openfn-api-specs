@@ -5,53 +5,35 @@
   "x-openfn-adaptor": "aws-s3",
   "x-source": {
     "openapi": "#/components/schemas/LifecycleRuleFilter",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-18"
   },
   "type": "object",
   "properties": {
     "Prefix": {
-      "allOf": [
-        {
-          "$ref": "Prefix.json"
-        },
-        {
-          "description": "<p>Prefix identifying one or more objects to which the rule applies.</p> <important> <p>Replacement must be made for object keys containing special characters (such as carriage returns) when using XML requests. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints\"> XML related object key constraints</a>.</p> </important>"
-        }
-      ]
+      "type": "string",
+      "description": "<p>Prefix identifying one or more objects to which the rule applies.</p>\n         <important>\n            <p>Replacement must be made for object keys containing special characters (such as carriage returns) when using \n         XML requests. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints\">\n            XML related object key constraints</a>.</p>\n         </important>"
     },
     "Tag": {
       "allOf": [
         {
           "$ref": "Tag.json"
-        },
-        {
-          "description": "This tag must exist in the object's tag set in order for the rule to apply."
         }
-      ]
+      ],
+      "description": "<p>This tag must exist in the object's tag set in order for the rule to apply.</p>\n         <note>\n            <p>This parameter applies to general purpose buckets only. It is not supported for directory bucket\n        lifecycle configurations.</p>\n         </note>"
     },
     "ObjectSizeGreaterThan": {
-      "allOf": [
-        {
-          "$ref": "ObjectSizeGreaterThanBytes.json"
-        },
-        {
-          "description": "Minimum object size to which the rule applies."
-        }
-      ]
+      "type": "integer",
+      "format": "int64",
+      "description": "<p>Minimum object size to which the rule applies.</p>"
     },
     "ObjectSizeLessThan": {
-      "allOf": [
-        {
-          "$ref": "ObjectSizeLessThanBytes.json"
-        },
-        {
-          "description": "Maximum object size to which the rule applies."
-        }
-      ]
+      "type": "integer",
+      "format": "int64",
+      "description": "<p>Maximum object size to which the rule applies.</p>"
     },
     "And": {
       "$ref": "LifecycleRuleAndOperator.json"
     }
   },
-  "description": "The <code>Filter</code> is used to identify objects that a Lifecycle Rule applies to. A <code>Filter</code> must have exactly one of <code>Prefix</code>, <code>Tag</code>, or <code>And</code> specified."
+  "description": "<p>The <code>Filter</code> is used to identify objects that a Lifecycle Rule applies to. A\n        <code>Filter</code> can have exactly one of <code>Prefix</code>, <code>Tag</code>,\n        <code>ObjectSizeGreaterThan</code>, <code>ObjectSizeLessThan</code>, or <code>And</code> specified. If\n      the <code>Filter</code> element is left empty, the Lifecycle Rule applies to all objects in the\n      bucket.</p>"
 }

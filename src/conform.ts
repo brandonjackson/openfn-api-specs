@@ -172,11 +172,19 @@ export function normalizePath(path: string): string {
   return p;
 }
 
+/** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
+function greedyParams(openapi: any, op: ParsedOperation): Set<string> {
+  const item = openapi?.paths?.[op.path];
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
+  return new Set(params.filter((p: any) => p?.in === 'path' && p['x-smithy-greedy'] === true).map((p: any) => String(p.name)));
+}
+
 /**
  * One template segment → regex source; `{x}` (possibly embedded) becomes a
- * non-slash run, unless `x` is in `multi`: a parameter whose value may contain
- * `/` (Azure's `{blob}`, whose schema pattern is `name(/name)*`) or one written
- * with a router regex that spans segments (`{formID:.+}`).
+ * non-slash run, unless `x` is in `multi`: a Smithy greedy label (S3's
+ * `{Key+}`, marked `x-smithy-greedy` by src/smithy.ts), a parameter whose
+ * schema pattern admits `/` (Azure's `{blob}`), or one written with a router
+ * regex that spans segments (`{formID:.+}`).
  */
 function segmentSource(seg: string, multi: Set<string> = new Set()): { src: string; isParam: boolean } {
   if (!seg.includes('{')) return { src: escapeRegex(seg), isParam: false };
@@ -568,7 +576,9 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const matchers: Matcher[] = [];
   for (const op of parsed.operations) {
     const key = `${op.method} ${op.path}`;
-    const t = compileTemplate(op.path, multiSegmentParams(parsed, op.path, op.method));
+    const multi = multiSegmentParams(parsed, op.path, op.method);
+    for (const g of greedyParams(openapi, op)) multi.add(g);
+    const t = compileTemplate(op.path, multi);
     for (const prefix of prefixes) {
       const p = prefix ? compileTemplate(prefix) : { src: '', literals: 0, params: 0 };
       matchers.push({
