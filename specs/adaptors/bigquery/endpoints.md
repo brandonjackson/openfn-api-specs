@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index bigquery` — do not edit by hand -->
 
-base: https://bigquery.googleapis.com/bigquery/v2 | auth: not declared | 47 operations in 8 resources
+base: https://bigquery.googleapis.com/bigquery/v2 | auth: not declared | 49 operations in 8 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -21,6 +21,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /projects/{projectsId}/jobs/{jobsId}/delete — bigquery.jobs.delete: Requests the deletion of the metadata of a job.
 - GET /projects/{projectsId}/jobs — bigquery.jobs.list: Lists all jobs that you started in the specified project.
 - POST /projects/{projectsId}/jobs — bigquery.jobs.insert: Starts a new asynchronous job.
+- POST /upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.upload: Starts a new asynchronous job (media upload)
+- POST /resumable/upload/bigquery/v2/projects/{projectId}/jobs — bigquery.jobs.insert.resumableUpload: Starts a new asynchronous job (resumable upload session)
 - POST /projects/{projectsId}/jobs/{jobsId}/cancel — bigquery.jobs.cancel: Requests that a job be cancelled.
 - GET /projects/{projectsId}/queries/{queriesId} — bigquery.jobs.getQueryResults: RPC to get the results of a query job.
 

@@ -134,3 +134,40 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.requestBody.content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
+
+test('mediaUpload protocols become upload operations rooted at rootUrl', () => {
+  const withUpload = structuredClone(disc) as any;
+  withUpload.servicePath = 'demo/v1/';
+  withUpload.baseUrl = 'https://demo.googleapis.com/demo/v1/';
+  withUpload.resources.widgets.methods.create.mediaUpload = {
+    accept: ['image/*'],
+    maxSize: '1048576',
+    protocols: {
+      simple: { multipart: true, path: '/upload/demo/v1/{+parent}/widgets' },
+      resumable: { multipart: true, path: '/resumable/upload/demo/v1/{+parent}/widgets' },
+    },
+  };
+  withUpload.resources.widgets.methods.create.parameters = {
+    parent: { type: 'string', location: 'path', required: true },
+  };
+  const { openapi, warnings } = discoveryToOpenApi(withUpload, 'demo');
+  assert.deepEqual(warnings, []);
+
+  const simple = openapi.paths['/upload/demo/v1/{parent}/widgets'];
+  assert.deepEqual(simple.servers, [{ url: 'https://demo.googleapis.com' }], 'upload paths are absolute from rootUrl');
+  assert.equal(simple.post.operationId, 'demo.widgets.create.upload');
+  const byName = Object.fromEntries(simple.post.parameters.map((p: any) => [p.name, p]));
+  assert.equal(byName.parent.in, 'path');
+  assert.deepEqual(byName.uploadType.schema.enum, ['media', 'multipart']);
+  assert.ok(simple.post.requestBody.content['multipart/related']);
+  assert.ok(simple.post.requestBody.content['image/*']);
+  assert.deepEqual(simple.post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
+
+  const resumable = openapi.paths['/resumable/upload/demo/v1/{parent}/widgets'].post;
+  assert.equal(resumable.operationId, 'demo.widgets.create.resumableUpload');
+  assert.ok(resumable.responses['200'].headers.Location);
+
+  // The parser sees the upload operations alongside the plain ones.
+  const ops = parseSpec(openapi).operations.map((o: any) => o.operationId);
+  assert.ok(ops.includes('demo.widgets.create') && ops.includes('demo.widgets.create.upload'));
+});
