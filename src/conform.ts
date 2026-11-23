@@ -50,6 +50,11 @@ export interface Exchange {
   responseBody?: unknown;
   /** Response Content-Type, when known. Non-JSON responses are not schema-checked. */
   contentType?: string;
+  /**
+   * Request Content-Type, when known. A non-JSON request body (a multipart
+   * upload, a raw media PUT) is not checked against the JSON request schema.
+   */
+  requestContentType?: string;
 }
 
 export type ViolationKind =
@@ -232,9 +237,27 @@ function segmentSource(seg: string, greedy?: Set<string>): { src: string; isPara
   const src = seg
     .split(/(\{[^}]+\})/)
     .filter(Boolean)
-    .map((part) => (/^\{[^}]+\}$/.test(part) ? '[^/]+' : escapeRegex(part)))
+    .map((part) => {
+      if (!/^\{[^}]+\}$/.test(part)) return escapeRegex(part);
+      return routerRegexSpansSegments(part) ? '.+' : '[^/]+';
+    })
     .join('');
   return { src, isParam: true };
+}
+
+/**
+ * Does a `{name:regex}` template variable (gorilla/mux and Spring style, as in
+ * SurveyCTO's `/api/v1/forms/data/wide/json/{formID:.+}`) admit `/`?
+ */
+function routerRegexSpansSegments(part: string): boolean {
+  const inner = part.slice(1, -1);
+  const colon = inner.indexOf(':');
+  if (colon < 0) return false;
+  try {
+    return new RegExp(`^(?:${inner.slice(colon + 1)})$`).test('a/b');
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -708,7 +731,16 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
     if (checkRequests && ex.requestBody !== undefined && raw?.requestBody) {
       const rb = parsed.deref(raw.requestBody);
       const media = pickJsonMedia(rb?.content);
-      if (media && rb.content[media]?.schema) {
+      // Only a JSON body is checked against the JSON schema. Without a request
+      // Content-Type, an unparsed (string) body on an operation that also
+      // documents a non-JSON media type (Google's /upload multipart/related, a
+      // raw */* blob) is taken to be that form.
+      const declared = ex.requestContentType;
+      const nonJsonBody = declared
+        ? !isJsonMedia(declared)
+        : typeof ex.requestBody === 'string' &&
+          Object.keys(rb?.content ?? {}).some((k) => !isJsonMedia(k) && k.split(';')[0].trim() !== 'application/x-www-form-urlencoded');
+      if (media && !nonJsonBody && rb.content[media]?.schema) {
         const segs = raw.requestBody.$ref
           ? [...String(raw.requestBody.$ref).replace(/^#\//, '').split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~')), 'content', media, 'schema']
           : ['paths', op.path, methodLower, 'requestBody', 'content', media, 'schema'];
