@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index dhis2` — do not edit by hand -->
 
-base: http://play.im.dhis2.org/stable-2-43-1/ | auth: http/basic | 2574 operations in 182 resources
+base: http://play.im.dhis2.org/stable-2-43-2-1/ | auth: http/basic | 2575 operations in 182 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -271,6 +271,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /api/auth/login — Authentication.login
 - POST /api/auth/passwordReset — UserAccount.resetPassword
 - POST /api/auth/registration — UserAccount.registerUser
+- POST /api/auth/updatePassword — UserAccount.updatePassword
 
 ## authorities
 - GET /api/authorities/ — Authorities.getAuthorities
@@ -1069,16 +1070,16 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /api/fileResources/ — FileResource.getObjectList
 - POST /api/fileResources/ — FileResource.saveFileResource
 - GET /api/fileResources/#getObjectListCsv — FileResource.getObjectListCsv
-- GET /api/fileResources/gist — FileResource.getObjectListGist+getObjectListGistAsCsv
+- GET /api/fileResources/gist — FileResource.getObjectListGist+getObjectListGistAsCsv+getObjectListGist+getObjectListGistAsCsv
 - GET /api/fileResources/gist.csv — FileResource.getObjectListGistAsCsv
 - GET /api/fileResources/owners — FileResource.getFileResourceOwners
 - GET /api/fileResources/{uid} — FileResource.getFileResource
 - GET /api/fileResources/{uid}#getObject — FileResource.getObject
 - GET /api/fileResources/{uid}/data — FileResource.getFileResourceData
-- GET /api/fileResources/{uid}/gist — FileResource.getObjectGist+getObjectGistAsCsv
+- GET /api/fileResources/{uid}/gist — FileResource.getObjectGist+getObjectGistAsCsv+getObjectGist+getObjectGistAsCsv
 - GET /api/fileResources/{uid}/gist.csv — FileResource.getObjectGistAsCsv
 - GET /api/fileResources/{uid}/{property} — FileResource.getObjectProperty
-- GET /api/fileResources/{uid}/{property}/gist — FileResource.getObjectPropertyGist+getObjectPropertyGistAsCsv
+- GET /api/fileResources/{uid}/{property}/gist — FileResource.getObjectPropertyGist+getObjectPropertyGistAsCsv+getObjectPropertyGist+getObjectPropertyGistAsCsv
 - GET /api/fileResources/{uid}/{property}/gist.csv — FileResource.getObjectPropertyGistAsCsv
 
 ## files
