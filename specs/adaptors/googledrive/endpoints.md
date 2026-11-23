@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index googledrive` — do not edit by hand -->
 
-base: https://www.googleapis.com/drive/v3 | auth: not declared | 66 operations in 14 resources
+base: https://www.googleapis.com/drive/v3 | auth: not declared | 68 operations in 14 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -55,13 +55,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## files
 - GET /files — drive.files.list: Lists the user's files.
 - POST /files — drive.files.create: Creates a file.
-- POST /upload/drive/v3/files — drive.files.create.upload: Media upload for `drive.files.create` (simple upload path; set `uploadType` to `media`, `multipart` or `resumable`).
+- POST /resumable/upload/drive/v3/files — drive.files.create.resumableUpload: Creates a file (resumable upload session)
+- POST /upload/drive/v3/files — drive.files.create.upload: Creates a file (media upload)
 - POST /files/{fileId}/modifyLabels — drive.files.modifyLabels: Modifies the set of labels applied to a file.
 - POST /files/{fileId}/download — drive.files.download: Downloads the content of a file.
 - GET /files/{fileId} — drive.files.get: Gets a file's metadata or content by ID.
 - PATCH /files/{fileId} — drive.files.update: Updates a file's metadata, content, or both.
 - DELETE /files/{fileId} — drive.files.delete: Permanently deletes a file owned by the user without moving it to the trash.
-- PATCH /upload/drive/v3/files/{fileId} — drive.files.update.upload: Media upload for `drive.files.update` (simple upload path; set `uploadType` to `media`, `multipart` or `resumable`).
+- PATCH /resumable/upload/drive/v3/files/{fileId} — drive.files.update.resumableUpload: Updates a file's metadata, content, or both (resumable upload session)
+- PATCH /upload/drive/v3/files/{fileId} — drive.files.update.upload: Updates a file's metadata, content, or both (media upload)
 - GET /files/generateIds — drive.files.generateIds: Generates a set of file IDs which can be provided in create or copy requests.
 - GET /files/{fileId}/listLabels — drive.files.listLabels: Lists the labels on a file.
 - GET /files/generateCseToken — drive.files.generateCseToken: Generates a CSE token which can be used to create or update CSE files.

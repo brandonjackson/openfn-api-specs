@@ -172,37 +172,83 @@ export function normalizePath(path: string): string {
   return p;
 }
 
-/** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
-function greedyParams(openapi: any, op: ParsedOperation): Set<string> {
+/** Resolve a local `#/components/...` `$ref` (one hop is all parameters need). */
+function resolveLocalRef(openapi: any, node: any): any {
+  if (typeof node?.$ref !== 'string' || !node.$ref.startsWith('#/')) return node;
+  let cur = openapi;
+  for (const seg of node.$ref.slice(2).split('/')) cur = cur?.[seg.replace(/~1/g, '/').replace(/~0/g, '~')];
+  return cur ?? node;
+}
+
+/**
+ * Whether a regex pattern (as a string) contains a literal `/` outside any
+ * character class: `^[a-z0-9]+(?:/[a-z0-9]+)*$` does (Azure's blob name),
+ * `^[^/]+$` does not.
+ */
+export function patternAdmitsSlash(pattern: string): boolean {
+  let inClass = false;
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '\\') {
+      if (pattern[i + 1] === '/' && !inClass) return true;
+      i++;
+      continue;
+    }
+    if (inClass) {
+      if (c === ']') inClass = false;
+    } else if (c === '[') inClass = true;
+    else if (c === '/') return true;
+  }
+  return false;
+}
+
+/**
+ * Path parameters that may span slashes: those marked `x-smithy-greedy: true`
+ * (S3's `{Key+}`), and the template's final parameter when its schema
+ * `pattern` admits a literal `/` (Azure's `{blob}`, a name like
+ * `exports/2026/q1.csv`). Parameters given as `$ref`s are resolved first.
+ */
+function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
   const item = openapi?.paths?.[op.path];
-  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
-  return new Set(params.filter((p: any) => p?.in === 'path' && p['x-smithy-greedy'] === true).map((p: any) => String(p.name)));
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])]
+    .map((p: any) => resolveLocalRef(openapi, p))
+    .filter((p: any) => p?.in === 'path');
+  const last = /\{([^}]+)\}$/.exec(normalizePath(op.path))?.[1];
+  const names = params
+    .filter(
+      (p: any) =>
+        p['x-smithy-greedy'] === true ||
+        (String(p.name) === last && typeof p.schema?.pattern === 'string' && patternAdmitsSlash(p.schema.pattern))
+    )
+    .map((p: any) => String(p.name));
+  return names.length ? new Set(names) : undefined;
 }
 
 /**
  * One template segment → regex source; `{x}` (possibly embedded) becomes a
- * non-slash run, unless `x` is in `multi`: a Smithy greedy label (S3's
- * `{Key+}`, marked `x-smithy-greedy` by src/smithy.ts), a parameter whose
- * schema pattern admits `/` (Azure's `{blob}`), or one written with a router
- * regex that spans segments (`{formID:.+}`).
+ * non-slash run. A whole-segment parameter named in `greedy` (a Smithy greedy
+ * label such as S3's `{Key+}`, marked `x-smithy-greedy` by src/smithy.ts)
+ * spans slashes, so `/{Bucket}/{Key}` matches `/b/reports/2026/q1.csv`.
  */
-function segmentSource(seg: string, multi: Set<string> = new Set()): { src: string; isParam: boolean } {
+function segmentSource(seg: string, greedy?: Set<string>): { src: string; isParam: boolean } {
   if (!seg.includes('{')) return { src: escapeRegex(seg), isParam: false };
+  const whole = /^\{([^}]+)\}$/.exec(seg);
+  if (whole && greedy?.has(whole[1])) return { src: '.+', isParam: true };
   const src = seg
     .split(/(\{[^}]+\})/)
     .filter(Boolean)
     .map((part) => {
       if (!/^\{[^}]+\}$/.test(part)) return escapeRegex(part);
-      return multi.has(paramName(part)) || routerRegexSpansSegments(part) ? '.+' : '[^/]+';
+      return routerRegexSpansSegments(part) ? '.+' : '[^/]+';
     })
     .join('');
   return { src, isParam: true };
 }
 
-/** `{formID:.+}` → `formID`; `{blob}` → `blob`. */
-const paramName = (part: string): string => part.slice(1, -1).split(':')[0];
-
-/** Does a `{name:regex}` template variable (gorilla/mux, Spring style) admit `/`? */
+/**
+ * Does a `{name:regex}` template variable (gorilla/mux and Spring style, as in
+ * SurveyCTO's `/api/v1/forms/data/wide/json/{formID:.+}`) admit `/`?
+ */
 function routerRegexSpansSegments(part: string): boolean {
   const inner = part.slice(1, -1);
   const colon = inner.indexOf(':');
@@ -212,31 +258,6 @@ function routerRegexSpansSegments(part: string): boolean {
   } catch {
     return false;
   }
-}
-
-/**
- * Path parameters of an operation whose declared schema admits `/` (its
- * `pattern` matches a two-segment value), so the template variable must match
- * across segments. Azure Storage's `{blob}` is the motivating case: blob names
- * are virtual paths (`exports/2026/indicators.csv`).
- */
-function multiSegmentParams(parsed: ParsedSpec, path: string, method: string): Set<string> {
-  const out = new Set<string>();
-  const item = parsed.raw?.paths?.[path];
-  if (!item) return out;
-  const params = [...(item.parameters ?? []), ...(item[method.toLowerCase()]?.parameters ?? [])];
-  for (const raw of params) {
-    const p = parsed.deref(raw);
-    if (p?.in !== 'path') continue;
-    const schema = parsed.deref(p.schema ?? p);
-    if (typeof schema?.pattern !== 'string' || !schema.pattern.includes('/')) continue;
-    try {
-      if (new RegExp(schema.pattern).test('a/b')) out.add(p.name);
-    } catch {
-      /* an unparseable pattern says nothing about slashes */
-    }
-  }
-  return out;
 }
 
 /**
@@ -290,16 +311,13 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
   });
 }
 
-function compileTemplate(
-  template: string,
-  multi?: Set<string>
-): { src: string; literals: number; params: number } {
+function compileTemplate(template: string, greedy?: Set<string>): { src: string; literals: number; params: number } {
   const segs = normalizeTemplate(template).split('/').filter(Boolean);
   let literals = 0;
   let params = 0;
   const src = segs
     .map((seg) => {
-      const s = segmentSource(seg, multi);
+      const s = segmentSource(seg, greedy);
       if (s.isParam) params++;
       else literals++;
       return '/' + s.src;
@@ -576,9 +594,7 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
   const matchers: Matcher[] = [];
   for (const op of parsed.operations) {
     const key = `${op.method} ${op.path}`;
-    const multi = multiSegmentParams(parsed, op.path, op.method);
-    for (const g of greedyParams(openapi, op)) multi.add(g);
-    const t = compileTemplate(op.path, multi);
+    const t = compileTemplate(op.path, greedyParams(openapi, op));
     for (const prefix of prefixes) {
       const p = prefix ? compileTemplate(prefix) : { src: '', literals: 0, params: 0 };
       matchers.push({

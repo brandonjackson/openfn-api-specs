@@ -24,12 +24,12 @@
  *  - path template vars → required string path parameters; the method's query
  *    parameters plus the doc's global parameters → query parameters.
  *  - `method.request.$ref`  → JSON request body; `method.response.$ref` → 200 body.
- *  - a method with `supportsMediaUpload` gets a second operation at its
- *    `mediaUpload.protocols.simple.path` (`/upload/drive/v3/files`), which lives
- *    under `rootUrl` rather than the service path, so the path item carries its
- *    own `servers`. Its operationId is `<method id>.upload`, its tag the method's
- *    resource, and its body the `multipart/related` (metadata + media) or raw
- *    media form `uploadType` selects.
+ *  - `method.mediaUpload.protocols` → one extra operation per protocol at its
+ *    own upload path (`/upload/drive/v3/files`, `/resumable/upload/…`). Those
+ *    paths are absolute from `rootUrl`, not from the service path, so each
+ *    gets a path-level `servers` entry of `rootUrl`. operationIds are
+ *    `<method id>.upload` (simple: media or multipart) and
+ *    `<method id>.resumableUpload` (the request that opens an upload session).
  *
  * Lossy-but-safe normalisations (Discovery has a few non-OpenAPI-isms):
  *  - `type: "any"`            → empty schema `{}` (matches anything).
@@ -79,10 +79,11 @@ interface DiscoveryMethod {
   deprecated?: boolean;
   supportsMediaUpload?: boolean;
   supportsMediaDownload?: boolean;
+  /** Upload endpoints: `protocols.simple.path` / `protocols.resumable.path`, absolute from `rootUrl`. */
   mediaUpload?: {
     accept?: string[];
     maxSize?: string;
-    protocols?: Record<string, { multipart?: boolean; path?: string }>;
+    protocols?: Record<string, { path?: string; multipart?: boolean }>;
   };
 }
 
@@ -203,88 +204,88 @@ function collectMethods(
   }
 }
 
+/** The first sentence of a description, without its full stop. */
+function firstSentence(text: string | undefined): string | undefined {
+  const m = text?.trim().match(/^(.+?)\.(?:\s|$)/s);
+  const out = (m ? m[1] : text?.trim())?.replace(/\s+/g, ' ');
+  return out || undefined;
+}
+
+/**
+ * The operation for one `mediaUpload` protocol of a method. It shares the
+ * method's description, tags and response; its path parameters are the upload
+ * path's own; its query adds the required `uploadType`; its body is the media
+ * itself, or `multipart/related` (JSON metadata part + media part), or, for a
+ * resumable session request, the JSON metadata alone.
+ */
+function uploadOperation(
+  base: Record<string, any>,
+  method: DiscoveryMethod,
+  protocol: string,
+  upPath: string,
+  methodParams: Record<string, DiscoveryNode>
+): Record<string, any> {
+  const resumable = protocol === 'resumable';
+  const vars = pathVars(upPath);
+  const parameters: any[] = vars.map((v) =>
+    methodParams[v] ? convertParam(v, methodParams[v], 'path') : { name: v, in: 'path', required: true, schema: { type: 'string' } }
+  );
+  parameters.push({
+    name: 'uploadType',
+    in: 'query',
+    required: true,
+    description: resumable
+      ? 'Must be `resumable`: this request opens an upload session; the session URI comes back in the `Location` header.'
+      : '`media` (the body is the file), or `multipart` (a `multipart/related` body: JSON metadata, then the file).',
+    schema: resumable ? { type: 'string', enum: ['resumable'] } : { type: 'string', enum: ['media', 'multipart'] },
+  });
+  for (const p of base.parameters ?? []) {
+    if (p.in === 'query' && p.name !== 'uploadType') parameters.push(p);
+  }
+
+  const metadata = method.request?.$ref ? { $ref: `#/components/schemas/${method.request.$ref}` } : { type: 'object' };
+  const accept = method.mediaUpload?.accept?.length ? method.mediaUpload.accept : ['*/*'];
+  const content: Record<string, any> = {};
+  if (resumable) {
+    content['application/json'] = { schema: metadata };
+  } else {
+    content['multipart/related'] = {
+      schema: { type: 'object', properties: { metadata, media: { type: 'string', format: 'binary' } } },
+    };
+    for (const type of accept) content[type] = { schema: { type: 'string', format: 'binary' } };
+  }
+
+  const op: Record<string, any> = {
+    operationId: `${method.id}.${resumable ? 'resumableUpload' : 'upload'}`,
+    tags: base.tags,
+    summary: `${firstSentence(method.description) ?? method.id} (${resumable ? 'resumable upload session' : 'media upload'})`,
+    description: base.description,
+    parameters,
+    requestBody: { required: !resumable, content },
+    responses: resumable
+      ? {
+          '200': {
+            description: 'Upload session opened; PUT the media to the URI in `Location`.',
+            headers: { Location: { description: 'The resumable session URI.', schema: { type: 'string' } } },
+          },
+        }
+      : base.responses,
+    'x-google-media-upload': {
+      protocol,
+      ...(method.mediaUpload?.accept ? { accept: method.mediaUpload.accept } : {}),
+      ...(method.mediaUpload?.maxSize ? { maxSize: method.mediaUpload.maxSize } : {}),
+    },
+  };
+  if (base['x-google-scopes']) op['x-google-scopes'] = base['x-google-scopes'];
+  if (base.deprecated) op.deprecated = true;
+  for (const k of Object.keys(op)) if (op[k] === undefined) delete op[k];
+  return op;
+}
+
 export interface DiscoveryConvertResult {
   openapi: any;
   /** Human-readable notes about anything skipped (collisions), for logging. */
   warnings: string[];
-}
-
-/**
- * The media-upload twin of a method (`supportsMediaUpload`): Google serves it at
- * `mediaUpload.protocols.simple.path`, rooted at `rootUrl`, and clients pick the
- * body shape with `uploadType` (`media` = raw bytes, `multipart` = metadata JSON
- * plus media as multipart/related, `resumable` = start a session). Reserved
- * expansions in that path (`{+name}`) are swapped for the method's own flatPath
- * segments so multi-segment names stay matchable, as for the main operation.
- */
-function mediaUploadOperation(
-  method: DiscoveryMethod,
-  oaPath: string,
-  op: Record<string, any>,
-  discovery: DiscoveryDoc,
-  warnings: string[]
-): { path: string; servers: any[]; op: Record<string, any> } | undefined {
-  if (method.supportsMediaUpload !== true) return undefined;
-  const simple = method.mediaUpload?.protocols?.simple?.path;
-  if (!simple) {
-    warnings.push(`${method.id}: supportsMediaUpload without a simple upload path`);
-    return undefined;
-  }
-  // '/upload/drive/v3/files' = '/upload/' + servicePath + method.path; when the
-  // tail is the method's own path, splice in the flat form used for `oaPath`.
-  const rel = (method.path ?? '').replace(/^\/+/, '');
-  let uploadPath = simple;
-  if (rel && simple.endsWith(rel) && method.flatPath) {
-    uploadPath = simple.slice(0, simple.length - rel.length) + oaPath.replace(/^\/+/, '');
-  }
-  uploadPath = uploadPath.replace(/\{\+/g, '{');
-  if (!uploadPath.startsWith('/')) uploadPath = '/' + uploadPath;
-
-  const root = (discovery.rootUrl ?? '').replace(/\/+$/, '');
-  const accept = method.mediaUpload?.accept?.length ? method.mediaUpload.accept : ['*/*'];
-  const binary = { type: 'string', format: 'binary' };
-  const content: Record<string, any> = {
-    'multipart/related': {
-      schema: {
-        type: 'object',
-        properties: {
-          ...(method.request?.$ref ? { metadata: { $ref: `#/components/schemas/${method.request.$ref}` } } : {}),
-          media: binary,
-        },
-      },
-    },
-  };
-  for (const type of accept) content[type] ??= { schema: binary };
-  // Resumable sessions open with the JSON metadata alone.
-  if (method.request?.$ref) content['application/json'] = op.requestBody.content['application/json'];
-
-  const maxSize = method.mediaUpload?.maxSize;
-  const description = [
-    `Media upload for \`${method.id}\` (simple upload path; set \`uploadType\` to \`media\`, \`multipart\` or \`resumable\`).`,
-    accept.length ? `Accepts ${accept.join(', ')}${maxSize ? ` up to ${maxSize} bytes` : ''}.` : undefined,
-    op.description,
-  ]
-    .filter(Boolean)
-    .join('\n\n');
-
-  const uploadOp: Record<string, any> = {
-    ...op,
-    operationId: `${method.id}.upload`,
-    description,
-    requestBody: { required: true, content },
-  };
-  // Path params are re-derived from the upload template; the rest carry over.
-  const vars = pathVars(uploadPath);
-  const params = (op.parameters ?? []).filter((p: any) => p.in !== 'path' || vars.includes(p.name));
-  for (const v of vars) {
-    if (!params.some((p: any) => p.in === 'path' && p.name === v)) {
-      const def = method.parameters?.[v];
-      params.unshift(def ? convertParam(v, def, 'path') : { name: v, in: 'path', required: true, schema: { type: 'string' } });
-    }
-  }
-  if (params.length) uploadOp.parameters = params;
-  else delete uploadOp.parameters;
-  return { path: uploadPath, servers: root ? [{ url: root }] : [], op: uploadOp };
 }
 
 /**
@@ -306,6 +307,9 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
   // paths — every method in the resource tree.
   const flat: FlatMethod[] = [];
   collectMethods(discovery.resources, [], flat);
+
+  // Upload paths are absolute from rootUrl (they repeat the service path).
+  const rootServer = (discovery.rootUrl ?? '').replace(/\/+$/, '');
 
   const paths: Record<string, any> = {};
   for (const { method, resourcePath } of flat) {
@@ -376,15 +380,18 @@ export function discoveryToOpenApi(discovery: DiscoveryDoc, adaptorName: string)
     }
     item[httpMethod] = op;
 
-    const upload = mediaUploadOperation(method, oaPath, op, discovery, warnings);
-    if (upload) {
-      const uItem = (paths[upload.path] ??= {});
-      if (uItem[httpMethod]) {
-        warnings.push(`collision: ${httpMethod.toUpperCase()} ${upload.path} (${uItem[httpMethod].operationId} vs ${upload.op.operationId}) — kept first`);
-      } else {
-        uItem.servers ??= upload.servers;
-        uItem[httpMethod] = upload.op;
+    // Media upload endpoints, one per protocol, rooted at rootUrl.
+    for (const [protocol, spec] of Object.entries(method.mediaUpload?.protocols ?? {})) {
+      if (typeof spec?.path !== 'string') continue;
+      const upPath = '/' + spec.path.replace(/^\/+/, '').replace(/\{\+/g, '{');
+      const upOp = uploadOperation(op, method, protocol, upPath, methodParams);
+      const upItem = (paths[upPath] ??= {});
+      if (upItem[httpMethod]) {
+        warnings.push(`collision: ${httpMethod.toUpperCase()} ${upPath} (${upItem[httpMethod].operationId} vs ${upOp.operationId}) — kept first`);
+        continue;
       }
+      if (rootServer && !upItem.servers) upItem.servers = [{ url: rootServer }];
+      upItem[httpMethod] = upOp;
     }
   }
 
