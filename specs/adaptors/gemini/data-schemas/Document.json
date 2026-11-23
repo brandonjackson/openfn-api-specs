@@ -5,20 +5,36 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/Document",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A `Document` is a collection of `Chunk`s.",
   "properties": {
-    "name": {
+    "sizeBytes": {
       "type": "string",
-      "description": "Immutable. Identifier. The `Document` resource name. The ID (name excluding the \"fileSearchStores/*/documents/\" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be derived from `display_name` along with a 12 character random suffix. Example: `fileSearchStores/{file_search_store_id}/documents/my-awesome-doc-123a456b789c`"
+      "format": "int64",
+      "description": "Output only. The size of raw bytes ingested into the Document.",
+      "readOnly": true
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Optional. The human-readable display name for the `Document`. The display name must be no more than 512 characters in length, including spaces. Example: \"Semantic Retriever Documentation\""
+    },
+    "updateTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. The Timestamp of when the `Document` was last updated.",
+      "readOnly": true
     },
     "createTime": {
       "type": "string",
       "format": "google-datetime",
       "description": "Output only. The Timestamp of when the `Document` was created.",
       "readOnly": true
+    },
+    "name": {
+      "type": "string",
+      "description": "Immutable. Identifier. The `Document` resource name. The ID (name excluding the \"fileSearchStores/*/documents/\" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be derived from `display_name` along with a 12 character random suffix. Example: `fileSearchStores/{file_search_store_id}/documents/my-awesome-doc-123a456b789c`"
     },
     "state": {
       "type": "string",
@@ -31,33 +47,17 @@
       ],
       "readOnly": true
     },
-    "displayName": {
-      "type": "string",
-      "description": "Optional. The human-readable display name for the `Document`. The display name must be no more than 512 characters in length, including spaces. Example: \"Semantic Retriever Documentation\""
-    },
-    "mimeType": {
-      "type": "string",
-      "description": "Output only. The mime type of the Document.",
-      "readOnly": true
-    },
-    "sizeBytes": {
-      "type": "string",
-      "format": "int64",
-      "description": "Output only. The size of raw bytes ingested into the Document.",
-      "readOnly": true
-    },
-    "updateTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The Timestamp of when the `Document` was last updated.",
-      "readOnly": true
-    },
     "customMetadata": {
       "type": "array",
       "description": "Optional. User provided custom metadata stored as key-value pairs used for querying. A `Document` can have a maximum of 20 `CustomMetadata`.",
       "items": {
         "$ref": "CustomMetadata.json"
       }
+    },
+    "mimeType": {
+      "type": "string",
+      "description": "Output only. The mime type of the Document.",
+      "readOnly": true
     }
   }
 }

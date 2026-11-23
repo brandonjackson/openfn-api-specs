@@ -5,14 +5,27 @@
   "x-openfn-adaptor": "googlesheets",
   "x-source": {
     "openapi": "#/components/schemas/SpreadsheetProperties",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Properties of a spreadsheet.",
   "properties": {
-    "timeZone": {
+    "defaultFormat": {
+      "$ref": "CellFormat.json"
+    },
+    "iterativeCalculationSettings": {
+      "$ref": "IterativeCalculationSettings.json"
+    },
+    "locale": {
       "type": "string",
-      "description": "The time zone of the spreadsheet, in CLDR format such as `America/New_York`. If the time zone isn't recognized, this may be a custom time zone such as `GMT-07:00`."
+      "description": "The locale of the spreadsheet in one of the following formats: * an ISO 639-1 language code such as `en` * an ISO 639-2 language code such as `fil`, if no 639-1 code exists * a combination of the ISO language code and country code, such as `en_US` Note: when updating this field, not all locales/languages are supported."
+    },
+    "importFunctionsExternalUrlAccessAllowed": {
+      "type": "boolean",
+      "description": "Whether to allow external URL access for image and import functions. Read only when true. When false, you can set to true. This value will be bypassed and always return true if the admin has enabled the [allowlisting feature](https://support.google.com/a?p=url_allowlist)."
+    },
+    "spreadsheetTheme": {
+      "$ref": "SpreadsheetTheme.json"
     },
     "autoRecalc": {
       "type": "string",
@@ -24,26 +37,13 @@
         "HOUR"
       ]
     },
-    "defaultFormat": {
-      "$ref": "CellFormat.json"
-    },
-    "iterativeCalculationSettings": {
-      "$ref": "IterativeCalculationSettings.json"
-    },
-    "spreadsheetTheme": {
-      "$ref": "SpreadsheetTheme.json"
-    },
-    "locale": {
-      "type": "string",
-      "description": "The locale of the spreadsheet in one of the following formats: * an ISO 639-1 language code such as `en` * an ISO 639-2 language code such as `fil`, if no 639-1 code exists * a combination of the ISO language code and country code, such as `en_US` Note: when updating this field, not all locales/languages are supported."
-    },
-    "importFunctionsExternalUrlAccessAllowed": {
-      "type": "boolean",
-      "description": "Whether to allow external URL access for image and import functions. Read only when true. When false, you can set to true. This value will be bypassed and always return true if the admin has enabled the [allowlisting feature](https://support.google.com/a?p=url_allowlist)."
-    },
     "title": {
       "type": "string",
       "description": "The title of the spreadsheet."
+    },
+    "timeZone": {
+      "type": "string",
+      "description": "The time zone of the spreadsheet, in CLDR format such as `America/New_York`. If the time zone isn't recognized, this may be a custom time zone such as `GMT-07:00`."
     }
   }
 }

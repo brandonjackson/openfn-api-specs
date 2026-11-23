@@ -5,27 +5,11 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/Replica",
-    "capturedAt": "2026-11-20"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "The replica metadata of the dataset. If the dataset has two or more replicas, it's considered a cross region replicated (CRR) dataset.",
   "properties": {
-    "location": {
-      "type": "string",
-      "description": "Required. The logical bigquery region where this replica is located. This is upper case if \"US\" or \"EU\", otherwise a lower case cloud region like \"asia-northeast1\"."
-    },
-    "backfillCompletionTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The time when the backfill was completed and replica is ready to use.",
-      "readOnly": true
-    },
-    "creationTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The timestamp when the replica was created. For any dataset's first replica, this should be set to the dataset's creation_time.",
-      "readOnly": true
-    },
     "replicaState": {
       "type": "string",
       "description": "Output only. Gives an explicit indicator of the replica primary state.",
@@ -42,25 +26,41 @@
     "replicaOptions": {
       "$ref": "ReplicaOptions.json"
     },
+    "id": {
+      "type": "string",
+      "description": "Required. The user-visible string identifier for this dataset replica. This is generally named after the region."
+    },
     "primaryAssignmentCompletionTime": {
       "type": "string",
       "format": "google-datetime",
       "description": "Output only. After a new primary assignment is made, this is the time that the dataset's data has been fully replicated to the replica, and after which the system will use current reads in the new primary replica.",
       "readOnly": true
     },
-    "failoverReservationUri": {
+    "creationTime": {
       "type": "string",
-      "description": "Output only. Failover reservation ID for the replica's region if this replica is used for DR. Fully-qualified format, e.g. \"projects/some-project/locations/US/reservations/some-reservation\" The location portion of the format is upper case if \"US\" or \"EU\", otherwise a lower case cloud region like \"asia-northeast1\".",
+      "format": "google-datetime",
+      "description": "Output only. The timestamp when the replica was created. For any dataset's first replica, this should be set to the dataset's creation_time.",
       "readOnly": true
-    },
-    "id": {
-      "type": "string",
-      "description": "Required. The user-visible string identifier for this dataset replica. This is generally named after the region."
     },
     "primaryAssignmentTime": {
       "type": "string",
       "format": "google-datetime",
       "description": "Output only. The time at which the replica was assigned primary. Only one replica will have this field populated at any point.",
+      "readOnly": true
+    },
+    "location": {
+      "type": "string",
+      "description": "Required. The logical bigquery region where this replica is located. This is upper case if \"US\" or \"EU\", otherwise a lower case cloud region like \"asia-northeast1\"."
+    },
+    "backfillCompletionTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. The time when the backfill was completed and replica is ready to use.",
+      "readOnly": true
+    },
+    "failoverReservationUri": {
+      "type": "string",
+      "description": "Output only. Failover reservation ID for the replica's region if this replica is used for DR. Fully-qualified format, e.g. \"projects/some-project/locations/US/reservations/some-reservation\" The location portion of the format is upper case if \"US\" or \"EU\", otherwise a lower case cloud region like \"asia-northeast1\".",
       "readOnly": true
     }
   }

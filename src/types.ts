@@ -56,6 +56,20 @@ export interface SpecAttempt {
   note?: string;
 }
 
+/** A mechanical narrowing of a full vendor spec (see src/subset.ts). */
+export interface SubsetRule {
+  /** First path segments to keep (exact match). */
+  resources: string[];
+  /** Keep a matching path only when it has at most this many segments. */
+  maxSegments: number;
+  /** Paths kept regardless of the rule above (e.g. a bare singleton like '/me'). */
+  include?: string[];
+  /** Replaces info.title in the served subset. */
+  title?: string;
+  /** Written to info['x-openfn-subset-note'] in the served subset. */
+  note?: string;
+}
+
 /**
  * `source.json` — provenance for one adaptor's spec. Written alongside
  * `openapi.json` so a human (or a re-run of the loop) can see where the spec
@@ -74,6 +88,9 @@ export interface SpecSource {
   coverage?: SpecCoverage;
   /** When coverage='subset', the full artifact it was derived from (e.g. 'upstream.json'). */
   derivedFrom?: string;
+  /** When coverage='subset': the mechanical rule `convert` applies to the
+   *  converted upstream to produce openapi.json (see src/subset.ts). */
+  subsetRule?: SubsetRule;
   /** Whether the full copy is genuinely complete or a best-effort reconstruction. */
   completeness?: SpecCompleteness;
   /** When completeness='best-effort': why (e.g. 'docs-only', 'private-api', 'partial-docs'). */

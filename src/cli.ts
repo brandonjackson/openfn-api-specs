@@ -32,6 +32,7 @@ import { instructionsFor } from './instructions.js';
 import { buildManifest } from './manifest.js';
 import { report as buildReport, orphanDirs, type FeedbackRow } from './report.js';
 import { buildStatusData, renderSite } from './site.js';
+import { deriveSubset } from './subset.js';
 import {
   adaptorDir,
   dataSchemasDir,
@@ -237,6 +238,20 @@ async function applyUpstreamParts(adaptor: string, dir: string, parts: SpecUpstr
  * really covers the whole vendor API is the agent's judgement to make and
  * record, not something a fetch can assert. Pass `--complete` once verified.
  */
+/**
+ * A `coverage: subset` adaptor with a `subsetRule` serves the rule applied to
+ * the converted upstream, not the whole upstream. Run after every capture so a
+ * refreshed upstream can never leave a stale (or accidentally full) subset.
+ */
+function applySubsetRule(name: string, source: Partial<SpecSource>): void {
+  if (source.coverage !== 'subset' || !source.subsetRule) return;
+  const full = JSON.parse(readFileSync(openapiPath(name), 'utf8'));
+  const sub = deriveSubset(full, source.subsetRule);
+  writeJson(openapiPath(name), sub.openapi);
+  const schemas = Object.keys(sub.openapi.components?.schemas ?? {}).length;
+  console.log(`    subset (source.json subsetRule): ${sub.paths} paths, ${sub.operations} operations, ${schemas} schemas`);
+}
+
 async function cmdConvert(argv: string[]): Promise<void> {
   const adaptors = await loadAdaptors();
   const targets = selectTargets(adaptors, argv);
@@ -302,6 +317,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
       bytes: readFileSync(committed, 'utf8'),
     });
     const fromParts = await applyUpstreamParts(adaptor.name, dir, existing.upstream?.parts);
+    applySubsetRule(adaptor.name, existing);
     const after = readFileSync(openapiPath(adaptor.name), 'utf8');
     console.log(
       `  ${before === after ? '=' : '~'} ${adaptor.name}: re-derived from ${committed.split('/').pop()}` +
@@ -361,6 +377,7 @@ async function cmdConvert(argv: string[]): Promise<void> {
   writeJson(sourcePath(adaptor.name), source);
   const fromParts = await applyUpstreamParts(adaptor.name, dir, source.upstream?.parts);
   if (fromParts) console.log(`  + merged ${fromParts} operation(s) from ${source.upstream!.parts!.length} upstream part(s)`);
+  applySubsetRule(adaptor.name, source);
 
   const schemas = Object.keys(result.openapi.components?.schemas ?? {}).length;
   console.log(
@@ -458,7 +475,9 @@ const USAGE = `Usage: pnpm specs <command>
                                 openapi.json, record provenance + contentHash. With no --url,
                                 re-derive openapi.json from the committed upstream. --from reads
                                 the bytes from a local file (for specs behind a login) while
-                                still recording --url as the canonical spec URL.
+                                still recording --url as the canonical spec URL. A
+                                coverage:subset adaptor with a subsetRule in source.json
+                                serves that rule applied to the upstream (src/subset.ts).
   data-objects <a…|--all>       Extract standalone data-object schemas into data-schemas/.
   index <a…|--all>              Write endpoints.md: one line per operation, grouped by resource.
   manifest                      Rebuild specs/adaptors/manifest.json.

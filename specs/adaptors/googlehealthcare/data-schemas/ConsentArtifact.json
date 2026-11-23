@@ -5,14 +5,20 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/ConsentArtifact",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Documentation of a user's consent.",
   "properties": {
-    "userId": {
-      "type": "string",
-      "description": "Required. User's UUID provided by the client."
+    "metadata": {
+      "type": "object",
+      "description": "Optional. Metadata associated with the Consent artifact. For example, the consent locale or user agent version.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "userSignature": {
+      "$ref": "Signature.json"
     },
     "consentContentScreenshots": {
       "type": "array",
@@ -21,29 +27,23 @@
         "$ref": "Image.json"
       }
     },
+    "name": {
+      "type": "string",
+      "description": "Identifier. Resource name of the Consent artifact, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/consentArtifacts/{consent_artifact_id}`. Cannot be changed after creation."
+    },
+    "guardianSignature": {
+      "$ref": "Signature.json"
+    },
+    "userId": {
+      "type": "string",
+      "description": "Required. User's UUID provided by the client."
+    },
     "witnessSignature": {
       "$ref": "Signature.json"
     },
     "consentContentVersion": {
       "type": "string",
       "description": "Optional. An string indicating the version of the consent information shown to the user."
-    },
-    "guardianSignature": {
-      "$ref": "Signature.json"
-    },
-    "metadata": {
-      "type": "object",
-      "description": "Optional. Metadata associated with the Consent artifact. For example, the consent locale or user agent version.",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "name": {
-      "type": "string",
-      "description": "Identifier. Resource name of the Consent artifact, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/consentStores/{consent_store_id}/consentArtifacts/{consent_artifact_id}`. Cannot be changed after creation."
-    },
-    "userSignature": {
-      "$ref": "Signature.json"
     }
   }
 }

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/CreateSubagentCallItemResource",
+  "title": "CreateSubagentCallItemResource",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/CreateSubagentCallItemResource",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "create_subagent_call"
+      ],
+      "default": "create_subagent_call",
+      "x-stainless-const": true,
+      "description": "The item type. Always `create_subagent_call`."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the tool call item."
+    },
+    "turn_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the turn that contains this item."
+    },
+    "status": {
+      "$ref": "FunctionCallStatusResource.json",
+      "description": "The status of the tool call."
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 0,
+      "description": "The ID of the agent that requested the subagent."
+    },
+    "content": {
+      "type": "array",
+      "items": {
+        "$ref": "AgentContentResource.json"
+      },
+      "minItems": 0,
+      "maxItems": 2000,
+      "description": "The task given to the spawned agent."
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The model requested for the spawned agent."
+    },
+    "reasoning_effort": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 0,
+      "description": "The reasoning effort requested for the spawned agent."
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "turn_id",
+    "status",
+    "agent_id",
+    "content",
+    "model",
+    "reasoning_effort"
+  ],
+  "additionalProperties": false,
+  "description": "A request to spawn a subagent."
+}

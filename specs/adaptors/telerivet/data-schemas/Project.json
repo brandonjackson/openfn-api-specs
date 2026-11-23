@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Project",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "properties": {
@@ -23,6 +23,13 @@
       "type": "string",
       "description": "Default TZ database timezone ID; see [List of tz database time zones Wikipedia article](http://en.wikipedia.org/wiki/List_of_tz_database_time_zones).",
       "example": "America/Los_Angeles"
+    },
+    "available_timezone_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional TZ database timezone IDs that appear as options when scheduling messages in the web app, in addition to the project's default time zone (UTC and the current user's time zone are always available). At most 20 time zones. Set to an empty array to remove all additional time zones."
     },
     "url_slug": {
       "type": "string",
@@ -52,6 +59,54 @@
       "type": "boolean",
       "description": "If true (the default), short links in messages will include the scheme (e.g., 'https://rvt.me/xxxxxxxxx'). If false, short links will not include the scheme (e.g., 'rvt.me/xxxxxxxxx').",
       "example": true
+    },
+    "message_review": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The project's Message Review settings (read-only). Properties: `limits_enabled` (boolean) — require approval before sending more than the volume limits below; `limit_once`, `limit_day`, `limit_month` (int or null) — the maximum number of messages that can be sent without approval at one time, per day, and per month (null = no limit); `notification_emails` (array of strings) — email addresses of the users who are notified when messages are waiting for approval. When a send requires approval, the sendMessage, sendBroadcast, and sendMulti methods return `status`=`pending_review` instead of sending immediately."
+    },
+    "welcome_message": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The project's welcome message settings. Properties: `enabled` (boolean) — automatically send the welcome message to each contact the first time a text message is sent to that contact, for example to provide opt-out or compliance instructions; `content` (string or null) — content of the welcome message; `append` (boolean) — if true, the welcome message is appended to the end of the first message sent to each contact, instead of being sent as a separate message. A welcome message enabled on a route (see the `welcome_message` property of Phone) overrides the project's welcome message for messages sent via that route. When updating, only the provided properties are changed."
+    },
+    "custom_contact_routing": {
+      "type": "boolean",
+      "description": "If true, the default route can be changed per contact, and messages to a contact with a default route assigned are sent via that route",
+      "example": false
+    },
+    "redact_phone_numbers": {
+      "type": "boolean",
+      "description": "If true, the last 3 digits of contact phone numbers are masked (e.g. 5550***) in the web app for users without permission to export project data.",
+      "example": false
+    },
+    "data_tables_enabled": {
+      "type": "boolean",
+      "description": "Whether the Data Tables module is shown in the web app for this project.",
+      "example": true
+    },
+    "airtime_enabled": {
+      "type": "boolean",
+      "description": "Whether airtime transfers are enabled for this project. Enabling airtime subscribes the organization owner to `airtime_errors` alert emails. May not be available for all organizations.",
+      "example": false
+    },
+    "voice_enabled": {
+      "type": "boolean",
+      "description": "Whether voice calls (including IVR services) are enabled for this project. May not be available for all organizations.",
+      "example": false
+    },
+    "airtime_limits": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The project's airtime spending limits (read-only). Properties: `currency` (string or null) — 3-letter currency code of the limits; `day`, `month` (number or null) — maximum value of airtime that can be sent per day and per month (in the project's time zone), in that currency (null = no limit). Airtime transactions sent after a limit is exceeded are held until approved by a user in the web app; a limit of 0 means every airtime transaction requires approval."
+    },
+    "alert_emails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "description": "Email addresses that receive alerts and notifications about this project. Each item has the properties `email` (string) and `types` (array of strings: the types of alerts that are sent to this email address). When updating, the provided list replaces all existing alert emails for this project (an empty array removes all of them). Alert types:\n\n- `service_errors`: errors processing automated services and tasks\n- `send_errors`: errors sending messages from any route in the project, and errors sending scheduled messages\n- `plan_limit`: the organization's service plan limits preventing messages from being sent or received\n- `webhook_errors`: errors sending webhook notifications\n- `broadcast_sent`: a broadcast has been sent\n- `airtime_errors`: errors sending airtime (only available if airtime is enabled for the project)\n\nRoutes may also have their own alert_emails (see Phone)."
     },
     "vars": {
       "type": "object",

@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/CreateCompletionResponse",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Represents a completion response from the API. Note: both the streamed and non-streamed response objects share the same shape (unlike the chat endpoint).\n",
@@ -27,13 +27,20 @@
         ],
         "properties": {
           "finish_reason": {
-            "type": "string",
-            "description": "The reason the model stopped generating tokens. This will be `stop` if the model hit a natural stop point or a provided stop sequence,\n`length` if the maximum number of tokens specified in the request was reached,\nor `content_filter` if content was omitted due to a flag from our content filters.\n",
-            "enum": [
-              "stop",
-              "length",
-              "content_filter"
-            ]
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "stop",
+                  "length",
+                  "content_filter"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The reason the model stopped generating tokens. This will be `stop` if the model hit a natural stop point or a provided stop sequence,\n`length` if the maximum number of tokens specified in the request was reached,\nor `content_filter` if content was omitted due to a flag from our content filters. The value is null while a streamed completion is unfinished.\n"
           },
           "index": {
             "type": "integer"
@@ -99,10 +106,7 @@
     "object": {
       "type": "string",
       "description": "The object type, which is always \"text_completion\"",
-      "enum": [
-        "text_completion"
-      ],
-      "x-stainless-const": true
+      "const": "text_completion"
     },
     "usage": {
       "$ref": "CompletionUsage.json"

@@ -5,23 +5,27 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/BetaWebSearchActionFind",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Action type \"find_in_page\": Searches for a pattern within a loaded page.\n",
   "properties": {
     "type": {
       "type": "string",
-      "enum": [
-        "find_in_page"
-      ],
-      "description": "The action type.\n",
-      "x-stainless-const": true
+      "const": "find_in_page",
+      "description": "The action type.\n"
     },
     "url": {
-      "type": "string",
-      "format": "uri",
-      "description": "The URL of the page searched for the pattern.\n"
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The URL of the page searched for the pattern, when available.\n"
     },
     "pattern": {
       "type": "string",
@@ -30,7 +34,6 @@
   },
   "required": [
     "type",
-    "url",
     "pattern"
   ]
 }

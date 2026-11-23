@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/AuditLog",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A log of a user action or configuration change within this organization.",
@@ -87,6 +87,10 @@
                 "type": "string"
               },
               "description": "A list of scopes allowed for the API key, e.g. `[\"api.model.request\"]`"
+            },
+            "expires_in_seconds": {
+              "type": "integer",
+              "description": "Number of seconds from the update request until the API key expires."
             }
           }
         }
@@ -157,6 +161,40 @@
         "id": {
           "type": "string",
           "description": "The ID of the external key configuration."
+        }
+      }
+    },
+    "external_storage.registered": {
+      "type": "object",
+      "description": "The details for events with this `type`.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The ID of the external storage configuration."
+        },
+        "data": {
+          "type": "object",
+          "description": "The configuration for the external storage.",
+          "properties": {
+            "provider": {
+              "$ref": "provider.json",
+              "description": "The external storage provider configuration."
+            },
+            "geography": {
+              "type": "string",
+              "description": "The OpenAI geography derived from the storage region."
+            }
+          }
+        }
+      }
+    },
+    "external_storage.removed": {
+      "type": "object",
+      "description": "The details for events with this `type`.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The ID of the external storage configuration."
         }
       }
     },

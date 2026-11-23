@@ -5,11 +5,12 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/AudioTranscriptionResponse",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "properties": {
     "model": {
+      "example": "gpt-transcribe",
       "description": "The model used for transcription. Current options are `whisper-1`, `gpt-transcribe`, `gpt-live-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-mini-transcribe-2025-12-15`, `gpt-4o-transcribe`, `gpt-4o-transcribe-diarize`, and `gpt-realtime-whisper`.\n",
       "anyOf": [
         {
@@ -26,18 +27,45 @@
             "gpt-4o-transcribe",
             "gpt-4o-transcribe-diarize",
             "gpt-realtime-whisper"
-          ]
+          ],
+          "x-openai-enum-deprecations": {
+            "gpt-4o-mini-transcribe-2025-12-15": {
+              "message": "Announced shutdown date: 2027-02-26. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "whisper-1": {
+              "message": "Announced shutdown date: 2027-02-26. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-4o-transcribe": {
+              "message": "Announced shutdown date: 2027-02-26. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-4o-mini-transcribe": {
+              "message": "Announced shutdown date: 2027-02-26. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            },
+            "gpt-4o-transcribe-diarize": {
+              "message": "Announced shutdown date: 2027-02-26. See https://developers.openai.com/api/docs/deprecations for details and recommended replacements."
+            }
+          }
         }
       ]
     },
     "language": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "The language of the input audio.\n"
     },
     "languages": {
       "type": "array",
       "description": "The possible input audio languages configured for transcription, in [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) format.\n",
       "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Words or phrases configured to guide transcription of the input audio.\n",
       "items": {
         "type": "string"
       }

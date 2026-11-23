@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatgpt/LiveSessionCreateResponse",
+  "title": "LiveSessionCreateResponse",
+  "x-openfn-adaptor": "chatgpt",
+  "x-source": {
+    "openapi": "#/components/schemas/LiveSessionCreateResponse",
+    "capturedAt": "2026-11-21"
+  },
+  "type": "object",
+  "description": "The created Live session and its transport. WebRTC creation returns 201 Created with an SDP answer. Outbound SIP creation returns 201 Created after initialization, before the callee necessarily answers, without SDP or trunk credentials.",
+  "properties": {
+    "session": {
+      "$ref": "session.json"
+    },
+    "transport": {
+      "description": "WebRTC transport with an SDP answer, or SIP transport without SDP or trunk credentials. For SIP, attach a sideband using session.id to receive transport.ringing, transport.answered, and transport.failed notifications.",
+      "oneOf": [
+        {
+          "$ref": "LiveWebRTCTransport.json"
+        },
+        {
+          "type": "object",
+          "description": "The SIP transport. Trunk credentials and SDP are not returned.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "The transport used for the Live session. Always `sip`.",
+              "const": "sip"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type"
+      }
+    }
+  },
+  "required": [
+    "session",
+    "transport"
+  ]
+}

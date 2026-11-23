@@ -5,10 +5,10 @@
   "x-openfn-adaptor": "chatgpt",
   "x-source": {
     "openapi": "#/components/schemas/VoiceResource",
-    "capturedAt": "2026-09-03"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
-  "description": "A custom voice that can be used for audio output.",
+  "description": "A custom voice that can be used for audio output. Voices created from text prompts are supported only in Live.",
   "additionalProperties": false,
   "properties": {
     "object": {
@@ -22,6 +22,18 @@
     "id": {
       "type": "string",
       "description": "The voice identifier, which can be referenced in API endpoints."
+    },
+    "type": {
+      "description": "How the voice was created.",
+      "type": "string",
+      "enum": [
+        "audio_sample",
+        "prompt"
+      ]
+    },
+    "prompt": {
+      "type": "string",
+      "description": "The original text prompt used to create the voice. Present for prompt-generated voices with a stored prompt; omitted for audio-sample voices and older voices without a stored prompt."
     },
     "name": {
       "type": "string",
@@ -37,10 +49,11 @@
     "object",
     "id",
     "name",
+    "type",
     "created_at"
   ],
   "x-oaiMeta": {
     "name": "The voice object",
-    "example": "{\n  \"object\": \"audio.voice\",\n  \"id\": \"voice_123abc\",\n  \"name\": \"My new voice\",\n  \"created_at\": 1734220800\n}\n"
+    "example": "{\n  \"object\": \"audio.voice\",\n  \"id\": \"voice_123abc\",\n  \"name\": \"My new voice\",\n  \"type\": \"audio_sample\",\n  \"created_at\": 1734220800\n}\n"
   }
 }
