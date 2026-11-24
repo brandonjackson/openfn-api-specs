@@ -1,4 +1,4 @@
-# Browserless (browserless) v2.61.0
+# Browserless (browserless) v2.63.2
 
 <!-- derived from openapi.json by `pnpm specs index browserless` — do not edit by hand -->
 

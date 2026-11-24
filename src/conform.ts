@@ -50,6 +50,11 @@ export interface Exchange {
   responseBody?: unknown;
   /** Response Content-Type, when known. Non-JSON responses are not schema-checked. */
   contentType?: string;
+  /**
+   * Request Content-Type, when known. A non-JSON request body (a multipart
+   * upload, a raw media PUT) is not checked against the JSON request schema.
+   */
+  requestContentType?: string;
 }
 
 export type ViolationKind =
@@ -167,15 +172,54 @@ export function normalizePath(path: string): string {
   return p;
 }
 
-/** Path parameters an operation marks greedy (`x-smithy-greedy: true`), at path or operation level. */
+/** Resolve a local `#/components/...` `$ref` (one hop is all parameters need). */
+function resolveLocalRef(openapi: any, node: any): any {
+  if (typeof node?.$ref !== 'string' || !node.$ref.startsWith('#/')) return node;
+  let cur = openapi;
+  for (const seg of node.$ref.slice(2).split('/')) cur = cur?.[seg.replace(/~1/g, '/').replace(/~0/g, '~')];
+  return cur ?? node;
+}
+
+/**
+ * Whether a regex pattern (as a string) contains a literal `/` outside any
+ * character class: `^[a-z0-9]+(?:/[a-z0-9]+)*$` does (Azure's blob name),
+ * `^[^/]+$` does not.
+ */
+export function patternAdmitsSlash(pattern: string): boolean {
+  let inClass = false;
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '\\') {
+      if (pattern[i + 1] === '/' && !inClass) return true;
+      i++;
+      continue;
+    }
+    if (inClass) {
+      if (c === ']') inClass = false;
+    } else if (c === '[') inClass = true;
+    else if (c === '/') return true;
+  }
+  return false;
+}
+
+/**
+ * Path parameters that may span slashes: those marked `x-smithy-greedy: true`
+ * (S3's `{Key+}`), and the template's final parameter when its schema
+ * `pattern` admits a literal `/` (Azure's `{blob}`, a name like
+ * `exports/2026/q1.csv`). Parameters given as `$ref`s are resolved first.
+ */
 function greedyParams(openapi: any, op: ParsedOperation): Set<string> | undefined {
   const item = openapi?.paths?.[op.path];
-  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])];
-  // Also greedy: a parameter whose own `pattern` admits a slash (Azure's blob name).
-  const admitsSlash = (p: any) => typeof p?.schema?.pattern === 'string' && p.schema.pattern.includes('/');
+  const params = [...(item?.parameters ?? []), ...(item?.[op.method.toLowerCase()]?.parameters ?? [])]
+    .map((p: any) => resolveLocalRef(openapi, p))
+    .filter((p: any) => p?.in === 'path');
+  const last = /\{([^}]+)\}$/.exec(normalizePath(op.path))?.[1];
   const names = params
-    .map((p: any) => (typeof p?.$ref === 'string' ? openapi?.components?.parameters?.[p.$ref.split('/').pop()] : p))
-    .filter((p: any) => p?.in === 'path' && (p['x-smithy-greedy'] === true || admitsSlash(p)))
+    .filter(
+      (p: any) =>
+        p['x-smithy-greedy'] === true ||
+        (String(p.name) === last && typeof p.schema?.pattern === 'string' && patternAdmitsSlash(p.schema.pattern))
+    )
     .map((p: any) => String(p.name));
   return names.length ? new Set(names) : undefined;
 }
@@ -193,9 +237,27 @@ function segmentSource(seg: string, greedy?: Set<string>): { src: string; isPara
   const src = seg
     .split(/(\{[^}]+\})/)
     .filter(Boolean)
-    .map((part) => (/^\{[^}]+\}$/.test(part) ? '[^/]+' : escapeRegex(part)))
+    .map((part) => {
+      if (!/^\{[^}]+\}$/.test(part)) return escapeRegex(part);
+      return routerRegexSpansSegments(part) ? '.+' : '[^/]+';
+    })
     .join('');
   return { src, isParam: true };
+}
+
+/**
+ * Does a `{name:regex}` template variable (gorilla/mux and Spring style, as in
+ * SurveyCTO's `/api/v1/forms/data/wide/json/{formID:.+}`) admit `/`?
+ */
+function routerRegexSpansSegments(part: string): boolean {
+  const inner = part.slice(1, -1);
+  const colon = inner.indexOf(':');
+  if (colon < 0) return false;
+  try {
+    return new RegExp(`^(?:${inner.slice(colon + 1)})$`).test('a/b');
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -228,8 +290,17 @@ function templateQuery(template: string): Matcher['query'] {
   return reqs.length ? reqs : undefined;
 }
 
-/** Does the request's query string satisfy a template's soft query requirement? */
-function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, requestBody?: unknown): boolean {
+/**
+ * How far the request's query string (or flat body) satisfies a template's soft
+ * query requirement: `all` when every requirement holds, `valued` when every
+ * `key=value` requirement holds (flag-only ones may be missing), and `count`,
+ * the number of requirements that hold.
+ */
+function querySatisfaction(
+  reqs: NonNullable<Matcher['query']>,
+  path: string,
+  requestBody?: unknown
+): { all: boolean; valued: boolean; count: number } {
   const q = path.indexOf('?');
   const params = new URLSearchParams(q < 0 ? '' : path.slice(q + 1).split('#')[0]);
   // RPC-style APIs that multiplex one URL (vtiger's POST /webservice.php with
@@ -242,11 +313,21 @@ function querySatisfied(reqs: NonNullable<Matcher['query']>, path: string, reque
   }
   // Values compare case-insensitively: RPC dispatchers normalise them (vtiger
   // lower-cases `operation`, so the adaptor's `listTypes` is the spec's `listtypes`).
-  return reqs.every((r) => {
-    if (r.value === undefined) return params.has(r.key);
-    const want = r.value.toLowerCase();
-    return params.getAll(r.key).some((v) => v.toLowerCase() === want);
-  });
+  let all = true;
+  let valued = true;
+  let count = 0;
+  for (const r of reqs) {
+    const ok =
+      r.value === undefined
+        ? params.has(r.key)
+        : params.getAll(r.key).some((v) => v.toLowerCase() === r.value!.toLowerCase());
+    if (ok) count++;
+    else {
+      all = false;
+      if (r.value !== undefined) valued = false;
+    }
+  }
+  return { all, valued, count };
 }
 
 function compileTemplate(template: string, greedy?: Set<string>): { src: string; literals: number; params: number } {
@@ -556,16 +637,32 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
     // flag-only discriminator the request lacks (signalled out of band, e.g.
     // Azure's `#BlockBlob` via a header); a discriminator naming query
     // parameters the request lacks (`#comp=lease`), as a last resort.
+    //
+    // Within the first tier, and against a template whose `key=value`
+    // requirements all hold but whose flag-only ones are absent, the template
+    // satisfying MORE requirements wins: Azure's `?restype=container&comp=list`
+    // is ListBlobs (`#restype=container&comp=list&flat`), not GetProperties
+    // (`#restype=container`), though the `flat` flag is never sent.
     const best: Array<ParsedOperation | undefined> = [undefined, undefined, undefined, undefined];
+    let full: { op: ParsedOperation; count: number } | undefined;
+    let partial: { op: ParsedOperation; count: number } | undefined;
     for (const cand of matchers) {
       if (cand.op.method !== m || !cand.regex.test(p)) continue;
-      let tier: number;
-      if (!cand.query) tier = 1;
-      else if (querySatisfied(cand.query, path, requestBody)) tier = 0;
-      else tier = cand.query.every((r) => r.value === undefined) ? 2 : 3;
-      if (tier === 0) return cand.op;
+      if (!cand.query) {
+        best[1] ??= cand.op;
+        continue;
+      }
+      const sat = querySatisfaction(cand.query, path, requestBody);
+      if (sat.all) {
+        if (!full || sat.count > full.count) full = { op: cand.op, count: sat.count };
+      } else if (sat.valued && sat.count > 0) {
+        if (!partial || sat.count > partial.count) partial = { op: cand.op, count: sat.count };
+      }
+      const tier = cand.query.every((r) => r.value === undefined) ? 2 : 3;
       best[tier] ??= cand.op;
     }
+    if (partial && partial.count > (full?.count ?? 0)) return partial.op;
+    if (full) return full.op;
     return best[1] ?? best[2] ?? best[3];
   };
 
@@ -634,7 +731,16 @@ export function createConformer(openapi: any, opts: ConformOptions = {}): Confor
     if (checkRequests && ex.requestBody !== undefined && raw?.requestBody) {
       const rb = parsed.deref(raw.requestBody);
       const media = pickJsonMedia(rb?.content);
-      if (media && rb.content[media]?.schema) {
+      // Only a JSON body is checked against the JSON schema. Without a request
+      // Content-Type, an unparsed (string) body on an operation that also
+      // documents a non-JSON media type (Google's /upload multipart/related, a
+      // raw */* blob) is taken to be that form.
+      const declared = ex.requestContentType;
+      const nonJsonBody = declared
+        ? !isJsonMedia(declared)
+        : typeof ex.requestBody === 'string' &&
+          Object.keys(rb?.content ?? {}).some((k) => !isJsonMedia(k) && k.split(';')[0].trim() !== 'application/x-www-form-urlencoded');
+      if (media && !nonJsonBody && rb.content[media]?.schema) {
         const segs = raw.requestBody.$ref
           ? [...String(raw.requestBody.$ref).replace(/^#\//, '').split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~')), 'content', media, 'schema']
           : ['paths', op.path, methodLower, 'requestBody', 'content', media, 'schema'];

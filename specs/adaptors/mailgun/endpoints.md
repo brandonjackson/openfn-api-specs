@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index mailgun` — do not edit by hand -->
 
-base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic, http/basic, http/basic, http/basic, http/basic, http/basic, http/basic, http/basic | 411 operations in 61 resources
+base: https://api.mailgun.net, https://api.eu.mailgun.net | auth: http/basic | 411 operations in 60 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -201,6 +201,10 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /v4/domains/{name} — PUT-v4-domains--name-: Update domain
 - PUT /v4/domains/{name}/verify — PUT-v4-domains--name--verify: Verify Domain
 - DELETE /v3/domains/{name} — DELETE-v3-domains--name-: Delete a domain
+- GET /v1/inboxready/domains — GET-v1-inboxready-domains: Returns Domains on Mailgun Optimize services
+- POST /v1/inboxready/domains — POST-v1-inboxready-domains: Add a single domain to an account
+- DELETE /v1/inboxready/domains — DELETE-v1-inboxready-domains: Deletes a single domain from an account
+- PUT /v1/inboxready/domains/verify — PUT-v1-inboxready-domains-verify: Queues a domain to be processed for verification
 
 ## Dynamic IP Pools
 - POST /v3/domains/{name}/dynamic_pools — POST-v3-domains--name--dynamic-pools: Enroll domain
@@ -423,12 +427,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## Microsoft SNDS
 - GET /v1/reputationanalytics/snds — GET-v1-reputationanalytics-snds: Get SNDS Address Info
 - GET /v1/reputationanalytics/snds/{ip} — GET-v1-reputationanalytics-snds--ip-: Get SNDS Address Info
-
-## Optimize Domains
-- GET /v1/inboxready/domains — GET-v1-inboxready-domains: Returns Domains on Mailgun Optimize services
-- POST /v1/inboxready/domains — POST-v1-inboxready-domains: Add a single domain to an account
-- DELETE /v1/inboxready/domains — DELETE-v1-inboxready-domains: Deletes a single domain from an account
-- PUT /v1/inboxready/domains/verify — PUT-v1-inboxready-domains-verify: Queues a domain to be processed for verification
 
 ## Routes
 - GET /v3/routes — get-v3-routes: Get all routes

@@ -5,24 +5,20 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/ConsentConfig",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Configures whether to enforce consent for the FHIR store and which consent enforcement version is being used.",
   "properties": {
-    "consentHeaderHandling": {
-      "$ref": "ConsentHeaderHandling.json"
-    },
     "accessDeterminationLogConfig": {
       "$ref": "AccessDeterminationLogConfig.json"
     },
-    "version": {
-      "type": "string",
-      "description": "Required. Specifies which consent enforcement version is being used for this FHIR store. This field can only be set once by either CreateFhirStore or UpdateFhirStore. After that, you must call ApplyConsents to change the version.",
-      "enum": [
-        "CONSENT_ENFORCEMENT_VERSION_UNSPECIFIED",
-        "V1"
-      ]
+    "consentHeaderHandling": {
+      "$ref": "ConsentHeaderHandling.json"
+    },
+    "accessEnforced": {
+      "type": "boolean",
+      "description": "Optional. The default value is false. If set to true, when accessing FHIR resources, the consent headers will be verified against consents given by patients. See the ConsentEnforcementVersion for the supported consent headers."
     },
     "enforcedAdminConsents": {
       "type": "array",
@@ -32,9 +28,13 @@
         "type": "string"
       }
     },
-    "accessEnforced": {
-      "type": "boolean",
-      "description": "Optional. The default value is false. If set to true, when accessing FHIR resources, the consent headers will be verified against consents given by patients. See the ConsentEnforcementVersion for the supported consent headers."
+    "version": {
+      "type": "string",
+      "description": "Required. Specifies which consent enforcement version is being used for this FHIR store. This field can only be set once by either CreateFhirStore or UpdateFhirStore. After that, you must call ApplyConsents to change the version.",
+      "enum": [
+        "CONSENT_ENFORCEMENT_VERSION_UNSPECIFIED",
+        "V1"
+      ]
     }
   }
 }

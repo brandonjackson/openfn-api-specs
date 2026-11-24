@@ -5,11 +5,18 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/SearchStatistics",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Statistics for a search query. Populated as part of JobStatistics2.",
   "properties": {
+    "indexUnusedReasons": {
+      "type": "array",
+      "description": "When `indexUsageMode` is `UNUSED` or `PARTIALLY_USED`, this field explains why indexes were not used in all or part of the search query. If `indexUsageMode` is `FULLY_USED`, this field is not populated.",
+      "items": {
+        "$ref": "IndexUnusedReason.json"
+      }
+    },
     "indexUsageMode": {
       "type": "string",
       "description": "Specifies the index usage mode for the query.",
@@ -25,13 +32,6 @@
       "description": "Search index pruning statistics, one for each base table that has a search index. If a base table does not have a search index or the index does not help with pruning on the base table, then there is no pruning statistics for that table.",
       "items": {
         "$ref": "IndexPruningStats.json"
-      }
-    },
-    "indexUnusedReasons": {
-      "type": "array",
-      "description": "When `indexUsageMode` is `UNUSED` or `PARTIALLY_USED`, this field explains why indexes were not used in all or part of the search query. If `indexUsageMode` is `FULLY_USED`, this field is not populated.",
-      "items": {
-        "$ref": "IndexUnusedReason.json"
       }
     }
   }

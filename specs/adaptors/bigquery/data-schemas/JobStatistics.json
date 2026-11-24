@@ -5,14 +5,26 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/JobStatistics",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Statistics for a single job execution.",
   "properties": {
-    "parentJobId": {
+    "reservation_id": {
       "type": "string",
-      "description": "Output only. If this is a child job, specifies the job ID of the parent.",
+      "description": "Output only. Name of the primary reservation assigned to this job. Note that this could be different than reservations reported in the reservation usage field if parent reservations were used to execute this job.",
+      "readOnly": true
+    },
+    "copy": {
+      "$ref": "JobStatistics5.json"
+    },
+    "rowLevelSecurityStatistics": {
+      "$ref": "RowLevelSecurityStatistics.json"
+    },
+    "totalSlotMs": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. Slot-milliseconds for the job.",
       "readOnly": true
     },
     "finalExecutionDurationMs": {
@@ -21,8 +33,8 @@
       "description": "Output only. The duration in milliseconds of the execution of the final attempt of this job, as BigQuery may internally re-attempt to execute the job.",
       "readOnly": true
     },
-    "transactionInfo": {
-      "$ref": "TransactionInfo.json"
+    "extract": {
+      "$ref": "JobStatistics4.json"
     },
     "creationTime": {
       "type": "string",
@@ -30,26 +42,19 @@
       "description": "Output only. Creation time of this job, in milliseconds since the epoch. This field will be present on all jobs.",
       "readOnly": true
     },
-    "extract": {
-      "$ref": "JobStatistics4.json"
+    "transactionInfo": {
+      "$ref": "TransactionInfo.json"
     },
-    "dataMaskingStatistics": {
-      "$ref": "DataMaskingStatistics.json"
-    },
-    "startTime": {
+    "parentJobId": {
       "type": "string",
-      "format": "int64",
-      "description": "Output only. Start time of this job, in milliseconds since the epoch. This field will be present when the job transitions from the PENDING state to either RUNNING or DONE.",
+      "description": "Output only. If this is a child job, specifies the job ID of the parent.",
       "readOnly": true
     },
-    "copy": {
-      "$ref": "JobStatistics5.json"
+    "query": {
+      "$ref": "JobStatistics2.json"
     },
-    "endTime": {
-      "type": "string",
-      "format": "int64",
-      "description": "Output only. End time of this job, in milliseconds since the epoch. This field will be present whenever a job is in the DONE state.",
-      "readOnly": true
+    "parentGlobalQueryJob": {
+      "$ref": "JobReference.json"
     },
     "numChildJobs": {
       "type": "string",
@@ -57,14 +62,38 @@
       "description": "Output only. Number of child jobs executed.",
       "readOnly": true
     },
-    "totalSlotMs": {
+    "totalBytesProcessed": {
       "type": "string",
       "format": "int64",
-      "description": "Output only. Slot-milliseconds for the job.",
+      "description": "Output only. Total bytes processed for the job.",
       "readOnly": true
     },
-    "parentGlobalQueryJob": {
-      "$ref": "JobReference.json"
+    "edition": {
+      "type": "string",
+      "description": "Output only. Name of edition corresponding to the reservation for this job at the time of this update.",
+      "enum": [
+        "RESERVATION_EDITION_UNSPECIFIED",
+        "STANDARD",
+        "ENTERPRISE",
+        "ENTERPRISE_PLUS"
+      ],
+      "readOnly": true
+    },
+    "globalQueryRemoteRegions": {
+      "type": "array",
+      "description": "Output only. The list of remote regions from which a global query accesses data. This field is populated only for parent global query jobs in the primary execution region. It is empty for child global query jobs and single-region queries. For more information, see [Global queries](https://cloud.google.com/bigquery/docs/global-queries).",
+      "readOnly": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "quotaDeferments": {
+      "type": "array",
+      "description": "Output only. Quotas which delayed this job's start time.",
+      "readOnly": true,
+      "items": {
+        "type": "string"
+      }
     },
     "reservationUsage": {
       "type": "array",
@@ -87,41 +116,17 @@
         }
       }
     },
-    "reservation_id": {
-      "type": "string",
-      "description": "Output only. Name of the primary reservation assigned to this job. Note that this could be different than reservations reported in the reservation usage field if parent reservations were used to execute this job.",
-      "readOnly": true
-    },
-    "globalQueryRemoteRegions": {
-      "type": "array",
-      "description": "Output only. The list of remote regions from which a global query accesses data. This field is populated only for parent global query jobs in the primary execution region. It is empty for child global query jobs and single-region queries. For more information, see [Global queries](https://cloud.google.com/bigquery/docs/global-queries).",
-      "readOnly": true,
-      "items": {
-        "type": "string"
-      }
-    },
-    "load": {
-      "$ref": "JobStatistics3.json"
-    },
     "sessionInfo": {
       "$ref": "SessionInfo.json"
     },
-    "rowLevelSecurityStatistics": {
-      "$ref": "RowLevelSecurityStatistics.json"
-    },
-    "edition": {
-      "type": "string",
-      "description": "Output only. Name of edition corresponding to the reservation for this job at the time of this update.",
-      "enum": [
-        "RESERVATION_EDITION_UNSPECIFIED",
-        "STANDARD",
-        "ENTERPRISE",
-        "ENTERPRISE_PLUS"
-      ],
+    "completionRatio": {
+      "type": "number",
+      "format": "double",
+      "description": "Output only. [TrustedTester] Job progress (0.0 -> 1.0) for LOAD and EXTRACT jobs.",
       "readOnly": true
     },
-    "query": {
-      "$ref": "JobStatistics2.json"
+    "load": {
+      "$ref": "JobStatistics3.json"
     },
     "reservationGroupPath": {
       "type": "array",
@@ -131,28 +136,23 @@
         "type": "string"
       }
     },
-    "completionRatio": {
-      "type": "number",
-      "format": "double",
-      "description": "Output only. [TrustedTester] Job progress (0.0 -> 1.0) for LOAD and EXTRACT jobs.",
-      "readOnly": true
-    },
     "scriptStatistics": {
       "$ref": "ScriptStatistics.json"
     },
-    "totalBytesProcessed": {
+    "startTime": {
       "type": "string",
       "format": "int64",
-      "description": "Output only. Total bytes processed for the job.",
+      "description": "Output only. Start time of this job, in milliseconds since the epoch. This field will be present when the job transitions from the PENDING state to either RUNNING or DONE.",
       "readOnly": true
     },
-    "quotaDeferments": {
-      "type": "array",
-      "description": "Output only. Quotas which delayed this job's start time.",
-      "readOnly": true,
-      "items": {
-        "type": "string"
-      }
+    "dataMaskingStatistics": {
+      "$ref": "DataMaskingStatistics.json"
+    },
+    "endTime": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. End time of this job, in milliseconds since the epoch. This field will be present whenever a job is in the DONE state.",
+      "readOnly": true
     }
   }
 }

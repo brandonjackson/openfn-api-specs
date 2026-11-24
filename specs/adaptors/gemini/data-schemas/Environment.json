@@ -5,14 +5,20 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/Environment",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "An execution environment for an agent.",
   "properties": {
-    "lastAccessed": {
+    "environmentKey": {
       "type": "string",
-      "description": "Output only. The time at which the environment was last accessed in ISO 8601 format (YYYY-MM-DDThh:mm:ssZ).",
+      "description": "Output only. Secret token generated upon environment creation for self_hosted environments. Used by the self-hosted sandbox daemon to authenticate polling and streaming requests. Only returned in the CreateEnvironment response; omitted from subsequent GetEnvironment and ListEnvironments calls.",
+      "readOnly": true
+    },
+    "sizeBytes": {
+      "type": "string",
+      "format": "int64",
+      "description": "Output only. The total size of the environment files in bytes, output only.",
       "readOnly": true
     },
     "mode": {
@@ -25,6 +31,11 @@
       ],
       "readOnly": true
     },
+    "id": {
+      "type": "string",
+      "description": "Required. Output only. The ID of the environment.",
+      "readOnly": true
+    },
     "updated": {
       "type": "string",
       "description": "Output only. The time at which the environment was last updated in ISO 8601 format (YYYY-MM-DDThh:mm:ssZ).",
@@ -35,22 +46,13 @@
       "description": "Output only. The time at which the environment was created in ISO 8601 format (YYYY-MM-DDThh:mm:ssZ).",
       "readOnly": true
     },
-    "sources": {
-      "type": "array",
-      "description": "Sources to be mounted into the environment.",
-      "items": {
-        "$ref": "Source.json"
-      }
+    "networkAllowlist": {
+      "$ref": "EnvironmentNetworkEgressAllowlist.json"
     },
-    "sizeBytes": {
+    "fileCount": {
       "type": "string",
       "format": "int64",
-      "description": "Output only. The total size of the environment files in bytes, output only.",
-      "readOnly": true
-    },
-    "environmentKey": {
-      "type": "string",
-      "description": "Output only. Secret token generated upon environment creation for self_hosted environments. Used by the self-hosted sandbox daemon to authenticate polling and streaming requests. Only returned in the CreateEnvironment response; omitted from subsequent GetEnvironment and ListEnvironments calls.",
+      "description": "Output only. The number of files in the environment, output only.",
       "readOnly": true
     },
     "status": {
@@ -63,23 +65,9 @@
       ],
       "readOnly": true
     },
-    "customConfig": {
-      "type": "object",
-      "description": "Output only. Arbitrary customer-defined JSON configuration passed through to the self-hosted environment poller. Only populated for `self_hosted` environments when configured.",
-      "readOnly": true,
-      "additionalProperties": {
-        "description": "Properties of the object."
-      }
-    },
-    "fileCount": {
+    "lastAccessed": {
       "type": "string",
-      "format": "int64",
-      "description": "Output only. The number of files in the environment, output only.",
-      "readOnly": true
-    },
-    "id": {
-      "type": "string",
-      "description": "Required. Output only. The ID of the environment.",
+      "description": "Output only. The time at which the environment was last accessed in ISO 8601 format (YYYY-MM-DDThh:mm:ssZ).",
       "readOnly": true
     },
     "networkMode": {
@@ -90,8 +78,20 @@
         "DISABLED"
       ]
     },
-    "networkAllowlist": {
-      "$ref": "EnvironmentNetworkEgressAllowlist.json"
+    "sources": {
+      "type": "array",
+      "description": "Sources to be mounted into the environment.",
+      "items": {
+        "$ref": "Source.json"
+      }
+    },
+    "customConfig": {
+      "type": "object",
+      "description": "Output only. Arbitrary customer-defined JSON configuration passed through to the self-hosted environment poller. Only populated for `self_hosted` environments when configured.",
+      "readOnly": true,
+      "additionalProperties": {
+        "description": "Properties of the object."
+      }
     }
   }
 }

@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index msgraph` — do not edit by hand -->
 
-base: https://graph.microsoft.com/v1.0 | auth: not declared | 2668 operations in 193 resources
+base: https://graph.microsoft.com/v1.0 | auth: not declared | 2677 operations in 194 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -2509,6 +2509,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /users/{user-id}/transitiveMemberOf/graph.directoryRole/$count — users.TransitiveMemberOf.GetCount.AsDirectoryRole-462d: Get the number of the resource
 - GET /users/{user-id}/transitiveMemberOf/graph.group — users.ListTransitiveMemberOf.AsGroup: Get the items of type microsoft.graph.group in the microsoft.graph.directoryObject collection
 - GET /users/{user-id}/transitiveMemberOf/graph.group/$count — users.TransitiveMemberOf.GetCount.AsGroup-062f: Get the number of the resource
+
+## users.distributionList
+- GET /users/{user-id}/distributionLists — users.ListDistributionLists: Get distributionLists from users
+- POST /users/{user-id}/distributionLists — users.CreateDistributionLists: Create new navigation property to distributionLists for users
+- GET /users/{user-id}/distributionLists/{distributionList-id} — users.GetDistributionLists: Get distributionLists from users
+- PATCH /users/{user-id}/distributionLists/{distributionList-id} — users.UpdateDistributionLists: Update the navigation property distributionLists in users
+- DELETE /users/{user-id}/distributionLists/{distributionList-id} — users.DeleteDistributionLists: Delete navigation property distributionLists for users
+- GET /users/{user-id}/distributionLists/{distributionList-id}/members — users.distributionLists.ListMembers: Get members from users
+- POST /users/{user-id}/distributionLists/{distributionList-id}/addMembers — users.user.distributionLists.distributionList.addMembers: Invoke action addMembers
+- POST /users/{user-id}/distributionLists/{distributionList-id}/deleteMembers — users.user.distributionLists.distributionList.deleteMembers: Invoke action deleteMembers
+- GET /users/{user-id}/distributionLists/$count — users.distributionLists.GetCount-9254: Get the number of the resource
 
 ## users.drive
 - GET /users/{user-id}/drive — users.GetDrive: Get drive from users

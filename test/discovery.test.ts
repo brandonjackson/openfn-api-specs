@@ -135,57 +135,39 @@ test('request/response bodies become JSON media types', () => {
   assert.deepEqual(post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
 });
 
-test('media upload URIs become operations of their own', () => {
-  const doc: any = {
-    name: 'demo',
-    version: 'v1',
-    rootUrl: 'https://www.googleapis.com/',
-    servicePath: 'demo/v1/',
-    schemas: { File: { id: 'File', type: 'object', properties: { id: { type: 'string' } } } },
-    resources: {
-      files: {
-        methods: {
-          create: {
-            id: 'demo.files.create',
-            path: '{+parent}/files',
-            flatPath: 'folders/{foldersId}/files',
-            httpMethod: 'POST',
-            parameters: { parent: { type: 'string', location: 'path', required: true } },
-            request: { $ref: 'File' },
-            response: { $ref: 'File' },
-            supportsMediaUpload: true,
-            mediaUpload: {
-              accept: ['image/*'],
-              maxSize: '1024',
-              protocols: {
-                simple: { multipart: true, path: '/upload/demo/v1/{+parent}/files' },
-                resumable: { multipart: true, path: '/resumable/upload/demo/v1/{+parent}/files' },
-              },
-            },
-          },
-        },
-      },
+test('mediaUpload protocols become upload operations rooted at rootUrl', () => {
+  const withUpload = structuredClone(disc) as any;
+  withUpload.servicePath = 'demo/v1/';
+  withUpload.baseUrl = 'https://demo.googleapis.com/demo/v1/';
+  withUpload.resources.widgets.methods.create.mediaUpload = {
+    accept: ['image/*'],
+    maxSize: '1048576',
+    protocols: {
+      simple: { multipart: true, path: '/upload/demo/v1/{+parent}/widgets' },
+      resumable: { multipart: true, path: '/resumable/upload/demo/v1/{+parent}/widgets' },
     },
   };
-  const { openapi, warnings } = discoveryToOpenApi(doc, 'demo');
+  withUpload.resources.widgets.methods.create.parameters = {
+    parent: { type: 'string', location: 'path', required: true },
+  };
+  const { openapi, warnings } = discoveryToOpenApi(withUpload, 'demo');
   assert.deepEqual(warnings, []);
-  assert.deepEqual(Object.keys(openapi.paths), [
-    '/folders/{foldersId}/files',
-    '/upload/demo/v1/folders/{foldersId}/files',
-    '/resumable/upload/demo/v1/folders/{foldersId}/files',
-  ]);
-  const simple = openapi.paths['/upload/demo/v1/folders/{foldersId}/files'];
-  // Upload URIs hang off rootUrl, so the path item overrides the API's base URL.
-  assert.deepEqual(simple.servers, [{ url: 'https://www.googleapis.com' }]);
-  assert.equal(simple.post.operationId, 'demo.files.create.simpleUpload');
-  assert.deepEqual(simple.post.tags, ['files']);
-  assert.deepEqual(Object.keys(simple.post.requestBody.content), ['image/*', 'multipart/related']);
-  assert.equal(simple.post.parameters[0].name, 'foldersId');
-  const resumable = openapi.paths['/resumable/upload/demo/v1/folders/{foldersId}/files'].post;
-  assert.equal(resumable.operationId, 'demo.files.create.resumableUpload');
-  assert.ok(resumable.requestBody.content['application/json']);
-  // The method itself is untouched.
-  assert.equal(openapi.paths['/folders/{foldersId}/files'].post.operationId, 'demo.files.create');
-  assert.equal(openapi.paths['/folders/{foldersId}/files'].servers, undefined);
-  assert.equal(parseSpec(openapi).operations.length, 3);
+
+  const simple = openapi.paths['/upload/demo/v1/{parent}/widgets'];
+  assert.deepEqual(simple.servers, [{ url: 'https://demo.googleapis.com' }], 'upload paths are absolute from rootUrl');
+  assert.equal(simple.post.operationId, 'demo.widgets.create.upload');
+  const byName = Object.fromEntries(simple.post.parameters.map((p: any) => [p.name, p]));
+  assert.equal(byName.parent.in, 'path');
+  assert.deepEqual(byName.uploadType.schema.enum, ['media', 'multipart']);
+  assert.ok(simple.post.requestBody.content['multipart/related']);
+  assert.ok(simple.post.requestBody.content['image/*']);
+  assert.deepEqual(simple.post.responses['200'].content['application/json'].schema, { $ref: '#/components/schemas/Widget' });
+
+  const resumable = openapi.paths['/resumable/upload/demo/v1/{parent}/widgets'].post;
+  assert.equal(resumable.operationId, 'demo.widgets.create.resumableUpload');
+  assert.ok(resumable.responses['200'].headers.Location);
+
+  // The parser sees the upload operations alongside the plain ones.
+  const ops = parseSpec(openapi).operations.map((o: any) => o.operationId);
+  assert.ok(ops.includes('demo.widgets.create') && ops.includes('demo.widgets.create.upload'));
 });

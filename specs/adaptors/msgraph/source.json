@@ -5,6 +5,33 @@
   "upstreamFormat": "openapi-3.0",
   "coverage": "subset",
   "derivedFrom": "upstream.yaml",
+  "subsetRule": {
+    "resources": [
+      "users",
+      "groups",
+      "sites",
+      "drives",
+      "applications",
+      "servicePrincipals",
+      "organization",
+      "directory",
+      "directoryObjects",
+      "directoryRoles",
+      "domains",
+      "invitations",
+      "teams",
+      "teamwork",
+      "chats",
+      "planner",
+      "contacts"
+    ],
+    "maxSegments": 5,
+    "include": [
+      "/me"
+    ],
+    "title": "Microsoft Graph API (curated subset: directory, files, mail, calendar, Teams, Planner)",
+    "note": "This document is a curated subset of the full Microsoft Graph v1.0 OpenAPI (see upstream.yaml, the verbatim vendor file this was derived from). It covers the resource groups a Graph integration realistically reaches (users, groups, sites, drives/driveItems, applications, servicePrincipals, organization, directory objects/roles, domains, invitations, teams/teamwork/chats, planner, and contacts), restricted to paths at most 5 segments deep (entity plus one or two levels of relationship), plus the bare /me singleton (the signed-in user). That keeps common single-hop operations (e.g. a drive item's /content or /createUploadSession) while dropping Graph's deep, rarely-used relationship chains (analytics-of-analytics, nested OneNote pages, etc.). Every path, parameter, and schema below is copied verbatim from Microsoft's own spec, not authored; see source.json for the full rationale."
+  },
   "completeness": "complete",
   "completenessReason": null,
   "sources": [
@@ -15,24 +42,24 @@
     "https://cdn.jsdelivr.net/npm/@openfn/language-msgraph/dist/index.cjs",
     "https://github.com/OpenFn/adaptors/tree/main/packages/msgraph"
   ],
-  "capturedAt": "2026-11-16",
-  "notes": "Microsoft publishes the full Graph v1.0 surface as an OpenAPI 3.0 document (generated from their CSDL metadata by their own tooling, not by us) at microsoftgraph/msgraph-metadata, which makes this found-openapi, not converted. The verbatim upstream (upstream.yaml, 45 MB, hash-locked) is 18,004 operations / 11,632 paths / 5,341 schemas across every Microsoft 365 workload (Teams, SharePoint, Intune device management, security & compliance, identity governance, education, print, ...). openapi.json serves a curated coverage:subset derived mechanically from that file (a filter script, not hand-authored): every path whose top-level resource is one a Graph integration realistically reaches (users, groups, sites, drives/driveItems, applications, servicePrincipals, organization, directory objects/roles, domains, invitations, teams/teamwork/chats, planner, contacts), restricted to at most 5 path segments (entity plus one or two levels of relationship/action), plus the bare /me singleton (the signed-in user, which the mock/adaptor address directly rather than through /users/{id}). That keeps single-hop operations like a driveItem's /content or /createUploadSession while dropping Graph's deep, rarely-used relationship chains (nested OneNote pages, analytics-of-analytics, etc.). Every path/parameter/schema kept is copied byte-for-byte from Microsoft's document (1,775 paths, 2,668 operations, 1,106 schemas) via a transitive $ref closure, not re-authored, so completeness is 'complete' rather than best-effort. Verified against ast.json: the adaptor's 6 HTTP operations (create, get, getDrive, getFolder, getFile, uploadFile) are all generic builders with no fixed path, and every endpoint their docs/source name as an example (/drives/{id}, /drives/{id}/items/{id}/children, /drives/{id}/items/{id}/content, /drives/{id}/items/{id}/createUploadSession, /sites/{id}/drive, /groups/{id}/drive, /applications) is present in the subset. Previously this adaptor's spec was a ~17-endpoint hand-picked stub, the exact 'focused subset' anti-pattern AGENTS.md warns against; this replaces it with a real vendor document narrowed by a documented, mechanical rule instead of by guessing at adaptor usage. Left out: Intune/device management, security & compliance, identity governance, education, print, reports, and most of onenote/todo/presence, all real Graph resources the adaptor's generic builders could reach but that no realistic OpenFn workflow targets; a future pass could widen the depth/tag allowlist if that changes. The filter script is not in the repo, so its exact rule is recorded here for the next refresh (re-implemented on 2026-11-16 and proven to reproduce the previous openapi.json byte-for-byte from the previous upstream.yaml before being applied to the new one): parse upstream.yaml with the `yaml` package; keep a path when its first segment is exactly one of users, groups, sites, drives, applications, servicePrincipals, organization, directory, directoryObjects, directoryRoles, domains, invitations, teams, teamwork, chats, planner, contacts (so alternate-key roots such as /users(userPrincipalName='{userPrincipalName}') are not kept) and it has at most 5 segments, in upstream order, then append /me last; collect #/components/* $refs breadth-first in discovery order (paths first, then each referenced component in turn) and emit components as schemas, parameters, responses, requestBodies in that discovery order; copy openapi, servers and the full tags list from upstream; info is upstream's with the curated title plus x-openfn-adaptor and x-openfn-subset-note; write with JSON.stringify(doc, null, 2) and a trailing newline. Upstream drift re-captured 2026-11-16 (Microsoft's file grew by 139 paths / 227 operations / 214 schemas): the subset gained 38 paths / 63 operations / 50 schemas and lost none - chiefly the new /directory/tenantGovernance tree (45 operations), /users/{id}/notes (11), /users/{id}/authentication/resourceAccountKeyAuthenticationMethods (4), /users/{id}/calendars/delta(), /drives/{id}/list/subscriptions/getVapidPublicKey() and /sites/{id}/permissions/{id}/revokeGrants - with 2 operations and 25 schemas changed in place.",
+  "capturedAt": "2026-11-21",
+  "notes": "Microsoft publishes the full Graph v1.0 surface as an OpenAPI 3.0 document (generated from their CSDL metadata by their own tooling, not by us) at microsoftgraph/msgraph-metadata, which makes this found-openapi, not converted. The verbatim upstream (upstream.yaml, 44 MB, hash-locked) is 18,094 operations / 5,367 schemas across every Microsoft 365 workload (Teams, SharePoint, Intune device management, security & compliance, identity governance, education, print, ...). openapi.json serves a curated coverage:subset derived mechanically from that file by the subsetRule above (src/subset.ts, applied by `pnpm specs convert msgraph`, so a re-fetch re-derives it; not hand-authored): every path whose top-level resource is one a Graph integration realistically reaches (users, groups, sites, drives/driveItems, applications, servicePrincipals, organization, directory objects/roles, domains, invitations, teams/teamwork/chats, planner, contacts), restricted to at most 5 path segments (entity plus one or two levels of relationship/action), plus the bare /me singleton (the signed-in user, which the mock/adaptor address directly rather than through /users/{id}). That keeps single-hop operations like a driveItem's /content or /createUploadSession while dropping Graph's deep, rarely-used relationship chains (nested OneNote pages, analytics-of-analytics, etc.). Every path/parameter/schema kept is copied byte-for-byte from Microsoft's document (1,781 paths, 2,677 operations, 1,112 schemas as of 2026-11-21) via a transitive $ref closure, not re-authored, so completeness is 'complete' rather than best-effort. Verified against ast.json: the adaptor's 6 HTTP operations (create, get, getDrive, getFolder, getFile, uploadFile) are all generic builders with no fixed path, and every endpoint their docs/source name as an example (/drives/{id}, /drives/{id}/items/{id}/children, /drives/{id}/items/{id}/content, /drives/{id}/items/{id}/createUploadSession, /sites/{id}/drive, /groups/{id}/drive, /applications) is present in the subset. Previously this adaptor's spec was a ~17-endpoint hand-picked stub, the exact 'focused subset' anti-pattern AGENTS.md warns against; this replaces it with a real vendor document narrowed by a documented, mechanical rule instead of by guessing at adaptor usage. Left out: Intune/device management, security & compliance, identity governance, education, print, reports, and most of onenote/todo/presence, all real Graph resources the adaptor's generic builders could reach but that no realistic OpenFn workflow targets; a future pass could widen the depth/tag allowlist if that changes.",
   "upstream": {
     "specUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/openapi.yaml",
     "format": "openapi-3.0",
-    "contentHash": "sha256:eed44b45dd36f8489aabdffedd9de6e2f4e7613c1c7b2d884845e59652d489ff",
-    "fetchedAt": "2026-11-16"
+    "contentHash": "sha256:bd6385c5eb3df05a69da5f39359d9df61a44d0032d9b2234a97f4c29c0826d4d",
+    "fetchedAt": "2026-11-21"
   },
   "attempts": [
     {
       "kind": "openapi",
       "url": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/openapi.yaml",
       "result": "used",
-      "note": "Microsoft's own OpenAPI 3.0 rendering of the full Graph v1.0 metadata, linked from their public docs; 17,777 operations verbatim"
+      "note": "Microsoft's own OpenAPI 3.0 rendering of the full Graph v1.0 metadata, linked from their public docs; 18,094 operations verbatim (re-fetched 2026-11-21: 17,777 -> 18,094 since 2026-09-14)"
     }
   ],
   "verifiedAgainst": [
     "ast.json"
   ],
-  "lastCheckedAt": "2026-11-16"
+  "lastCheckedAt": "2026-11-21"
 }

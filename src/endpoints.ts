@@ -116,7 +116,9 @@ function authLabels(openapi: any): string[] {
         out.push(String(raw.type ?? name));
     }
   }
-  return out;
+  // Vendors that split one API across several spec files repeat the scheme
+  // under different names (Mailgun's basicAuth and Inbox_Ready_basicAuth).
+  return [...new Set(out)];
 }
 
 /** Build the structured index from an OpenAPI 3.x document. */

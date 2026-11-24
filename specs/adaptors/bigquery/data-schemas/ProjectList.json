@@ -5,15 +5,11 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/ProjectList",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Response object of ListProjects",
   "properties": {
-    "nextPageToken": {
-      "type": "string",
-      "description": "Use this token to request the next page of results."
-    },
     "projects": {
       "type": "array",
       "description": "Projects to which the user has at least READ access. This field can be omitted if `totalItems` is 0.",
@@ -21,12 +17,17 @@
         "type": "object",
         "description": "Information about a single project.",
         "properties": {
-          "friendlyName": {
+          "numericId": {
             "type": "string",
-            "description": "A descriptive name for this project. A wrapper is used here because friendlyName can be set to the empty string."
+            "format": "uint64",
+            "description": "The numeric ID of this project."
           },
           "projectReference": {
             "$ref": "ProjectReference.json"
+          },
+          "friendlyName": {
+            "type": "string",
+            "description": "A descriptive name for this project. A wrapper is used here because friendlyName can be set to the empty string."
           },
           "id": {
             "type": "string",
@@ -35,28 +36,27 @@
           "kind": {
             "type": "string",
             "description": "The resource type."
-          },
-          "numericId": {
-            "type": "string",
-            "format": "uint64",
-            "description": "The numeric ID of this project."
           }
         }
       }
     },
-    "kind": {
+    "etag": {
       "type": "string",
-      "description": "The resource type of the response.",
-      "default": "bigquery#projectList"
+      "description": "A hash of the page of results."
     },
     "totalItems": {
       "type": "integer",
       "format": "int32",
       "description": "The total number of projects in the page. A wrapper is used here because the field should still be in the response when the value is 0."
     },
-    "etag": {
+    "kind": {
       "type": "string",
-      "description": "A hash of the page of results."
+      "description": "The resource type of the response.",
+      "default": "bigquery#projectList"
+    },
+    "nextPageToken": {
+      "type": "string",
+      "description": "Use this token to request the next page of results."
     }
   }
 }

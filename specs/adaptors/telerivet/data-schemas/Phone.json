@@ -5,7 +5,7 @@
   "x-openfn-adaptor": "telerivet",
   "x-source": {
     "openapi": "#/components/schemas/Phone",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "properties": {
@@ -26,7 +26,7 @@
     },
     "phone_type": {
       "type": "string",
-      "description": "Type of this phone/route (e.g. android, twilio, nexmo, etc)",
+      "description": "Type of this phone/route (e.g. android, twilio, nexmo, etc). For a shared copy of a route from another project (see parent_phone_id), the type of the original route.",
       "example": "android"
     },
     "country": {
@@ -77,7 +77,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Array of 2-letter country codes (ISO 3166-1 alpha-2) to which this phone is allowed to send messages. When null, there is no restriction on recipient countries."
+      "description": "Array of 2-letter country codes (ISO 3166-1 alpha-2) to which this phone is allowed to send messages. Messages to recipients in other countries fail without being sent. When null, there is no restriction on recipient countries; set to null or an empty array to remove the restriction."
     },
     "sent_message_limit": {
       "type": [
@@ -202,6 +202,57 @@
       ],
       "description": "Maximum number of SMS messages per hour that can be sent by this Android phone. To increase this limit, install additional SMS expansion packs in the Telerivet Gateway app. (only present for Android phones)",
       "example": 900
+    },
+    "active_expansion_packs": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Number of SMS Expansion Packs installed and active in the Telerivet Gateway app, which increase send_limit; null if the phone has not reported its rate limit. (only present for Android phones)",
+      "example": 2
+    },
+    "shared_project_ids": {
+      "type": "string",
+      "description": "IDs of other projects in the same organization that this route is shared with (read-only; route sharing can be configured on the route's settings page in the web app). Each project has its own shared copy of the route (with its own phone ID, and parent_phone_id set to this route's ID) that sends messages via this route; incoming messages are not shared unless copied by an automated service. Only includes projects the current user can access. Only present for routes that can send messages, other than shared copies."
+    },
+    "parent_phone_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "For a shared copy of a route from another project, the ID of the original route that sends the messages (read-only). Only present for shared routes; their phone_type is the type of the original route, but type-specific properties and methods (such as config, app logs, and status history) are only available on the original route.",
+      "example": "PNe2a3b8a17bd0a1c2"
+    },
+    "parent_project_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "For a shared copy of a route from another project, the ID of the project containing the original route (read-only). Only present for shared routes.",
+      "example": "PJ2ad0100821a98bea"
+    },
+    "welcome_message": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Welcome message settings for this route, in the same format as the `welcome_message` property of Project. When enabled with non-empty content, the route's welcome message is sent to each contact the first time a text message is sent to that contact via this route, instead of the project's welcome message. Only present for routes that can send messages. When updating, only the provided properties are changed."
+    },
+    "inactive_timeout": {
+      "type": "integer",
+      "description": "Number of seconds after the phone last connected to Telerivet before it is considered inactive (and `connectivity` alert emails are sent). Only present for phone types that support it. Allowed values for each phone type:\n\n- Android Phone (`android`): 900, 1800, 3600, 7200, 21600, 43200, 86400",
+      "example": 1800
+    },
+    "alert_emails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "description": "Email addresses that receive alerts about this phone. Each item has the properties `email` (string) and `types` (array of strings: the types of alerts that are sent to this email address). Only present for phone types that support email alerts. When updating, the provided list replaces all existing alert emails for this phone (an empty array removes all of them). Alert types for each phone type:\n\n- Android Phone (`android`): `connectivity`, `battery`, `power`, `send_errors`, `rate_limit`"
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Settings specific to a particular phone_type. Currently only used for the Telerivet Gateway app on Android phones. When updating, only the provided properties are changed, and properties with null values are ignored.\n\n**Android Phone** (`phone_type`: android):\n\n- delivery_reports (bool): Request a delivery report for each SMS sent by the phone\n- call_notifications (bool): Forward notifications of incoming calls to Telerivet (and outgoing call records, if forward_sent is enabled)\n- hangup_incoming_calls (bool): Hang up incoming calls immediately.\n- send_retries (int, 0-10): Number of times to automatically retry sending failed messages.\n- send_mms (bool): Send outgoing MMS messages from this phone (requires Android 5.0+ and a mobile network that supports MMS).\n- ignored_phone_numbers (array of strings, max 500): Phone numbers whose incoming messages are ignored (not forwarded to Telerivet)\n- ignore_shortcodes (bool): Ignore incoming messages from short codes\n- ignore_non_numeric (bool): Ignore incoming messages from non-numeric (alphanumeric) senders\n- app_locked (bool): Prevent changing settings and accessing online tools from the Telerivet Gateway app on the phone\n\nThe following properties are read-only settings that can only be changed in the Telerivet Gateway app on the phone, as last reported by the app:\n\n- app_enabled (bool): Whether the app is enabled to forward messages between the phone and Telerivet\n- forward_incoming (bool): Whether the app forwards incoming SMS, MMS, and RCS messages to Telerivet\n- forward_sent (bool): Whether the app forwards messages sent from the phone's messaging app (and outgoing call records, if call_notifications is enabled) to Telerivet\n- incoming_paused (bool): Whether forwarding incoming messages to Telerivet is paused (a debug setting in the app)\n- test_mode (bool): Whether the app is in test mode, where it only forwards messages to/from the phone numbers in test_phone_numbers\n- test_phone_numbers (array of strings): Phone numbers that the app forwards messages to/from when test_mode is enabled\n- app_source (string): Where app updates are installed from: `google_play`, `telerivet_website`, or null if unknown\n\nChanges to app settings are sent to the phone the next time it connects to Telerivet."
     },
     "external_account_id": {
       "type": [

@@ -5,24 +5,25 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/Message",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A complete HL7v2 message. See [Introduction to HL7 Standards] (https://www.hl7.org/implement/standards/index.cfm?ref=common) for details on the standard.",
   "properties": {
-    "sendTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The datetime the sending application sent this message. MSH-7.",
-      "readOnly": true
+    "patientIds": {
+      "type": "array",
+      "description": "Output only. All patient IDs listed in the PID-2, PID-3, and PID-4 segments of this message.",
+      "readOnly": true,
+      "items": {
+        "$ref": "PatientId.json"
+      }
     },
-    "parsedData": {
-      "$ref": "ParsedData.json"
+    "schematizedData": {
+      "$ref": "SchematizedData.json"
     },
-    "createTime": {
+    "name": {
       "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The datetime when the message was created. Set by the server.",
+      "description": "Output only. Resource name of the Message, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/hl7V2Stores/{hl7_v2_store_id}/messages/{message_id}`.",
       "readOnly": true
     },
     "sendFacility": {
@@ -30,13 +31,24 @@
       "description": "Output only. The hospital that this message came from. MSH-4.",
       "readOnly": true
     },
+    "createTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Output only. The datetime when the message was created. Set by the server.",
+      "readOnly": true
+    },
+    "data": {
+      "type": "string",
+      "format": "byte",
+      "description": "Required. Raw message bytes."
+    },
     "messageType": {
       "type": "string",
       "description": "Output only. The message type for this message. MSH-9.1.",
       "readOnly": true
     },
-    "schematizedData": {
-      "$ref": "SchematizedData.json"
+    "parsedData": {
+      "$ref": "ParsedData.json"
     },
     "labels": {
       "type": "object",
@@ -45,23 +57,11 @@
         "type": "string"
       }
     },
-    "name": {
+    "sendTime": {
       "type": "string",
-      "description": "Output only. Resource name of the Message, of the form `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/hl7V2Stores/{hl7_v2_store_id}/messages/{message_id}`.",
+      "format": "google-datetime",
+      "description": "Output only. The datetime the sending application sent this message. MSH-7.",
       "readOnly": true
-    },
-    "data": {
-      "type": "string",
-      "format": "byte",
-      "description": "Required. Raw message bytes."
-    },
-    "patientIds": {
-      "type": "array",
-      "description": "Output only. All patient IDs listed in the PID-2, PID-3, and PID-4 segments of this message.",
-      "readOnly": true,
-      "items": {
-        "$ref": "PatientId.json"
-      }
     }
   }
 }

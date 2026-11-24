@@ -5,23 +5,17 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/GenerateContentBatch",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "A resource representing a batch of `GenerateContent` requests.",
   "properties": {
-    "output": {
-      "$ref": "GenerateContentBatchOutput.json"
+    "inputConfig": {
+      "$ref": "InputConfig.json"
     },
-    "displayName": {
+    "model": {
       "type": "string",
-      "description": "Required. The user-defined name of this batch."
-    },
-    "endTime": {
-      "type": "string",
-      "format": "google-datetime",
-      "description": "Output only. The time at which the batch processing completed.",
-      "readOnly": true
+      "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`."
     },
     "createTime": {
       "type": "string",
@@ -29,10 +23,15 @@
       "description": "Output only. The time at which the batch was created.",
       "readOnly": true
     },
-    "name": {
+    "batchStats": {
+      "$ref": "BatchStats.json"
+    },
+    "displayName": {
       "type": "string",
-      "description": "Output only. Identifier. Resource name of the batch. Format: `batches/{batch_id}`.",
-      "readOnly": true
+      "description": "Required. The user-defined name of this batch."
+    },
+    "output": {
+      "$ref": "GenerateContentBatchOutput.json"
     },
     "updateTime": {
       "type": "string",
@@ -40,9 +39,11 @@
       "description": "Output only. The time at which the batch was last updated.",
       "readOnly": true
     },
-    "model": {
+    "endTime": {
       "type": "string",
-      "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`."
+      "format": "google-datetime",
+      "description": "Output only. The time at which the batch processing completed.",
+      "readOnly": true
     },
     "state": {
       "type": "string",
@@ -63,11 +64,10 @@
       "format": "int64",
       "description": "Optional. The priority of the batch. Batches with a higher priority value will be processed before batches with a lower priority value. Negative values are allowed. Default is 0."
     },
-    "batchStats": {
-      "$ref": "BatchStats.json"
-    },
-    "inputConfig": {
-      "$ref": "InputConfig.json"
+    "name": {
+      "type": "string",
+      "description": "Output only. Identifier. Resource name of the batch. Format: `batches/{batch_id}`.",
+      "readOnly": true
     }
   }
 }

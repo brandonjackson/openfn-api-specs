@@ -5,6 +5,7 @@ import {
   createConformer,
   formatConformanceReport,
   normalizePath,
+  patternAdmitsSlash,
   parseExchangesJsonl,
   serverPathPrefixes,
   toExchangesJsonl,
@@ -500,18 +501,132 @@ test('a path parameter marked x-smithy-greedy spans slashes; an ordinary one doe
   assert.equal(plain.match('GET', '/things/a/b'), undefined, 'an ordinary parameter stops at a slash');
 });
 
-test('a path parameter whose pattern admits a slash spans slashes', () => {
-  const ok = { '200': { description: 'ok' } };
+test('patternAdmitsSlash: a literal slash outside a character class', () => {
+  assert.equal(patternAdmitsSlash('^[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*(?:\\.[a-zA-Z0-9]+){0,1}$'), true);
+  assert.equal(patternAdmitsSlash('^projects/[^/]+$'), true);
+  assert.equal(patternAdmitsSlash('^[^/]+$'), false);
+  assert.equal(patternAdmitsSlash('^[a-z\\/]+$'), false, 'an escaped slash inside a class is still in the class');
+  assert.equal(patternAdmitsSlash('^a\\/b$'), true);
+  assert.equal(patternAdmitsSlash('^[0-9]+$'), false);
+});
+
+test("a final $ref path parameter whose pattern admits '/' spans slashes (Azure's {blob})", () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    components: {
+      parameters: {
+        Blob: { name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z0-9]+(?:/[a-z0-9]+)*(?:\\.[a-z0-9]+)?$' } },
+        Container: { name: 'container', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z0-9-]+$' } },
+      },
+    },
+    paths: {
+      '/{container}/{blob}': {
+        put: {
+          operationId: 'PutBlob',
+          parameters: [{ $ref: '#/components/parameters/Container' }, { $ref: '#/components/parameters/Blob' }],
+          responses: { '201': { description: 'ok' } },
+        },
+      },
+      '/{container}/{item}/meta': {
+        get: {
+          operationId: 'Meta',
+          parameters: [{ name: 'item', in: 'path', required: true, schema: { type: 'string', pattern: '^a/b$' } }],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('PUT', '/c/exports/2026/q1.csv')?.operationId, 'PutBlob');
+  assert.equal(c.match('PUT', '/c/q1.csv')?.operationId, 'PutBlob');
+  assert.equal(c.match('GET', '/c/x/y/meta'), undefined, 'only the final parameter is widened');
+});
+
+test('a non-JSON request body (requestContentType) is not checked against the JSON request schema', () => {
+  const spec = {
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/upload/files': {
+        post: {
+          operationId: 'upload',
+          requestBody: {
+            content: {
+              'application/json': { schema: { type: 'object', required: ['name'] } },
+              'multipart/related': { schema: {} },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  };
+  const c = createConformer(spec);
+  const multipart = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: '--b\r\n...', requestContentType: 'multipart/related; boundary=b' });
+  assert.deepEqual(multipart.filter((v) => v.kind === 'request-schema'), []);
+  const json = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: {}, requestContentType: 'application/json' });
+  assert.equal(json.filter((v) => v.kind === 'request-schema').length, 1, 'a JSON body is still checked');
+  const unknown = c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: {} });
+  assert.equal(unknown.filter((v) => v.kind === 'request-schema').length, 1, 'no content type: checked as before');
+});
+
+
+test('among satisfied discriminators the one matching more of the query wins, flag-only extras optional', () => {
+  const spec = {
+    openapi: '3.0.3',
+    paths: {
+      '/{c}#restype=container': { get: { operationId: 'GetProperties', responses: { '200': { description: 'ok' } } } },
+      '/{c}#restype=container&comp=list&flat': { get: { operationId: 'ListBlobsFlat', responses: { '200': { description: 'ok' } } } },
+      '/{c}#restype=container&comp=acl': { get: { operationId: 'GetAcl', responses: { '200': { description: 'ok' } } } },
+    },
+  };
+  const c = createConformer(spec);
+  assert.equal(c.match('GET', '/c?restype=container')?.operationId, 'GetProperties');
+  assert.equal(c.match('GET', '/c?restype=container&comp=list')?.operationId, 'ListBlobsFlat');
+  assert.equal(c.match('GET', '/c?comp=acl&restype=container')?.operationId, 'GetAcl');
+});
+
+test('a {x:.+} router-regex path variable spans segments; a plain one does not', () => {
   const c = createConformer({
     openapi: '3.0.3',
     info: { title: 't', version: '1' },
     paths: {
-      '/{container}/{blob}': {
-        put: { operationId: 'putBlob', parameters: [{ name: 'blob', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-z]+(?:/[a-z]+)*$' } }], responses: ok },
-      },
-      '/plain/{id}': { delete: { operationId: 'deletePlain', responses: ok } },
+      '/files/{id:.+}': { get: { responses: { '200': { description: 'ok' } } } },
+      '/items/{id}': { get: { responses: { '200': { description: 'ok' } } } },
     },
   });
-  assert.equal(c.match('PUT', '/c/exports/latest')?.operationId, 'putBlob');
-  assert.equal(c.match('DELETE', '/plain/a/b'), undefined);
+  assert.equal(c.match('GET', '/files/a/b/c')?.path, '/files/{id:.+}');
+  assert.equal(c.match('GET', '/items/a/b'), undefined);
+});
+
+test('a non-JSON request body (multipart upload) is not checked against the JSON request schema', () => {
+  const c = createConformer({
+    openapi: '3.0.3',
+    info: { title: 't', version: '1' },
+    paths: {
+      '/upload/files': {
+        post: {
+          requestBody: {
+            content: {
+              'application/json': { schema: { type: 'object' } },
+              'multipart/related': { schema: { type: 'object' } },
+              '*/*': { schema: { type: 'string', format: 'binary' } },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+  });
+  const multipart = '--b\r\nContent-Type: application/json\r\n\r\n{}\r\n--b--\r\n';
+  assert.deepEqual(c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: multipart }), []);
+  assert.deepEqual(
+    c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: [1], requestContentType: 'multipart/related; boundary=b' }),
+    []
+  );
+  assert.equal(
+    c.check({ method: 'POST', path: '/upload/files', status: 200, requestBody: [1], requestContentType: 'application/json' })[0]?.kind,
+    'request-schema'
+  );
 });

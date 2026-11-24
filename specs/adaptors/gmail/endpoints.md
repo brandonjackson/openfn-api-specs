@@ -12,18 +12,18 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /gmail/v1/users/{userId}/watch — gmail.users.watch: Set up or update a push notification watch on the given user mailbox.
 
 ## users.drafts
-- POST /gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.
-- POST /upload/gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send.simpleUpload: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.
-- POST /resumable/upload/gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send.resumableUpload: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.
 - GET /gmail/v1/users/{userId}/drafts — gmail.users.drafts.list: Lists the drafts in the user's mailbox.
 - POST /gmail/v1/users/{userId}/drafts — gmail.users.drafts.create: Creates a draft with the `DRAFT` label.
-- POST /resumable/upload/gmail/v1/users/{userId}/drafts — gmail.users.drafts.create.resumableUpload: Creates a draft with the `DRAFT` label.
-- POST /upload/gmail/v1/users/{userId}/drafts — gmail.users.drafts.create.simpleUpload: Creates a draft with the `DRAFT` label.
+- POST /resumable/upload/gmail/v1/users/{userId}/drafts — gmail.users.drafts.create.resumableUpload: Creates a draft with the `DRAFT` label (resumable upload session)
+- POST /upload/gmail/v1/users/{userId}/drafts — gmail.users.drafts.create.upload: Creates a draft with the `DRAFT` label (media upload)
 - GET /gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.get: Gets the specified draft.
 - PUT /gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update: Replaces a draft's content.
 - DELETE /gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.delete: Immediately and permanently deletes the specified draft.
-- PUT /upload/gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update.simpleUpload: Replaces a draft's content.
-- PUT /resumable/upload/gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update.resumableUpload: Replaces a draft's content.
+- PUT /upload/gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update.upload: Replaces a draft's content (media upload)
+- PUT /resumable/upload/gmail/v1/users/{userId}/drafts/{id} — gmail.users.drafts.update.resumableUpload: Replaces a draft's content (resumable upload session)
+- POST /gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.
+- POST /upload/gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send.upload: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers (media upload)
+- POST /resumable/upload/gmail/v1/users/{userId}/drafts/send — gmail.users.drafts.send.resumableUpload: Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers (resumable upload session)
 
 ## users.history
 - GET /gmail/v1/users/{userId}/history — gmail.users.history.list: Lists the history of all changes to the given mailbox.
@@ -37,53 +37,53 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /gmail/v1/users/{userId}/labels — gmail.users.labels.create: Creates a label.
 
 ## users.messages
-- POST /gmail/v1/users/{userId}/messages/{id}/trash — gmail.users.messages.trash: Moves the specified message to the trash.
 - GET /gmail/v1/users/{userId}/messages/{id} — gmail.users.messages.get: Gets the specified message.
 - DELETE /gmail/v1/users/{userId}/messages/{id} — gmail.users.messages.delete: Immediately and permanently deletes the specified message.
-- POST /gmail/v1/users/{userId}/messages/send — gmail.users.messages.send: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers.
-- POST /resumable/upload/gmail/v1/users/{userId}/messages/send — gmail.users.messages.send.resumableUpload: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers.
-- POST /upload/gmail/v1/users/{userId}/messages/send — gmail.users.messages.send.simpleUpload: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers.
 - GET /gmail/v1/users/{userId}/messages — gmail.users.messages.list: Lists the messages in the user's mailbox.
 - POST /gmail/v1/users/{userId}/messages — gmail.users.messages.insert: Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification.
+- POST /resumable/upload/gmail/v1/users/{userId}/messages — gmail.users.messages.insert.resumableUpload: Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification (resumable upload session)
+- POST /upload/gmail/v1/users/{userId}/messages — gmail.users.messages.insert.upload: Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification (media upload)
+- POST /gmail/v1/users/{userId}/messages/{id}/untrash — gmail.users.messages.untrash: Removes the specified message from the trash.
+- POST /gmail/v1/users/{userId}/messages/{id}/trash — gmail.users.messages.trash: Moves the specified message to the trash.
+- POST /gmail/v1/users/{userId}/messages/import — gmail.users.messages.import: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP.
+- POST /upload/gmail/v1/users/{userId}/messages/import — gmail.users.messages.import.upload: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP (media upload)
+- POST /resumable/upload/gmail/v1/users/{userId}/messages/import — gmail.users.messages.import.resumableUpload: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP (resumable upload session)
+- POST /gmail/v1/users/{userId}/messages/{id}/modify — gmail.users.messages.modify: Modifies the labels and the Classification Label values on the specified message.
+- POST /gmail/v1/users/{userId}/messages/send — gmail.users.messages.send: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers.
+- POST /resumable/upload/gmail/v1/users/{userId}/messages/send — gmail.users.messages.send.resumableUpload: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers (resumable upload session)
+- POST /upload/gmail/v1/users/{userId}/messages/send — gmail.users.messages.send.upload: Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers (media upload)
 - POST /gmail/v1/users/{userId}/messages/batchDelete — gmail.users.messages.batchDelete: Deletes many messages by message ID.
 - POST /gmail/v1/users/{userId}/messages/batchModify — gmail.users.messages.batchModify: Modifies the labels and the Classification Label values on the specified messages.
-- POST /gmail/v1/users/{userId}/messages/import — gmail.users.messages.import: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP.
-- POST /upload/gmail/v1/users/{userId}/messages/import — gmail.users.messages.import.simpleUpload: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP.
-- POST /resumable/upload/gmail/v1/users/{userId}/messages/import — gmail.users.messages.import.resumableUpload: Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP.
-- POST /resumable/upload/gmail/v1/users/{userId}/messages — gmail.users.messages.insert.resumableUpload: Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification.
-- POST /upload/gmail/v1/users/{userId}/messages — gmail.users.messages.insert.simpleUpload: Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification.
-- POST /gmail/v1/users/{userId}/messages/{id}/modify — gmail.users.messages.modify: Modifies the labels and the Classification Label values on the specified message.
-- POST /gmail/v1/users/{userId}/messages/{id}/untrash — gmail.users.messages.untrash: Removes the specified message from the trash.
 
 ## users.messages.attachments
 - GET /gmail/v1/users/{userId}/messages/{messageId}/attachments/{id} — gmail.users.messages.attachments.get: Gets the specified message attachment.
 
 ## users.settings
-- GET /gmail/v1/users/{userId}/settings/imap — gmail.users.settings.getImap: Gets IMAP settings.
-- PUT /gmail/v1/users/{userId}/settings/imap — gmail.users.settings.updateImap: Updates IMAP settings.
-- GET /gmail/v1/users/{userId}/settings/vacation — gmail.users.settings.getVacation: Gets vacation responder settings.
-- PUT /gmail/v1/users/{userId}/settings/vacation — gmail.users.settings.updateVacation: Updates vacation responder settings.
-- GET /gmail/v1/users/{userId}/settings/language — gmail.users.settings.getLanguage: Gets language settings.
-- PUT /gmail/v1/users/{userId}/settings/language — gmail.users.settings.updateLanguage: Updates language settings.
 - GET /gmail/v1/users/{userId}/settings/pop — gmail.users.settings.getPop: Gets POP settings.
 - PUT /gmail/v1/users/{userId}/settings/pop — gmail.users.settings.updatePop: Updates POP settings.
 - GET /gmail/v1/users/{userId}/settings/autoForwarding — gmail.users.settings.getAutoForwarding: Gets the auto-forwarding setting for the specified account.
 - PUT /gmail/v1/users/{userId}/settings/autoForwarding — gmail.users.settings.updateAutoForwarding: Updates the auto-forwarding setting for the specified account.
+- GET /gmail/v1/users/{userId}/settings/language — gmail.users.settings.getLanguage: Gets language settings.
+- PUT /gmail/v1/users/{userId}/settings/language — gmail.users.settings.updateLanguage: Updates language settings.
+- GET /gmail/v1/users/{userId}/settings/imap — gmail.users.settings.getImap: Gets IMAP settings.
+- PUT /gmail/v1/users/{userId}/settings/imap — gmail.users.settings.updateImap: Updates IMAP settings.
+- GET /gmail/v1/users/{userId}/settings/vacation — gmail.users.settings.getVacation: Gets vacation responder settings.
+- PUT /gmail/v1/users/{userId}/settings/vacation — gmail.users.settings.updateVacation: Updates vacation responder settings.
 
 ## users.settings.cse.identities
 - GET /gmail/v1/users/{userId}/settings/cse/identities — gmail.users.settings.cse.identities.list: Lists the client-side encrypted identities for an authenticated user.
 - POST /gmail/v1/users/{userId}/settings/cse/identities — gmail.users.settings.cse.identities.create: Creates and configures a client-side encryption identity that's authorized to send mail from the user account.
-- PATCH /gmail/v1/users/{userId}/settings/cse/identities/{emailAddress} — gmail.users.settings.cse.identities.patch: Associates a different key pair with an existing client-side encryption identity.
 - GET /gmail/v1/users/{userId}/settings/cse/identities/{cseEmailAddress} — gmail.users.settings.cse.identities.get: Retrieves a client-side encryption identity configuration.
 - DELETE /gmail/v1/users/{userId}/settings/cse/identities/{cseEmailAddress} — gmail.users.settings.cse.identities.delete: Deletes a client-side encryption identity.
+- PATCH /gmail/v1/users/{userId}/settings/cse/identities/{emailAddress} — gmail.users.settings.cse.identities.patch: Associates a different key pair with an existing client-side encryption identity.
 
 ## users.settings.cse.keypairs
-- POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:disable — gmail.users.settings.cse.keypairs.disable: Turns off a client-side encryption key pair.
-- POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:obliterate — gmail.users.settings.cse.keypairs.obliterate: Deletes a client-side encryption key pair permanently and immediately.
-- POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:enable — gmail.users.settings.cse.keypairs.enable: Turns on a client-side encryption key pair that was turned off.
 - GET /gmail/v1/users/{userId}/settings/cse/keypairs — gmail.users.settings.cse.keypairs.list: Lists client-side encryption key pairs for an authenticated user.
 - POST /gmail/v1/users/{userId}/settings/cse/keypairs — gmail.users.settings.cse.keypairs.create: Creates and uploads a client-side encryption S/MIME public key certificate chain and private key metadata for the authenticated user.
+- POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:disable — gmail.users.settings.cse.keypairs.disable: Turns off a client-side encryption key pair.
+- POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:obliterate — gmail.users.settings.cse.keypairs.obliterate: Deletes a client-side encryption key pair permanently and immediately.
 - GET /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId} — gmail.users.settings.cse.keypairs.get: Retrieves an existing client-side encryption key pair.
+- POST /gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:enable — gmail.users.settings.cse.keypairs.enable: Turns on a client-side encryption key pair that was turned off.
 
 ## users.settings.delegates
 - GET /gmail/v1/users/{userId}/settings/delegates/{delegateEmail} — gmail.users.settings.delegates.get: Gets the specified delegate.
@@ -98,10 +98,10 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /gmail/v1/users/{userId}/settings/filters — gmail.users.settings.filters.create: Creates a filter.
 
 ## users.settings.forwardingAddresses
-- GET /gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail} — gmail.users.settings.forwardingAddresses.get: Gets the specified forwarding address.
-- DELETE /gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail} — gmail.users.settings.forwardingAddresses.delete: Deletes the specified forwarding address and revokes any verification that may have been required.
 - GET /gmail/v1/users/{userId}/settings/forwardingAddresses — gmail.users.settings.forwardingAddresses.list: Lists the forwarding addresses for the specified account.
 - POST /gmail/v1/users/{userId}/settings/forwardingAddresses — gmail.users.settings.forwardingAddresses.create: Creates a forwarding address.
+- GET /gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail} — gmail.users.settings.forwardingAddresses.get: Gets the specified forwarding address.
+- DELETE /gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail} — gmail.users.settings.forwardingAddresses.delete: Deletes the specified forwarding address and revokes any verification that may have been required.
 
 ## users.settings.sendAs
 - GET /gmail/v1/users/{userId}/settings/sendAs — gmail.users.settings.sendAs.list: Lists the send-as aliases for the specified account.
@@ -113,16 +113,16 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail} — gmail.users.settings.sendAs.delete: Deletes the specified send-as alias.
 
 ## users.settings.sendAs.smimeInfo
+- POST /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}/setDefault — gmail.users.settings.sendAs.smimeInfo.setDefault: Sets the default S/MIME config for the specified send-as alias.
 - GET /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id} — gmail.users.settings.sendAs.smimeInfo.get: Gets the specified S/MIME config for the specified send-as alias.
 - DELETE /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id} — gmail.users.settings.sendAs.smimeInfo.delete: Deletes the specified S/MIME config for the specified send-as alias.
 - GET /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo — gmail.users.settings.sendAs.smimeInfo.list: Lists S/MIME configs for the specified send-as alias.
 - POST /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo — gmail.users.settings.sendAs.smimeInfo.insert: Insert (upload) the given S/MIME config for the specified send-as alias.
-- POST /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}/setDefault — gmail.users.settings.sendAs.smimeInfo.setDefault: Sets the default S/MIME config for the specified send-as alias.
 
 ## users.threads
 - GET /gmail/v1/users/{userId}/threads/{id} — gmail.users.threads.get: Gets the specified thread.
 - DELETE /gmail/v1/users/{userId}/threads/{id} — gmail.users.threads.delete: Immediately and permanently deletes the specified thread.
 - POST /gmail/v1/users/{userId}/threads/{id}/modify — gmail.users.threads.modify: Modifies the labels applied to the thread.
-- POST /gmail/v1/users/{userId}/threads/{id}/untrash — gmail.users.threads.untrash: Removes the specified thread from the trash.
 - POST /gmail/v1/users/{userId}/threads/{id}/trash — gmail.users.threads.trash: Moves the specified thread to the trash.
 - GET /gmail/v1/users/{userId}/threads — gmail.users.threads.list: Lists the threads in the user's mailbox.
+- POST /gmail/v1/users/{userId}/threads/{id}/untrash — gmail.users.threads.untrash: Removes the specified thread from the trash.

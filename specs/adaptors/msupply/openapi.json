@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Open mSupply GraphQL API",
-    "version": "3.4.0",
+    "version": "3.1.0",
     "description": "Open mSupply is the mSupply Foundation's open-source Logistics Management Information System (LMIS) for public health supply chains. Its server exposes a single GraphQL endpoint at POST {baseUrl}/graphql taking a JSON body of the form `{query, variables}` and returning `{data, errors}`. This document is a mechanical conversion of the server's GraphQL schema (introspection): every root field of `Queries` and `Mutations` is one operation and every named GraphQL type is one component schema. Because OpenAPI 3.0 permits only one operation per method per path, each root field is modelled as a distinct `/graphql#<field>` path variant; at runtime all of them are the same POST to /graphql. The OpenFn msupply adaptor (@openfn/language-msupply) authenticates with the `authToken` query and then issues `items`, `insertOutboundShipment` and `batchOutboundShipment`, plus a generic `query()` operation that can send any document.",
     "x-openfn-adaptor": "msupply"
   },
@@ -947,38 +947,6 @@
         }
       }
     },
-    "/graphql#isMaintenanceMode": {
-      "post": {
-        "operationId": "isMaintenanceMode",
-        "tags": [
-          "server"
-        ],
-        "summary": "Whether central is in maintenance mode, when only server admins can log in",
-        "description": "GraphQL query `isMaintenanceMode`. Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Whether central is in maintenance mode, when only server admins can log in. Available without authentication so the login screen can say so before anyone tries.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`isMaintenanceMode` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IsMaintenanceModeEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#isCentralStandalone": {
       "post": {
         "operationId": "isCentralStandalone",
@@ -1196,38 +1164,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MasterListLinesEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#periodSchedules": {
-      "post": {
-        "operationId": "periodSchedules",
-        "tags": [
-          "periods"
-        ],
-        "summary": "GraphQL query `periodSchedules`",
-        "description": "GraphQL query `periodSchedules`(storeId, filter). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`periodSchedules` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PeriodSchedulesEnvelope"
                 }
               }
             }
@@ -1524,38 +1460,6 @@
         }
       }
     },
-    "/graphql#requisitionLineForecastPreview": {
-      "post": {
-        "operationId": "requisitionLineForecastPreview",
-        "tags": [
-          "requisitions"
-        ],
-        "summary": "An item's request line as the line editor's draft would save it, under a chosen forecast method, without saving anything",
-        "description": "GraphQL query `requisitionLineForecastPreview`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. An item's request line as the line editor's draft would save it, under a chosen forecast method, without saving anything: the line already on the order, or the one adding the item would create",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`requisitionLineForecastPreview` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RequisitionLineForecastPreviewEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#activityLogs": {
       "post": {
         "operationId": "activityLogs",
@@ -1716,38 +1620,6 @@
         }
       }
     },
-    "/graphql#isSyncPaused": {
-      "post": {
-        "operationId": "isSyncPaused",
-        "tags": [
-          "sync"
-        ],
-        "summary": "Admin pause flag (Admin > Sync settings); any signed-in user may read it.",
-        "description": "GraphQL query `isSyncPaused`. Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Admin pause flag (Admin > Sync settings); any signed-in user may read it.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`isSyncPaused` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IsSyncPausedEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#syncSettings": {
       "post": {
         "operationId": "syncSettings",
@@ -1773,102 +1645,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SyncSettingsEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#isSyncApiPaused": {
-      "post": {
-        "operationId": "isSyncApiPaused",
-        "tags": [
-          "sync"
-        ],
-        "summary": "Central only: whether the sync API is paused, refusing sync from remote sites (always false on a remote)",
-        "description": "GraphQL query `isSyncApiPaused`. Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Central only: whether the sync API is paused, refusing sync from remote sites (always false on a remote)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`isSyncApiPaused` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IsSyncApiPausedEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#areProcessorsPaused": {
-      "post": {
-        "operationId": "areProcessorsPaused",
-        "tags": [
-          "server"
-        ],
-        "summary": "Central only: whether the transfer and general processors are paused (always false on a remote)",
-        "description": "GraphQL query `areProcessorsPaused`. Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Central only: whether the transfer and general processors are paused (always false on a remote)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`areProcessorsPaused` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AreProcessorsPausedEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#maintenanceMode": {
-      "post": {
-        "operationId": "maintenanceMode",
-        "tags": [
-          "server"
-        ],
-        "summary": "Central only: maintenance mode, and how much of OMS central's own sync buffer is left to integrate before it can be turn",
-        "description": "GraphQL query `maintenanceMode`. Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Central only: maintenance mode, and how much of OMS central's own sync buffer is left to integrate before it can be turned off (server admin only)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`maintenanceMode` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MaintenanceModeEnvelope"
                 }
               }
             }
@@ -2037,46 +1813,14 @@
         }
       }
     },
-    "/graphql#barcodeMatches": {
-      "post": {
-        "operationId": "barcodeMatches",
-        "tags": [
-          "barcodes"
-        ],
-        "summary": "Everything a scan of `barcode` (as scanned or typed) matches: confirmed barcodes first, then proposals made on this site",
-        "description": "GraphQL query `barcodeMatches`(storeId, barcode). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Everything a scan of `barcode` (as scanned or typed) matches: confirmed barcodes first, then proposals made on this site, one per item and only for items visible in the store. Empty for a barcode nobody has mapped yet.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`barcodeMatches` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BarcodeMatchesEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#barcodeByGtin": {
       "post": {
         "operationId": "barcodeByGtin",
         "tags": [
           "barcodes"
         ],
-        "summary": "Deprecated: use `barcodeMatches`",
-        "description": "GraphQL query `barcodeByGtin`(storeId, gtin). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Deprecated: use `barcodeMatches`. Answers with the one item a scan of `gtin` matches; RecordNotFound when it matches none, or several items.",
+        "summary": "GraphQL query `barcodeByGtin`",
+        "description": "GraphQL query `barcodeByGtin`(storeId, gtin). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2094,71 +1838,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BarcodeByGtinEnvelope"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": true
-      }
-    },
-    "/graphql#itemBarcodes": {
-      "post": {
-        "operationId": "itemBarcodes",
-        "tags": [
-          "barcodes"
-        ],
-        "summary": "The item's confirmed barcodes",
-        "description": "GraphQL query `itemBarcodes`(storeId, itemId). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. The item's confirmed barcodes",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`itemBarcodes` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ItemBarcodesEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#itemBarcodeProposals": {
-      "post": {
-        "operationId": "itemBarcodeProposals",
-        "tags": [
-          "barcodes"
-        ],
-        "summary": "Proposals for the item central hasn't confirmed or removed: every store's on central, this site's elsewhere",
-        "description": "GraphQL query `itemBarcodeProposals`(storeId, itemId). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Proposals for the item central hasn't confirmed or removed: every store's on central, this site's elsewhere",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`itemBarcodeProposals` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ItemBarcodeProposalsEnvelope"
                 }
               }
             }
@@ -3344,70 +3023,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HistoricalStockLinesEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#prescriptionRequest": {
-      "post": {
-        "operationId": "prescriptionRequest",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL query `prescriptionRequest`",
-        "description": "GraphQL query `prescriptionRequest`(storeId, id). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`prescriptionRequest` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrescriptionRequestEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#prescriptionRequests": {
-      "post": {
-        "operationId": "prescriptionRequests",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL query `prescriptionRequests`",
-        "description": "GraphQL query `prescriptionRequests`(storeId, page, filter, sort). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`prescriptionRequests` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrescriptionRequestsEnvelope"
                 }
               }
             }
@@ -5053,8 +4668,8 @@
         "tags": [
           "items"
         ],
-        "summary": "Whether any item has variants",
-        "description": "GraphQL query `itemVariantsConfigured`(storeId). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Whether any item has variants. Auto-created variants, which only hold a barcode, don't count.",
+        "summary": "GraphQL query `itemVariantsConfigured`",
+        "description": "GraphQL query `itemVariantsConfigured`(storeId). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
         "requestBody": {
           "required": true,
           "content": {
@@ -8439,198 +8054,6 @@
         }
       }
     },
-    "/graphql#insertPrescriptionRequest": {
-      "post": {
-        "operationId": "insertPrescriptionRequest",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL mutation `insertPrescriptionRequest`",
-        "description": "GraphQL mutation `insertPrescriptionRequest`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`insertPrescriptionRequest` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsertPrescriptionRequestEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#updatePrescriptionRequest": {
-      "post": {
-        "operationId": "updatePrescriptionRequest",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL mutation `updatePrescriptionRequest`",
-        "description": "GraphQL mutation `updatePrescriptionRequest`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`updatePrescriptionRequest` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdatePrescriptionRequestEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#deletePrescriptionRequest": {
-      "post": {
-        "operationId": "deletePrescriptionRequest",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL mutation `deletePrescriptionRequest`",
-        "description": "GraphQL mutation `deletePrescriptionRequest`(storeId, id). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`deletePrescriptionRequest` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeletePrescriptionRequestEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#upsertPrescriptionRequestLine": {
-      "post": {
-        "operationId": "upsertPrescriptionRequestLine",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL mutation `upsertPrescriptionRequestLine`",
-        "description": "GraphQL mutation `upsertPrescriptionRequestLine`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`upsertPrescriptionRequestLine` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpsertPrescriptionRequestLineEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#deletePrescriptionRequestLine": {
-      "post": {
-        "operationId": "deletePrescriptionRequestLine",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "GraphQL mutation `deletePrescriptionRequestLine`",
-        "description": "GraphQL mutation `deletePrescriptionRequestLine`(storeId, id). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`deletePrescriptionRequestLine` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeletePrescriptionRequestLineEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#batchPrescriptionRequest": {
-      "post": {
-        "operationId": "batchPrescriptionRequest",
-        "tags": [
-          "prescriptions"
-        ],
-        "summary": "The list's mass delete \u2014 atomic, so a selection is never partly removed.",
-        "description": "GraphQL mutation `batchPrescriptionRequest`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. The list's mass delete \u2014 atomic, so a selection is never partly removed.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`batchPrescriptionRequest` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BatchPrescriptionRequestEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#insertStockRelocation": {
       "post": {
         "operationId": "insertStockRelocation",
@@ -9015,38 +8438,6 @@
         }
       }
     },
-    "/graphql#setSyncPaused": {
-      "post": {
-        "operationId": "setSyncPaused",
-        "tags": [
-          "sync"
-        ],
-        "summary": "Pause or resume sync (server admin only)",
-        "description": "GraphQL mutation `setSyncPaused`(paused). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Pause or resume sync (server admin only). See `SyncPausedNode`.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`setSyncPaused` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SetSyncPausedEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#updateDisplaySettings": {
       "post": {
         "operationId": "updateDisplaySettings",
@@ -9079,78 +8470,14 @@
         }
       }
     },
-    "/graphql#proposeBarcode": {
-      "post": {
-        "operationId": "proposeBarcode",
-        "tags": [
-          "barcodes"
-        ],
-        "summary": "Records that a user picked an item for a barcode in this store, for central to review",
-        "description": "GraphQL mutation `proposeBarcode`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Records that a user picked an item for a barcode in this store, for central to review. Call it when the line the scan opened is saved.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`proposeBarcode` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProposeBarcodeEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#deleteBarcodeProposal": {
-      "post": {
-        "operationId": "deleteBarcodeProposal",
-        "tags": [
-          "barcodes"
-        ],
-        "summary": "Withdraws a proposal made by a store on this site",
-        "description": "GraphQL mutation `deleteBarcodeProposal`(storeId, id). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Withdraws a proposal made by a store on this site. It stops matching scans here, and central stops reviewing it.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`deleteBarcodeProposal` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteBarcodeProposalEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/graphql#insertBarcode": {
       "post": {
         "operationId": "insertBarcode",
         "tags": [
           "barcodes"
         ],
-        "summary": "Deprecated: use `proposeBarcode`, or `centralServer.barcode.insertBarcode` on central",
-        "description": "GraphQL mutation `insertBarcode`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Deprecated: use `proposeBarcode`, or `centralServer.barcode.insertBarcode` on central. Adds a confirmed barcode on central and proposes one elsewhere.",
+        "summary": "GraphQL mutation `insertBarcode`",
+        "description": "GraphQL mutation `insertBarcode`(storeId, input). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back.",
         "requestBody": {
           "required": true,
           "content": {
@@ -9172,8 +8499,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/graphql#updateLogLevel": {
@@ -9713,38 +9039,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AllocateProgramNumberEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/graphql#allocatePatientNumber": {
-      "post": {
-        "operationId": "allocatePatientNumber",
-        "tags": [
-          "patients"
-        ],
-        "summary": "Allocate the next patient code number for the store",
-        "description": "GraphQL mutation `allocatePatientNumber`(storeId). Send it as `{ query, variables }` to POST {baseUrl}/graphql; the selection set determines which fields of the payload come back. Allocate the next patient code number for the store. Requires only the patient-mutate permission \u2014 see allocate_patient_number (#268).",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GraphQLRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "`allocatePatientNumber` payload under `data`, plus any GraphQL `errors`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AllocatePatientNumberEnvelope"
                 }
               }
             }
@@ -11014,7 +10308,6 @@
           "VVM_STATUS_LOG_UPDATED",
           "VOLUME_PER_PACK_CHANGED",
           "STOCK_LINE_EDIT",
-          "STOCK_CAMPAIGN_CHANGE",
           "PURCHASE_ORDER_CREATED",
           "PURCHASE_ORDER_REQUEST_APPROVAL",
           "PURCHASE_ORDER_UNAUTHORISED",
@@ -11028,12 +10321,6 @@
           "PURCHASE_ORDER_STATUS_CHANGED_FROM_SENT_TO_CONFIRMED",
           "PURCHASE_ORDER_LINE_STATUS_CLOSED",
           "PURCHASE_ORDER_LINE_STATUS_CHANGED_FROM_SENT_TO_NEW",
-          "PURCHASE_ORDER_CANCELLED",
-          "PRESCRIPTION_REQUEST_CREATED",
-          "PRESCRIPTION_REQUEST_UPDATED",
-          "PRESCRIPTION_REQUEST_READY_TO_DISPENSE",
-          "PRESCRIPTION_REQUEST_DISPENSED",
-          "PRESCRIPTION_REQUEST_DELETED",
           "PATIENT_CREATED",
           "PATIENT_UPDATED",
           "INVOICE_DATE_BACKDATED",
@@ -11396,10 +10683,6 @@
           "skippedUnusableVvmStatusLines": {
             "$ref": "#/components/schemas/StockLineConnector"
           },
-          "skippedOtherCampaignStockLines": {
-            "$ref": "#/components/schemas/StockLineConnector",
-            "description": "Batches of a different campaign than the shipment's (or any campaign, on a shipment with none)."
-          },
           "issuedExpiringSoonStockLines": {
             "$ref": "#/components/schemas/StockLineConnector"
           }
@@ -11462,19 +10745,6 @@
           }
         }
       },
-      "AmcForecastNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "averageMonthlyConsumption": {
-            "type": "number",
-            "format": "double"
-          }
-        }
-      },
       "AncillaryCycleDetected": {
         "type": "object",
         "properties": {
@@ -11524,10 +10794,6 @@
           },
           "deleteAncillaryItem": {
             "$ref": "#/components/schemas/DeleteAncillaryItemResponse"
-          },
-          "setSupplyWastageRate": {
-            "$ref": "#/components/schemas/SetSupplyWastageRateResponse",
-            "description": "Sets an item's own wastage rate (%) as an ancillary supply"
           }
         }
       },
@@ -11550,10 +10816,6 @@
             "type": "number",
             "format": "double",
             "description": "Right-hand side of the stored `x:y` ratio (ancillary count)."
-          },
-          "excludePrincipalWastage": {
-            "type": "boolean",
-            "description": "Ordered against the principal's quantity net of its wastage rate"
           },
           "itemId": {
             "type": "string"
@@ -11590,72 +10852,6 @@
           "actual": {
             "type": "integer",
             "format": "int32"
-          }
-        }
-      },
-      "AncillaryRatioForecastNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "principals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AncillaryRatioPrincipalNode"
-            },
-            "description": "One per principal line on the order"
-          }
-        }
-      },
-      "AncillaryRatioPrincipalNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "item": {
-            "$ref": "#/components/schemas/ItemNode",
-            "nullable": true
-          },
-          "principalMonthlyConsumption": {
-            "type": "number",
-            "format": "double",
-            "description": "The principal line's monthly demand"
-          },
-          "itemQuantity": {
-            "type": "number",
-            "format": "double",
-            "description": "The configured ratio: `itemQuantity` principal units to `ancillaryQuantity` ancillary units, as on `AncillaryItemNode`"
-          },
-          "ancillaryQuantity": {
-            "type": "number",
-            "format": "double"
-          },
-          "wastageRate": {
-            "type": "number",
-            "format": "double",
-            "description": "The principal's wastage rate (%) deducted before the ratio applies; 0 when none"
-          },
-          "ownWastageRate": {
-            "type": "number",
-            "format": "double",
-            "description": "The ancillary's own wastage rate (%) as a supply, added on top of the ratio; 0 when none"
-          },
-          "principalUsableConsumption": {
-            "type": "number",
-            "format": "double",
-            "description": "The principal's monthly demand net of the deducted wastage"
-          },
-          "monthlyConsumption": {
-            "type": "number",
-            "format": "double",
-            "description": "This principal's share of the line's monthly demand"
           }
         }
       },
@@ -12380,8 +11576,7 @@
           "FUNCTIONING_BUT_NEEDS_ATTENTION",
           "NOT_FUNCTIONING",
           "DECOMMISSIONED",
-          "UNSERVICEABLE",
-          "NOT_INSTALLED"
+          "UNSERVICEABLE"
         ]
       },
       "AssetLogTypeNodeType": {
@@ -12911,73 +12106,6 @@
           }
         }
       },
-      "BarcodeMatchNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string",
-            "description": "The packaging variant's id, or the proposal's"
-          },
-          "status": {
-            "$ref": "#/components/schemas/BarcodeStatusNode"
-          },
-          "value": {
-            "type": "string",
-            "description": "The barcode in its standard form with its scheme"
-          },
-          "barcode": {
-            "type": "string",
-            "description": "The barcode as people read it"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "itemVariantId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The item variant to put on the line, for a confirmed barcode. It may be auto-created, so not in the item's variant list."
-          },
-          "packagingVariantId": {
-            "type": "string",
-            "nullable": true,
-            "description": "For a confirmed barcode"
-          },
-          "packSize": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "manufacturerId": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "BarcodeMutations": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "insertBarcode": {
-            "$ref": "#/components/schemas/BarcodeNode",
-            "description": "Confirms a barcode for an item without a proposal. Confirming one the item already has returns it."
-          },
-          "confirmBarcodeProposal": {
-            "$ref": "#/components/schemas/BarcodeNode",
-            "description": "Confirms a store's proposal, so the barcode reaches every site. With no packaging variant or item variant given, it goes on the item's auto-created variant for the proposal's manufacturer."
-          },
-          "deleteBarcode": {
-            "$ref": "#/components/schemas/DeleteResponse",
-            "description": "Removes the barcode from a packaging variant, everywhere. `id` is the packaging variant's. The removal is remembered, so the barcode isn't auto-confirmed for the item again. An auto-created variant left with no barcode is deleted; confirming the barcode again brings it back."
-          }
-        }
-      },
       "BarcodeNode": {
         "type": "object",
         "properties": {
@@ -12986,102 +12114,26 @@
             "description": "GraphQL type name of this object."
           },
           "id": {
-            "type": "string",
-            "description": "The packaging variant's id"
-          },
-          "value": {
-            "type": "string",
-            "description": "The barcode in its standard form with its scheme, e.g. `gtin:09506682101352`. Matches the `barcode` of lines and stock lines."
-          },
-          "barcode": {
-            "type": "string",
-            "description": "The barcode as people read it, e.g. `9506682101352`"
+            "type": "string"
           },
           "gtin": {
-            "type": "string",
-            "description": "The barcode as people read it. Use `barcode`.",
-            "deprecated": true
+            "type": "string"
           },
           "itemId": {
             "type": "string"
           },
-          "itemVariantId": {
+          "manufacturerId": {
             "type": "string",
             "nullable": true
-          },
-          "packagingVariantId": {
-            "type": "string",
-            "nullable": true
-          },
-          "isAutoCreated": {
-            "type": "boolean",
-            "description": "The barcode is on a variant central created only to hold barcodes"
           },
           "packSize": {
             "type": "number",
             "format": "double",
-            "nullable": true
-          },
-          "manufacturerId": {
-            "type": "string",
             "nullable": true
           },
           "parentId": {
             "type": "string",
-            "nullable": true,
-            "description": "Barcodes no longer have a parent; always null. Kept so older clients that still ask for it keep working.",
-            "deprecated": true
-          }
-        }
-      },
-      "BarcodeProposalNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string",
-            "description": "The barcode in its standard form with its scheme"
-          },
-          "barcode": {
-            "type": "string",
-            "description": "The barcode as people read it"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "packSize": {
-            "type": "number",
-            "format": "double",
             "nullable": true
-          },
-          "manufacturerId": {
-            "type": "string",
-            "nullable": true
-          },
-          "storeId": {
-            "type": "string",
-            "description": "The store that proposed it"
-          },
-          "store": {
-            "$ref": "#/components/schemas/StoreNode",
-            "nullable": true
-          },
-          "userId": {
-            "type": "string"
-          },
-          "createdDatetime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedDatetime": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },
@@ -13095,13 +12147,6 @@
           }
         ],
         "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "BarcodeStatusNode": {
-        "type": "string",
-        "enum": [
-          "CONFIRMED",
-          "PROPOSED"
-        ]
       },
       "BatchInboundShipmentInput": {
         "type": "object",
@@ -13531,52 +12576,6 @@
           }
         }
       },
-      "BatchPrescriptionRequestInput": {
-        "type": "object",
-        "properties": {
-          "deletePrescriptionRequests": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "deletePrescriptionRequestLines": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "continueOnError": {
-            "type": "boolean",
-            "nullable": true
-          }
-        }
-      },
-      "BatchPrescriptionRequestResponse": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "deletePrescriptionRequests": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DeletePrescriptionRequestResponseWithId"
-            },
-            "nullable": true
-          },
-          "deletePrescriptionRequestLines": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DeletePrescriptionRequestLineResponseWithId"
-            },
-            "nullable": true
-          }
-        }
-      },
       "BatchPrescriptionResponse": {
         "type": "object",
         "properties": {
@@ -13931,22 +12930,6 @@
           }
         }
       },
-      "BoolStoreOverrideInput": {
-        "type": "object",
-        "properties": {
-          "storeId": {
-            "type": "string"
-          },
-          "value": {
-            "type": "boolean",
-            "nullable": true
-          }
-        },
-        "required": [
-          "storeId"
-        ],
-        "description": "One store's edit of a global preference it may override. A null `value` CLEARS the store's override, returning the store to the global value \u2014 the only way back once a store has pinned its own."
-      },
       "BoolStorePrefInput": {
         "type": "object",
         "properties": {
@@ -14036,19 +13019,8 @@
           "name": {
             "$ref": "#/components/schemas/StringFilterInput",
             "nullable": true
-          },
-          "code": {
-            "$ref": "#/components/schemas/StringFilterInput",
-            "nullable": true
           }
         }
-      },
-      "CampaignKindNode": {
-        "type": "string",
-        "enum": [
-          "CAMPAIGN",
-          "ROUTINE"
-        ]
       },
       "CampaignMutations": {
         "type": "object",
@@ -14062,9 +13034,6 @@
           },
           "deleteCampaign": {
             "$ref": "#/components/schemas/DeleteCampaignResponse"
-          },
-          "deleteCampaigns": {
-            "$ref": "#/components/schemas/DeleteCampaignsResponse"
           }
         }
       },
@@ -14081,11 +13050,15 @@
           "name": {
             "type": "string"
           },
-          "code": {
-            "type": "string"
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
           },
-          "kind": {
-            "$ref": "#/components/schemas/CampaignKindNode"
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
           }
         }
       },
@@ -14174,31 +13147,7 @@
           }
         }
       },
-      "CannotChangeTargetMonthsOfStock": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
       "CannotDeleteCentralSite": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "CannotDeleteGeneratedDispensation": {
         "type": "object",
         "properties": {
           "__typename": {
@@ -14261,6 +13210,18 @@
           }
         }
       },
+      "CannotEditAdjustedQuantity": {
+        "type": "object",
+        "properties": {
+          "__typename": {
+            "type": "string",
+            "description": "GraphQL type name of this object."
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
       "CannotEditInvoice": {
         "type": "object",
         "properties": {
@@ -14274,6 +13235,18 @@
         }
       },
       "CannotEditPurchaseOrder": {
+        "type": "object",
+        "properties": {
+          "__typename": {
+            "type": "string",
+            "description": "GraphQL type name of this object."
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "CannotEditQuantityBelowReceived": {
         "type": "object",
         "properties": {
           "__typename": {
@@ -14390,18 +13363,6 @@
           },
           "configureNameProperties": {
             "$ref": "#/components/schemas/ConfigureNamePropertiesResponse"
-          },
-          "setSyncApiPaused": {
-            "$ref": "#/components/schemas/SyncApiPausedNode",
-            "description": "Pause or resume the v6/v7 sync API remote sites sync through, e.g. during central maintenance. Returns the new state."
-          },
-          "setProcessorsPaused": {
-            "$ref": "#/components/schemas/ProcessorsPausedNode",
-            "description": "Pause or resume the transfer and general processors. Resuming triggers each one so the backlog is picked up. Returns the new state."
-          },
-          "setMaintenanceMode": {
-            "$ref": "#/components/schemas/SetMaintenanceModeResponse",
-            "description": "Turn maintenance mode on or off. On pauses sync, the sync API and processors and signs out every user who is not a server admin. Off is refused while OMS central's own sync buffer has records left to integrate."
           }
         }
       },
@@ -14527,8 +13488,7 @@
             "description": "GraphQL type name of this object."
           },
           "installUploadedPlugin": {
-            "$ref": "#/components/schemas/PluginInfoNode",
-            "description": "`programs` chooses the program for each of a form plugin's program keys (a key left out keeps the program it is already bound to); `takeOver` names document types whose existing entry, installed by no plugin, the plugin may take over; `blankOldUi` names taken-over types whose form on sites still running the old client may go blank, because the type carries no legacy UI schema (refused otherwise)."
+            "$ref": "#/components/schemas/PluginInfoNode"
           },
           "uninstallPlugin": {
             "$ref": "#/components/schemas/UninstallPluginNode"
@@ -14598,9 +13558,6 @@
           },
           "general": {
             "$ref": "#/components/schemas/CentralGeneralMutations"
-          },
-          "barcode": {
-            "$ref": "#/components/schemas/BarcodeMutations"
           },
           "plugins": {
             "$ref": "#/components/schemas/CentralPluginMutations"
@@ -15579,7 +14536,7 @@
             "items": {
               "$ref": "#/components/schemas/CustomFieldOptionNode"
             },
-            "description": "Options for OPTION- and MULTI_OPTION-type custom_fields. Empty list for any other value type. Resolved via dataloader so a list of N custom_fields triggers a single batched lookup."
+            "description": "Options for OPTION-type custom_fields. Empty list for any other value type. Resolved via dataloader so a list of N custom_fields triggers a single batched lookup."
           }
         }
       },
@@ -15596,8 +14553,7 @@
         "type": "string",
         "enum": [
           "STANDARD",
-          "LEGACY",
-          "BUILTIN"
+          "LEGACY"
         ]
       },
       "CustomFieldNodeValueType": {
@@ -15608,7 +14564,6 @@
           "DATE",
           "REAL",
           "OPTION",
-          "MULTI_OPTION",
           "BOOLEAN"
         ]
       },
@@ -15634,12 +14589,6 @@
           "parentOptionId": {
             "type": "string",
             "nullable": true
-          },
-          "deletedDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Set when the option has been deleted. A deleted option is still returned so a record that already holds it renders its **name** rather than a raw id \u2014 clients resolve values against the whole list and must filter on this field when building a picker, so a deleted option can be read but not newly selected."
           }
         }
       },
@@ -16138,29 +15087,6 @@
             "type": "string"
           }
         }
-      },
-      "DeleteCampaignsNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "DeleteCampaignsResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/DeleteCampaignsNode"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
       "DeleteCustomerReturnError": {
         "type": "object",
@@ -16814,52 +15740,6 @@
           },
           "response": {
             "$ref": "#/components/schemas/DeletePrescriptionLineResponse"
-          }
-        }
-      },
-      "DeletePrescriptionRequestLineResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/DeleteResponse"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "DeletePrescriptionRequestLineResponseWithId": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string"
-          },
-          "response": {
-            "$ref": "#/components/schemas/DeletePrescriptionRequestLineResponse"
-          }
-        }
-      },
-      "DeletePrescriptionRequestResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/DeleteResponse"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "DeletePrescriptionRequestResponseWithId": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string"
-          },
-          "response": {
-            "$ref": "#/components/schemas/DeletePrescriptionRequestResponse"
           }
         }
       },
@@ -18337,16 +17217,6 @@
             "format": "double",
             "nullable": true
           },
-          "transferComment": {
-            "type": "string",
-            "nullable": true,
-            "description": "The item's supplier comment, repeated on every draft row of that item so the editor can show one field and echo it back on save. Null on a batch with no invoice line yet."
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The batch's stock line barcode, as people read it"
-          },
           "reasonOption": {
             "$ref": "#/components/schemas/ReasonOptionNode",
             "nullable": true
@@ -18772,11 +17642,6 @@
           "document": {
             "$ref": "#/components/schemas/DocumentNode",
             "description": "The encounter document"
-          },
-          "documentRegistry": {
-            "$ref": "#/components/schemas/DocumentRegistryNode",
-            "nullable": true,
-            "description": "The registry entry of the document's type, resolved from the row's own type without loading the document."
           },
           "activeProgramEvents": {
             "$ref": "#/components/schemas/ProgramEventResponse"
@@ -19228,33 +18093,6 @@
           }
         }
       },
-      "EqualFilterPrescriptionRequestStatusInput": {
-        "type": "object",
-        "properties": {
-          "equalTo": {
-            "$ref": "#/components/schemas/PrescriptionRequestNodeStatus",
-            "nullable": true
-          },
-          "equalAny": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionRequestNodeStatus"
-            },
-            "nullable": true
-          },
-          "notEqualTo": {
-            "$ref": "#/components/schemas/PrescriptionRequestNodeStatus",
-            "nullable": true
-          },
-          "notEqualAll": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionRequestNodeStatus"
-            },
-            "nullable": true
-          }
-        }
-      },
       "EqualFilterPurchaseOrderLineStatusInput": {
         "type": "object",
         "properties": {
@@ -19648,18 +18486,6 @@
           "returnId"
         ]
       },
-      "ExistingRegistryEntryNode": {
-        "type": "string",
-        "enum": [
-          "NONE",
-          "OWNED",
-          "UNOWNED",
-          "OWNED_BY_ANOTHER_PLUGIN",
-          "AMBIGUOUS",
-          "CATEGORY_MISMATCH"
-        ],
-        "description": "How this server's registry stands for a document type the bundle declares."
-      },
       "FailedToFetchReportData": {
         "type": "object",
         "properties": {
@@ -19734,73 +18560,6 @@
           "value"
         ]
       },
-      "ForecastBreakdownNode": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/AmcForecastNode"
-          },
-          {
-            "$ref": "#/components/schemas/PopulationForecastNode"
-          },
-          {
-            "$ref": "#/components/schemas/AncillaryRatioForecastNode"
-          }
-        ],
-        "description": "The inputs and steps behind a line's monthly demand, one member per method. None holds a months-of-stock figure: the requisition's thresholds supply those. GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "ForecastMethodNode": {
-        "type": "string",
-        "enum": [
-          "AMC",
-          "POPULATION",
-          "ANCILLARY_RATIO"
-        ],
-        "description": "Where a requisition line's monthly demand comes from."
-      },
-      "ForecastMethodNotAvailable": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          },
-          "unavailableReason": {
-            "$ref": "#/components/schemas/ForecastMethodUnavailableReasonNode"
-          }
-        }
-      },
-      "ForecastMethodOptionNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "method": {
-            "$ref": "#/components/schemas/ForecastMethodNode"
-          },
-          "isAvailable": {
-            "type": "boolean"
-          },
-          "unavailableReason": {
-            "$ref": "#/components/schemas/ForecastMethodUnavailableReasonNode",
-            "nullable": true,
-            "description": "Null when available"
-          }
-        }
-      },
-      "ForecastMethodUnavailableReasonNode": {
-        "type": "string",
-        "enum": [
-          "POPULATION_PREFERENCE_OFF",
-          "NO_POPULATION_SERVED",
-          "NO_VACCINE_COURSE",
-          "NO_PRINCIPAL_ON_ORDER"
-        ]
-      },
       "ForeignKey": {
         "type": "string",
         "enum": [
@@ -19827,136 +18586,6 @@
             "$ref": "#/components/schemas/ForeignKey"
           }
         }
-      },
-      "FormInstallPreviewNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "formPlugins": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FormPluginPreviewNode"
-            }
-          },
-          "programs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProgramNode"
-            },
-            "description": "The programs on this server, one to choose for each program key."
-          }
-        },
-        "description": "What installing the uploaded bundle's form plugins would meet on this server, for the choices `installUploadedPlugin` takes: the program for each key, the types to take over, and the types whose old-client form may go blank."
-      },
-      "FormPluginDocumentTypeNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "documentType": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "category": {
-            "$ref": "#/components/schemas/DocumentRegistryCategoryNode"
-          },
-          "programKey": {
-            "type": "string",
-            "nullable": true,
-            "description": "`None` for the Patient type, whose context is fixed."
-          },
-          "existingEntry": {
-            "$ref": "#/components/schemas/ExistingRegistryEntryNode"
-          },
-          "existingEntryId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The unowned entry's id, for `UNOWNED`."
-          },
-          "existingEntryOwner": {
-            "type": "string",
-            "nullable": true,
-            "description": "The owning plugin's code, for `OWNED_BY_ANOTHER_PLUGIN`."
-          },
-          "existingEntryCategory": {
-            "$ref": "#/components/schemas/DocumentRegistryCategoryNode",
-            "nullable": true,
-            "description": "The existing entry's category, for `CATEGORY_MISMATCH`."
-          },
-          "existingEntryProgram": {
-            "$ref": "#/components/schemas/ProgramNode",
-            "nullable": true,
-            "description": "The program the existing entry is in (`OWNED` or `UNOWNED`), where its context is a program's: what a take-over keeps the type under unless its key is moved, so a screen can start the key on it."
-          },
-          "blanksOldUi": {
-            "type": "boolean",
-            "description": "True when installing would leave the type's form blank on sites still running the old client, which install refuses unless the type is named in `blankOldUi`."
-          },
-          "refusals": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The refusals no choice in `installUploadedPlugin` can get past, in the words that mutation would refuse with: a schema version already installed with other content, a version documents are pinned to left out, a take-over that changes the deployment's rules or lacks its current version, a second patient type. Empty when install could go ahead with the right choices."
-          }
-        },
-        "description": "One document type a form plugin declares, checked against this server."
-      },
-      "FormPluginPreviewNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "pluginCode": {
-            "type": "string"
-          },
-          "programKeys": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FormPluginProgramKeyNode"
-            }
-          },
-          "documentTypes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FormPluginDocumentTypeNode"
-            }
-          }
-        }
-      },
-      "FormPluginProgramKeyNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "programKey": {
-            "type": "string"
-          },
-          "documentTypes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The declared document types that name this key."
-          },
-          "boundProgram": {
-            "$ref": "#/components/schemas/ProgramNode",
-            "nullable": true,
-            "description": "The program the key is already bound to; `None` on a first install, when `programs` must choose one."
-          }
-        },
-        "description": "One of a form plugin's program keys, with the program an earlier install bound it to."
       },
       "FormSchemaConnector": {
         "type": "object",
@@ -20406,18 +19035,6 @@
           "MANUAL_INTERNAL",
           "MANUAL_EXTERNAL"
         ]
-      },
-      "InboundShipmentsInProgress": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
       },
       "InboundShipmentsNotVerified": {
         "type": "object",
@@ -20969,8 +19586,7 @@
         "required": [
           "gtin",
           "itemId"
-        ],
-        "description": "Deprecated: the input of the deprecated top-level `insertBarcode`"
+        ]
       },
       "InsertBarcodeResponse": {
         "oneOf": [
@@ -21013,41 +19629,6 @@
           "code",
           "initials",
           "lastName"
-        ]
-      },
-      "InsertConfirmedBarcodeInput": {
-        "type": "object",
-        "properties": {
-          "barcode": {
-            "type": "string",
-            "description": "As scanned or typed; the server puts it in standard form"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "packSize": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "manufacturerId": {
-            "type": "string",
-            "nullable": true
-          },
-          "packagingVariantId": {
-            "type": "string",
-            "nullable": true,
-            "description": "Put the barcode on this packaging variant of the item, which has none yet"
-          },
-          "itemVariantId": {
-            "type": "string",
-            "nullable": true,
-            "description": "Add a packaging variant with the barcode to this item variant of the item"
-          }
-        },
-        "required": [
-          "barcode",
-          "itemId"
         ]
       },
       "InsertContactFormInput": {
@@ -21785,11 +20366,6 @@
           "reasonOptionId": {
             "type": "string",
             "nullable": true
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The barcode scanned or typed for the line, as read; recorded on the line and its stock. Doesn't propose a barcode (see `proposeBarcode`)."
           }
         },
         "required": [
@@ -22623,42 +21199,6 @@
           }
         }
       },
-      "InsertPrescriptionRequestInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "patientId": {
-            "type": "string"
-          },
-          "clinicianId": {
-            "type": "string",
-            "nullable": true
-          },
-          "diagnosisId": {
-            "type": "string",
-            "nullable": true
-          },
-          "prescriptionDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "patientId"
-        ]
-      },
-      "InsertPrescriptionRequestResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/PrescriptionRequestNode"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
       "InsertPrescriptionResponse": {
         "oneOf": [
           {
@@ -23149,9 +21689,7 @@
           },
           "maxMonthsOfStock": {
             "type": "number",
-            "format": "double",
-            "nullable": true,
-            "description": "Defaults to the store's supply interval + safety buffer, or 1 month on a store whose facility record carries no supply interval. Ignored, the store's supply interval + safety buffer taken instead, where the store's `canChangeTargetMonthsOfStock` preference is off and it has a supply interval"
+            "format": "double"
           },
           "minMonthsOfStock": {
             "type": "number",
@@ -23167,6 +21705,7 @@
         "required": [
           "id",
           "otherPartyId",
+          "maxMonthsOfStock",
           "minMonthsOfStock"
         ]
       },
@@ -24035,12 +22574,6 @@
           },
           "canSkipDose": {
             "type": "boolean"
-          },
-          "annualDosesPerPerson": {
-            "type": "number",
-            "format": "double",
-            "nullable": true,
-            "description": "The average number of doses a person reached gets in a year, for population forecasting. Null counts every dose in the course"
           }
         },
         "required": [
@@ -24065,45 +22598,6 @@
           }
         ],
         "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "InstalledDocumentTypeNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "pluginCode": {
-            "type": "string"
-          },
-          "documentType": {
-            "type": "string"
-          },
-          "programKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "contextId": {
-            "type": "string"
-          },
-          "formSchemaId": {
-            "type": "string"
-          },
-          "outcome": {
-            "$ref": "#/components/schemas/RegistryOutcomeNode"
-          },
-          "schemasAdded": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Schema versions this install added; versions already present keep their schema."
-          },
-          "uiSchemasUpdated": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Versions already present whose legacy UI schema this install replaced."
-          }
-        },
-        "description": "One registry entry as an install left it: the report the CLI prints, typed for a screen."
       },
       "InstalledPluginConnector": {
         "type": "object",
@@ -24361,22 +22855,6 @@
           "storeId",
           "value"
         ]
-      },
-      "IntegrationIncomplete": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "pendingIntegrationRecords": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "description": {
-            "type": "string"
-          }
-        }
       },
       "InternalError": {
         "type": "object",
@@ -24693,10 +23171,6 @@
             "$ref": "#/components/schemas/EqualFilterStringInput",
             "nullable": true
           },
-          "prescriptionRequestId": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          },
           "purchaseOrderNumber": {
             "$ref": "#/components/schemas/EqualFilterBigNumberInput",
             "nullable": true
@@ -24997,21 +23471,6 @@
             "$ref": "#/components/schemas/InvoiceLineStatusType",
             "nullable": true
           },
-          "transferComment": {
-            "type": "string",
-            "nullable": true,
-            "description": "The supplying store's explanation of why the quantity sent differs from the quantity requested (spec/inbound-shipments rules.md \u00a7 requested quantity and supplier comment). Authored on the outbound side and carried across by the shipment transfer \u2014 read-only on an inbound shipment: no inbound mutation input accepts it."
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The barcode scanned or entered for the line, or carried by the stock it issues, as people read it. Not necessarily a confirmed barcode."
-          },
-          "requisitionLine": {
-            "$ref": "#/components/schemas/RequisitionLineNode",
-            "nullable": true,
-            "description": "The line of the shipment's linked requisition carrying the same item. Null when the shipment has no requisition link, or the order has no line for the item. Matched on item alone \u2014 there is no per-line link \u2014 so every batch of one item resolves the same order line. \u26a0\ufe0f `InvoiceRow.requisition_id` is not store-scoped: a link that arrived by sync can resolve another store's requisition. `requestedQuantity` means the same on both sides of a pair, so the figure stays right."
-          },
           "purchaseOrderLine": {
             "$ref": "#/components/schemas/PurchaseOrderLineNode",
             "nullable": true
@@ -25035,8 +23494,7 @@
           "batch",
           "expiryDate",
           "packSize",
-          "locationName",
-          "requestedQuantity"
+          "locationName"
         ]
       },
       "InvoiceLineSortInput": {
@@ -25245,15 +23703,6 @@
             "$ref": "#/components/schemas/ProgramNode",
             "nullable": true
           },
-          "campaignId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The shipment's campaign (null = none): the default for new inbound lines, or the campaign an outbound shipment issues for."
-          },
-          "campaign": {
-            "$ref": "#/components/schemas/CampaignNode",
-            "nullable": true
-          },
           "store": {
             "$ref": "#/components/schemas/StoreNode"
           },
@@ -25294,11 +23743,6 @@
           "purchaseOrderId": {
             "type": "string",
             "nullable": true
-          },
-          "prescriptionRequestId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The prescriber's prescription request this dispensing invoice was generated from (soft link \u2014 the order may not exist on this site)"
           },
           "purchaseOrder": {
             "$ref": "#/components/schemas/PurchaseOrderNode",
@@ -25864,8 +24308,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ItemVariantNode"
-            },
-            "description": "The item's variants. Auto-created ones, which central creates only to hold a barcode, are left out unless `includeAutoCreated` is true."
+            }
           },
           "ancillaryItems": {
             "type": "array",
@@ -25880,11 +24323,6 @@
               "$ref": "#/components/schemas/AncillaryItemNode"
             },
             "description": "Ancillary item links where this item is the ancillary supply for some other (principal) item."
-          },
-          "supplyWastageRate": {
-            "type": "number",
-            "format": "double",
-            "description": "This item's own wastage rate (%) as an ancillary supply, added on top of what the links ordering it give (e.g. syringes broken or dropped); 0 when none. Stored on those links (`ancillaryFor`), so an item no link orders has none."
           },
           "itemDirections": {
             "type": "array",
@@ -26120,10 +24558,6 @@
           },
           "deleteItemVariant": {
             "$ref": "#/components/schemas/DeleteItemVariantResponse"
-          },
-          "promoteItemVariant": {
-            "$ref": "#/components/schemas/ItemVariantNode",
-            "description": "Makes a variant central created to hold a barcode a real one, so it shows in variant lists and pickers. Its id stays the same."
           }
         }
       },
@@ -26189,10 +24623,6 @@
           "vvmType": {
             "type": "string",
             "nullable": true
-          },
-          "isAutoCreated": {
-            "type": "boolean",
-            "description": "Created on central only to hold a barcode. Left out of variant lists unless asked for."
           }
         }
       },
@@ -26844,15 +25274,12 @@
             },
             "nullable": true
           },
-          "content": {
-            "type": "string",
-            "nullable": true,
-            "description": "The file's text, as written: at most its last 1 MiB. Download the whole file from `/support/log/{name}`."
-          },
-          "truncated": {
-            "type": "boolean",
-            "nullable": true,
-            "description": "Whether `content` is only the end of a longer file."
+          "fileContent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
           }
         }
       },
@@ -26884,36 +25311,6 @@
           "BELOW_HALF",
           "OK"
         ]
-      },
-      "MaintenanceMode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "MaintenanceModeNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "isOn": {
-            "type": "boolean"
-          },
-          "pendingIntegrationRecords": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Rows in OMS central's own sync buffer (pulled from the legacy mSupply central server) still waiting to be integrated. Maintenance mode cannot be turned off while this is above zero."
-          }
-        },
-        "description": "State of central's maintenance mode."
       },
       "MasterListConnector": {
         "type": "object",
@@ -27476,25 +25873,6 @@
           "updateStockLine": {
             "$ref": "#/components/schemas/UpdateStockLineLineResponse"
           },
-          "insertPrescriptionRequest": {
-            "$ref": "#/components/schemas/InsertPrescriptionRequestResponse"
-          },
-          "updatePrescriptionRequest": {
-            "$ref": "#/components/schemas/UpdatePrescriptionRequestResponse"
-          },
-          "deletePrescriptionRequest": {
-            "$ref": "#/components/schemas/DeletePrescriptionRequestResponse"
-          },
-          "upsertPrescriptionRequestLine": {
-            "$ref": "#/components/schemas/UpsertPrescriptionRequestLineResponse"
-          },
-          "deletePrescriptionRequestLine": {
-            "$ref": "#/components/schemas/DeletePrescriptionRequestLineResponse"
-          },
-          "batchPrescriptionRequest": {
-            "$ref": "#/components/schemas/BatchPrescriptionRequestResponse",
-            "description": "The list's mass delete \u2014 atomic, so a selection is never partly removed."
-          },
           "insertStockRelocation": {
             "$ref": "#/components/schemas/InsertStockRelocationResponse"
           },
@@ -27531,25 +25909,11 @@
           "manualSync": {
             "type": "string"
           },
-          "setSyncPaused": {
-            "$ref": "#/components/schemas/SyncPausedNode",
-            "description": "Pause or resume sync (server admin only). See `SyncPausedNode`."
-          },
           "updateDisplaySettings": {
             "$ref": "#/components/schemas/UpdateDisplaySettingsResponse"
           },
-          "proposeBarcode": {
-            "$ref": "#/components/schemas/BarcodeMatchNode",
-            "description": "Records that a user picked an item for a barcode in this store, for central to review. Call it when the line the scan opened is saved."
-          },
-          "deleteBarcodeProposal": {
-            "$ref": "#/components/schemas/DeleteResponse",
-            "description": "Withdraws a proposal made by a store on this site. It stops matching scans here, and central stops reviewing it."
-          },
           "insertBarcode": {
-            "$ref": "#/components/schemas/InsertBarcodeResponse",
-            "description": "Deprecated: use `proposeBarcode`, or `centralServer.barcode.insertBarcode` on central. Adds a confirmed barcode on central and proposes one elsewhere.",
-            "deprecated": true
+            "$ref": "#/components/schemas/InsertBarcodeResponse"
           },
           "updateLogLevel": {
             "$ref": "#/components/schemas/UpsertLogLevelResponse"
@@ -27609,10 +25973,6 @@
           },
           "allocateProgramNumber": {
             "$ref": "#/components/schemas/AllocateProgramNumberResponse"
-          },
-          "allocatePatientNumber": {
-            "$ref": "#/components/schemas/NumberNode",
-            "description": "Allocate the next patient code number for the store. Requires only the patient-mutate permission \u2014 see allocate_patient_number (#268)."
           },
           "insertContactTrace": {
             "$ref": "#/components/schemas/InsertContactTraceResponse"
@@ -28415,11 +26775,6 @@
           "reasonOptionId": {
             "type": "string",
             "nullable": true
-          },
-          "transferComment": {
-            "type": "string",
-            "nullable": true,
-            "description": "This store's reason for issuing a different quantity than the customer requested. One value per ITEM \u2014 send the same one on every line of the item. \u26a0\ufe0f Like `receivedNumberOfPacks`, the set-save OVERWRITES it, so omitting it on an updated line CLEARS the stored value."
           }
         },
         "required": [
@@ -28427,21 +26782,6 @@
           "numberOfPacks",
           "stockLineId"
         ]
-      },
-      "OverridingStoreNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "storeId": {
-            "type": "string"
-          },
-          "storeName": {
-            "type": "string"
-          }
-        }
       },
       "PackSizeCodeCombinationExists": {
         "type": "object",
@@ -28518,11 +26858,6 @@
             "type": "number",
             "format": "double",
             "nullable": true
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The confirmed barcode for this packaging, as people read it"
           }
         }
       },
@@ -28910,14 +27245,6 @@
       "PeriodFilterInput": {
         "type": "object",
         "properties": {
-          "id": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          },
-          "periodScheduleId": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          },
           "startDate": {
             "$ref": "#/components/schemas/DateFilterInput",
             "nullable": true
@@ -28951,19 +27278,6 @@
           }
         }
       },
-      "PeriodScheduleFilterInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          },
-          "name": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          }
-        }
-      },
       "PeriodScheduleNode": {
         "type": "object",
         "properties": {
@@ -28984,48 +27298,6 @@
             }
           }
         }
-      },
-      "PeriodScheduleRowConnector": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "nodes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PeriodScheduleRowNode"
-            }
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "PeriodScheduleRowNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "PeriodScheduleRowResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/PeriodScheduleRowConnector"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
       "PeriodSchedulesConnector": {
         "type": "object",
@@ -29179,116 +27451,6 @@
           },
           "pluginInfo": {
             "description": "Arbitrary JSON value."
-          },
-          "formInstallPreview": {
-            "$ref": "#/components/schemas/FormInstallPreviewNode",
-            "nullable": true,
-            "description": "How the bundle's form plugins stand against this server, read before installing: each program key's current program, each document type's existing registry entry and whether installing it would blank the old client's form, and the programs to choose from. Null on an install's result."
-          },
-          "installedDocumentTypes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InstalledDocumentTypeNode"
-            },
-            "nullable": true,
-            "description": "What the install did to each form plugin's registry entries: the report the CLI prints, one node per declared type. Null for an uploaded bundle not yet installed, and empty for a bundle with no form plugin."
-          }
-        }
-      },
-      "PluginProgramInput": {
-        "type": "object",
-        "properties": {
-          "programKey": {
-            "type": "string"
-          },
-          "programId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "programKey",
-          "programId"
-        ],
-        "description": "The program chosen for one of a form plugin's program keys."
-      },
-      "PopulationForecastCourseNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "courseName": {
-            "type": "string"
-          },
-          "demographicName": {
-            "type": "string",
-            "nullable": true,
-            "description": "Null when the course targets the whole population"
-          },
-          "numberOfDoses": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "coverageRate": {
-            "type": "number",
-            "format": "double"
-          },
-          "wastageRate": {
-            "type": "number",
-            "format": "double"
-          },
-          "targetPopulation": {
-            "type": "number",
-            "format": "double"
-          },
-          "annualDosesPerPerson": {
-            "type": "number",
-            "format": "double",
-            "nullable": true,
-            "description": "The average doses a person gets in a year, counted in place of the number of doses when set"
-          },
-          "lossFactor": {
-            "type": "number",
-            "format": "double"
-          },
-          "annualTargetDoses": {
-            "type": "number",
-            "format": "double"
-          },
-          "dosesPerUnit": {
-            "type": "number",
-            "format": "double"
-          },
-          "monthlyDoses": {
-            "type": "number",
-            "format": "double"
-          },
-          "monthlyUnits": {
-            "type": "number",
-            "format": "double"
-          }
-        }
-      },
-      "PopulationForecastNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "populationServed": {
-            "type": "number",
-            "format": "double",
-            "nullable": true,
-            "description": "Null on a forecast converted from an older site's data"
-          },
-          "courses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PopulationForecastCourseNode"
-            },
-            "description": "One per covering course-and-demographic"
           }
         }
       },
@@ -29317,19 +27479,6 @@
           },
           "value": {
             "description": "WARNING: Type loss - holds any kind of pref value (for edit UI). Use the PreferencesNode to load the strictly typed value."
-          },
-          "storeOverride": {
-            "$ref": "#/components/schemas/StoreOverrideNode",
-            "nullable": true,
-            "description": "How this store arrives at `value`, for a global preference a store may override. Null for every other preference, and in the global listing."
-          },
-          "overridingStores": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OverridingStoreNode"
-            },
-            "nullable": true,
-            "description": "The stores that pin their own value instead of following this global one, by store name. Empty where none do; null unless this is the global listing of an overridable preference."
           }
         }
       },
@@ -29349,18 +27498,17 @@
           "expiredStockPreventIssue",
           "expiredStockIssueThreshold",
           "itemMarginOverridesSupplierMargin",
-          "transferStockToInternalCustomersAtCostPrice",
           "isGaps",
           "displayPopulationBasedForecasting",
           "globalTableConfigs",
           "backdating",
           "receivePaymentsFromPrescriptions",
           "globalLogo",
-          "decimalPlacesForNumbers",
           "blindStocktake",
           "manageVaccinesInDoses",
           "manageVvmStatusForStock",
           "orderInPacks",
+          "useProcurementFunctionality",
           "sortByVvmStatusThenExpiry",
           "useSimplifiedMobileUi",
           "disableManualReturns",
@@ -29369,7 +27517,6 @@
           "warningForExcessRequest",
           "canCreateInternalOrderFromARequisition",
           "selectDestinationStoreForAnInternalOrder",
-          "canChangeTargetMonthsOfStock",
           "externalInboundShipmentLinesMustBeAuthorised",
           "numberOfMonthsToCheckForConsumptionWhenCalculatingOutOfStockProducts",
           "numberOfMonthsThresholdToShowLowStockAlertsForProducts",
@@ -29381,8 +27528,7 @@
           "warnWhenMissingRecentStocktake",
           "invoiceStatusOptions",
           "showIndicativePriceInRequisitions",
-          "doNotPrintPlaceholderLineLabels",
-          "promptForBatchAndExpiryOnInboundShipments"
+          "doNotPrintPlaceholderLineLabels"
         ]
       },
       "PreferenceMutations": {
@@ -29480,9 +27626,6 @@
           "itemMarginOverridesSupplierMargin": {
             "type": "boolean"
           },
-          "transferStockToInternalCustomersAtCostPrice": {
-            "type": "boolean"
-          },
           "isGaps": {
             "type": "boolean"
           },
@@ -29502,10 +27645,6 @@
             "type": "string",
             "description": "Base64 data-URL logo used as fallback when a store has no logo. Large - don't add to eagerly-fetched preference queries."
           },
-          "decimalPlacesForNumbers": {
-            "type": "integer",
-            "format": "int32"
-          },
           "blindStocktake": {
             "type": "boolean"
           },
@@ -29516,6 +27655,9 @@
             "type": "boolean"
           },
           "orderInPacks": {
+            "type": "boolean"
+          },
+          "useProcurementFunctionality": {
             "type": "boolean"
           },
           "sortByVvmStatusThenExpiry": {
@@ -29537,9 +27679,6 @@
             "type": "boolean"
           },
           "selectDestinationStoreForAnInternalOrder": {
-            "type": "boolean"
-          },
-          "canChangeTargetMonthsOfStock": {
             "type": "boolean"
           },
           "externalInboundShipmentLinesMustBeAuthorised": {
@@ -29579,9 +27718,6 @@
           },
           "doNotPrintPlaceholderLineLabels": {
             "type": "boolean"
-          },
-          "promptForBatchAndExpiryOnInboundShipments": {
-            "type": "boolean"
           }
         }
       },
@@ -29604,253 +27740,6 @@
           "numberOfPacks",
           "stockLineId"
         ]
-      },
-      "PrescriptionRequestConnector": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "nodes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionRequestNode"
-            }
-          }
-        }
-      },
-      "PrescriptionRequestFilterInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          },
-          "status": {
-            "$ref": "#/components/schemas/EqualFilterPrescriptionRequestStatusInput",
-            "nullable": true
-          },
-          "prescriptionRequestNumber": {
-            "$ref": "#/components/schemas/EqualFilterBigNumberInput",
-            "nullable": true
-          },
-          "patientId": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
-          },
-          "patientName": {
-            "$ref": "#/components/schemas/StringFilterInput",
-            "nullable": true
-          },
-          "createdDatetime": {
-            "$ref": "#/components/schemas/DatetimeFilterInput",
-            "nullable": true
-          },
-          "prescriptionDatetime": {
-            "$ref": "#/components/schemas/DatetimeFilterInput",
-            "nullable": true
-          },
-          "dispensedDatetime": {
-            "$ref": "#/components/schemas/DatetimeFilterInput",
-            "nullable": true,
-            "description": "When the request was dispensed \u2014 set by the hand-over's status flip, so it is null on everything not yet dispensed. Window a \"dispensed in period\" count on THIS, never on `status`: a status advances, so a status-windowed figure falls as records progress."
-          },
-          "username": {
-            "$ref": "#/components/schemas/StringFilterInput",
-            "nullable": true,
-            "description": "The prescriber \u2014 the username of the account that created the request"
-          },
-          "dynamicFilter": {
-            "description": "Dynamic filter condition AST, currently supporting custom field conditions on keys visible for the \"prescription_request\" scope, e.g. `{\"And\": [{\"CustomField\": {\"key\": \"k\", \"filter\": {\"Text\": {\"Like\": \"abc\"}}}}]}`"
-          }
-        }
-      },
-      "PrescriptionRequestLineConnector": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "nodes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionRequestLineNode"
-            }
-          }
-        }
-      },
-      "PrescriptionRequestLineNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string"
-          },
-          "prescriptionRequestId": {
-            "type": "string"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "item": {
-            "$ref": "#/components/schemas/ItemNode",
-            "nullable": true
-          },
-          "numberOfUnits": {
-            "type": "number",
-            "format": "double",
-            "description": "Prescribed quantity, in units"
-          },
-          "note": {
-            "type": "string",
-            "nullable": true,
-            "description": "Directions"
-          }
-        }
-      },
-      "PrescriptionRequestNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "id": {
-            "type": "string"
-          },
-          "storeId": {
-            "type": "string"
-          },
-          "prescriptionRequestNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "status": {
-            "$ref": "#/components/schemas/PrescriptionRequestNodeStatus"
-          },
-          "createdDatetime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "prescriptionDatetime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "readyDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "dispensedDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "patientId": {
-            "type": "string"
-          },
-          "patient": {
-            "$ref": "#/components/schemas/PatientNode",
-            "description": "Non-null: a request cannot exist without one. `patient_link_id` is NOT NULL with an FK, and the insert validates the id through the same PatientFilter the loader reads, so a miss here means the row is corrupt rather than the patient being absent \u2014 which is why it errors instead of answering null. Typed `Option` it could only ever have been Some or an error, which told the client the one thing that cannot happen."
-          },
-          "clinicianId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The clinician the request names \u2014 resolved through `clinician_link`, so this is the clinician's own id and stays right across a merge. Null when none was chosen; distinct from `user`, which is who entered the request (spec/prescription-requests \u00a7 who is recorded)."
-          },
-          "clinician": {
-            "$ref": "#/components/schemas/ClinicianNode",
-            "nullable": true
-          },
-          "diagnosisId": {
-            "type": "string",
-            "nullable": true
-          },
-          "diagnosis": {
-            "$ref": "#/components/schemas/DiagnosisNode",
-            "nullable": true
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserNode",
-            "nullable": true,
-            "description": "The account that ENTERED the request. Never presented as the prescriber, and not the same fact as `clinician` (spec/prescription-requests \u00a7 who is recorded)."
-          },
-          "customFields": {
-            "description": "Properties-v2 values, filtered to the keys visible for the \"prescription_request\" scope"
-          },
-          "lines": {
-            "$ref": "#/components/schemas/PrescriptionRequestLineConnector"
-          }
-        }
-      },
-      "PrescriptionRequestNodeStatus": {
-        "type": "string",
-        "enum": [
-          "NEW",
-          "READY_TO_DISPENSE",
-          "DISPENSED"
-        ]
-      },
-      "PrescriptionRequestResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/RecordNotFound"
-          },
-          {
-            "$ref": "#/components/schemas/PrescriptionRequestNode"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "PrescriptionRequestSortFieldInput": {
-        "type": "string",
-        "enum": [
-          "prescriptionRequestNumber",
-          "createdDatetime",
-          "prescriptionDatetime",
-          "status"
-        ]
-      },
-      "PrescriptionRequestSortInput": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "$ref": "#/components/schemas/PrescriptionRequestSortFieldInput",
-            "description": "Sort query result by `key`"
-          },
-          "desc": {
-            "type": "boolean",
-            "nullable": true
-          }
-        },
-        "required": [
-          "key"
-        ]
-      },
-      "PrescriptionRequestsResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/PrescriptionRequestConnector"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
       "PricingNode": {
         "type": "object",
@@ -30040,19 +27929,6 @@
           }
         }
       },
-      "ProcessorsPausedNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "isPaused": {
-            "type": "boolean"
-          }
-        },
-        "description": "State of central's processor pause."
-      },
       "ProgramConnector": {
         "type": "object",
         "properties": {
@@ -30179,11 +28055,6 @@
           "document": {
             "$ref": "#/components/schemas/DocumentNode",
             "description": "The encounter document"
-          },
-          "documentRegistry": {
-            "$ref": "#/components/schemas/DocumentRegistryNode",
-            "nullable": true,
-            "description": "The registry entry of the document's type, resolved from the row's own type without loading the document."
           },
           "encounters": {
             "$ref": "#/components/schemas/EncounterConnector",
@@ -30502,10 +28373,6 @@
           "isImmunisation": {
             "type": "boolean"
           },
-          "contextId": {
-            "type": "string",
-            "description": "The context the program's documents (its enrolments and encounters) belong to: what a document registry entry's `contextId` names. Often, but not always, the program's own id."
-          },
           "vaccineCourses": {
             "type": "array",
             "items": {
@@ -30691,31 +28558,6 @@
           "DATE"
         ]
       },
-      "ProposeBarcodeInput": {
-        "type": "object",
-        "properties": {
-          "barcode": {
-            "type": "string",
-            "description": "As scanned or typed; the server puts it in standard form"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "packSize": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "manufacturerId": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "barcode",
-          "itemId"
-        ]
-      },
       "PurchaseOrderConnector": {
         "type": "object",
         "properties": {
@@ -30764,10 +28606,6 @@
           },
           "supplier": {
             "$ref": "#/components/schemas/StringFilterInput",
-            "nullable": true
-          },
-          "number": {
-            "$ref": "#/components/schemas/EqualFilterBigNumberInput",
             "nullable": true
           },
           "storeId": {
@@ -30834,7 +28672,7 @@
             "$ref": "#/components/schemas/EqualFilterPurchaseOrderLineStatusInput",
             "nullable": true
           },
-          "receivedLessThanRequested": {
+          "receivedLessThanAdjusted": {
             "type": "boolean",
             "nullable": true
           },
@@ -30847,10 +28685,6 @@
             "nullable": true
           },
           "itemName": {
-            "$ref": "#/components/schemas/StringFilterInput",
-            "nullable": true
-          },
-          "itemCodeOrName": {
             "$ref": "#/components/schemas/StringFilterInput",
             "nullable": true
           },
@@ -30885,20 +28719,6 @@
             "type": "number",
             "format": "double"
           },
-          "lineTotal": {
-            "type": "number",
-            "format": "double"
-          },
-          "pricePerPackAfterSupplierDiscount": {
-            "type": "number",
-            "format": "double",
-            "description": "The pack price with the order's supplier discount apportioned to the line (none on a service line)"
-          },
-          "lineTotalAfterSupplierDiscount": {
-            "type": "number",
-            "format": "double",
-            "description": "The line's stored total with the order's supplier discount apportioned to it (none on a service line)"
-          },
           "comment": {
             "type": "string",
             "nullable": true
@@ -30922,6 +28742,11 @@
             "type": "number",
             "format": "double"
           },
+          "adjustedNumberOfUnits": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "shippedNumberOfUnits": {
             "type": "number",
             "format": "double"
@@ -30931,10 +28756,6 @@
             "format": "double"
           },
           "receivedNumberOfUnits": {
-            "type": "number",
-            "format": "double"
-          },
-          "outstandingNumberOfUnits": {
             "type": "number",
             "format": "double"
           },
@@ -31000,20 +28821,10 @@
         "type": "string",
         "enum": [
           "itemName",
-          "itemCode",
           "lineNumber",
-          "status",
-          "unit",
-          "requestedPackSize",
-          "requestedNumberOfUnits",
-          "shippedNumberOfUnits",
           "requestedDeliveryDate",
           "expectedDeliveryDate",
-          "purchaseOrderNumber",
-          "supplierName",
-          "purchaseOrderConfirmedDatetime",
-          "receivedNumberOfUnits",
-          "outstandingNumberOfUnits"
+          "purchaseOrderNumber"
         ]
       },
       "PurchaseOrderLineSortInput": {
@@ -31180,17 +28991,38 @@
             "type": "string",
             "nullable": true
           },
+          "agentCommission": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "documentCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "communicationsCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "insuranceCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "freightCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "freightConditions": {
             "type": "string",
             "nullable": true
           },
-          "customFields": {
-            "description": "Filtered to the keys visible on the purchase_order scope"
-          },
           "supplierDiscountAmount": {
             "type": "number",
-            "format": "double",
-            "description": "The supplier discount on the stock lines; service lines take none"
+            "format": "double"
           },
           "supplierDiscountPercentage": {
             "type": "number",
@@ -31203,11 +29035,6 @@
             "nullable": true
           },
           "finalisedDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "cancelledDatetime": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -31231,8 +29058,7 @@
           "REQUEST_APPROVAL",
           "CONFIRMED",
           "SENT",
-          "FINALISED",
-          "CANCELLED"
+          "FINALISED"
         ]
       },
       "PurchaseOrderResponse": {
@@ -31252,14 +29078,7 @@
           "number",
           "createdDatetime",
           "status",
-          "targetMonths",
-          "supplier",
-          "confirmedDatetime",
-          "sentDatetime",
-          "requestedDeliveryDate",
-          "orderTotalAfterDiscount",
-          "currencyCode",
-          "comment"
+          "targetMonths"
         ]
       },
       "PurchaseOrderSortInput": {
@@ -31370,10 +29189,6 @@
           "isCentralServer": {
             "type": "boolean"
           },
-          "isMaintenanceMode": {
-            "type": "boolean",
-            "description": "Whether central is in maintenance mode, when only server admins can log in. Available without authentication so the login screen can say so before anyone tries."
-          },
           "isCentralStandalone": {
             "type": "boolean"
           },
@@ -31397,9 +29212,6 @@
           },
           "masterListLines": {
             "$ref": "#/components/schemas/MasterListLinesResponse"
-          },
-          "periodSchedules": {
-            "$ref": "#/components/schemas/PeriodScheduleRowResponse"
           },
           "items": {
             "$ref": "#/components/schemas/ItemsResponse",
@@ -31430,10 +29242,6 @@
           "requisitionLineChart": {
             "$ref": "#/components/schemas/RequisitionLineChartResponse"
           },
-          "requisitionLineForecastPreview": {
-            "$ref": "#/components/schemas/RequisitionLineForecastPreviewResponse",
-            "description": "An item's request line as the line editor's draft would save it, under a chosen forecast method, without saving anything: the line already on the order, or the one adding the item would create"
-          },
           "activityLogs": {
             "$ref": "#/components/schemas/ActivityLogResponse"
           },
@@ -31453,25 +29261,9 @@
             "type": "integer",
             "format": "int32"
           },
-          "isSyncPaused": {
-            "type": "boolean",
-            "description": "Admin pause flag (Admin > Sync settings); any signed-in user may read it."
-          },
           "syncSettings": {
             "$ref": "#/components/schemas/SyncSettingsNode",
             "nullable": true
-          },
-          "isSyncApiPaused": {
-            "type": "boolean",
-            "description": "Central only: whether the sync API is paused, refusing sync from remote sites (always false on a remote)"
-          },
-          "areProcessorsPaused": {
-            "type": "boolean",
-            "description": "Central only: whether the transfer and general processors are paused (always false on a remote)"
-          },
-          "maintenanceMode": {
-            "$ref": "#/components/schemas/MaintenanceModeNode",
-            "description": "Central only: maintenance mode, and how much of OMS central's own sync buffer is left to integrate before it can be turned off (server admin only)"
           },
           "displaySettings": {
             "$ref": "#/components/schemas/DisplaySettingsNode"
@@ -31489,31 +29281,8 @@
           "storePreferences": {
             "$ref": "#/components/schemas/StorePreferenceNode"
           },
-          "barcodeMatches": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BarcodeMatchNode"
-            },
-            "description": "Everything a scan of `barcode` (as scanned or typed) matches: confirmed barcodes first, then proposals made on this site, one per item and only for items visible in the store. Empty for a barcode nobody has mapped yet."
-          },
           "barcodeByGtin": {
-            "$ref": "#/components/schemas/BarcodeResponse",
-            "description": "Deprecated: use `barcodeMatches`. Answers with the one item a scan of `gtin` matches; RecordNotFound when it matches none, or several items.",
-            "deprecated": true
-          },
-          "itemBarcodes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BarcodeNode"
-            },
-            "description": "The item's confirmed barcodes"
-          },
-          "itemBarcodeProposals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BarcodeProposalNode"
-            },
-            "description": "Proposals for the item central hasn't confirmed or removed: every store's on central, this site's elsewhere"
+            "$ref": "#/components/schemas/BarcodeResponse"
           },
           "requisitionCounts": {
             "$ref": "#/components/schemas/RequisitionCounts"
@@ -31650,12 +29419,6 @@
           "historicalStockLines": {
             "$ref": "#/components/schemas/StockLinesResponse",
             "description": "Query for \"historical_stock_line\" entries"
-          },
-          "prescriptionRequest": {
-            "$ref": "#/components/schemas/PrescriptionRequestResponse"
-          },
-          "prescriptionRequests": {
-            "$ref": "#/components/schemas/PrescriptionRequestsResponse"
           },
           "stockRelocation": {
             "$ref": "#/components/schemas/StockRelocationResponse"
@@ -31819,8 +29582,7 @@
             "$ref": "#/components/schemas/VaccineCourseDoseResponse"
           },
           "itemVariantsConfigured": {
-            "type": "boolean",
-            "description": "Whether any item has variants. Auto-created variants, which only hold a barcode, don't count."
+            "type": "boolean"
           },
           "preferences": {
             "$ref": "#/components/schemas/PreferencesNode",
@@ -32196,16 +29958,6 @@
         ],
         "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
-      "RegistryOutcomeNode": {
-        "type": "string",
-        "enum": [
-          "CREATED",
-          "UPDATED",
-          "TAKEN_OVER",
-          "UNCHANGED"
-        ],
-        "description": "What an install did to one registry entry."
-      },
       "RepackConnector": {
         "type": "object",
         "properties": {
@@ -32332,8 +30084,7 @@
           "PURCHASE_ORDER",
           "SUPPLIER_RETURN",
           "CUSTOMER_RETURN",
-          "STOCK_MOVEMENT",
-          "PRESCRIPTION_REQUEST"
+          "STOCK_MOVEMENT"
         ]
       },
       "ReportFilterInput": {
@@ -32693,108 +30444,6 @@
           }
         }
       },
-      "RequisitionLineForecastPreviewError": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "error": {
-            "$ref": "#/components/schemas/RequisitionLineForecastPreviewErrorInterface"
-          }
-        }
-      },
-      "RequisitionLineForecastPreviewErrorInterface": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "RequisitionLineForecastPreviewInput": {
-        "type": "object",
-        "properties": {
-          "requisitionId": {
-            "type": "string"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "forecastMethod": {
-            "$ref": "#/components/schemas/ForecastMethodNode",
-            "nullable": true,
-            "description": "Null keeps the line's own method: an existing line's stored one, or the default a new line would take"
-          },
-          "campaignId": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
-            "nullable": true,
-            "description": "The activity to preview the line as held for \u2014 its stock on hand, and the suggestion computed against it, are scoped to that campaign's stock. Null keeps the line's own; `{ value: null }` previews it as held for nothing in particular"
-          }
-        },
-        "required": [
-          "requisitionId",
-          "itemId"
-        ]
-      },
-      "RequisitionLineForecastPreviewNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "forecastMethod": {
-            "$ref": "#/components/schemas/ForecastMethodNode"
-          },
-          "forecastMonthlyConsumption": {
-            "type": "number",
-            "format": "double"
-          },
-          "forecastBreakdown": {
-            "$ref": "#/components/schemas/ForecastBreakdownNode"
-          },
-          "forecastMethodOptions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ForecastMethodOptionNode"
-            }
-          },
-          "targetStock": {
-            "type": "number",
-            "format": "double",
-            "description": "The requisition's target months \u00d7 the monthly demand"
-          },
-          "suggestedQuantity": {
-            "type": "number",
-            "format": "double"
-          },
-          "averageMonthlyConsumption": {
-            "type": "number",
-            "format": "double"
-          },
-          "availableStockOnHand": {
-            "type": "number",
-            "format": "double"
-          }
-        }
-      },
-      "RequisitionLineForecastPreviewResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/RequisitionLineForecastPreviewNode"
-          },
-          {
-            "$ref": "#/components/schemas/RequisitionLineForecastPreviewError"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
       "RequisitionLineNode": {
         "type": "object",
         "properties": {
@@ -32919,10 +30568,6 @@
             "$ref": "#/components/schemas/ReasonOptionNode",
             "nullable": true
           },
-          "campaign": {
-            "$ref": "#/components/schemas/CampaignNode",
-            "nullable": true
-          },
           "availableStockOnHand": {
             "type": "number",
             "format": "double"
@@ -32938,30 +30583,19 @@
             "$ref": "#/components/schemas/AvailableVolumeAtLocationTypeNode",
             "nullable": true
           },
-          "forecastMethod": {
-            "$ref": "#/components/schemas/ForecastMethodNode",
-            "description": "Where the line's monthly demand comes from"
-          },
-          "forecastMonthlyConsumption": {
+          "forecastTotalDoses": {
             "type": "number",
             "format": "double",
-            "description": "The line's monthly demand in units: what its suggested quantity, months of stock and target stock work from, whatever its forecast method"
+            "nullable": true
           },
-          "forecastBreakdown": {
-            "$ref": "#/components/schemas/ForecastBreakdownNode",
-            "description": "The inputs and steps behind the line's monthly demand"
-          },
-          "forecastMethodOptions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ForecastMethodOptionNode"
-            },
-            "description": "Every forecast method, an unavailable one with its reason. Empty on a response requisition's line, whose forecast is the customer's."
-          },
-          "targetStock": {
+          "forecastTotalUnits": {
             "type": "number",
             "format": "double",
-            "description": "The requisition's target months \u00d7 the line's monthly demand"
+            "nullable": true
+          },
+          "vaccineCourses": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -33099,11 +30733,6 @@
             "type": "number",
             "format": "double",
             "description": "Minimum quantity to have for stock to be ordered, used to deduce calculated quantity for each line, see calculated in requisition line"
-          },
-          "supplyIntervalAndBuffer": {
-            "$ref": "#/components/schemas/SupplyIntervalAndBufferNode",
-            "nullable": true,
-            "description": "The ordering store's supply interval and safety buffer (from its facility record) as they stand now, null when it carries no supply interval. A general order's default target months of stock."
           },
           "documents": {
             "$ref": "#/components/schemas/SyncFileReferenceConnector"
@@ -33746,11 +31375,6 @@
             "type": "number",
             "format": "double",
             "nullable": true
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The barcode scanned to issue the item, as read; recorded on the item's saved lines, and on the stock they issue from where it has none. Doesn't propose a barcode (see `proposeBarcode`)."
           }
         },
         "required": [
@@ -33782,11 +31406,6 @@
           "note": {
             "type": "string",
             "nullable": true
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The barcode scanned to issue the item, as read; recorded on the item's saved lines, and on the stock they issue from where it has none. Doesn't propose a barcode (see `proposeBarcode`)."
           }
         },
         "required": [
@@ -33980,41 +31599,6 @@
         ],
         "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
-      "SetMaintenanceModeError": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "error": {
-            "$ref": "#/components/schemas/SetMaintenanceModeErrorInterface"
-          }
-        }
-      },
-      "SetMaintenanceModeErrorInterface": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "SetMaintenanceModeResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/MaintenanceModeNode"
-          },
-          {
-            "$ref": "#/components/schemas/SetMaintenanceModeError"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
       "SetPrescribedQuantityError": {
         "type": "object",
         "properties": {
@@ -34097,58 +31681,6 @@
             "format": "int32"
           }
         }
-      },
-      "SetSupplyWastageRateError": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "error": {
-            "$ref": "#/components/schemas/SetSupplyWastageRateErrorInterface"
-          }
-        }
-      },
-      "SetSupplyWastageRateErrorInterface": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "SetSupplyWastageRateInput": {
-        "type": "object",
-        "properties": {
-          "itemId": {
-            "type": "string"
-          },
-          "wastageRate": {
-            "type": "number",
-            "format": "double",
-            "description": "Percent, at least 0 and below 100; 0 clears it"
-          }
-        },
-        "required": [
-          "itemId",
-          "wastageRate"
-        ]
-      },
-      "SetSupplyWastageRateResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/SetSupplyWastageRateError"
-          },
-          {
-            "$ref": "#/components/schemas/SupplyWastageRateNode"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
       "ShippingMethodConnector": {
         "type": "object",
@@ -34693,13 +32225,11 @@
           },
           "barcode": {
             "type": "string",
-            "nullable": true,
-            "description": "The barcode the stock carries, as people read it, e.g. `9506682101352`"
+            "nullable": true
           },
           "itemVariant": {
             "$ref": "#/components/schemas/ItemVariantNode",
-            "nullable": true,
-            "description": "None for an auto-created variant, which only holds a barcode: it's kept out of sight like it is in variant lists. `itemVariantId` still gives it."
+            "nullable": true
           },
           "vvmStatus": {
             "$ref": "#/components/schemas/VvmstatusNode",
@@ -35176,10 +32706,6 @@
           "stockLineId": {
             "$ref": "#/components/schemas/EqualFilterStringInput",
             "nullable": true
-          },
-          "campaignId": {
-            "$ref": "#/components/schemas/EqualFilterStringInput",
-            "nullable": true
           }
         }
       },
@@ -35599,22 +33125,6 @@
           }
         }
       },
-      "StoreOverrideNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "isOverridden": {
-            "type": "boolean",
-            "description": "Whether this store pins its own value rather than following the global one."
-          },
-          "globalValue": {
-            "description": "The global value this store follows, or would return to by clearing the override. Same type loss as `value`."
-          }
-        }
-      },
       "StorePreferenceNode": {
         "type": "object",
         "properties": {
@@ -36029,24 +33539,6 @@
           }
         }
       },
-      "SupplyIntervalAndBufferNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "supplyIntervalMonths": {
-            "type": "number",
-            "format": "double"
-          },
-          "safetyBufferMonths": {
-            "type": "number",
-            "format": "double",
-            "description": "Zero when the facility record carries none"
-          }
-        }
-      },
       "SupplyRequestedQuantityError": {
         "type": "object",
         "properties": {
@@ -36092,48 +33584,6 @@
           }
         ],
         "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "SupplyWastageRateNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "wastageRate": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "description": "The rate saved for the item"
-      },
-      "SupplyWastageRateOutOfRange": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "SyncApiPausedNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "isPaused": {
-            "type": "boolean"
-          }
-        },
-        "description": "State of central's sync API pause. Separate from `SyncPausedNode` (this server's own sync client pause) so the two can grow their own fields."
       },
       "SyncErrorNode": {
         "type": "object",
@@ -36182,8 +33632,7 @@
           "CENTRAL_V6_NOT_CONFIGURED",
           "V6_API_VERSION_INCOMPATIBLE",
           "INTEGRATION_ERROR",
-          "V7_UPGRADE_FAILED",
-          "SYNC_API_PAUSED"
+          "V7_UPGRADE_FAILED"
         ]
       },
       "SyncErrorVariantV7": {
@@ -36212,7 +33661,6 @@
           "SITE_IS_NOT_V7",
           "WAITING_FOR_CENTRAL_V7_UPGRADE",
           "REQUEST_SITE_AUTH_ERROR",
-          "SYNC_API_PAUSED",
           "OTHER"
         ]
       },
@@ -36272,14 +33720,6 @@
           },
           "status": {
             "$ref": "#/components/schemas/SyncFileReferenceNodeStatus"
-          },
-          "userId": {
-            "type": "string",
-            "nullable": true
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserNode",
-            "nullable": true
           }
         }
       },
@@ -36307,18 +33747,6 @@
           "numberOfRecordsInPushQueue": {
             "type": "integer",
             "format": "int32"
-          },
-          "isSyncPaused": {
-            "type": "boolean",
-            "description": "Admin pause (Admin > Sync settings): while true no scheduled or manual sync runs."
-          },
-          "isMaintenanceMode": {
-            "type": "boolean",
-            "description": "Central maintenance mode (#840): only server admins are signed in, and a manual sync is forced past the sync pause."
-          },
-          "isSyncApiPaused": {
-            "type": "boolean",
-            "description": "Central's sync API pause: while true central refuses remote sites' sync. Always false on a remote."
           }
         }
       },
@@ -36487,18 +33915,6 @@
           "key"
         ]
       },
-      "SyncPausedNode": {
-        "type": "object",
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "description": "GraphQL type name of this object."
-          },
-          "isPaused": {
-            "type": "boolean"
-          }
-        }
-      },
       "SyncRequestDescriptionNode": {
         "oneOf": [
           {
@@ -36565,10 +33981,6 @@
           "centralServerSiteId": {
             "type": "integer",
             "format": "int32"
-          },
-          "isPaused": {
-            "type": "boolean",
-            "description": "Admin pause (Admin > Sync settings). While true no scheduled or manual sync runs on an initialised site; set with `setSyncPaused`."
           },
           "syncSiteId": {
             "type": "integer",
@@ -37764,11 +35176,6 @@
             "format": "date-time",
             "nullable": true
           },
-          "campaignId": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
-            "nullable": true,
-            "description": "The shipment's default campaign (null = none): lines added from a master list or internal order take it, and the line editor prefills new batches with it."
-          },
           "customFields": {
             "description": "Patch of customFields key -> value (JSON object) merged into the invoice's custom properties; a `null` value clears that key, keys absent from the patch are left unchanged."
           }
@@ -37906,11 +35313,6 @@
           "reasonOptionId": {
             "$ref": "#/components/schemas/NullableStringUpdate",
             "nullable": true
-          },
-          "barcode": {
-            "type": "string",
-            "nullable": true,
-            "description": "The barcode scanned or typed for the line, as read; recorded on the line and its stock. An empty one clears it. Doesn't propose a barcode (see `proposeBarcode`)."
           }
         },
         "required": [
@@ -38372,11 +35774,6 @@
           "shippingMethodId": {
             "$ref": "#/components/schemas/NullableStringUpdate",
             "nullable": true
-          },
-          "campaignId": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
-            "nullable": true,
-            "description": "The campaign this shipment issues for (null = routine)."
           },
           "backdatedDatetime": {
             "type": "string",
@@ -39003,60 +36400,6 @@
           }
         }
       },
-      "UpdatePrescriptionRequestInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "patientId": {
-            "type": "string",
-            "nullable": true
-          },
-          "clinicianId": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
-            "nullable": true,
-            "description": "The clinician the request names \u2014 an ordinary editable field, like the patient beside it, and what fills the generated dispensation's own clinician at the hand-over."
-          },
-          "diagnosisId": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
-            "nullable": true
-          },
-          "prescriptionDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "comment": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
-            "nullable": true
-          },
-          "customFields": {
-            "description": "Patch of customFields key -> value; a JSON null deletes that key. Keys must be visible for the \"prescription_request\" scope."
-          },
-          "status": {
-            "$ref": "#/components/schemas/UpdatePrescriptionRequestStatusInput",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "UpdatePrescriptionRequestResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/PrescriptionRequestNode"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
-      },
-      "UpdatePrescriptionRequestStatusInput": {
-        "type": "string",
-        "enum": [
-          "READY_TO_DISPENSE"
-        ]
-      },
       "UpdatePrescriptionResponse": {
         "oneOf": [
           {
@@ -39318,12 +36661,34 @@
             "type": "string",
             "nullable": true
           },
+          "agentCommission": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "documentCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "communicationsCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "insuranceCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "freightCharge": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "freightConditions": {
             "type": "string",
             "nullable": true
-          },
-          "customFields": {
-            "description": "Merged into the order's custom fields; a null value deletes the key"
           }
         },
         "required": [
@@ -39358,6 +36723,11 @@
             "nullable": true
           },
           "requestedNumberOfUnits": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "adjustedNumberOfUnits": {
             "type": "number",
             "format": "double",
             "nullable": true
@@ -39576,15 +36946,6 @@
           },
           "optionId": {
             "type": "string",
-            "nullable": true
-          },
-          "forecastMethod": {
-            "$ref": "#/components/schemas/ForecastMethodNode",
-            "nullable": true,
-            "description": "Changing the method recomputes the line's monthly demand, breakdown and suggested quantity, and those of the Ancillary-ratio lines it feeds; the requested quantity is untouched"
-          },
-          "campaignId": {
-            "$ref": "#/components/schemas/NullableStringUpdate",
             "nullable": true
           }
         },
@@ -40783,11 +38144,6 @@
           "canSkipDose": {
             "type": "boolean",
             "nullable": true
-          },
-          "annualDosesPerPerson": {
-            "$ref": "#/components/schemas/NullableFloatUpdate",
-            "nullable": true,
-            "description": "The average number of doses a person reached gets in a year, for population forecasting. Unchanged when omitted; a null value clears it, counting every dose in the course"
           }
         },
         "required": [
@@ -40896,10 +38252,6 @@
             "type": "number",
             "format": "double",
             "description": "Right-hand side of the user-entered `x:y` ratio (ancillary count)."
-          },
-          "excludePrincipalWastage": {
-            "type": "boolean",
-            "nullable": true
           }
         },
         "required": [
@@ -41013,13 +38365,14 @@
           "name": {
             "type": "string"
           },
-          "code": {
+          "startDate": {
             "type": "string",
-            "nullable": true,
-            "description": "Omit to leave the stored code alone; blank clears it"
+            "format": "date",
+            "nullable": true
           },
-          "kind": {
-            "$ref": "#/components/schemas/CampaignKindNode",
+          "endDate": {
+            "type": "string",
+            "format": "date",
             "nullable": true
           }
         },
@@ -41146,13 +38499,6 @@
             "type": "boolean",
             "nullable": true
           },
-          "authorisePurchaseOrderStoreOverride": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BoolStoreOverrideInput"
-            },
-            "nullable": true
-          },
           "customTranslations": {
             "type": "object",
             "additionalProperties": true,
@@ -41208,10 +38554,6 @@
             "type": "boolean",
             "nullable": true
           },
-          "transferStockToInternalCustomersAtCostPrice": {
-            "type": "boolean",
-            "nullable": true
-          },
           "isGaps": {
             "type": "boolean",
             "nullable": true
@@ -41233,11 +38575,6 @@
           },
           "globalLogo": {
             "type": "string",
-            "nullable": true
-          },
-          "decimalPlacesForNumbers": {
-            "type": "integer",
-            "format": "int32",
             "nullable": true
           },
           "blindStocktake": {
@@ -41262,6 +38599,13 @@
             "nullable": true
           },
           "orderInPacks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BoolStorePrefInput"
+            },
+            "nullable": true
+          },
+          "useProcurementFunctionality": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BoolStorePrefInput"
@@ -41311,13 +38655,6 @@
             "nullable": true
           },
           "selectDestinationStoreForAnInternalOrder": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BoolStorePrefInput"
-            },
-            "nullable": true
-          },
-          "canChangeTargetMonthsOfStock": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BoolStorePrefInput"
@@ -41400,53 +38737,8 @@
               "$ref": "#/components/schemas/BoolStorePrefInput"
             },
             "nullable": true
-          },
-          "promptForBatchAndExpiryOnInboundShipments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BoolStorePrefInput"
-            },
-            "nullable": true
           }
         }
-      },
-      "UpsertPrescriptionRequestLineInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "prescriptionRequestId": {
-            "type": "string"
-          },
-          "itemId": {
-            "type": "string"
-          },
-          "numberOfUnits": {
-            "type": "number",
-            "format": "double",
-            "description": "Prescribed quantity, in units"
-          },
-          "note": {
-            "type": "string",
-            "nullable": true,
-            "description": "Directions"
-          }
-        },
-        "required": [
-          "id",
-          "prescriptionRequestId",
-          "itemId",
-          "numberOfUnits"
-        ]
-      },
-      "UpsertPrescriptionRequestLineResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/PrescriptionRequestLineNode"
-          }
-        ],
-        "description": "GraphQL union; the `__typename` field identifies the member returned."
       },
       "UpsertSiteError": {
         "type": "object",
@@ -41795,8 +39087,6 @@
           "CUSTOMER_RETURN_MUTATE",
           "PRESCRIPTION_QUERY",
           "PRESCRIPTION_MUTATE",
-          "PRESCRIPTION_REQUEST_QUERY",
-          "PRESCRIPTION_REQUEST_MUTATE",
           "PURCHASE_ORDER_QUERY",
           "PURCHASE_ORDER_MUTATE",
           "PURCHASE_ORDER_AUTHORISE",
@@ -42293,12 +39583,6 @@
           },
           "canSkipDose": {
             "type": "boolean"
-          },
-          "annualDosesPerPerson": {
-            "type": "number",
-            "format": "double",
-            "nullable": true,
-            "description": "The average number of doses a person reached gets in a year, for population forecasting. Null counts every dose in the course"
           },
           "demographic": {
             "$ref": "#/components/schemas/DemographicNode",
@@ -43183,27 +40467,6 @@
           }
         }
       },
-      "IsMaintenanceModeEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `isMaintenanceMode` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "isMaintenanceMode": {
-                "type": "boolean"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
       "IsCentralStandaloneEnvelope": {
         "type": "object",
         "description": "HTTP response envelope for the `isCentralStandalone` GraphQL query.",
@@ -43341,27 +40604,6 @@
             "properties": {
               "masterListLines": {
                 "$ref": "#/components/schemas/MasterListLinesResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "PeriodSchedulesEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `periodSchedules` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "periodSchedules": {
-                "$ref": "#/components/schemas/PeriodScheduleRowResponse"
               }
             }
           },
@@ -43562,27 +40804,6 @@
           }
         }
       },
-      "RequisitionLineForecastPreviewEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `requisitionLineForecastPreview` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "requisitionLineForecastPreview": {
-                "$ref": "#/components/schemas/RequisitionLineForecastPreviewResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
       "ActivityLogsEnvelope": {
         "type": "object",
         "description": "HTTP response envelope for the `activityLogs` GraphQL query.",
@@ -43690,27 +40911,6 @@
           }
         }
       },
-      "IsSyncPausedEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `isSyncPaused` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "isSyncPaused": {
-                "type": "boolean"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
       "SyncSettingsEnvelope": {
         "type": "object",
         "description": "HTTP response envelope for the `syncSettings` GraphQL query.",
@@ -43722,69 +40922,6 @@
               "syncSettings": {
                 "$ref": "#/components/schemas/SyncSettingsNode",
                 "nullable": true
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "IsSyncApiPausedEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `isSyncApiPaused` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "isSyncApiPaused": {
-                "type": "boolean"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "AreProcessorsPausedEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `areProcessorsPaused` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "areProcessorsPaused": {
-                "type": "boolean"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "MaintenanceModeEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `maintenanceMode` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "maintenanceMode": {
-                "$ref": "#/components/schemas/MaintenanceModeNode"
               }
             }
           },
@@ -43901,30 +41038,6 @@
           }
         }
       },
-      "BarcodeMatchesEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `barcodeMatches` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "barcodeMatches": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/BarcodeMatchNode"
-                }
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
       "BarcodeByGtinEnvelope": {
         "type": "object",
         "description": "HTTP response envelope for the `barcodeByGtin` GraphQL query.",
@@ -43935,54 +41048,6 @@
             "properties": {
               "barcodeByGtin": {
                 "$ref": "#/components/schemas/BarcodeResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "ItemBarcodesEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `itemBarcodes` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "itemBarcodes": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/BarcodeNode"
-                }
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "ItemBarcodeProposalsEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `itemBarcodeProposals` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "itemBarcodeProposals": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/BarcodeProposalNode"
-                }
               }
             }
           },
@@ -44773,48 +41838,6 @@
             "properties": {
               "historicalStockLines": {
                 "$ref": "#/components/schemas/StockLinesResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "PrescriptionRequestEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `prescriptionRequest` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "prescriptionRequest": {
-                "$ref": "#/components/schemas/PrescriptionRequestResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "PrescriptionRequestsEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `prescriptionRequests` GraphQL query.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "prescriptionRequests": {
-                "$ref": "#/components/schemas/PrescriptionRequestsResponse"
               }
             }
           },
@@ -48133,132 +45156,6 @@
           }
         }
       },
-      "InsertPrescriptionRequestEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `insertPrescriptionRequest` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "insertPrescriptionRequest": {
-                "$ref": "#/components/schemas/InsertPrescriptionRequestResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "UpdatePrescriptionRequestEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `updatePrescriptionRequest` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "updatePrescriptionRequest": {
-                "$ref": "#/components/schemas/UpdatePrescriptionRequestResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "DeletePrescriptionRequestEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `deletePrescriptionRequest` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "deletePrescriptionRequest": {
-                "$ref": "#/components/schemas/DeletePrescriptionRequestResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "UpsertPrescriptionRequestLineEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `upsertPrescriptionRequestLine` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "upsertPrescriptionRequestLine": {
-                "$ref": "#/components/schemas/UpsertPrescriptionRequestLineResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "DeletePrescriptionRequestLineEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `deletePrescriptionRequestLine` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "deletePrescriptionRequestLine": {
-                "$ref": "#/components/schemas/DeletePrescriptionRequestLineResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "BatchPrescriptionRequestEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `batchPrescriptionRequest` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "batchPrescriptionRequest": {
-                "$ref": "#/components/schemas/BatchPrescriptionRequestResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
       "InsertStockRelocationEnvelope": {
         "type": "object",
         "description": "HTTP response envelope for the `insertStockRelocation` GraphQL mutation.",
@@ -48511,27 +45408,6 @@
           }
         }
       },
-      "SetSyncPausedEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `setSyncPaused` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "setSyncPaused": {
-                "$ref": "#/components/schemas/SyncPausedNode"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
       "UpdateDisplaySettingsEnvelope": {
         "type": "object",
         "description": "HTTP response envelope for the `updateDisplaySettings` GraphQL mutation.",
@@ -48542,48 +45418,6 @@
             "properties": {
               "updateDisplaySettings": {
                 "$ref": "#/components/schemas/UpdateDisplaySettingsResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "ProposeBarcodeEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `proposeBarcode` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "proposeBarcode": {
-                "$ref": "#/components/schemas/BarcodeMatchNode"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "DeleteBarcodeProposalEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `deleteBarcodeProposal` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "deleteBarcodeProposal": {
-                "$ref": "#/components/schemas/DeleteResponse"
               }
             }
           },
@@ -48962,27 +45796,6 @@
             "properties": {
               "allocateProgramNumber": {
                 "$ref": "#/components/schemas/AllocateProgramNumberResponse"
-              }
-            }
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GraphQLError"
-            }
-          }
-        }
-      },
-      "AllocatePatientNumberEnvelope": {
-        "type": "object",
-        "description": "HTTP response envelope for the `allocatePatientNumber` GraphQL mutation.",
-        "properties": {
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "allocatePatientNumber": {
-                "$ref": "#/components/schemas/NumberNode"
               }
             }
           },

@@ -301,3 +301,20 @@ test('a $ref to an undeclared definition is grounded, not passed through', () =>
   assert.equal(props.self.$ref, '#/components/schemas/OrderGet');
   assert.ok(warns.some((w) => w.includes('OrdersetGetRef')));
 });
+
+test('a file response (type: file, or AutoRest type: object + format: file) is octet-stream bytes, not the produces type', () => {
+  const doc: any = {
+    swagger: '2.0', info: { title: 'Blob', version: '1' }, produces: ['application/xml'],
+    paths: {
+      '/{c}/{b}': {
+        get: { operationId: 'Download', responses: { '200': { description: 'ok', schema: { type: 'object', format: 'file' } }, default: { description: 'err', schema: { type: 'object' } } } },
+      },
+      '/f': { get: { operationId: 'File', responses: { '200': { description: 'ok', schema: { type: 'file' } } } } },
+    },
+  };
+  const { openapi } = swaggerToOpenApi(doc, 'blob');
+  const dl = openapi.paths['/{c}/{b}'].get.responses;
+  assert.deepEqual(dl['200'].content, { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } });
+  assert.ok(dl.default.content['application/xml'], 'non-file responses keep produces');
+  assert.ok(openapi.paths['/f'].get.responses['200'].content['application/octet-stream']);
+});

@@ -28,6 +28,23 @@ export interface SpecUpstream {
   contentHash: string;
   /** ISO date (YYYY-MM-DD) the upstream spec was fetched. */
   fetchedAt: string;
+  /**
+   * Further verbatim vendor specs for the same API, when the vendor splits one
+   * API across several documents (Mailgun publishes Send, Validate and Inspect
+   * separately). Each is committed byte-for-byte beside upstream.<ext>, hashed
+   * the same way, and merged into openapi.json on every derivation.
+   */
+  parts?: SpecUpstreamPart[];
+}
+
+/** One additional verbatim upstream file (see `SpecUpstream.parts`). */
+export interface SpecUpstreamPart {
+  /** File name in the adaptor directory, e.g. `upstream-validate.yaml`. */
+  file: string;
+  specUrl: string;
+  format: string;
+  contentHash: string;
+  fetchedAt: string;
 }
 
 /** One entry in the finding-step decision trail. */
@@ -36,6 +53,20 @@ export interface SpecAttempt {
   kind: 'openapi' | 'swagger' | 'discovery' | 'postman' | 'wsdl' | 'graphql' | 'docs' | string;
   url?: string;
   result: 'used' | 'not-found' | 'rejected';
+  note?: string;
+}
+
+/** A mechanical narrowing of a full vendor spec (see src/subset.ts). */
+export interface SubsetRule {
+  /** First path segments to keep (exact match). */
+  resources: string[];
+  /** Keep a matching path only when it has at most this many segments. */
+  maxSegments: number;
+  /** Paths kept regardless of the rule above (e.g. a bare singleton like '/me'). */
+  include?: string[];
+  /** Replaces info.title in the served subset. */
+  title?: string;
+  /** Written to info['x-openfn-subset-note'] in the served subset. */
   note?: string;
 }
 
@@ -57,6 +88,9 @@ export interface SpecSource {
   coverage?: SpecCoverage;
   /** When coverage='subset', the full artifact it was derived from (e.g. 'upstream.json'). */
   derivedFrom?: string;
+  /** When coverage='subset': the mechanical rule `convert` applies to the
+   *  converted upstream to produce openapi.json (see src/subset.ts). */
+  subsetRule?: SubsetRule;
   /** Whether the full copy is genuinely complete or a best-effort reconstruction. */
   completeness?: SpecCompleteness;
   /** When completeness='best-effort': why (e.g. 'docs-only', 'private-api', 'partial-docs'). */

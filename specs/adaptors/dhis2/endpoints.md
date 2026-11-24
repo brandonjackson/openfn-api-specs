@@ -933,8 +933,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /api/documents/{uid}/{property}/{itemId} — Document.deleteCollectionItem
 
 ## email
-- POST /api/email/notification — Email.sendEmailNotification
-- POST /api/email/notification#sendSystemNotificationEmail — Email.sendSystemNotificationEmail
+- POST /api/email/notification — Email.sendSystemNotificationEmail
+- POST /api/email/notification#sendEmailNotification — Email.sendEmailNotification
 - POST /api/email/test — Email.sendTestEmail
 
 ## eventFilters

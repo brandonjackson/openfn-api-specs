@@ -5,23 +5,38 @@
   "x-openfn-adaptor": "gemini",
   "x-source": {
     "openapi": "#/components/schemas/BidiGenerateContentSetup",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`. Contains configuration that will apply for the duration of the streaming RPC. Clients should wait for a `BidiGenerateContentSetupComplete` message before sending any additional messages.",
   "properties": {
-    "outputAudioTranscription": {
-      "$ref": "AudioTranscriptionConfig.json"
+    "systemInstruction": {
+      "$ref": "Content.json"
     },
-    "tools": {
-      "type": "array",
-      "description": "Optional. A list of `Tools` the model may use to generate the next response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model.",
-      "items": {
-        "$ref": "Tool.json"
-      }
+    "sessionResumption": {
+      "$ref": "SessionResumptionConfig.json"
+    },
+    "inputAudioTranscription": {
+      "$ref": "AudioTranscriptionConfig.json"
     },
     "contextWindowCompression": {
       "$ref": "ContextWindowCompressionConfig.json"
+    },
+    "realtimeInputConfig": {
+      "$ref": "RealtimeInputConfig.json"
+    },
+    "historyConfig": {
+      "$ref": "HistoryConfig.json"
+    },
+    "model": {
+      "type": "string",
+      "description": "Required. The model's resource name. This serves as an ID for the Model to use. Format: `models/{model}`"
+    },
+    "proactivity": {
+      "$ref": "ProactivityConfig.json"
+    },
+    "outputAudioTranscription": {
+      "$ref": "AudioTranscriptionConfig.json"
     },
     "labels": {
       "type": "object",
@@ -30,30 +45,15 @@
         "type": "string"
       }
     },
-    "historyConfig": {
-      "$ref": "HistoryConfig.json"
-    },
-    "sessionResumption": {
-      "$ref": "SessionResumptionConfig.json"
-    },
-    "proactivity": {
-      "$ref": "ProactivityConfig.json"
-    },
-    "inputAudioTranscription": {
-      "$ref": "AudioTranscriptionConfig.json"
-    },
-    "realtimeInputConfig": {
-      "$ref": "RealtimeInputConfig.json"
-    },
-    "systemInstruction": {
-      "$ref": "Content.json"
-    },
     "generationConfig": {
       "$ref": "GenerationConfig.json"
     },
-    "model": {
-      "type": "string",
-      "description": "Required. The model's resource name. This serves as an ID for the Model to use. Format: `models/{model}`"
+    "tools": {
+      "type": "array",
+      "description": "Optional. A list of `Tools` the model may use to generate the next response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model.",
+      "items": {
+        "$ref": "Tool.json"
+      }
     }
   }
 }

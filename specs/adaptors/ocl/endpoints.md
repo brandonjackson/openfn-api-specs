@@ -1,8 +1,8 @@
-# OCL API (ocl) v2.3.250-d17a48ac
+# OCL API (ocl) v2.3.201-6fe5b034
 
 <!-- derived from openapi.json by `pnpm specs index ocl` — do not edit by hand -->
 
-base: https://api.openconceptlab.org | auth: http/basic, apiKey (header Authorization) | 1519 operations in 25 resources
+base: https://api.openconceptlab.org | auth: http/basic, apiKey (header Authorization) | 1966 operations in 24 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -23,17 +23,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## auto-match-runs
 - GET /auto-match-runs/{run}/ — auto-match-runs_read: Fetch a single run (GET) and update its lifecycle fields (PATCH).
 - PATCH /auto-match-runs/{run}/ — auto-match-runs_partial_update: Fetch a single run (GET) and update its lifecycle fields (PATCH).
-
-## capabilities
-- POST /capabilities/consume/ — capabilities_consume_create: Cross-service check-and-consume.
-- POST /capabilities/refund/ — capabilities_refund_create: Manual ledger correction (see CapabilityPolicy.refund) - e.g.
-
-## capacity
-- GET /capacity/config/ — capacity_config_list: The capacity-limit config in force (staff)
-- PUT /capacity/config/ — capacity_config_update: Replace the capacity-limit config (staff)
-- PATCH /capacity/config/ — capacity_config_partial_update: Change the capacity-limit config (staff)
-- GET /capacity/config/history/ — capacity_config_history_list: Changes to the capacity-limit config (staff)
-- GET /capacity/status/ — capacity_status_list: Heavy calls in flight now (staff)
 
 ## client-configs
 - GET /client-configs/{id}/ — client-configs_read
@@ -152,6 +141,162 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## feedback
 - POST /feedback/ — feedback_create
 
+## fhir
+- GET /fhir/ — fhir_list
+- GET /fhir/CodeSystem — getFhirCodeSystem
+- POST /fhir/CodeSystem — postFhirCodeSystem
+- GET /fhir/CodeSystem$lookup — getFhirCodeSystemLookup
+- PUT /fhir/CodeSystem$lookup — putFhirCodeSystemLookup
+- PATCH /fhir/CodeSystem$lookup — patchFhirCodeSystemLookup
+- DELETE /fhir/CodeSystem$lookup — deleteFhirCodeSystemLookup
+- GET /fhir/CodeSystem$lookup/ — getFhirCodeSystemLookup_2
+- PUT /fhir/CodeSystem$lookup/ — putFhirCodeSystemLookup_2
+- PATCH /fhir/CodeSystem$lookup/ — patchFhirCodeSystemLookup_2
+- DELETE /fhir/CodeSystem$lookup/ — deleteFhirCodeSystemLookup_2
+- GET /fhir/CodeSystem$validate-code — getFhirCodeSystemValidateCode
+- POST /fhir/CodeSystem$validate-code — postFhirCodeSystemValidateCode
+- PUT /fhir/CodeSystem$validate-code — putFhirCodeSystemValidateCode
+- PATCH /fhir/CodeSystem$validate-code — patchFhirCodeSystemValidateCode
+- DELETE /fhir/CodeSystem$validate-code — deleteFhirCodeSystemValidateCode
+- GET /fhir/CodeSystem$validate-code/ — getFhirCodeSystemValidateCode_2
+- POST /fhir/CodeSystem$validate-code/ — postFhirCodeSystemValidateCode_2
+- PUT /fhir/CodeSystem$validate-code/ — putFhirCodeSystemValidateCode_2
+- PATCH /fhir/CodeSystem$validate-code/ — patchFhirCodeSystemValidateCode_2
+- DELETE /fhir/CodeSystem$validate-code/ — deleteFhirCodeSystemValidateCode_2
+- GET /fhir/CodeSystem/ — getFhirCodeSystem_2
+- POST /fhir/CodeSystem/ — postFhirCodeSystem_2
+- GET /fhir/CodeSystem/$lookup — getFhirCodeSystemLookup_3
+- PUT /fhir/CodeSystem/$lookup — putFhirCodeSystemLookup_3
+- PATCH /fhir/CodeSystem/$lookup — patchFhirCodeSystemLookup_3
+- DELETE /fhir/CodeSystem/$lookup — deleteFhirCodeSystemLookup_3
+- GET /fhir/CodeSystem/$lookup/ — getFhirCodeSystemLookup_4
+- PUT /fhir/CodeSystem/$lookup/ — putFhirCodeSystemLookup_4
+- PATCH /fhir/CodeSystem/$lookup/ — patchFhirCodeSystemLookup_4
+- DELETE /fhir/CodeSystem/$lookup/ — deleteFhirCodeSystemLookup_4
+- GET /fhir/CodeSystem/$validate-code — getFhirCodeSystemValidateCode_3
+- POST /fhir/CodeSystem/$validate-code — postFhirCodeSystemValidateCode_3
+- PUT /fhir/CodeSystem/$validate-code — putFhirCodeSystemValidateCode_3
+- PATCH /fhir/CodeSystem/$validate-code — patchFhirCodeSystemValidateCode_3
+- DELETE /fhir/CodeSystem/$validate-code — deleteFhirCodeSystemValidateCode_3
+- GET /fhir/CodeSystem/$validate-code/ — getFhirCodeSystemValidateCode_4
+- POST /fhir/CodeSystem/$validate-code/ — postFhirCodeSystemValidateCode_4
+- PUT /fhir/CodeSystem/$validate-code/ — putFhirCodeSystemValidateCode_4
+- PATCH /fhir/CodeSystem/$validate-code/ — patchFhirCodeSystemValidateCode_4
+- DELETE /fhir/CodeSystem/$validate-code/ — deleteFhirCodeSystemValidateCode_4
+- GET /fhir/CodeSystem/{source} — getFhirCodeSystemSource
+- PUT /fhir/CodeSystem/{source} — putFhirCodeSystemSource
+- PATCH /fhir/CodeSystem/{source} — patchFhirCodeSystemSource
+- DELETE /fhir/CodeSystem/{source} — deleteFhirCodeSystemSource
+- GET /fhir/CodeSystem/{source}/ — getFhirCodeSystemSource_2
+- PUT /fhir/CodeSystem/{source}/ — putFhirCodeSystemSource_2
+- PATCH /fhir/CodeSystem/{source}/ — patchFhirCodeSystemSource_2
+- DELETE /fhir/CodeSystem/{source}/ — deleteFhirCodeSystemSource_2
+- GET /fhir/CodeSystem{source} — getFhirCodeSystemsource
+- PUT /fhir/CodeSystem{source} — putFhirCodeSystemsource
+- PATCH /fhir/CodeSystem{source} — patchFhirCodeSystemsource
+- DELETE /fhir/CodeSystem{source} — deleteFhirCodeSystemsource
+- GET /fhir/CodeSystem{source}/ — getFhirCodeSystemsource_2
+- PUT /fhir/CodeSystem{source}/ — putFhirCodeSystemsource_2
+- PATCH /fhir/CodeSystem{source}/ — patchFhirCodeSystemsource_2
+- DELETE /fhir/CodeSystem{source}/ — deleteFhirCodeSystemsource_2
+- GET /fhir/ConceptMap — getFhirConceptMap
+- POST /fhir/ConceptMap — postFhirConceptMap
+- GET /fhir/ConceptMap$translate — getFhirConceptMapTranslate
+- POST /fhir/ConceptMap$translate — postFhirConceptMapTranslate: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /fhir/ConceptMap$translate/ — getFhirConceptMapTranslate_2
+- POST /fhir/ConceptMap$translate/ — postFhirConceptMapTranslate_2: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /fhir/ConceptMap/ — getFhirConceptMap_2
+- POST /fhir/ConceptMap/ — postFhirConceptMap_2
+- GET /fhir/ConceptMap/$translate — getFhirConceptMapTranslate_3
+- POST /fhir/ConceptMap/$translate — postFhirConceptMapTranslate_3: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /fhir/ConceptMap/$translate/ — getFhirConceptMapTranslate_4
+- POST /fhir/ConceptMap/$translate/ — postFhirConceptMapTranslate_4: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /fhir/ConceptMap/{source} — getFhirConceptMapSource
+- PUT /fhir/ConceptMap/{source} — putFhirConceptMapSource
+- PATCH /fhir/ConceptMap/{source} — patchFhirConceptMapSource
+- DELETE /fhir/ConceptMap/{source} — deleteFhirConceptMapSource
+- GET /fhir/ConceptMap/{source}/ — getFhirConceptMapSource_2
+- PUT /fhir/ConceptMap/{source}/ — putFhirConceptMapSource_2
+- PATCH /fhir/ConceptMap/{source}/ — patchFhirConceptMapSource_2
+- DELETE /fhir/ConceptMap/{source}/ — deleteFhirConceptMapSource_2
+- GET /fhir/ConceptMap{source} — getFhirConceptMapsource
+- PUT /fhir/ConceptMap{source} — putFhirConceptMapsource
+- PATCH /fhir/ConceptMap{source} — patchFhirConceptMapsource
+- DELETE /fhir/ConceptMap{source} — deleteFhirConceptMapsource
+- GET /fhir/ConceptMap{source}/ — getFhirConceptMapsource_2
+- PUT /fhir/ConceptMap{source}/ — putFhirConceptMapsource_2
+- PATCH /fhir/ConceptMap{source}/ — patchFhirConceptMapsource_2
+- DELETE /fhir/ConceptMap{source}/ — deleteFhirConceptMapsource_2
+- GET /fhir/ValueSet — getFhirValueSet
+- POST /fhir/ValueSet — postFhirValueSet
+- GET /fhir/ValueSet$validate-code — getFhirValueSetValidateCode
+- POST /fhir/ValueSet$validate-code — postFhirValueSetValidateCode
+- PUT /fhir/ValueSet$validate-code — putFhirValueSetValidateCode
+- PATCH /fhir/ValueSet$validate-code — patchFhirValueSetValidateCode
+- DELETE /fhir/ValueSet$validate-code — deleteFhirValueSetValidateCode
+- GET /fhir/ValueSet$validate-code/ — getFhirValueSetValidateCode_2
+- POST /fhir/ValueSet$validate-code/ — postFhirValueSetValidateCode_2
+- PUT /fhir/ValueSet$validate-code/ — putFhirValueSetValidateCode_2
+- PATCH /fhir/ValueSet$validate-code/ — patchFhirValueSetValidateCode_2
+- DELETE /fhir/ValueSet$validate-code/ — deleteFhirValueSetValidateCode_2
+- GET /fhir/ValueSet/ — getFhirValueSet_2
+- POST /fhir/ValueSet/ — postFhirValueSet_2
+- GET /fhir/ValueSet/$validate-code — getFhirValueSetValidateCode_3
+- POST /fhir/ValueSet/$validate-code — postFhirValueSetValidateCode_3
+- PUT /fhir/ValueSet/$validate-code — putFhirValueSetValidateCode_3
+- PATCH /fhir/ValueSet/$validate-code — patchFhirValueSetValidateCode_3
+- DELETE /fhir/ValueSet/$validate-code — deleteFhirValueSetValidateCode_3
+- GET /fhir/ValueSet/$validate-code/ — getFhirValueSetValidateCode_4
+- POST /fhir/ValueSet/$validate-code/ — postFhirValueSetValidateCode_4
+- PUT /fhir/ValueSet/$validate-code/ — putFhirValueSetValidateCode_4
+- PATCH /fhir/ValueSet/$validate-code/ — patchFhirValueSetValidateCode_4
+- DELETE /fhir/ValueSet/$validate-code/ — deleteFhirValueSetValidateCode_4
+- GET /fhir/ValueSet/{collection} — getFhirValueSetCollection
+- PUT /fhir/ValueSet/{collection} — putFhirValueSetCollection
+- PATCH /fhir/ValueSet/{collection} — patchFhirValueSetCollection
+- DELETE /fhir/ValueSet/{collection} — deleteFhirValueSetCollection
+- GET /fhir/ValueSet/{collection}/ — getFhirValueSetCollection_2
+- PUT /fhir/ValueSet/{collection}/ — putFhirValueSetCollection_2
+- PATCH /fhir/ValueSet/{collection}/ — patchFhirValueSetCollection_2
+- DELETE /fhir/ValueSet/{collection}/ — deleteFhirValueSetCollection_2
+- GET /fhir/ValueSet/{collection}/$expand — getFhirValueSetCollectionExpand
+- POST /fhir/ValueSet/{collection}/$expand — postFhirValueSetCollectionExpand
+- GET /fhir/ValueSet/{collection}/$expand/ — getFhirValueSetCollectionExpand_2
+- POST /fhir/ValueSet/{collection}/$expand/ — postFhirValueSetCollectionExpand_2
+- GET /fhir/ValueSet/{collection}/$validate-code — getFhirValueSetCollectionValidateCode
+- POST /fhir/ValueSet/{collection}/$validate-code — postFhirValueSetCollectionValidateCode
+- PUT /fhir/ValueSet/{collection}/$validate-code — putFhirValueSetCollectionValidateCode
+- PATCH /fhir/ValueSet/{collection}/$validate-code — patchFhirValueSetCollectionValidateCode
+- DELETE /fhir/ValueSet/{collection}/$validate-code — deleteFhirValueSetCollectionValidateCode
+- GET /fhir/ValueSet/{collection}/$validate-code/ — getFhirValueSetCollectionValidateCode_2
+- POST /fhir/ValueSet/{collection}/$validate-code/ — postFhirValueSetCollectionValidateCode_2
+- PUT /fhir/ValueSet/{collection}/$validate-code/ — putFhirValueSetCollectionValidateCode_2
+- PATCH /fhir/ValueSet/{collection}/$validate-code/ — patchFhirValueSetCollectionValidateCode_2
+- DELETE /fhir/ValueSet/{collection}/$validate-code/ — deleteFhirValueSetCollectionValidateCode_2
+- GET /fhir/ValueSet{collection} — getFhirValueSetcollection
+- PUT /fhir/ValueSet{collection} — putFhirValueSetcollection
+- PATCH /fhir/ValueSet{collection} — patchFhirValueSetcollection
+- DELETE /fhir/ValueSet{collection} — deleteFhirValueSetcollection
+- GET /fhir/ValueSet{collection}/ — getFhirValueSetcollection_2
+- PUT /fhir/ValueSet{collection}/ — putFhirValueSetcollection_2
+- PATCH /fhir/ValueSet{collection}/ — patchFhirValueSetcollection_2
+- DELETE /fhir/ValueSet{collection}/ — deleteFhirValueSetcollection_2
+- GET /fhir/ValueSet{collection}/$expand — getFhirValueSetcollectionExpand
+- POST /fhir/ValueSet{collection}/$expand — postFhirValueSetcollectionExpand
+- GET /fhir/ValueSet{collection}/$expand/ — getFhirValueSetcollectionExpand_2
+- POST /fhir/ValueSet{collection}/$expand/ — postFhirValueSetcollectionExpand_2
+- GET /fhir/ValueSet{collection}/$validate-code — getFhirValueSetcollectionValidateCode
+- POST /fhir/ValueSet{collection}/$validate-code — postFhirValueSetcollectionValidateCode
+- PUT /fhir/ValueSet{collection}/$validate-code — putFhirValueSetcollectionValidateCode
+- PATCH /fhir/ValueSet{collection}/$validate-code — patchFhirValueSetcollectionValidateCode
+- DELETE /fhir/ValueSet{collection}/$validate-code — deleteFhirValueSetcollectionValidateCode
+- GET /fhir/ValueSet{collection}/$validate-code/ — getFhirValueSetcollectionValidateCode_2
+- POST /fhir/ValueSet{collection}/$validate-code/ — postFhirValueSetcollectionValidateCode_2
+- PUT /fhir/ValueSet{collection}/$validate-code/ — putFhirValueSetcollectionValidateCode_2
+- PATCH /fhir/ValueSet{collection}/$validate-code/ — patchFhirValueSetcollectionValidateCode_2
+- DELETE /fhir/ValueSet{collection}/$validate-code/ — deleteFhirValueSetcollectionValidateCode_2
+- GET /fhir/metadata — fhir_metadata_list
+
 ## importers
 - POST /importers/bulk-import-inline/ — importers_bulk-import-inline_create (deprecated)
 - POST /importers/bulk-import-parallel-inline/ — postImportersBulkImportParallelInline (deprecated)
@@ -170,7 +315,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## indexes
 - POST /indexes/apps/populate/ — indexes_apps_populate_create
 - POST /indexes/apps/rebuild/ — indexes_apps_rebuild_create
-- POST /indexes/resources/{resource}/ — indexes_resources_create: Indexes the selected rows of one resource type.
+- POST /indexes/resources/{resource}/ — indexes_resources_create
 
 ## locales
 - GET /locales/ — locales_list
@@ -190,11 +335,162 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## orgs
 - GET /orgs/ — orgs_list
 - POST /orgs/ — postOrgs
-- GET /orgs/{org}/ — orgs_read
+- GET /orgs/{org}/ — getOrgsOrg
 - POST /orgs/{org}/ — postOrgsOrg
-- PUT /orgs/{org}/ — orgs_update
-- PATCH /orgs/{org}/ — orgs_partial_update
-- DELETE /orgs/{org}/ — orgs_delete
+- PUT /orgs/{org}/ — putOrgsOrg
+- DELETE /orgs/{org}/ — deleteOrgsOrg
+- GET /orgs/{org}/CodeSystem — getOrgsOrgCodeSystem
+- POST /orgs/{org}/CodeSystem — postOrgsOrgCodeSystem
+- GET /orgs/{org}/CodeSystem$lookup — getOrgsOrgCodeSystemLookup
+- PUT /orgs/{org}/CodeSystem$lookup — putOrgsOrgCodeSystemLookup
+- PATCH /orgs/{org}/CodeSystem$lookup — patchOrgsOrgCodeSystemLookup
+- DELETE /orgs/{org}/CodeSystem$lookup — deleteOrgsOrgCodeSystemLookup
+- GET /orgs/{org}/CodeSystem$lookup/ — getOrgsOrgCodeSystemLookup_2
+- PUT /orgs/{org}/CodeSystem$lookup/ — putOrgsOrgCodeSystemLookup_2
+- PATCH /orgs/{org}/CodeSystem$lookup/ — patchOrgsOrgCodeSystemLookup_2
+- DELETE /orgs/{org}/CodeSystem$lookup/ — deleteOrgsOrgCodeSystemLookup_2
+- GET /orgs/{org}/CodeSystem$validate-code — getOrgsOrgCodeSystemValidateCode
+- POST /orgs/{org}/CodeSystem$validate-code — postOrgsOrgCodeSystemValidateCode
+- PUT /orgs/{org}/CodeSystem$validate-code — putOrgsOrgCodeSystemValidateCode
+- PATCH /orgs/{org}/CodeSystem$validate-code — patchOrgsOrgCodeSystemValidateCode
+- DELETE /orgs/{org}/CodeSystem$validate-code — deleteOrgsOrgCodeSystemValidateCode
+- GET /orgs/{org}/CodeSystem$validate-code/ — getOrgsOrgCodeSystemValidateCode_2
+- POST /orgs/{org}/CodeSystem$validate-code/ — postOrgsOrgCodeSystemValidateCode_2
+- PUT /orgs/{org}/CodeSystem$validate-code/ — putOrgsOrgCodeSystemValidateCode_2
+- PATCH /orgs/{org}/CodeSystem$validate-code/ — patchOrgsOrgCodeSystemValidateCode_2
+- DELETE /orgs/{org}/CodeSystem$validate-code/ — deleteOrgsOrgCodeSystemValidateCode_2
+- GET /orgs/{org}/CodeSystem/ — getOrgsOrgCodeSystem_2
+- POST /orgs/{org}/CodeSystem/ — postOrgsOrgCodeSystem_2
+- GET /orgs/{org}/CodeSystem/$lookup — getOrgsOrgCodeSystemLookup_3
+- PUT /orgs/{org}/CodeSystem/$lookup — putOrgsOrgCodeSystemLookup_3
+- PATCH /orgs/{org}/CodeSystem/$lookup — patchOrgsOrgCodeSystemLookup_3
+- DELETE /orgs/{org}/CodeSystem/$lookup — deleteOrgsOrgCodeSystemLookup_3
+- GET /orgs/{org}/CodeSystem/$lookup/ — getOrgsOrgCodeSystemLookup_4
+- PUT /orgs/{org}/CodeSystem/$lookup/ — putOrgsOrgCodeSystemLookup_4
+- PATCH /orgs/{org}/CodeSystem/$lookup/ — patchOrgsOrgCodeSystemLookup_4
+- DELETE /orgs/{org}/CodeSystem/$lookup/ — deleteOrgsOrgCodeSystemLookup_4
+- GET /orgs/{org}/CodeSystem/$validate-code — getOrgsOrgCodeSystemValidateCode_3
+- POST /orgs/{org}/CodeSystem/$validate-code — postOrgsOrgCodeSystemValidateCode_3
+- PUT /orgs/{org}/CodeSystem/$validate-code — putOrgsOrgCodeSystemValidateCode_3
+- PATCH /orgs/{org}/CodeSystem/$validate-code — patchOrgsOrgCodeSystemValidateCode_3
+- DELETE /orgs/{org}/CodeSystem/$validate-code — deleteOrgsOrgCodeSystemValidateCode_3
+- GET /orgs/{org}/CodeSystem/$validate-code/ — getOrgsOrgCodeSystemValidateCode_4
+- POST /orgs/{org}/CodeSystem/$validate-code/ — postOrgsOrgCodeSystemValidateCode_4
+- PUT /orgs/{org}/CodeSystem/$validate-code/ — putOrgsOrgCodeSystemValidateCode_4
+- PATCH /orgs/{org}/CodeSystem/$validate-code/ — patchOrgsOrgCodeSystemValidateCode_4
+- DELETE /orgs/{org}/CodeSystem/$validate-code/ — deleteOrgsOrgCodeSystemValidateCode_4
+- GET /orgs/{org}/CodeSystem/{source} — getOrgsOrgCodeSystemSource
+- PUT /orgs/{org}/CodeSystem/{source} — putOrgsOrgCodeSystemSource
+- PATCH /orgs/{org}/CodeSystem/{source} — patchOrgsOrgCodeSystemSource
+- DELETE /orgs/{org}/CodeSystem/{source} — deleteOrgsOrgCodeSystemSource
+- GET /orgs/{org}/CodeSystem/{source}/ — getOrgsOrgCodeSystemSource_2
+- PUT /orgs/{org}/CodeSystem/{source}/ — putOrgsOrgCodeSystemSource_2
+- PATCH /orgs/{org}/CodeSystem/{source}/ — patchOrgsOrgCodeSystemSource_2
+- DELETE /orgs/{org}/CodeSystem/{source}/ — deleteOrgsOrgCodeSystemSource_2
+- GET /orgs/{org}/CodeSystem{source} — getOrgsOrgCodeSystemsource
+- PUT /orgs/{org}/CodeSystem{source} — putOrgsOrgCodeSystemsource
+- PATCH /orgs/{org}/CodeSystem{source} — patchOrgsOrgCodeSystemsource
+- DELETE /orgs/{org}/CodeSystem{source} — deleteOrgsOrgCodeSystemsource
+- GET /orgs/{org}/CodeSystem{source}/ — getOrgsOrgCodeSystemsource_2
+- PUT /orgs/{org}/CodeSystem{source}/ — putOrgsOrgCodeSystemsource_2
+- PATCH /orgs/{org}/CodeSystem{source}/ — patchOrgsOrgCodeSystemsource_2
+- DELETE /orgs/{org}/CodeSystem{source}/ — deleteOrgsOrgCodeSystemsource_2
+- GET /orgs/{org}/ConceptMap — getOrgsOrgConceptMap
+- POST /orgs/{org}/ConceptMap — postOrgsOrgConceptMap
+- GET /orgs/{org}/ConceptMap$translate — getOrgsOrgConceptMapTranslate
+- POST /orgs/{org}/ConceptMap$translate — postOrgsOrgConceptMapTranslate: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /orgs/{org}/ConceptMap$translate/ — getOrgsOrgConceptMapTranslate_2
+- POST /orgs/{org}/ConceptMap$translate/ — postOrgsOrgConceptMapTranslate_2: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /orgs/{org}/ConceptMap/ — getOrgsOrgConceptMap_2
+- POST /orgs/{org}/ConceptMap/ — postOrgsOrgConceptMap_2
+- GET /orgs/{org}/ConceptMap/$translate — getOrgsOrgConceptMapTranslate_3
+- POST /orgs/{org}/ConceptMap/$translate — postOrgsOrgConceptMapTranslate_3: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /orgs/{org}/ConceptMap/$translate/ — getOrgsOrgConceptMapTranslate_4
+- POST /orgs/{org}/ConceptMap/$translate/ — postOrgsOrgConceptMapTranslate_4: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /orgs/{org}/ConceptMap/{source} — getOrgsOrgConceptMapSource
+- PUT /orgs/{org}/ConceptMap/{source} — putOrgsOrgConceptMapSource
+- PATCH /orgs/{org}/ConceptMap/{source} — patchOrgsOrgConceptMapSource
+- DELETE /orgs/{org}/ConceptMap/{source} — deleteOrgsOrgConceptMapSource
+- GET /orgs/{org}/ConceptMap/{source}/ — getOrgsOrgConceptMapSource_2
+- PUT /orgs/{org}/ConceptMap/{source}/ — putOrgsOrgConceptMapSource_2
+- PATCH /orgs/{org}/ConceptMap/{source}/ — patchOrgsOrgConceptMapSource_2
+- DELETE /orgs/{org}/ConceptMap/{source}/ — deleteOrgsOrgConceptMapSource_2
+- GET /orgs/{org}/ConceptMap{source} — getOrgsOrgConceptMapsource
+- PUT /orgs/{org}/ConceptMap{source} — putOrgsOrgConceptMapsource
+- PATCH /orgs/{org}/ConceptMap{source} — patchOrgsOrgConceptMapsource
+- DELETE /orgs/{org}/ConceptMap{source} — deleteOrgsOrgConceptMapsource
+- GET /orgs/{org}/ConceptMap{source}/ — getOrgsOrgConceptMapsource_2
+- PUT /orgs/{org}/ConceptMap{source}/ — putOrgsOrgConceptMapsource_2
+- PATCH /orgs/{org}/ConceptMap{source}/ — patchOrgsOrgConceptMapsource_2
+- DELETE /orgs/{org}/ConceptMap{source}/ — deleteOrgsOrgConceptMapsource_2
+- GET /orgs/{org}/ValueSet — getOrgsOrgValueSet
+- POST /orgs/{org}/ValueSet — postOrgsOrgValueSet
+- GET /orgs/{org}/ValueSet$validate-code — getOrgsOrgValueSetValidateCode
+- POST /orgs/{org}/ValueSet$validate-code — postOrgsOrgValueSetValidateCode
+- PUT /orgs/{org}/ValueSet$validate-code — putOrgsOrgValueSetValidateCode
+- PATCH /orgs/{org}/ValueSet$validate-code — patchOrgsOrgValueSetValidateCode
+- DELETE /orgs/{org}/ValueSet$validate-code — deleteOrgsOrgValueSetValidateCode
+- GET /orgs/{org}/ValueSet$validate-code/ — getOrgsOrgValueSetValidateCode_2
+- POST /orgs/{org}/ValueSet$validate-code/ — postOrgsOrgValueSetValidateCode_2
+- PUT /orgs/{org}/ValueSet$validate-code/ — putOrgsOrgValueSetValidateCode_2
+- PATCH /orgs/{org}/ValueSet$validate-code/ — patchOrgsOrgValueSetValidateCode_2
+- DELETE /orgs/{org}/ValueSet$validate-code/ — deleteOrgsOrgValueSetValidateCode_2
+- GET /orgs/{org}/ValueSet/ — getOrgsOrgValueSet_2
+- POST /orgs/{org}/ValueSet/ — postOrgsOrgValueSet_2
+- GET /orgs/{org}/ValueSet/$validate-code — getOrgsOrgValueSetValidateCode_3
+- POST /orgs/{org}/ValueSet/$validate-code — postOrgsOrgValueSetValidateCode_3
+- PUT /orgs/{org}/ValueSet/$validate-code — putOrgsOrgValueSetValidateCode_3
+- PATCH /orgs/{org}/ValueSet/$validate-code — patchOrgsOrgValueSetValidateCode_3
+- DELETE /orgs/{org}/ValueSet/$validate-code — deleteOrgsOrgValueSetValidateCode_3
+- GET /orgs/{org}/ValueSet/$validate-code/ — getOrgsOrgValueSetValidateCode_4
+- POST /orgs/{org}/ValueSet/$validate-code/ — postOrgsOrgValueSetValidateCode_4
+- PUT /orgs/{org}/ValueSet/$validate-code/ — putOrgsOrgValueSetValidateCode_4
+- PATCH /orgs/{org}/ValueSet/$validate-code/ — patchOrgsOrgValueSetValidateCode_4
+- DELETE /orgs/{org}/ValueSet/$validate-code/ — deleteOrgsOrgValueSetValidateCode_4
+- GET /orgs/{org}/ValueSet/{collection} — getOrgsOrgValueSetCollection
+- PUT /orgs/{org}/ValueSet/{collection} — putOrgsOrgValueSetCollection
+- PATCH /orgs/{org}/ValueSet/{collection} — patchOrgsOrgValueSetCollection
+- DELETE /orgs/{org}/ValueSet/{collection} — deleteOrgsOrgValueSetCollection
+- GET /orgs/{org}/ValueSet/{collection}/ — getOrgsOrgValueSetCollection_2
+- PUT /orgs/{org}/ValueSet/{collection}/ — putOrgsOrgValueSetCollection_2
+- PATCH /orgs/{org}/ValueSet/{collection}/ — patchOrgsOrgValueSetCollection_2
+- DELETE /orgs/{org}/ValueSet/{collection}/ — deleteOrgsOrgValueSetCollection_2
+- GET /orgs/{org}/ValueSet/{collection}/$expand — getOrgsOrgValueSetCollectionExpand
+- POST /orgs/{org}/ValueSet/{collection}/$expand — postOrgsOrgValueSetCollectionExpand
+- GET /orgs/{org}/ValueSet/{collection}/$expand/ — getOrgsOrgValueSetCollectionExpand_2
+- POST /orgs/{org}/ValueSet/{collection}/$expand/ — postOrgsOrgValueSetCollectionExpand_2
+- GET /orgs/{org}/ValueSet/{collection}/$validate-code — getOrgsOrgValueSetCollectionValidateCode
+- POST /orgs/{org}/ValueSet/{collection}/$validate-code — postOrgsOrgValueSetCollectionValidateCode
+- PUT /orgs/{org}/ValueSet/{collection}/$validate-code — putOrgsOrgValueSetCollectionValidateCode
+- PATCH /orgs/{org}/ValueSet/{collection}/$validate-code — patchOrgsOrgValueSetCollectionValidateCode
+- DELETE /orgs/{org}/ValueSet/{collection}/$validate-code — deleteOrgsOrgValueSetCollectionValidateCode
+- GET /orgs/{org}/ValueSet/{collection}/$validate-code/ — getOrgsOrgValueSetCollectionValidateCode_2
+- POST /orgs/{org}/ValueSet/{collection}/$validate-code/ — postOrgsOrgValueSetCollectionValidateCode_2
+- PUT /orgs/{org}/ValueSet/{collection}/$validate-code/ — putOrgsOrgValueSetCollectionValidateCode_2
+- PATCH /orgs/{org}/ValueSet/{collection}/$validate-code/ — patchOrgsOrgValueSetCollectionValidateCode_2
+- DELETE /orgs/{org}/ValueSet/{collection}/$validate-code/ — deleteOrgsOrgValueSetCollectionValidateCode_2
+- GET /orgs/{org}/ValueSet{collection} — getOrgsOrgValueSetcollection
+- PUT /orgs/{org}/ValueSet{collection} — putOrgsOrgValueSetcollection
+- PATCH /orgs/{org}/ValueSet{collection} — patchOrgsOrgValueSetcollection
+- DELETE /orgs/{org}/ValueSet{collection} — deleteOrgsOrgValueSetcollection
+- GET /orgs/{org}/ValueSet{collection}/ — getOrgsOrgValueSetcollection_2
+- PUT /orgs/{org}/ValueSet{collection}/ — putOrgsOrgValueSetcollection_2
+- PATCH /orgs/{org}/ValueSet{collection}/ — patchOrgsOrgValueSetcollection_2
+- DELETE /orgs/{org}/ValueSet{collection}/ — deleteOrgsOrgValueSetcollection_2
+- GET /orgs/{org}/ValueSet{collection}/$expand — getOrgsOrgValueSetcollectionExpand
+- POST /orgs/{org}/ValueSet{collection}/$expand — postOrgsOrgValueSetcollectionExpand
+- GET /orgs/{org}/ValueSet{collection}/$expand/ — getOrgsOrgValueSetcollectionExpand_2
+- POST /orgs/{org}/ValueSet{collection}/$expand/ — postOrgsOrgValueSetcollectionExpand_2
+- GET /orgs/{org}/ValueSet{collection}/$validate-code — getOrgsOrgValueSetcollectionValidateCode
+- POST /orgs/{org}/ValueSet{collection}/$validate-code — postOrgsOrgValueSetcollectionValidateCode
+- PUT /orgs/{org}/ValueSet{collection}/$validate-code — putOrgsOrgValueSetcollectionValidateCode
+- PATCH /orgs/{org}/ValueSet{collection}/$validate-code — patchOrgsOrgValueSetcollectionValidateCode
+- DELETE /orgs/{org}/ValueSet{collection}/$validate-code — deleteOrgsOrgValueSetcollectionValidateCode
+- GET /orgs/{org}/ValueSet{collection}/$validate-code/ — getOrgsOrgValueSetcollectionValidateCode_2
+- POST /orgs/{org}/ValueSet{collection}/$validate-code/ — postOrgsOrgValueSetcollectionValidateCode_2
+- PUT /orgs/{org}/ValueSet{collection}/$validate-code/ — putOrgsOrgValueSetcollectionValidateCode_2
+- PATCH /orgs/{org}/ValueSet{collection}/$validate-code/ — patchOrgsOrgValueSetcollectionValidateCode_2
+- DELETE /orgs/{org}/ValueSet{collection}/$validate-code/ — deleteOrgsOrgValueSetcollectionValidateCode_2
 - GET /orgs/{org}/collections/ — orgs_collections_list
 - POST /orgs/{org}/collections/ — orgs_collections_create
 - GET /orgs/{org}/collections/{collection}/ — getOrgsOrgCollectionsCollection
@@ -298,7 +594,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /orgs/{org}/extras/{extra}/ — orgs_extras_delete
 - GET /orgs/{org}/logo/ — orgs_logo_read
 - POST /orgs/{org}/logo/ — orgs_logo_create
-- DELETE /orgs/{org}/logo/ — orgs_logo_delete: Removes the logo only; the org itself stays.
+- DELETE /orgs/{org}/logo/ — orgs_logo_delete
 - GET /orgs/{org}/map-projects/ — orgs_map-projects_list
 - POST /orgs/{org}/map-projects/ — orgs_map-projects_create
 - GET /orgs/{org}/map-projects/{project}/ — orgs_map-projects_read
@@ -314,12 +610,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /orgs/{org}/members/ — orgs_members_list
 - POST /orgs/{org}/members/ — orgs_members_create
 - GET /orgs/{org}/members/{user}/ — orgs_members_read
-- PUT /orgs/{org}/members/{user}/ — orgs_members_update: Adds the user to the org or changes their role.
-- DELETE /orgs/{org}/members/{user}/ — orgs_members_delete: Removes the user from the org.
+- PUT /orgs/{org}/members/{user}/ — orgs_members_update
+- DELETE /orgs/{org}/members/{user}/ — orgs_members_delete
 - GET /orgs/{org}/overview/ — orgs_overview_read
 - PUT /orgs/{org}/overview/ — orgs_overview_update
 - PATCH /orgs/{org}/overview/ — orgs_overview_partial_update
-- DELETE /orgs/{org}/overview/ — orgs_overview_delete: Removes the overview only; the org itself stays.
+- DELETE /orgs/{org}/overview/ — orgs_overview_delete
 - GET /orgs/{org}/pins/ — orgs_pins_list
 - POST /orgs/{org}/pins/ — orgs_pins_create
 - GET /orgs/{org}/pins/{pin_id}/ — orgs_pins_read
@@ -336,7 +632,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /orgs/{org}/sources/{source}/concepts/ — getOrgsOrgSourcesSourceConcepts
 - POST /orgs/{org}/sources/{source}/concepts/ — postOrgsOrgSourcesSourceConcepts
 - POST /orgs/{org}/sources/{source}/concepts/$clone/ — postOrgsOrgSourcesSourceConceptsClone
-- POST /orgs/{org}/sources/{source}/concepts/indexes/ — postOrgsOrgSourcesSourceConceptsIndexes: Reindexes the version's concepts.
+- POST /orgs/{org}/sources/{source}/concepts/indexes/ — postOrgsOrgSourcesSourceConceptsIndexes
+- GET /orgs/{org}/sources/{source}/concepts/lookup/ — getOrgsOrgSourcesSourceConceptsLookup
 - GET /orgs/{org}/sources/{source}/concepts/{concept}/ — getOrgsOrgSourcesSourceConceptsConcept
 - PUT /orgs/{org}/sources/{source}/concepts/{concept}/ — putOrgsOrgSourcesSourceConceptsConcept
 - PATCH /orgs/{org}/sources/{source}/concepts/{concept}/ — patchOrgsOrgSourcesSourceConceptsConcept
@@ -452,7 +749,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /orgs/{org}/sources/{source}/{version}/concepts/ — getOrgsOrgSourcesSourceVersionConcepts
 - POST /orgs/{org}/sources/{source}/{version}/concepts/ — postOrgsOrgSourcesSourceVersionConcepts
 - DELETE /orgs/{org}/sources/{source}/{version}/concepts/cache/ — orgs_sources_concepts_cache_delete
-- POST /orgs/{org}/sources/{source}/{version}/concepts/indexes/ — postOrgsOrgSourcesSourceVersionConceptsIndexes: Reindexes the version's concepts.
+- POST /orgs/{org}/sources/{source}/{version}/concepts/indexes/ — postOrgsOrgSourcesSourceVersionConceptsIndexes
+- GET /orgs/{org}/sources/{source}/{version}/concepts/lookup/ — getOrgsOrgSourcesSourceVersionConceptsLookup
 - GET /orgs/{org}/sources/{source}/{version}/concepts/{concept}/ — getOrgsOrgSourcesSourceVersionConceptsConcept
 - PUT /orgs/{org}/sources/{source}/{version}/concepts/{concept}/ — putOrgsOrgSourcesSourceVersionConceptsConcept
 - PATCH /orgs/{org}/sources/{source}/{version}/concepts/{concept}/ — patchOrgsOrgSourcesSourceVersionConceptsConcept
@@ -575,7 +873,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /sources/{source}/concepts/ — getSourcesSourceConcepts
 - POST /sources/{source}/concepts/ — postSourcesSourceConcepts
 - POST /sources/{source}/concepts/$clone/ — postSourcesSourceConceptsClone
-- POST /sources/{source}/concepts/indexes/ — postSourcesSourceConceptsIndexes: Reindexes the version's concepts.
+- POST /sources/{source}/concepts/indexes/ — postSourcesSourceConceptsIndexes
+- GET /sources/{source}/concepts/lookup/ — getSourcesSourceConceptsLookup
 - GET /sources/{source}/concepts/{concept}/ — getSourcesSourceConceptsConcept
 - PUT /sources/{source}/concepts/{concept}/ — putSourcesSourceConceptsConcept
 - PATCH /sources/{source}/concepts/{concept}/ — patchSourcesSourceConceptsConcept
@@ -691,7 +990,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /sources/{source}/{version}/concepts/ — getSourcesSourceVersionConcepts
 - POST /sources/{source}/{version}/concepts/ — postSourcesSourceVersionConcepts
 - DELETE /sources/{source}/{version}/concepts/cache/ — sources_concepts_cache_delete
-- POST /sources/{source}/{version}/concepts/indexes/ — postSourcesSourceVersionConceptsIndexes: Reindexes the version's concepts.
+- POST /sources/{source}/{version}/concepts/indexes/ — postSourcesSourceVersionConceptsIndexes
+- GET /sources/{source}/{version}/concepts/lookup/ — getSourcesSourceVersionConceptsLookup
 - GET /sources/{source}/{version}/concepts/{concept}/ — getSourcesSourceVersionConceptsConcept
 - PUT /sources/{source}/{version}/concepts/{concept}/ — putSourcesSourceVersionConceptsConcept
 - PATCH /sources/{source}/{version}/concepts/{concept}/ — patchSourcesSourceVersionConceptsConcept
@@ -796,7 +1096,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /tasks/ — tasks_list
 - GET /tasks/{task_id}/ — tasks_read
 - DELETE /tasks/{task_id}/ — tasks_delete
-- POST /tasks/{task_id}/rerun/ — tasks_rerun_create
 
 ## toggles
 - GET /toggles/ — toggles_list
@@ -814,11 +1113,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /user/ — user_read
 - PUT /user/ — user_update
 - DELETE /user/ — user_delete
-- GET /user/capabilities/overrides/ — user_capabilities_overrides_list
-- GET /user/capabilities/overrides/{capability}/ — user_capabilities_overrides_read
-- PUT /user/capabilities/overrides/{capability}/ — user_capabilities_overrides_update
-- PATCH /user/capabilities/overrides/{capability}/ — user_capabilities_overrides_partial_update
-- DELETE /user/capabilities/overrides/{capability}/ — user_capabilities_overrides_delete
 - GET /user/collections/ — user_collections_list
 - POST /user/collections/ — user_collections_create
 - GET /user/collections/{collection}/ — getUserCollectionsCollection
@@ -956,7 +1250,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /user/sources/{source}/concepts/ — getUserSourcesSourceConcepts
 - POST /user/sources/{source}/concepts/ — postUserSourcesSourceConcepts
 - POST /user/sources/{source}/concepts/$clone/ — postUserSourcesSourceConceptsClone
-- POST /user/sources/{source}/concepts/indexes/ — postUserSourcesSourceConceptsIndexes: Reindexes the version's concepts.
+- POST /user/sources/{source}/concepts/indexes/ — postUserSourcesSourceConceptsIndexes
+- GET /user/sources/{source}/concepts/lookup/ — getUserSourcesSourceConceptsLookup
 - GET /user/sources/{source}/concepts/{concept}/ — getUserSourcesSourceConceptsConcept
 - PUT /user/sources/{source}/concepts/{concept}/ — putUserSourcesSourceConceptsConcept
 - PATCH /user/sources/{source}/concepts/{concept}/ — patchUserSourcesSourceConceptsConcept
@@ -1072,7 +1367,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /user/sources/{source}/{version}/concepts/ — getUserSourcesSourceVersionConcepts
 - POST /user/sources/{source}/{version}/concepts/ — postUserSourcesSourceVersionConcepts
 - DELETE /user/sources/{source}/{version}/concepts/cache/ — user_sources_concepts_cache_delete
-- POST /user/sources/{source}/{version}/concepts/indexes/ — postUserSourcesSourceVersionConceptsIndexes: Reindexes the version's concepts.
+- POST /user/sources/{source}/{version}/concepts/indexes/ — postUserSourcesSourceVersionConceptsIndexes
+- GET /user/sources/{source}/{version}/concepts/lookup/ — getUserSourcesSourceVersionConceptsLookup
 - GET /user/sources/{source}/{version}/concepts/{concept}/ — getUserSourcesSourceVersionConceptsConcept
 - PUT /user/sources/{source}/{version}/concepts/{concept}/ — putUserSourcesSourceVersionConceptsConcept
 - PATCH /user/sources/{source}/{version}/concepts/{concept}/ — patchUserSourcesSourceVersionConceptsConcept
@@ -1193,14 +1489,161 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /users/password/reset/ — users_password_reset_update: Resets password
 - GET /users/signup/ — users_signup_list
 - POST /users/signup/ — users_signup_create
-- GET /users/{user}/ — users_read
-- PUT /users/{user}/ — users_update
-- DELETE /users/{user}/ — users_delete
-- GET /users/{user}/capabilities/overrides/ — users_capabilities_overrides_list
-- GET /users/{user}/capabilities/overrides/{capability}/ — users_capabilities_overrides_read
-- PUT /users/{user}/capabilities/overrides/{capability}/ — users_capabilities_overrides_update
-- PATCH /users/{user}/capabilities/overrides/{capability}/ — users_capabilities_overrides_partial_update
-- DELETE /users/{user}/capabilities/overrides/{capability}/ — users_capabilities_overrides_delete
+- GET /users/{user}/ — getUsersUser
+- PUT /users/{user}/ — putUsersUser
+- DELETE /users/{user}/ — deleteUsersUser
+- GET /users/{user}/CodeSystem — getUsersUserCodeSystem
+- POST /users/{user}/CodeSystem — postUsersUserCodeSystem
+- GET /users/{user}/CodeSystem$lookup — getUsersUserCodeSystemLookup
+- PUT /users/{user}/CodeSystem$lookup — putUsersUserCodeSystemLookup
+- PATCH /users/{user}/CodeSystem$lookup — patchUsersUserCodeSystemLookup
+- DELETE /users/{user}/CodeSystem$lookup — deleteUsersUserCodeSystemLookup
+- GET /users/{user}/CodeSystem$lookup/ — getUsersUserCodeSystemLookup_2
+- PUT /users/{user}/CodeSystem$lookup/ — putUsersUserCodeSystemLookup_2
+- PATCH /users/{user}/CodeSystem$lookup/ — patchUsersUserCodeSystemLookup_2
+- DELETE /users/{user}/CodeSystem$lookup/ — deleteUsersUserCodeSystemLookup_2
+- GET /users/{user}/CodeSystem$validate-code — getUsersUserCodeSystemValidateCode
+- POST /users/{user}/CodeSystem$validate-code — postUsersUserCodeSystemValidateCode
+- PUT /users/{user}/CodeSystem$validate-code — putUsersUserCodeSystemValidateCode
+- PATCH /users/{user}/CodeSystem$validate-code — patchUsersUserCodeSystemValidateCode
+- DELETE /users/{user}/CodeSystem$validate-code — deleteUsersUserCodeSystemValidateCode
+- GET /users/{user}/CodeSystem$validate-code/ — getUsersUserCodeSystemValidateCode_2
+- POST /users/{user}/CodeSystem$validate-code/ — postUsersUserCodeSystemValidateCode_2
+- PUT /users/{user}/CodeSystem$validate-code/ — putUsersUserCodeSystemValidateCode_2
+- PATCH /users/{user}/CodeSystem$validate-code/ — patchUsersUserCodeSystemValidateCode_2
+- DELETE /users/{user}/CodeSystem$validate-code/ — deleteUsersUserCodeSystemValidateCode_2
+- GET /users/{user}/CodeSystem/ — getUsersUserCodeSystem_2
+- POST /users/{user}/CodeSystem/ — postUsersUserCodeSystem_2
+- GET /users/{user}/CodeSystem/$lookup — getUsersUserCodeSystemLookup_3
+- PUT /users/{user}/CodeSystem/$lookup — putUsersUserCodeSystemLookup_3
+- PATCH /users/{user}/CodeSystem/$lookup — patchUsersUserCodeSystemLookup_3
+- DELETE /users/{user}/CodeSystem/$lookup — deleteUsersUserCodeSystemLookup_3
+- GET /users/{user}/CodeSystem/$lookup/ — getUsersUserCodeSystemLookup_4
+- PUT /users/{user}/CodeSystem/$lookup/ — putUsersUserCodeSystemLookup_4
+- PATCH /users/{user}/CodeSystem/$lookup/ — patchUsersUserCodeSystemLookup_4
+- DELETE /users/{user}/CodeSystem/$lookup/ — deleteUsersUserCodeSystemLookup_4
+- GET /users/{user}/CodeSystem/$validate-code — getUsersUserCodeSystemValidateCode_3
+- POST /users/{user}/CodeSystem/$validate-code — postUsersUserCodeSystemValidateCode_3
+- PUT /users/{user}/CodeSystem/$validate-code — putUsersUserCodeSystemValidateCode_3
+- PATCH /users/{user}/CodeSystem/$validate-code — patchUsersUserCodeSystemValidateCode_3
+- DELETE /users/{user}/CodeSystem/$validate-code — deleteUsersUserCodeSystemValidateCode_3
+- GET /users/{user}/CodeSystem/$validate-code/ — getUsersUserCodeSystemValidateCode_4
+- POST /users/{user}/CodeSystem/$validate-code/ — postUsersUserCodeSystemValidateCode_4
+- PUT /users/{user}/CodeSystem/$validate-code/ — putUsersUserCodeSystemValidateCode_4
+- PATCH /users/{user}/CodeSystem/$validate-code/ — patchUsersUserCodeSystemValidateCode_4
+- DELETE /users/{user}/CodeSystem/$validate-code/ — deleteUsersUserCodeSystemValidateCode_4
+- GET /users/{user}/CodeSystem/{source} — getUsersUserCodeSystemSource
+- PUT /users/{user}/CodeSystem/{source} — putUsersUserCodeSystemSource
+- PATCH /users/{user}/CodeSystem/{source} — patchUsersUserCodeSystemSource
+- DELETE /users/{user}/CodeSystem/{source} — deleteUsersUserCodeSystemSource
+- GET /users/{user}/CodeSystem/{source}/ — getUsersUserCodeSystemSource_2
+- PUT /users/{user}/CodeSystem/{source}/ — putUsersUserCodeSystemSource_2
+- PATCH /users/{user}/CodeSystem/{source}/ — patchUsersUserCodeSystemSource_2
+- DELETE /users/{user}/CodeSystem/{source}/ — deleteUsersUserCodeSystemSource_2
+- GET /users/{user}/CodeSystem{source} — getUsersUserCodeSystemsource
+- PUT /users/{user}/CodeSystem{source} — putUsersUserCodeSystemsource
+- PATCH /users/{user}/CodeSystem{source} — patchUsersUserCodeSystemsource
+- DELETE /users/{user}/CodeSystem{source} — deleteUsersUserCodeSystemsource
+- GET /users/{user}/CodeSystem{source}/ — getUsersUserCodeSystemsource_2
+- PUT /users/{user}/CodeSystem{source}/ — putUsersUserCodeSystemsource_2
+- PATCH /users/{user}/CodeSystem{source}/ — patchUsersUserCodeSystemsource_2
+- DELETE /users/{user}/CodeSystem{source}/ — deleteUsersUserCodeSystemsource_2
+- GET /users/{user}/ConceptMap — getUsersUserConceptMap
+- POST /users/{user}/ConceptMap — postUsersUserConceptMap
+- GET /users/{user}/ConceptMap$translate — getUsersUserConceptMapTranslate
+- POST /users/{user}/ConceptMap$translate — postUsersUserConceptMapTranslate: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /users/{user}/ConceptMap$translate/ — getUsersUserConceptMapTranslate_2
+- POST /users/{user}/ConceptMap$translate/ — postUsersUserConceptMapTranslate_2: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /users/{user}/ConceptMap/ — getUsersUserConceptMap_2
+- POST /users/{user}/ConceptMap/ — postUsersUserConceptMap_2
+- GET /users/{user}/ConceptMap/$translate — getUsersUserConceptMapTranslate_3
+- POST /users/{user}/ConceptMap/$translate — postUsersUserConceptMapTranslate_3: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /users/{user}/ConceptMap/$translate/ — getUsersUserConceptMapTranslate_4
+- POST /users/{user}/ConceptMap/$translate/ — postUsersUserConceptMapTranslate_4: Change POST behavior to simply list :param request: :param args: :param kwargs: :return: parameters
+- GET /users/{user}/ConceptMap/{source} — getUsersUserConceptMapSource
+- PUT /users/{user}/ConceptMap/{source} — putUsersUserConceptMapSource
+- PATCH /users/{user}/ConceptMap/{source} — patchUsersUserConceptMapSource
+- DELETE /users/{user}/ConceptMap/{source} — deleteUsersUserConceptMapSource
+- GET /users/{user}/ConceptMap/{source}/ — getUsersUserConceptMapSource_2
+- PUT /users/{user}/ConceptMap/{source}/ — putUsersUserConceptMapSource_2
+- PATCH /users/{user}/ConceptMap/{source}/ — patchUsersUserConceptMapSource_2
+- DELETE /users/{user}/ConceptMap/{source}/ — deleteUsersUserConceptMapSource_2
+- GET /users/{user}/ConceptMap{source} — getUsersUserConceptMapsource
+- PUT /users/{user}/ConceptMap{source} — putUsersUserConceptMapsource
+- PATCH /users/{user}/ConceptMap{source} — patchUsersUserConceptMapsource
+- DELETE /users/{user}/ConceptMap{source} — deleteUsersUserConceptMapsource
+- GET /users/{user}/ConceptMap{source}/ — getUsersUserConceptMapsource_2
+- PUT /users/{user}/ConceptMap{source}/ — putUsersUserConceptMapsource_2
+- PATCH /users/{user}/ConceptMap{source}/ — patchUsersUserConceptMapsource_2
+- DELETE /users/{user}/ConceptMap{source}/ — deleteUsersUserConceptMapsource_2
+- GET /users/{user}/ValueSet — getUsersUserValueSet
+- POST /users/{user}/ValueSet — postUsersUserValueSet
+- GET /users/{user}/ValueSet$validate-code — getUsersUserValueSetValidateCode
+- POST /users/{user}/ValueSet$validate-code — postUsersUserValueSetValidateCode
+- PUT /users/{user}/ValueSet$validate-code — putUsersUserValueSetValidateCode
+- PATCH /users/{user}/ValueSet$validate-code — patchUsersUserValueSetValidateCode
+- DELETE /users/{user}/ValueSet$validate-code — deleteUsersUserValueSetValidateCode
+- GET /users/{user}/ValueSet$validate-code/ — getUsersUserValueSetValidateCode_2
+- POST /users/{user}/ValueSet$validate-code/ — postUsersUserValueSetValidateCode_2
+- PUT /users/{user}/ValueSet$validate-code/ — putUsersUserValueSetValidateCode_2
+- PATCH /users/{user}/ValueSet$validate-code/ — patchUsersUserValueSetValidateCode_2
+- DELETE /users/{user}/ValueSet$validate-code/ — deleteUsersUserValueSetValidateCode_2
+- GET /users/{user}/ValueSet/ — getUsersUserValueSet_2
+- POST /users/{user}/ValueSet/ — postUsersUserValueSet_2
+- GET /users/{user}/ValueSet/$validate-code — getUsersUserValueSetValidateCode_3
+- POST /users/{user}/ValueSet/$validate-code — postUsersUserValueSetValidateCode_3
+- PUT /users/{user}/ValueSet/$validate-code — putUsersUserValueSetValidateCode_3
+- PATCH /users/{user}/ValueSet/$validate-code — patchUsersUserValueSetValidateCode_3
+- DELETE /users/{user}/ValueSet/$validate-code — deleteUsersUserValueSetValidateCode_3
+- GET /users/{user}/ValueSet/$validate-code/ — getUsersUserValueSetValidateCode_4
+- POST /users/{user}/ValueSet/$validate-code/ — postUsersUserValueSetValidateCode_4
+- PUT /users/{user}/ValueSet/$validate-code/ — putUsersUserValueSetValidateCode_4
+- PATCH /users/{user}/ValueSet/$validate-code/ — patchUsersUserValueSetValidateCode_4
+- DELETE /users/{user}/ValueSet/$validate-code/ — deleteUsersUserValueSetValidateCode_4
+- GET /users/{user}/ValueSet/{collection} — getUsersUserValueSetCollection
+- PUT /users/{user}/ValueSet/{collection} — putUsersUserValueSetCollection
+- PATCH /users/{user}/ValueSet/{collection} — patchUsersUserValueSetCollection
+- DELETE /users/{user}/ValueSet/{collection} — deleteUsersUserValueSetCollection
+- GET /users/{user}/ValueSet/{collection}/ — getUsersUserValueSetCollection_2
+- PUT /users/{user}/ValueSet/{collection}/ — putUsersUserValueSetCollection_2
+- PATCH /users/{user}/ValueSet/{collection}/ — patchUsersUserValueSetCollection_2
+- DELETE /users/{user}/ValueSet/{collection}/ — deleteUsersUserValueSetCollection_2
+- GET /users/{user}/ValueSet/{collection}/$expand — getUsersUserValueSetCollectionExpand
+- POST /users/{user}/ValueSet/{collection}/$expand — postUsersUserValueSetCollectionExpand
+- GET /users/{user}/ValueSet/{collection}/$expand/ — getUsersUserValueSetCollectionExpand_2
+- POST /users/{user}/ValueSet/{collection}/$expand/ — postUsersUserValueSetCollectionExpand_2
+- GET /users/{user}/ValueSet/{collection}/$validate-code — getUsersUserValueSetCollectionValidateCode
+- POST /users/{user}/ValueSet/{collection}/$validate-code — postUsersUserValueSetCollectionValidateCode
+- PUT /users/{user}/ValueSet/{collection}/$validate-code — putUsersUserValueSetCollectionValidateCode
+- PATCH /users/{user}/ValueSet/{collection}/$validate-code — patchUsersUserValueSetCollectionValidateCode
+- DELETE /users/{user}/ValueSet/{collection}/$validate-code — deleteUsersUserValueSetCollectionValidateCode
+- GET /users/{user}/ValueSet/{collection}/$validate-code/ — getUsersUserValueSetCollectionValidateCode_2
+- POST /users/{user}/ValueSet/{collection}/$validate-code/ — postUsersUserValueSetCollectionValidateCode_2
+- PUT /users/{user}/ValueSet/{collection}/$validate-code/ — putUsersUserValueSetCollectionValidateCode_2
+- PATCH /users/{user}/ValueSet/{collection}/$validate-code/ — patchUsersUserValueSetCollectionValidateCode_2
+- DELETE /users/{user}/ValueSet/{collection}/$validate-code/ — deleteUsersUserValueSetCollectionValidateCode_2
+- GET /users/{user}/ValueSet{collection} — getUsersUserValueSetcollection
+- PUT /users/{user}/ValueSet{collection} — putUsersUserValueSetcollection
+- PATCH /users/{user}/ValueSet{collection} — patchUsersUserValueSetcollection
+- DELETE /users/{user}/ValueSet{collection} — deleteUsersUserValueSetcollection
+- GET /users/{user}/ValueSet{collection}/ — getUsersUserValueSetcollection_2
+- PUT /users/{user}/ValueSet{collection}/ — putUsersUserValueSetcollection_2
+- PATCH /users/{user}/ValueSet{collection}/ — patchUsersUserValueSetcollection_2
+- DELETE /users/{user}/ValueSet{collection}/ — deleteUsersUserValueSetcollection_2
+- GET /users/{user}/ValueSet{collection}/$expand — getUsersUserValueSetcollectionExpand
+- POST /users/{user}/ValueSet{collection}/$expand — postUsersUserValueSetcollectionExpand
+- GET /users/{user}/ValueSet{collection}/$expand/ — getUsersUserValueSetcollectionExpand_2
+- POST /users/{user}/ValueSet{collection}/$expand/ — postUsersUserValueSetcollectionExpand_2
+- GET /users/{user}/ValueSet{collection}/$validate-code — getUsersUserValueSetcollectionValidateCode
+- POST /users/{user}/ValueSet{collection}/$validate-code — postUsersUserValueSetcollectionValidateCode
+- PUT /users/{user}/ValueSet{collection}/$validate-code — putUsersUserValueSetcollectionValidateCode
+- PATCH /users/{user}/ValueSet{collection}/$validate-code — patchUsersUserValueSetcollectionValidateCode
+- DELETE /users/{user}/ValueSet{collection}/$validate-code — deleteUsersUserValueSetcollectionValidateCode
+- GET /users/{user}/ValueSet{collection}/$validate-code/ — getUsersUserValueSetcollectionValidateCode_2
+- POST /users/{user}/ValueSet{collection}/$validate-code/ — postUsersUserValueSetcollectionValidateCode_2
+- PUT /users/{user}/ValueSet{collection}/$validate-code/ — putUsersUserValueSetcollectionValidateCode_2
+- PATCH /users/{user}/ValueSet{collection}/$validate-code/ — patchUsersUserValueSetcollectionValidateCode_2
+- DELETE /users/{user}/ValueSet{collection}/$validate-code/ — deleteUsersUserValueSetcollectionValidateCode_2
 - GET /users/{user}/collections/ — users_collections_list
 - POST /users/{user}/collections/ — users_collections_create
 - GET /users/{user}/collections/{collection}/ — getUsersUserCollectionsCollection
@@ -1348,7 +1791,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /users/{user}/sources/{source}/concepts/ — getUsersUserSourcesSourceConcepts
 - POST /users/{user}/sources/{source}/concepts/ — postUsersUserSourcesSourceConcepts
 - POST /users/{user}/sources/{source}/concepts/$clone/ — postUsersUserSourcesSourceConceptsClone
-- POST /users/{user}/sources/{source}/concepts/indexes/ — postUsersUserSourcesSourceConceptsIndexes: Reindexes the version's concepts.
+- POST /users/{user}/sources/{source}/concepts/indexes/ — postUsersUserSourcesSourceConceptsIndexes
+- GET /users/{user}/sources/{source}/concepts/lookup/ — getUsersUserSourcesSourceConceptsLookup
 - GET /users/{user}/sources/{source}/concepts/{concept}/ — getUsersUserSourcesSourceConceptsConcept
 - PUT /users/{user}/sources/{source}/concepts/{concept}/ — putUsersUserSourcesSourceConceptsConcept
 - PATCH /users/{user}/sources/{source}/concepts/{concept}/ — patchUsersUserSourcesSourceConceptsConcept
@@ -1464,7 +1908,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /users/{user}/sources/{source}/{version}/concepts/ — getUsersUserSourcesSourceVersionConcepts
 - POST /users/{user}/sources/{source}/{version}/concepts/ — postUsersUserSourcesSourceVersionConcepts
 - DELETE /users/{user}/sources/{source}/{version}/concepts/cache/ — users_sources_concepts_cache_delete
-- POST /users/{user}/sources/{source}/{version}/concepts/indexes/ — postUsersUserSourcesSourceVersionConceptsIndexes: Reindexes the version's concepts.
+- POST /users/{user}/sources/{source}/{version}/concepts/indexes/ — postUsersUserSourcesSourceVersionConceptsIndexes
+- GET /users/{user}/sources/{source}/{version}/concepts/lookup/ — getUsersUserSourcesSourceVersionConceptsLookup
 - GET /users/{user}/sources/{source}/{version}/concepts/{concept}/ — getUsersUserSourcesSourceVersionConceptsConcept
 - PUT /users/{user}/sources/{source}/{version}/concepts/{concept}/ — putUsersUserSourcesSourceVersionConceptsConcept
 - PATCH /users/{user}/sources/{source}/{version}/concepts/{concept}/ — patchUsersUserSourcesSourceVersionConceptsConcept

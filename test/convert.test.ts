@@ -7,6 +7,7 @@ import {
   buildOpenapi,
   capture,
   contentHash,
+  mergeOpenapi,
   detect,
   parseSpec,
   staleUpstreams,
@@ -202,4 +203,27 @@ test('staleUpstreams finds the leftovers a format change would shadow', () => {
   writeFileSync(join(dir, 'upstream.yaml'), '{}');
   assert.deepEqual(staleUpstreams(join(dir, 'upstream'), 'yaml'), [join(dir, 'upstream.json')]);
   assert.deepEqual(staleUpstreams(join(dir, 'upstream'), 'json'), [join(dir, 'upstream.yaml')]);
+});
+
+test('mergeOpenapi adds a further vendor document and refuses conflicting redefinitions', () => {
+  const base: any = {
+    openapi: '3.1.0', info: { title: 'Send', version: '1' },
+    paths: { '/v3/lists': { get: { operationId: 'lists', responses: { '200': { description: 'ok' } } } } },
+    components: { securitySchemes: { basicAuth: { type: 'http', scheme: 'basic' } }, schemas: { Err: { type: 'object' } } },
+  };
+  const part: any = {
+    openapi: '3.1.0', info: { title: 'Validate', version: '1' },
+    'x-tagGroups': [{ name: 'Mailgun Validate', tags: ['Validations'] }],
+    paths: { '/v4/address/validate': { get: { operationId: 'validate', responses: { '200': { description: 'ok' } } }, post: { operationId: 'validatePost', responses: { '200': { description: 'ok' } } } } },
+    components: { securitySchemes: { basicAuth: { scheme: 'basic', type: 'http' } }, schemas: { Err: { type: 'object' }, Result: { type: 'object' } } },
+  };
+  const added = mergeOpenapi(base, part, 'upstream-validate.yaml');
+  assert.deepEqual(added, { paths: 1, operations: 2 });
+  assert.ok(base.paths['/v4/address/validate'].post);
+  assert.deepEqual(base['x-tagGroups'], [{ name: 'Mailgun Validate', tags: ['Validations'] }]);
+  assert.ok(base.components.schemas.Result, 'new components are added; identical ones (in any key order) are shared');
+  const clash: any = { paths: {}, components: { schemas: { Err: { type: 'string' } } } };
+  assert.throws(() => mergeOpenapi(base, clash, 'x.yaml'), /components\.schemas\.Err is already defined differently/);
+  const opClash: any = { paths: { '/v3/lists': { get: { operationId: 'other', responses: {} } } } };
+  assert.throws(() => mergeOpenapi(base, opClash, 'x.yaml'), /GET \/v3\/lists is already defined differently/);
 });

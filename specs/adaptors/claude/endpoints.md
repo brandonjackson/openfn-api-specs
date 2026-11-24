@@ -1,8 +1,8 @@
-# Anthropic API (claude)
+# Claude API (claude)
 
 <!-- derived from openapi.json by `pnpm specs index claude` — do not edit by hand -->
 
-base: https://api.anthropic.com | auth: not declared | 385 operations in 15 resources
+base: https://api.anthropic.com | auth: not declared | 394 operations in 15 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -123,6 +123,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /v1/organizations/claude_tag/slack_workspaces/{id}?beta=true — BetaUpdateSlackWorkspace: Update Slack Workspace
 - GET /v1/organizations/claude_tag/bundles?beta=true — BetaListBundles: List Bundles
 - GET /v1/organizations/claude_tag/bundles/{bundle_id}?beta=true — BetaGetBundle: Get Bundle
+- POST /v1/organizations/claude_tag/bundles/{bundle_id}?beta=true — BetaUpdateBundle: Update Bundle
 - GET /v1/organizations/claude_tag/bundles/{bundle_id}/targets?beta=true — BetaListBundleTargets: List Bundle Targets
 - POST /v1/organizations/claude_tag/bundles/{bundle_id}/targets?beta=true — BetaCreateBundleTarget: Attach Bundle
 - GET /v1/organizations/claude_tag/bundles/{bundle_id}/targets/{target_id}?beta=true — BetaGetBundleTarget: Get Bundle Target
@@ -237,6 +238,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /v1/organizations/plugin_marketplaces?beta=true — beta_list_plugin_marketplaces_v1_organizations_plugin_marketplaces_get: List Plugin Marketplaces
 - GET /v1/organizations/plugin_marketplaces/{marketplace_id}?beta=true — beta_get_plugin_marketplace_v1_organizations_plugin_marketplaces__marketplace_id__get: Get Plugin Marketplace
 - POST /v1/organizations/plugin_marketplaces/{marketplace_id}?beta=true — beta_update_plugin_marketplace_v1_organizations_plugin_marketplaces__marketplace_id__post: Update Plugin Marketplace
+- GET /v1/organizations/claude_code/managed_settings/configuration?beta=true — beta_get_claude_code_managed_settings_configuration_v1_organizations_claude_code_managed_settings_configuration_get: Get Claude Code Managed Settings Configuration
+- POST /v1/organizations/claude_code/managed_settings/configuration?beta=true — beta_update_claude_code_managed_settings_configuration_v1_organizations_claude_code_managed_settings_configuration_post: Update Claude Code Managed Settings Configuration
+- GET /v1/organizations/claude_code/managed_settings/rbac_groups?beta=true — beta_list_claude_code_rbac_group_managed_settings_v1_organizations_claude_code_managed_settings_rbac_groups_get: List RBAC Group Claude Code Managed Settings
+- GET /v1/organizations/claude_code/managed_settings/rbac_groups/{rbac_group_id}?beta=true — beta_get_claude_code_rbac_group_managed_settings_v1_organizations_claude_code_managed_settings_rbac_groups__rbac_group_id__get: Get RBAC Group Claude Code Managed Settings
+- POST /v1/organizations/claude_code/managed_settings/rbac_groups/{rbac_group_id}?beta=true — beta_set_claude_code_rbac_group_managed_settings_v1_organizations_claude_code_managed_settings_rbac_groups__rbac_group_id__post: Set RBAC Group Claude Code Managed Settings
+- DELETE /v1/organizations/claude_code/managed_settings/rbac_groups/{rbac_group_id}?beta=true — beta_delete_claude_code_rbac_group_managed_settings_v1_organizations_claude_code_managed_settings_rbac_groups__rbac_group_id__delete: Delete RBAC Group Claude Code Managed Settings
+- GET /v1/organizations/claude_code/managed_settings/rbac_group_default?beta=true — beta_get_claude_code_rbac_group_default_managed_settings_v1_organizations_claude_code_managed_settings_rbac_group_default_get: Get RBAC Group Default Claude Code Managed Settings
+- POST /v1/organizations/claude_code/managed_settings/rbac_group_default?beta=true — beta_update_claude_code_rbac_group_default_managed_settings_v1_organizations_claude_code_managed_settings_rbac_group_default_post: Update RBAC Group Default Claude Code Managed Settings
 - GET /v1/organizations/webhooks?beta=true — beta_list_organization_webhook_endpoints_v1_organizations_webhooks_get: List Organization Webhook Endpoints
 - POST /v1/organizations/webhooks?beta=true — beta_create_organization_webhook_endpoint_v1_organizations_webhooks_post: Create Organization Webhook Endpoint
 - GET /v1/organizations/webhooks/{webhook_endpoint_id}?beta=true — beta_get_organization_webhook_endpoint_v1_organizations_webhooks__webhook_endpoint_id__get: Get Organization Webhook Endpoint

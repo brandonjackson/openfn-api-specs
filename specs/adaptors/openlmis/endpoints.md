@@ -347,7 +347,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /reports/templates/fulfillment/{id} — getReportsTemplatesFulfillmentById: Get chosen template.
 - PUT /reports/templates/fulfillment/{id} — updateReportsTemplatesFulfillmentById: Update existing template.
 - DELETE /reports/templates/fulfillment/{id} — deleteReportsTemplatesFulfillmentById: Delete chosen template.
-- POST /reports/generate — createReportsGenerate: Generates a Jasper report using a provided JSON data source and template payload. The payload contains a pre-compiled,…
+- POST /reports/generate — createReportsGenerate: Generates a Jasper report using a provided JSON data source and template payload.
 - GET /reports/requisitions/{id}/print — getReportsRequisitionsPrint: Print requisition to a pdf file.
 - GET /reports/districts — getReportsDistricts: Get all districts.
 - GET /reports/programs — getReportsPrograms: Get all programs.
@@ -540,7 +540,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /supervisoryNodes/{id} — getSupervisoryNodesById: Get chosen supervisoryNode.
 - PUT /supervisoryNodes/{id} — updateSupervisoryNodesById: Update existing supervisoryNode.
 - DELETE /supervisoryNodes/{id} — deleteSupervisoryNodesById: [AVOID USING] Completely removes supervisory node. This action is not recoverable.
-- GET /supervisoryNodes/{id}/supervisingUsers — getSupervisoryNodesSupervisingUsers: Get supervising users based on the provided parameters. Inactive users are never returned.
+- GET /supervisoryNodes/{id}/supervisingUsers — getSupervisoryNodesSupervisingUsers: Get supervising users based on the provided parameters.
 - GET /supervisoryNodes/{id}/facilities — getSupervisoryNodesFacilities: Get supervising facilities based on the provided parameters.
 - GET /supervisoryNodes/{id}/auditLog — getSupervisoryNodesAuditLog: Returns all or part of the resource's audit log
 

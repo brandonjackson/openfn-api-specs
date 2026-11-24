@@ -5,11 +5,42 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/ArimaForecastingMetrics",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Model evaluation metrics for ARIMA forecasting models.",
   "properties": {
+    "hasDrift": {
+      "type": "array",
+      "description": "Whether Arima model fitted with drift or not. It is always false when d is not 1.",
+      "deprecated": true,
+      "items": {
+        "type": "boolean"
+      }
+    },
+    "timeSeriesId": {
+      "type": "array",
+      "description": "Id to differentiate different time series for the large-scale case.",
+      "deprecated": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "arimaFittingMetrics": {
+      "type": "array",
+      "description": "Arima model fitting metrics.",
+      "deprecated": true,
+      "items": {
+        "$ref": "ArimaFittingMetrics.json"
+      }
+    },
+    "arimaSingleModelForecastingMetrics": {
+      "type": "array",
+      "description": "Repeated as there can be many metric sets (one for each model) in auto-arima and the large-scale case.",
+      "items": {
+        "$ref": "ArimaSingleModelForecastingMetrics.json"
+      }
+    },
     "nonSeasonalOrder": {
       "type": "array",
       "description": "Non-seasonal order.",
@@ -34,37 +65,6 @@
           "YEARLY",
           "HOURLY"
         ]
-      }
-    },
-    "arimaSingleModelForecastingMetrics": {
-      "type": "array",
-      "description": "Repeated as there can be many metric sets (one for each model) in auto-arima and the large-scale case.",
-      "items": {
-        "$ref": "ArimaSingleModelForecastingMetrics.json"
-      }
-    },
-    "arimaFittingMetrics": {
-      "type": "array",
-      "description": "Arima model fitting metrics.",
-      "deprecated": true,
-      "items": {
-        "$ref": "ArimaFittingMetrics.json"
-      }
-    },
-    "hasDrift": {
-      "type": "array",
-      "description": "Whether Arima model fitted with drift or not. It is always false when d is not 1.",
-      "deprecated": true,
-      "items": {
-        "type": "boolean"
-      }
-    },
-    "timeSeriesId": {
-      "type": "array",
-      "description": "Id to differentiate different time series for the large-scale case.",
-      "deprecated": true,
-      "items": {
-        "type": "string"
       }
     }
   }

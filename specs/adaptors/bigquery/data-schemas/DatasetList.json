@@ -5,18 +5,11 @@
   "x-openfn-adaptor": "bigquery",
   "x-source": {
     "openapi": "#/components/schemas/DatasetList",
-    "capturedAt": "2026-11-16"
+    "capturedAt": "2026-11-23"
   },
   "type": "object",
   "description": "Response format for a page of results when listing datasets.",
   "properties": {
-    "unreachable": {
-      "type": "array",
-      "description": "A list of skipped locations that were unreachable. For more information about BigQuery locations, see: https://cloud.google.com/bigquery/docs/locations. Example: \"europe-west5\"",
-      "items": {
-        "type": "string"
-      }
-    },
     "datasets": {
       "type": "array",
       "description": "An array of the dataset resources in the project. Each resource contains basic information. For full information about a particular dataset resource, use the Datasets: get method. This property is omitted when there are no datasets in the project.",
@@ -24,25 +17,17 @@
         "type": "object",
         "description": "A dataset resource with only a subset of fields, to be returned in a list of datasets.",
         "properties": {
+          "externalDatasetReference": {
+            "$ref": "ExternalDatasetReference.json"
+          },
+          "id": {
+            "type": "string",
+            "description": "The fully-qualified, unique, opaque ID of the dataset."
+          },
           "catalogSource": {
             "type": "string",
             "description": "Output only. The origin of the dataset, one of: * (Unset) - Native BigQuery Dataset. * BIGLAKE - Dataset is backed by a namespace stored natively in Biglake.",
             "readOnly": true
-          },
-          "friendlyName": {
-            "type": "string",
-            "description": "An alternate name for the dataset. The friendly name is purely decorative in nature."
-          },
-          "datasetReference": {
-            "$ref": "DatasetReference.json"
-          },
-          "type": {
-            "type": "string",
-            "description": "Output only. Same as `type` in `Dataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog, * BIGLAKE_ICEBERG - a Biglake dataset accessible through the Iceberg API, * BIGLAKE_HIVE - a Biglake dataset accessible through the Hive API.",
-            "readOnly": true
-          },
-          "externalDatasetReference": {
-            "$ref": "ExternalDatasetReference.json"
           },
           "labels": {
             "type": "object",
@@ -51,20 +36,33 @@
               "type": "string"
             }
           },
-          "id": {
+          "type": {
             "type": "string",
-            "description": "The fully-qualified, unique, opaque ID of the dataset."
+            "description": "Output only. Same as `type` in `Dataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog, * BIGLAKE_ICEBERG - a Biglake dataset accessible through the Iceberg API, * BIGLAKE_HIVE - a Biglake dataset accessible through the Hive API.",
+            "readOnly": true
           },
-          "location": {
-            "type": "string",
-            "description": "The geographic location where the dataset resides."
+          "datasetReference": {
+            "$ref": "DatasetReference.json"
           },
           "kind": {
             "type": "string",
             "description": "The resource type. This property always returns the value \"bigquery#dataset\""
+          },
+          "friendlyName": {
+            "type": "string",
+            "description": "An alternate name for the dataset. The friendly name is purely decorative in nature."
+          },
+          "location": {
+            "type": "string",
+            "description": "The geographic location where the dataset resides."
           }
         }
       }
+    },
+    "etag": {
+      "type": "string",
+      "description": "Output only. A hash value of the results page. You can use this property to determine if the page has changed since the last request.",
+      "readOnly": true
     },
     "kind": {
       "type": "string",
@@ -72,10 +70,12 @@
       "default": "bigquery#datasetList",
       "readOnly": true
     },
-    "etag": {
-      "type": "string",
-      "description": "Output only. A hash value of the results page. You can use this property to determine if the page has changed since the last request.",
-      "readOnly": true
+    "unreachable": {
+      "type": "array",
+      "description": "A list of skipped locations that were unreachable. For more information about BigQuery locations, see: https://cloud.google.com/bigquery/docs/locations. Example: \"europe-west5\"",
+      "items": {
+        "type": "string"
+      }
     },
     "nextPageToken": {
       "type": "string",

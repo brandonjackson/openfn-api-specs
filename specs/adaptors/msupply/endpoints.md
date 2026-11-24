@@ -1,8 +1,8 @@
-# Open mSupply GraphQL API (msupply) v3.4.0
+# Open mSupply GraphQL API (msupply) v3.1.0
 
 <!-- derived from openapi.json by `pnpm specs index msupply` — do not edit by hand -->
 
-base: https://demo-open.msupply.org | auth: http/bearer (JWT) | 331 operations in 53 resources
+base: https://demo-open.msupply.org | auth: http/bearer (JWT) | 309 operations in 53 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -35,13 +35,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /graphql#me — me: GraphQL query `me`
 
 ## barcodes
-- POST /graphql#barcodeMatches — barcodeMatches: Everything a scan of `barcode` (as scanned or typed) matches: confirmed barcodes first, then proposals made on this site
-- POST /graphql#barcodeByGtin — barcodeByGtin: Deprecated: use `barcodeMatches` (deprecated)
-- POST /graphql#itemBarcodes — itemBarcodes: The item's confirmed barcodes
-- POST /graphql#itemBarcodeProposals — itemBarcodeProposals: Proposals for the item central hasn't confirmed or removed: every store's on central, this site's elsewhere
-- POST /graphql#proposeBarcode — proposeBarcode: Records that a user picked an item for a barcode in this store, for central to review
-- POST /graphql#deleteBarcodeProposal — deleteBarcodeProposal: Withdraws a proposal made by a store on this site
-- POST /graphql#insertBarcode — insertBarcode: Deprecated: use `proposeBarcode`, or `centralServer.barcode.insertBarcode` on central (deprecated)
+- POST /graphql#barcodeByGtin — barcodeByGtin: GraphQL query `barcodeByGtin`
+- POST /graphql#insertBarcode — insertBarcode: GraphQL mutation `insertBarcode`
 
 ## campaigns
 - POST /graphql#campaigns — campaigns: GraphQL query `campaigns`
@@ -165,7 +160,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /graphql#itemLedger — itemLedger: GraphQL query `itemLedger`
 - POST /graphql#itemCounts — itemCounts: GraphQL query `itemCounts`
 - POST /graphql#itemsByStockLineFilter — itemsByStockLineFilter: Query for items that have at least one stock_line matching `filter` in `store_id`, sorted/paginated by item attributes
-- POST /graphql#itemVariantsConfigured — itemVariantsConfigured: Whether any item has variants
+- POST /graphql#itemVariantsConfigured — itemVariantsConfigured: GraphQL query `itemVariantsConfigured`
 
 ## ledger
 - POST /graphql#ledger — ledger: GraphQL query `ledger`
@@ -221,10 +216,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /graphql#updatePatient — updatePatient: Updates a new patient (without document data)
 - POST /graphql#updatePatientCustomFields — updatePatientCustomFields: Update a patient's new-system custom property values (`custom_fields`)
 - POST /graphql#linkPatientToStore — linkPatientToStore: Links a patient to a store and thus effectively to a site
-- POST /graphql#allocatePatientNumber — allocatePatientNumber: Allocate the next patient code number for the store
 
 ## periods
-- POST /graphql#periodSchedules — periodSchedules: GraphQL query `periodSchedules`
 - POST /graphql#periods — periods: GraphQL query `periods`
 - POST /graphql#schedulesWithPeriodsByProgram — schedulesWithPeriodsByProgram: GraphQL query `schedulesWithPeriodsByProgram`
 
@@ -241,8 +234,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /graphql#preferenceDescriptions — preferenceDescriptions: The list of preferences and their current values (used for the admin/edit page)
 
 ## prescriptions
-- POST /graphql#prescriptionRequest — prescriptionRequest: GraphQL query `prescriptionRequest`
-- POST /graphql#prescriptionRequests — prescriptionRequests: GraphQL query `prescriptionRequests`
 - POST /graphql#insertPrescription — insertPrescription: GraphQL mutation `insertPrescription`
 - POST /graphql#updatePrescription — updatePrescription: GraphQL mutation `updatePrescription`
 - POST /graphql#deletePrescription — deletePrescription: GraphQL mutation `deletePrescription`
@@ -251,12 +242,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /graphql#updatePrescriptionLine — updatePrescriptionLine: GraphQL mutation `updatePrescriptionLine`
 - POST /graphql#deletePrescriptionLine — deletePrescriptionLine: GraphQL mutation `deletePrescriptionLine`
 - POST /graphql#batchPrescription — batchPrescription: GraphQL mutation `batchPrescription`
-- POST /graphql#insertPrescriptionRequest — insertPrescriptionRequest: GraphQL mutation `insertPrescriptionRequest`
-- POST /graphql#updatePrescriptionRequest — updatePrescriptionRequest: GraphQL mutation `updatePrescriptionRequest`
-- POST /graphql#deletePrescriptionRequest — deletePrescriptionRequest: GraphQL mutation `deletePrescriptionRequest`
-- POST /graphql#upsertPrescriptionRequestLine — upsertPrescriptionRequestLine: GraphQL mutation `upsertPrescriptionRequestLine`
-- POST /graphql#deletePrescriptionRequestLine — deletePrescriptionRequestLine: GraphQL mutation `deletePrescriptionRequestLine`
-- POST /graphql#batchPrescriptionRequest — batchPrescriptionRequest: The list's mass delete — atomic, so a selection is never partly removed.
 
 ## printers
 - POST /graphql#labelPrinterSettings — labelPrinterSettings: GraphQL query `labelPrinterSettings`
@@ -323,7 +308,6 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## requisitions
 - POST /graphql#requisitionLineChart — requisitionLineChart: GraphQL query `requisitionLineChart`
-- POST /graphql#requisitionLineForecastPreview — requisitionLineForecastPreview: An item's request line as the line editor's draft would save it, under a chosen forecast method, without saving anything
 - POST /graphql#responseRequisitionStats — responseRequisitionStats: GraphQL query `responseRequisitionStats`
 - POST /graphql#requisitionCounts — requisitionCounts: GraphQL query `requisitionCounts`
 - POST /graphql#requisition — requisition: GraphQL query `requisition`
@@ -369,12 +353,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## server
 - POST /graphql#apiVersion — apiVersion: GraphQL query `apiVersion`
 - POST /graphql#serverVersion — serverVersion: The running server's version, from the repo-root package.json (e.g
-- POST /graphql#isMaintenanceMode — isMaintenanceMode: Whether central is in maintenance mode, when only server admins can log in
 - POST /graphql#featureFlags — featureFlags: GraphQL query `featureFlags`
 - POST /graphql#initialisationStatus — initialisationStatus: Available without authorisation in operational and initialisation states
 - POST /graphql#migrationStatus — migrationStatus: Available without authorisation in all states (Operational, Initialisation and MigratingDatabase)
-- POST /graphql#areProcessorsPaused — areProcessorsPaused: Central only: whether the transfer and general processors are paused (always false on a remote)
-- POST /graphql#maintenanceMode — maintenanceMode: Central only: maintenance mode, and how much of OMS central's own sync buffer is left to integrate before it can be turn
 - POST /graphql#displaySettings — displaySettings: GraphQL query `displaySettings`
 - POST /graphql#databaseSettings — databaseSettings: GraphQL query `databaseSettings`
 - POST /graphql#initialiseSite — initialiseSite: GraphQL mutation `initialiseSite`
@@ -421,12 +402,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## sync
 - POST /graphql#latestSyncStatus — latestSyncStatus: GraphQL query `latestSyncStatus`
 - POST /graphql#numberOfRecordsInPushQueue — numberOfRecordsInPushQueue: GraphQL query `numberOfRecordsInPushQueue`
-- POST /graphql#isSyncPaused — isSyncPaused: Admin pause flag (Admin > Sync settings); any signed-in user may read it.
 - POST /graphql#syncSettings — syncSettings: GraphQL query `syncSettings`
-- POST /graphql#isSyncApiPaused — isSyncApiPaused: Central only: whether the sync API is paused, refusing sync from remote sites (always false on a remote)
 - POST /graphql#updateSyncSettings — updateSyncSettings: GraphQL mutation `updateSyncSettings`
 - POST /graphql#manualSync — manualSync: GraphQL mutation `manualSync`
-- POST /graphql#setSyncPaused — setSyncPaused: Pause or resume sync (server admin only)
 - POST /graphql#insertSyncMessage — insertSyncMessage: GraphQL mutation `insertSyncMessage`
 
 ## to

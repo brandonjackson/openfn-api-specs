@@ -5,14 +5,24 @@
   "x-openfn-adaptor": "googlehealthcare",
   "x-source": {
     "openapi": "#/components/schemas/ExplainDataAccessConsentInfo",
-    "capturedAt": "2026-11-13"
+    "capturedAt": "2026-11-21"
   },
   "type": "object",
   "description": "The enforcing consent's metadata.",
   "properties": {
-    "consentResource": {
-      "type": "string",
-      "description": "The resource name of this consent resource, in the format: `projects/{project_id}/locations/{location}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/Consent/{resource_id}`."
+    "cascadeOrigins": {
+      "type": "array",
+      "description": "The compartment base resources that matched a cascading policy. Each resource has the following format: `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/{resource_type}/{resource_id}`",
+      "items": {
+        "type": "string"
+      }
+    },
+    "matchingAccessorScopes": {
+      "type": "array",
+      "description": "A list of all the matching accessor scopes of this consent policy that enforced ExplainDataAccessConsentScope.accessor_scope.",
+      "items": {
+        "$ref": "ConsentAccessorScope.json"
+      }
     },
     "variants": {
       "type": "array",
@@ -30,12 +40,10 @@
       "type": "string",
       "description": "The patient owning the consent (only applicable for patient consents), in the format: `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/Patient/{patient_id}`"
     },
-    "cascadeOrigins": {
-      "type": "array",
-      "description": "The compartment base resources that matched a cascading policy. Each resource has the following format: `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/{resource_type}/{resource_id}`",
-      "items": {
-        "type": "string"
-      }
+    "enforcementTime": {
+      "type": "string",
+      "format": "google-datetime",
+      "description": "Last enforcement timestamp of this consent resource."
     },
     "type": {
       "type": "string",
@@ -46,17 +54,9 @@
         "CONSENT_POLICY_TYPE_ADMIN"
       ]
     },
-    "matchingAccessorScopes": {
-      "type": "array",
-      "description": "A list of all the matching accessor scopes of this consent policy that enforced ExplainDataAccessConsentScope.accessor_scope.",
-      "items": {
-        "$ref": "ConsentAccessorScope.json"
-      }
-    },
-    "enforcementTime": {
+    "consentResource": {
       "type": "string",
-      "format": "google-datetime",
-      "description": "Last enforcement timestamp of this consent resource."
+      "description": "The resource name of this consent resource, in the format: `projects/{project_id}/locations/{location}/datasets/{dataset_id}/fhirStores/{fhir_store_id}/fhir/Consent/{resource_id}`."
     }
   }
 }

@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index mailchimp` — do not edit by hand -->
 
-base: https://server.api.mailchimp.com/3.0 | auth: http/basic | 308 operations in 31 resources
+base: https://server.api.mailchimp.com/3.0 | auth: http/basic | 309 operations in 31 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -26,6 +26,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /audiences/{audience_id}/contacts — createAudienceContact: Add Contact
 - GET /audiences/{audience_id}/contacts/{contact_id} — getAudienceContact: Get Contact
 - PATCH /audiences/{audience_id}/contacts/{contact_id} — patchAudienceContact: Update Contact
+- DELETE /audiences/{audience_id}/contacts/{contact_id} — deleteAudienceContact: Delete a contact
 
 ## authorizedApps
 - GET /authorized-apps — getAuthorizedApps: List authorized apps

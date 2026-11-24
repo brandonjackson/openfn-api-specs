@@ -2,7 +2,7 @@
 
 <!-- derived from openapi.json by `pnpm specs index arcgis` — do not edit by hand -->
 
-base: https://www.arcgis.com, https://{urlKey}.maps.arcgis.com, https://{servicesHost}/{orgId}/arcgis, https://{host}/{context}, https://{locationHost}/arcgis | auth: http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>), http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>), http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>), http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>) | 1400 operations in 70 resources
+base: https://www.arcgis.com, https://{urlKey}.maps.arcgis.com, https://{servicesHost}/{orgId}/arcgis, https://{host}/{context}, https://{locationHost}/arcgis | auth: http/bearer (Authorization: Bearer <YOUR_TOKEN>), apiKey (query token), http/bearer (X-Esri-Authorization: Bearer <YOUR_TOKEN>) | 1400 operations in 70 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 

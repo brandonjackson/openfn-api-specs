@@ -254,21 +254,28 @@ function convertHeaders(headers: Node): Node {
   return out;
 }
 
+/**
+ * Swagger 2.0's `type: file` response, or AutoRest's spelling of the same
+ * stream (`type: object, format: file`, used throughout Azure's specs).
+ */
+function isFileSchema(schema: Node): boolean {
+  return schema?.type === 'file' || (schema?.format === 'file' && (schema.type === undefined || schema.type === 'object' || schema.type === 'string'));
+}
+
 /** Convert one Swagger response object. */
-function convertResponse(res: Node, produces: string[], ownProduces?: string[]): Node {
+function convertResponse(res: Node, produces: string[]): Node {
   if (typeof res.$ref === 'string') return { $ref: rewriteRef(res.$ref) };
 
   const out: Node = { description: res.description ?? '' };
-  if (res.schema) {
-    // A file response (`type: file`, or autorest's stream idiom `{type: object,
-    // format: file}`) is the stored bytes in whatever media type they have. The
-    // document-wide `produces` describes the API's structured bodies, not these,
-    // so unless the operation names its own types the content is `*/*`.
-    const isFile = res.schema.type === 'file' || res.schema.format === 'file';
-    const schema = isFile ? { type: 'string', format: 'binary' } : convertSchema(res.schema);
-    const types = isFile && !ownProduces?.length ? ['*/*'] : produces.length ? produces : ['application/json'];
+  if (res.schema && isFileSchema(res.schema)) {
+    // A file response is raw bytes in the stored object's own media type, not
+    // the operation's `produces` (Azure's blob.json declares application/xml
+    // document-wide, which would make every blob download "XML").
+    out.content = { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } };
+  } else if (res.schema) {
+    const schema = convertSchema(res.schema);
     const content: Node = {};
-    for (const type of types) content[type] = { schema };
+    for (const type of produces.length ? produces : ['application/json']) content[type] = { schema };
     out.content = content;
   }
   if (res.headers) out.headers = convertHeaders(res.headers);
@@ -441,7 +448,7 @@ export function swaggerToOpenApi(doc: SwaggerDoc, adaptorName: string): SwaggerC
 
       const responses: Node = {};
       for (const [code, res] of Object.entries(op.responses ?? {})) {
-        responses[code] = convertResponse(res as Node, produces, Array.isArray(op.produces) ? op.produces : undefined);
+        responses[code] = convertResponse(res as Node, produces);
       }
       // An operation with no documented response is not a valid OpenAPI 3 doc.
       if (Object.keys(responses).length === 0) {
