@@ -20,23 +20,41 @@
       "result": "not-found"
     },
     {
+      "kind": "openapi",
+      "url": "https://raw.githubusercontent.com/nyaruka/rapidpro/main/openapi.json",
+      "result": "not-found",
+      "note": "the project moved to nyaruka/rapidpro; no openapi/swagger file there either (404), and the explorer at /api/v2/explorer/ is a hand-written template over get_*_explorer() dicts, not a spec"
+    },
+    {
       "kind": "docs",
       "url": "https://rapidpro.io/api/v2/",
       "result": "used",
       "note": "server-rendered per-resource reference pages (26 resources total: contacts, flows, campaigns, channels, messages, tickets, ...); each documents its HTTP methods, fields and filters in a consistent format. Direct curl gets a 403 (bot-challenged); fetched successfully via a browser-rendering fetch instead"
+    },
+    {
+      "kind": "vendor-source",
+      "url": "https://github.com/nyaruka/rapidpro/blob/main/temba/api/v2/urls.py",
+      "result": "used",
+      "note": "RapidPro's own v2 route table (30 resources, incl. the deprecated org alias, channel_events and definitions, and the unpublicized articles and boundaries); views.py docstrings are the text the /api/v2/<resource> docs pages render, and serializers.py gives every read/write field, enum and nullability. Re-searched the repo for a spec: DRF here renders docs from docstrings, no schema generator (no drf-spectacular/drf-yasg), so still no machine spec."
     }
   ],
-  "verifiedAgainst": ["ast.json", "adaptor-source"],
+  "verifiedAgainst": [
+    "ast.json",
+    "adaptor-source"
+  ],
   "sources": [
+    "https://github.com/nyaruka/rapidpro/blob/main/temba/api/v2/urls.py",
+    "https://github.com/nyaruka/rapidpro/blob/main/temba/api/v2/views.py",
+    "https://github.com/nyaruka/rapidpro/blob/main/temba/api/v2/serializers.py",
+    "https://github.com/nyaruka/rapidpro/blob/main/temba/api/views.py",
     "https://rapidpro.io/api/v2/contacts",
     "https://rapidpro.io/api/v2/flow_starts",
     "https://rapidpro.io/api/v2/broadcasts",
     "https://rapidpro.io/api/v2/flows",
     "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/ast.json",
-    "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/dist/index.cjs",
-    "https://raw.githubusercontent.com/rapidpro/rapidpro/main/temba/api/v2/fields.py"
+    "https://cdn.jsdelivr.net/npm/@openfn/language-rapidpro/dist/index.cjs"
   ],
-  "capturedAt": "2026-09-14",
-  "lastCheckedAt": "2026-09-14",
-  "notes": "RapidPro/TextIt's REST API v2 documents 26 resources, but @openfn/language-rapidpro has no generic get/post/request builder: reading the adaptor's compiled source shows its four public functions (addContact, upsertContact, startFlow, sendBroadcast) each POST to exactly one fixed resource (contacts.json, flow_starts.json, broadcasts.json) built from a configurable host + apiVersion, and nothing else is reachable through it. coverage:full here means every documented method/field/filter of the four resources this adaptor can reach or reference (contacts, flow_starts, broadcasts, and flows, which flow_starts references by UUID but never itself calls) -- not the other ~22 REST v2 resources, which are out of scope. Previously this was a genuinely mislabelled spec: info.title was literally '(mock subset)' and the description said so too, modelling roughly a third of even these four resources' documented fields (no DELETE on contacts, no filters beyond the bare minimum, no query params on flow_starts/broadcasts/flows, thin Contact/FlowStart/Broadcast/Flow schemas). Rewritten field-for-field from the live per-resource docs pages (each resource has its own reference page under /api/v2/<resource>, consistently documenting GET/POST/DELETE, every field, and an example). upsertContact's own logic (POST without urns, and a second POST with ?urn=<urn> when the first response's urns[0] looks like an array) is an adaptor-side workaround, not a distinct endpoint; the underlying resource is the same POST /api/v2/contacts.json?urn=... modelled here. Host and API version are configurable per credential (app.rapidpro.io used as the default server), matching self-hosted RapidPro instances. Two corrections came from running openfn-mocker's conformance check against a first draft: dropped a `format: uuid` on every id field (RapidPro's docs never specify a wire format, and the mocker deliberately uses human-readable ids like 'grp-0001-anc' for guide/usage clarity, so a strict UUID pattern was an invention, not a documented fact); and BroadcastWrite's `text`/`attachments` now allow a plain string/array as well as a language-dict, confirmed from RapidPro's real serializer source (temba/api/v2/fields.py TranslatedTextField.to_internal_value: a plain string is treated as the org's default language, not rejected)."
+  "capturedAt": "2026-11-24",
+  "lastCheckedAt": "2026-11-24",
+  "notes": "RapidPro / TextIt REST API v2, authored from the vendor's own source because no machine spec exists: nyaruka/rapidpro temba/api/v2/urls.py is the route inventory (30 resources), the view docstrings are exactly what the /api/v2/<resource> docs pages render, and the read/write serializers give fields, enums and nullability. coverage:full now means the whole v2 API (49 operations: every GET list, POST create/update-by-lookup, DELETE, and the bulk *_actions endpoints), including the deprecated channel_events, definitions and org alias (marked deprecated) and the unpublicized articles/boundaries endpoints. This replaces the earlier scoping to the four resources the adaptor's named functions call (contacts, flow_starts, broadcasts, flows): AGENTS.md requires the whole vendor API, and the rest is reachable from a workflow over HTTP with the same host and token. The original 8 operationIds and their schemas are unchanged apart from additive fields (Contact.ref/notes/blocked/stopped, Broadcast.progress/id, Flow type 'background' and run counts waiting/failed) taken from the serializers. Still best-effort: response shapes come from serializer code and docstring examples, not observed traffic; ticket_actions follows the serializer's action names (add_note, change_topic) where the docstring still says 'note'. Ids are plain strings (no uuid format): openfn-mocker uses readable ids and the docs never state a wire format. BroadcastWrite text/attachments accept a plain string/array as well as a language dict (fields.py TranslatedTextField)."
 }
