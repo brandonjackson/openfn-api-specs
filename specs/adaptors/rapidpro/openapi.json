@@ -3,7 +3,7 @@
   "info": {
     "title": "RapidPro / TextIt REST API v2",
     "version": "2.0",
-    "description": "RapidPro's REST API v2 documents 26 resources (contacts, flows, campaigns, channels, messages, tickets, ...), served under /api/v2/ with a .json suffix. The OpenFn rapidpro adaptor has no generic get/post/request builder: its four public functions (addContact, upsertContact, startFlow, sendBroadcast) each POST to exactly one fixed resource (contacts, flow_starts, broadcasts), confirmed by reading the adaptor's compiled source. This document covers those resources in full (every documented method, field and filter, not just the fields the adaptor's own request bodies set), plus /flows (referenced by UUID from flow_starts but not itself callable through the adaptor) for context. The other ~22 documented resources are unreachable through this adaptor and are out of scope.",
+    "description": "RapidPro / TextIt REST API v2: 31 endpoints under /api/v2/ with a .json suffix, token auth (`Authorization: Token <key>`), cursor-paginated DRF envelopes ({ next, previous, results }), and create-or-update by POST with a ?uuid= (or ?key=/?urn=) lookup. Authored from RapidPro's own route table and the endpoint docs rendered from its view docstrings (nyaruka/rapidpro temba/api/v2). The OpenFn rapidpro adaptor's named functions POST to contacts, flow_starts and broadcasts; the rest of the API is reachable from a workflow over HTTP with the same host and token.",
     "x-openfn-adaptor": "rapidpro"
   },
   "servers": [
@@ -14,69 +14,123 @@
   ],
   "components": {
     "schemas": {
-      "ObjectRef": {
+      "ApiError": {
         "type": "object",
-        "description": "A lightweight reference to another object (contact, group, flow, ...).",
         "properties": {
-          "uuid": {
-            "type": "string"
-          },
-          "name": {
+          "detail": {
             "type": "string"
           }
-        }
+        },
+        "description": "Error body for 403/404/409 responses."
       },
-      "Contact": {
+      "Archive": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "message",
+              "run"
+            ]
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "monthly"
+            ]
+          },
+          "record_count": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "hash": {
+            "type": "string",
+            "nullable": true
+          },
+          "download_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "archive_type": {
+            "type": "string",
+            "deprecated": true,
+            "description": "Deprecated alias of type."
+          }
+        },
+        "description": "A gzipped JSONL data archive of messages or runs."
+      },
+      "ArchiveList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Archive"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Archive objects (DRF envelope)."
+      },
+      "Article": {
         "type": "object",
         "properties": {
           "uuid": {
-            "type": "string",
-            "description": "Contact's unique identifier."
+            "type": "string"
           },
-          "name": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "section": {
+            "type": "object",
+            "properties": {
+              "uuid": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
             "type": "string",
             "nullable": true
           },
           "status": {
             "type": "string",
             "enum": [
-              "active",
-              "blocked",
-              "stopped",
-              "archived"
+              "draft",
+              "published"
             ]
-          },
-          "language": {
-            "type": "string",
-            "nullable": true,
-            "description": "3-letter ISO 639-3 code."
-          },
-          "urns": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Associated URNs, e.g. 'tel:+12065551212'."
-          },
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ObjectRef"
-            }
-          },
-          "fields": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Custom contact field values, keyed by field key."
-          },
-          "flow": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ObjectRef"
-              }
-            ],
-            "nullable": true,
-            "description": "The flow the contact is currently in, if any."
           },
           "created_on": {
             "type": "string",
@@ -86,47 +140,15 @@
             "type": "string",
             "format": "date-time"
           },
-          "last_seen_on": {
+          "published_on": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           }
-        }
+        },
+        "description": "A helpdesk section or article (sections have no parent section)."
       },
-      "ContactWrite": {
-        "type": "object",
-        "description": "Request body for creating or updating a contact. Only included fields are modified on update.",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Full name."
-          },
-          "language": {
-            "type": "string",
-            "description": "3-letter ISO 639-3 code."
-          },
-          "urns": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100
-          },
-          "groups": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100
-          },
-          "fields": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Up to 100 custom field key/value pairs."
-          }
-        }
-      },
-      "ContactList": {
+      "ArticleList": {
         "type": "object",
         "properties": {
           "next": {
@@ -142,107 +164,78 @@
           "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Contact"
+              "$ref": "#/components/schemas/Article"
             }
           }
-        }
+        },
+        "description": "A cursor-paginated page of Article objects (DRF envelope)."
       },
-      "FlowStart": {
+      "ArticleWrite": {
         "type": "object",
         "properties": {
-          "uuid": {
+          "title": {
             "type": "string"
           },
-          "flow": {
-            "$ref": "#/components/schemas/ObjectRef"
+          "section": {
+            "type": "string",
+            "description": "UUID of the parent section."
           },
-          "contacts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ObjectRef"
-            }
+          "description": {
+            "type": "string"
           },
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ObjectRef"
-            }
+          "body": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
           },
           "status": {
             "type": "string",
             "enum": [
-              "pending",
-              "queued",
-              "started",
-              "completed",
-              "failed",
-              "interrupted"
+              "draft",
+              "published"
             ]
-          },
-          "params": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Extra parameters passed to the flow start, accessible via @trigger.params."
-          },
-          "created_on": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "modified_on": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },
-      "FlowStartWrite": {
+      "Boundary": {
         "type": "object",
-        "required": [
-          "flow"
-        ],
         "properties": {
-          "flow": {
-            "type": "string",
-            "description": "UUID of the flow to start contacts in."
+          "osm_id": {
+            "type": "string"
           },
-          "groups": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100
+          "name": {
+            "type": "string"
           },
-          "contacts": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100
-          },
-          "urns": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100
-          },
-          "restart_participants": {
-            "type": "boolean",
-            "default": true,
-            "description": "Whether to restart participants already active in the flow."
-          },
-          "exclude_active": {
-            "type": "boolean",
-            "default": false,
-            "description": "Whether to exclude contacts currently active in any flow."
-          },
-          "params": {
+          "parent": {
             "type": "object",
-            "additionalProperties": true,
-            "description": "Extra parameters accessible via @trigger.params; up to 10K characters JSON-encoded."
+            "properties": {
+              "osm_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          },
+          "level": {
+            "type": "integer"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "geometry": {
+            "description": "GeoJSON geometry (type not otherwise documented).",
+            "nullable": true
           }
-        }
+        },
+        "description": "An administrative boundary (country=0, state=1, district=2, ward=3)."
       },
-      "FlowStartList": {
+      "BoundaryList": {
         "type": "object",
         "properties": {
           "next": {
@@ -258,10 +251,11 @@
           "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FlowStart"
+              "$ref": "#/components/schemas/Boundary"
             }
           }
-        }
+        },
+        "description": "A cursor-paginated page of Boundary objects (DRF envelope)."
       },
       "Broadcast": {
         "type": "object",
@@ -333,6 +327,42 @@
           "created_on": {
             "type": "string",
             "format": "date-time"
+          },
+          "progress": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "started": {
+                "type": "integer"
+              }
+            }
+          },
+          "id": {
+            "type": "integer",
+            "deprecated": true
+          }
+        }
+      },
+      "BroadcastList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Broadcast"
+            }
           }
         }
       },
@@ -412,7 +442,94 @@
           }
         }
       },
-      "BroadcastList": {
+      "BulkActionFailures": {
+        "type": "object",
+        "properties": {
+          "failures": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "description": "Ids/UUIDs that could not be updated because they no longer exist."
+      },
+      "Campaign": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "group": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CampaignEvent": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "campaign": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "relative_to": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "description": "The contact field this event is relative to."
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "minutes",
+              "hours",
+              "days",
+              "weeks"
+            ]
+          },
+          "delivery_hour": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 23
+          },
+          "flow": {
+            "$ref": "#/components/schemas/ObjectRef",
+            "nullable": true
+          },
+          "message": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Message text by language code.",
+            "nullable": true
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CampaignEventList": {
         "type": "object",
         "properties": {
           "next": {
@@ -428,8 +545,581 @@
           "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Broadcast"
+              "$ref": "#/components/schemas/CampaignEvent"
             }
+          }
+        },
+        "description": "A cursor-paginated page of CampaignEvent objects (DRF envelope)."
+      },
+      "CampaignEventWrite": {
+        "type": "object",
+        "properties": {
+          "campaign": {
+            "type": "string",
+            "description": "UUID of the campaign (cannot change on update)."
+          },
+          "relative_to": {
+            "type": "string",
+            "description": "Key of the date contact field."
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "minutes",
+              "hours",
+              "days",
+              "weeks"
+            ]
+          },
+          "delivery_hour": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 23
+          },
+          "message": {
+            "description": "Message text, or a dict of text by language. Required if flow is not given.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "flow": {
+            "type": "string",
+            "description": "UUID of the flow to start. Required if message is not given."
+          }
+        },
+        "required": [
+          "campaign",
+          "relative_to",
+          "offset",
+          "unit",
+          "delivery_hour"
+        ]
+      },
+      "CampaignList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Campaign"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Campaign objects (DRF envelope)."
+      },
+      "CampaignWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string",
+            "description": "UUID of the contact group."
+          }
+        },
+        "required": [
+          "name",
+          "group"
+        ]
+      },
+      "Channel": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "device": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "power_level": {
+                "type": "integer"
+              },
+              "power_status": {
+                "type": "string",
+                "nullable": true
+              },
+              "power_source": {
+                "type": "string",
+                "nullable": true
+              },
+              "network_type": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "description": "Android device details; null for other channel types.",
+            "nullable": true
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ChannelEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "occurred_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "A channel event such as a call or a new conversation."
+      },
+      "ChannelEventList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChannelEvent"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of ChannelEvent objects (DRF envelope)."
+      },
+      "ChannelList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Channel objects (DRF envelope)."
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "Contact's unique identifier."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked",
+              "stopped",
+              "archived"
+            ]
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "description": "3-letter ISO 639-3 code."
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated URNs, e.g. 'tel:+12065551212'."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom contact field values, keyed by field key."
+          },
+          "flow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectRef"
+              }
+            ],
+            "nullable": true,
+            "description": "The flow the contact is currently in, if any."
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_seen_on": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ref": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "created_on": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "created_by": {
+                  "$ref": "#/components/schemas/UserRef"
+                }
+              }
+            }
+          },
+          "blocked": {
+            "type": "boolean",
+            "nullable": true,
+            "deprecated": true
+          },
+          "stopped": {
+            "type": "boolean",
+            "nullable": true,
+            "deprecated": true
+          }
+        }
+      },
+      "ContactBulkAction": {
+        "type": "object",
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "description": "Contact UUIDs or URNs."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "add",
+              "remove",
+              "block",
+              "unblock",
+              "interrupt",
+              "delete"
+            ]
+          },
+          "group": {
+            "type": "string",
+            "description": "Group UUID or name (for add/remove)."
+          }
+        },
+        "required": [
+          "contacts",
+          "action"
+        ]
+      },
+      "ContactList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            }
+          }
+        }
+      },
+      "ContactWrite": {
+        "type": "object",
+        "description": "Request body for creating or updating a contact. Only included fields are modified on update.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name."
+          },
+          "language": {
+            "type": "string",
+            "description": "3-letter ISO 639-3 code."
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Up to 100 custom field key/value pairs."
+          }
+        }
+      },
+      "Definitions": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          },
+          "flows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "campaigns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "description": "An export of flow, campaign and trigger definitions with their dependencies."
+      },
+      "Field": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "datetime",
+              "state",
+              "district",
+              "ward"
+            ]
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "usages": {
+            "type": "object",
+            "properties": {
+              "flows": {
+                "type": "integer"
+              },
+              "groups": {
+                "type": "integer"
+              },
+              "campaign_events": {
+                "type": "integer"
+              }
+            }
+          },
+          "agent_access": {
+            "type": "string",
+            "enum": [
+              "none",
+              "view",
+              "edit"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "deprecated": true
+          },
+          "value_type": {
+            "type": "string",
+            "deprecated": true,
+            "enum": [
+              "text",
+              "numeric",
+              "datetime",
+              "state",
+              "district",
+              "ward"
+            ]
+          }
+        },
+        "description": "A contact field."
+      },
+      "FieldList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Field"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Field objects (DRF envelope)."
+      },
+      "FieldWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "datetime",
+              "state",
+              "district",
+              "ward"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "deprecated": true
+          },
+          "value_type": {
+            "type": "string",
+            "deprecated": true
           }
         }
       },
@@ -447,6 +1137,7 @@
             "enum": [
               "message",
               "voice",
+              "background",
               "survey"
             ]
           },
@@ -469,6 +1160,9 @@
               "active": {
                 "type": "integer"
               },
+              "waiting": {
+                "type": "integer"
+              },
               "completed": {
                 "type": "integer"
               },
@@ -476,6 +1170,9 @@
                 "type": "integer"
               },
               "expired": {
+                "type": "integer"
+              },
+              "failed": {
                 "type": "integer"
               }
             }
@@ -524,10 +1221,1769 @@
             }
           }
         }
+      },
+      "FlowStart": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "flow": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "queued",
+              "started",
+              "completed",
+              "failed",
+              "interrupted"
+            ]
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Extra parameters passed to the flow start, accessible via @trigger.params."
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FlowStartList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowStart"
+            }
+          }
+        }
+      },
+      "FlowStartWrite": {
+        "type": "object",
+        "required": [
+          "flow"
+        ],
+        "properties": {
+          "flow": {
+            "type": "string",
+            "description": "UUID of the flow to start contacts in."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "urns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100
+          },
+          "restart_participants": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to restart participants already active in the flow."
+          },
+          "exclude_active": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to exclude contacts currently active in any flow."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Extra parameters accessible via @trigger.params; up to 10K characters JSON-encoded."
+          }
+        }
+      },
+      "Global": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GlobalList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Global"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Global objects (DRF envelope)."
+      },
+      "GlobalWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Group": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "initializing",
+              "evaluating",
+              "ready",
+              "invalid"
+            ]
+          },
+          "system": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "GroupList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Group objects (DRF envelope)."
+      },
+      "Label": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "description": "A message label."
+      },
+      "LabelList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Label"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Label objects (DRF envelope)."
+      },
+      "Media": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          }
+        },
+        "description": "An uploaded media object, usable as a message attachment."
+      },
+      "MediaUpload": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "file"
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "deprecated": true
+          },
+          "broadcast": {
+            "type": "integer",
+            "deprecated": true,
+            "nullable": true
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "urn": {
+            "type": "string",
+            "nullable": true
+          },
+          "channel": {
+            "$ref": "#/components/schemas/ObjectRef",
+            "nullable": true
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "in",
+              "out"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "optin",
+              "voice"
+            ],
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "handled",
+              "wired",
+              "sent",
+              "delivered",
+              "read",
+              "errored",
+              "failed"
+            ]
+          },
+          "archived": {
+            "type": "boolean",
+            "deprecated": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "visible",
+              "archived",
+              "deleted"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRef"
+            }
+          },
+          "flow": {
+            "$ref": "#/components/schemas/ObjectRef",
+            "nullable": true
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "content_type": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "quick_replies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "media": {
+            "type": "string",
+            "deprecated": true,
+            "nullable": true
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sent_on": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "MessageBulkAction": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 100,
+            "description": "Message ids."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "label",
+              "unlabel",
+              "archive",
+              "restore",
+              "delete"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "Label UUID or name (required for label/unlabel)."
+          }
+        },
+        "required": [
+          "messages",
+          "action"
+        ]
+      },
+      "MessageList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Message objects (DRF envelope)."
+      },
+      "MessageWrite": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "type": "string",
+            "description": "UUID of the contact."
+          },
+          "text": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "description": "Media UUIDs from POST /api/v2/media.json."
+          },
+          "quick_replies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "extra": {
+                  "type": "string"
+                }
+              }
+            },
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "contact"
+        ]
+      },
+      "NameWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "description": "Body for resources whose only writable field is name.",
+        "required": [
+          "name"
+        ]
+      },
+      "ObjectRef": {
+        "type": "object",
+        "description": "A lightweight reference to another object (contact, group, flow, ...).",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Resthook": {
+        "type": "object",
+        "properties": {
+          "resthook": {
+            "type": "string"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ResthookEvent": {
+        "type": "object",
+        "properties": {
+          "resthook": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ResthookEventList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResthookEvent"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of ResthookEvent objects (DRF envelope)."
+      },
+      "ResthookList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resthook"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Resthook objects (DRF envelope)."
+      },
+      "ResthookSubscriber": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "resthook": {
+            "type": "string"
+          },
+          "target_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ResthookSubscriberList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResthookSubscriber"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of ResthookSubscriber objects (DRF envelope)."
+      },
+      "ResthookSubscriberWrite": {
+        "type": "object",
+        "properties": {
+          "resthook": {
+            "type": "string"
+          },
+          "target_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "resthook",
+          "target_url"
+        ]
+      },
+      "Run": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "deprecated": true
+          },
+          "flow": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "start": {
+            "type": "object",
+            "properties": {
+              "uuid": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          },
+          "responded": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "node": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "nullable": true
+          },
+          "values": {
+            "type": "object",
+            "description": "Flow results keyed by result key.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "value": {},
+                "category": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "node": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "exited_on": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exit_type": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "interrupted",
+              "expired",
+              "failed"
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "RunList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Run"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Run objects (DRF envelope)."
+      },
+      "Ticket": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "open",
+              "closed"
+            ]
+          },
+          "topic": {
+            "$ref": "#/components/schemas/ObjectRef",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "deprecated": true,
+            "nullable": true
+          },
+          "assignee": {
+            "$ref": "#/components/schemas/UserRef",
+            "nullable": true
+          },
+          "opened_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "opened_by": {
+            "$ref": "#/components/schemas/UserRef",
+            "nullable": true
+          },
+          "opened_in": {
+            "$ref": "#/components/schemas/ObjectRef",
+            "nullable": true
+          },
+          "modified_on": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closed_on": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "TicketBulkAction": {
+        "type": "object",
+        "properties": {
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "description": "Ticket UUIDs."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "assign",
+              "add_note",
+              "change_topic",
+              "close",
+              "reopen"
+            ]
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Email of the user to assign (assign).",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "description": "Note text (add_note)."
+          },
+          "topic": {
+            "type": "string",
+            "description": "Topic UUID (change_topic)."
+          }
+        },
+        "required": [
+          "tickets",
+          "action"
+        ]
+      },
+      "TicketList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Ticket objects (DRF envelope)."
+      },
+      "Topic": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "open": {
+                "type": "integer"
+              },
+              "closed": {
+                "type": "integer"
+              }
+            }
+          },
+          "system": {
+            "type": "boolean"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TopicList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Topic"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of Topic objects (DRF envelope)."
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "administrator",
+              "editor",
+              "agent"
+            ]
+          },
+          "team": {
+            "$ref": "#/components/schemas/ObjectRef",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserList": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        },
+        "description": "A cursor-paginated page of User objects (DRF envelope)."
+      },
+      "UserRef": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "description": "A user reference."
+      },
+      "ValidationError": {
+        "type": "object",
+        "description": "400 body: field name (or non_field_errors) -> list of messages.",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "Workspace": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "date_style": {
+            "type": "string",
+            "enum": [
+              "day_first",
+              "month_first",
+              "year_first"
+            ]
+          },
+          "anon": {
+            "type": "boolean"
+          },
+          "credits": {
+            "type": "object",
+            "properties": {
+              "used": {
+                "type": "integer"
+              },
+              "remaining": {
+                "type": "integer"
+              }
+            },
+            "deprecated": true
+          },
+          "primary_language": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "token": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "`Token <api key>` from the workspace's API tokens page."
       }
     }
   },
   "paths": {
+    "/api/v2/archives.json": {
+      "get": {
+        "operationId": "listArchives",
+        "summary": "List data archives",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "message",
+                "run"
+              ]
+            },
+            "description": "Archive type: message or run."
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daily",
+                "monthly"
+              ]
+            },
+            "description": "Archive period: daily or monthly."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with start_date before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with start_date after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated archives",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "archives"
+        ]
+      }
+    },
+    "/api/v2/articles.json": {
+      "get": {
+        "operationId": "listArticles",
+        "summary": "List helpdesk sections and articles",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by article UUID."
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by section UUID."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated articles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleList"
+                }
+              }
+            }
+          }
+        },
+        "description": "Unpublicized endpoint; requires the agents feature with a helpdesk enabled (403 otherwise).",
+        "tags": [
+          "articles"
+        ]
+      },
+      "post": {
+        "operationId": "writeArticle",
+        "summary": "Create or update a helpdesk section or article",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the article with this UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Article",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Article",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteArticle",
+        "summary": "Delete a helpdesk section or article",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The article to delete.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No matching object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v2/boundaries.json": {
+      "get": {
+        "operationId": "listBoundaries",
+        "summary": "List administrative boundaries",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Paginated boundaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoundaryList"
+                }
+              }
+            }
+          }
+        },
+        "description": "Unpublicized endpoint; ordered by osm_id.",
+        "tags": [
+          "boundaries"
+        ]
+      }
+    },
+    "/api/v2/broadcasts.json": {
+      "get": {
+        "operationId": "listBroadcasts",
+        "summary": "List broadcasts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated broadcasts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "broadcasts"
+        ]
+      },
+      "post": {
+        "operationId": "sendBroadcast",
+        "summary": "Send a message to contacts, groups, and/or URNs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The queued broadcast",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Broadcast"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "broadcasts"
+        ]
+      }
+    },
+    "/api/v2/campaign_events.json": {
+      "get": {
+        "operationId": "listCampaignEvents",
+        "summary": "List campaign events",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by event UUID."
+          },
+          {
+            "name": "campaign",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by campaign UUID or name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated campaign_events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignEventList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "campaign_events"
+        ]
+      },
+      "post": {
+        "operationId": "writeCampaignEvent",
+        "summary": "Create or update a campaign event",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the event with this UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignEventWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated CampaignEvent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignEvent"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created CampaignEvent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignEvent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "campaign_events"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCampaignEvent",
+        "summary": "Delete a campaign event",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The event to delete.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No matching object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "campaign_events"
+        ]
+      }
+    },
+    "/api/v2/campaigns.json": {
+      "get": {
+        "operationId": "listCampaigns",
+        "summary": "List campaigns",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by campaign UUID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated campaigns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "operationId": "writeCampaign",
+        "summary": "Create or update a campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the campaign with this UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Campaign",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Campaign",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v2/channel_events.json": {
+      "get": {
+        "operationId": "listChannelEvents",
+        "summary": "List channel events",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by event id."
+          },
+          {
+            "name": "contact",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by contact UUID."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with created_on before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with created_on after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated channel_events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelEventList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "channel_events"
+        ],
+        "deprecated": true
+      }
+    },
+    "/api/v2/channels.json": {
+      "get": {
+        "operationId": "listChannels",
+        "summary": "List channels",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by channel UUID."
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by channel address."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated channels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "channels"
+        ]
+      }
+    },
+    "/api/v2/contact_actions.json": {
+      "post": {
+        "operationId": "bulkContactAction",
+        "summary": "Perform an action on contacts in bulk",
+        "description": "add/remove group membership, block, unblock, interrupt or delete up to 100 contacts.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactBulkAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "All objects updated"
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "contact_actions"
+        ]
+      }
+    },
     "/api/v2/contacts.json": {
       "get": {
         "operationId": "listContacts",
@@ -574,6 +3030,22 @@
               "format": "date-time"
             },
             "description": "Only return contacts modified after this time."
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Return deleted contacts instead (only uuid and modified_on are populated)."
+          },
+          {
+            "name": "expand_urns",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Return URNs as objects with channel/scheme/path/display."
           }
         ],
         "responses": {
@@ -587,7 +3059,10 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "contacts"
+        ]
       },
       "post": {
         "operationId": "addContact",
@@ -641,7 +3116,10 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "contacts"
+        ]
       },
       "delete": {
         "operationId": "deleteContact",
@@ -671,7 +3149,159 @@
           "404": {
             "description": "No matching contact"
           }
-        }
+        },
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/v2/definitions.json": {
+      "get": {
+        "operationId": "exportDefinitions",
+        "summary": "Export flow and campaign definitions",
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "flow",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Flow UUID to export (repeatable)."
+          },
+          {
+            "name": "campaign",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Campaign UUID to export (repeatable)."
+          },
+          {
+            "name": "dependencies",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "none",
+                "flows",
+                "all"
+              ]
+            },
+            "description": "Which dependencies to include: none, flows or all."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitions"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "definitions"
+        ]
+      }
+    },
+    "/api/v2/fields.json": {
+      "get": {
+        "operationId": "listFields",
+        "summary": "List contact fields",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by field key."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FieldList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fields"
+        ]
+      },
+      "post": {
+        "operationId": "writeField",
+        "summary": "Create or update a contact field",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the field with this key."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Field"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Field"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fields"
+        ]
       }
     },
     "/api/v2/flow_starts.json": {
@@ -714,7 +3344,10 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "flow_starts"
+        ]
       },
       "post": {
         "operationId": "startFlow",
@@ -740,76 +3373,10 @@
               }
             }
           }
-        }
-      }
-    },
-    "/api/v2/broadcasts.json": {
-      "get": {
-        "operationId": "listBroadcasts",
-        "summary": "List broadcasts",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "before",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "after",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Paginated broadcasts",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BroadcastList"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "sendBroadcast",
-        "summary": "Send a message to contacts, groups, and/or URNs",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BroadcastWrite"
-              }
-            }
-          }
         },
-        "responses": {
-          "201": {
-            "description": "The queued broadcast",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Broadcast"
-                }
-              }
-            }
-          }
-        }
+        "tags": [
+          "flow_starts"
+        ]
       }
     },
     "/api/v2/flows.json": {
@@ -871,8 +3438,1149 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "flows"
+        ]
+      }
+    },
+    "/api/v2/globals.json": {
+      "get": {
+        "operationId": "listGlobals",
+        "summary": "List globals",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by global key."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated globals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "globals"
+        ]
+      },
+      "post": {
+        "operationId": "writeGlobal",
+        "summary": "Create or update a global",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the global with this key."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlobalWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Global",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Global"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Global",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Global"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "globals"
+        ]
+      }
+    },
+    "/api/v2/groups.json": {
+      "get": {
+        "operationId": "listGroups",
+        "summary": "List contact groups",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by group UUID."
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by group name."
+          },
+          {
+            "name": "manual_only",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only return manual (non-smart) groups."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "groups"
+        ]
+      },
+      "post": {
+        "operationId": "writeGroup",
+        "summary": "Create or rename a contact group",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the group with this UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Group"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Group"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "groups"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteGroup",
+        "summary": "Delete a contact group",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The group to delete.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No matching object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/api/v2/labels.json": {
+      "get": {
+        "operationId": "listLabels",
+        "summary": "List message labels",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by label UUID."
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by label name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated labels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "labels"
+        ]
+      },
+      "post": {
+        "operationId": "writeLabel",
+        "summary": "Create or rename a message label",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the label with this UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Label",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Label"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Label",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Label"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "labels"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteLabel",
+        "summary": "Delete a message label",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The label to delete.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No matching object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "labels"
+        ]
+      }
+    },
+    "/api/v2/media.json": {
+      "post": {
+        "operationId": "uploadMedia",
+        "summary": "Upload a media file for use as an attachment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The uploaded media object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Media"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/v2/message_actions.json": {
+      "post": {
+        "operationId": "bulkMessageAction",
+        "summary": "Perform an action on messages in bulk",
+        "description": "label, unlabel, archive, restore or delete up to 100 messages.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageBulkAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Some objects could not be updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkActionFailures"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "All objects updated"
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "message_actions"
+        ]
+      }
+    },
+    "/api/v2/messages.json": {
+      "get": {
+        "operationId": "listMessages",
+        "summary": "List messages",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by message UUID."
+          },
+          {
+            "name": "contact",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by contact UUID."
+          },
+          {
+            "name": "folder",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "inbox",
+                "flows",
+                "archived",
+                "outbox",
+                "sent",
+                "failed"
+              ]
+            },
+            "description": "Filter by folder."
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by label UUID or name."
+          },
+          {
+            "name": "broadcast",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by broadcast id."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with created_on before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with created_on after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated messages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageList"
+                }
+              }
+            }
+          }
+        },
+        "description": "contact, folder, label and broadcast are mutually exclusive.",
+        "tags": [
+          "messages"
+        ]
+      },
+      "post": {
+        "operationId": "sendMessage",
+        "summary": "Send a message to a contact",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/api/v2/org.json": {
+      "get": {
+        "operationId": "getOrg",
+        "summary": "View the current workspace (deprecated alias)",
+        "responses": {
+          "200": {
+            "description": "The workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "workspace"
+        ],
+        "deprecated": true
+      }
+    },
+    "/api/v2/resthook_events.json": {
+      "get": {
+        "operationId": "listResthookEvents",
+        "summary": "List recent resthook events",
+        "parameters": [
+          {
+            "name": "resthook",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by resthook slug."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated resthook_events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResthookEventList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "resthook_events"
+        ]
+      }
+    },
+    "/api/v2/resthook_subscribers.json": {
+      "get": {
+        "operationId": "listResthookSubscribers",
+        "summary": "List resthook subscribers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by subscriber id."
+          },
+          {
+            "name": "resthook",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by resthook slug."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated resthook_subscribers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResthookSubscriberList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "resthook_subscribers"
+        ]
+      },
+      "post": {
+        "operationId": "createResthookSubscriber",
+        "summary": "Subscribe a URL to a resthook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResthookSubscriberWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created subscriber",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResthookSubscriber"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "resthook_subscribers"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteResthookSubscriber",
+        "summary": "Remove a resthook subscription",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The subscriber to delete.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No matching object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "resthook_subscribers"
+        ]
+      }
+    },
+    "/api/v2/resthooks.json": {
+      "get": {
+        "operationId": "listResthooks",
+        "summary": "List resthooks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Paginated resthooks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResthookList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "resthooks"
+        ]
+      }
+    },
+    "/api/v2/runs.json": {
+      "get": {
+        "operationId": "listRuns",
+        "summary": "List flow runs",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by run UUID."
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by run id (deprecated)."
+          },
+          {
+            "name": "flow",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by flow UUID."
+          },
+          {
+            "name": "contact",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by contact UUID."
+          },
+          {
+            "name": "responded",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only runs where the contact responded."
+          },
+          {
+            "name": "include_paths",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include each run's path (defaults to true)."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated runs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "runs"
+        ]
+      }
+    },
+    "/api/v2/ticket_actions.json": {
+      "post": {
+        "operationId": "bulkTicketAction",
+        "summary": "Perform an action on tickets in bulk",
+        "description": "assign, add a note to, change the topic of, close or reopen up to 100 tickets.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketBulkAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Some objects could not be updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkActionFailures"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "All objects updated"
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ticket_actions"
+        ]
+      }
+    },
+    "/api/v2/tickets.json": {
+      "get": {
+        "operationId": "listTickets",
+        "summary": "List tickets",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by ticket UUID."
+          },
+          {
+            "name": "contact",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by contact UUID."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on before this time."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only return objects with modified_on after this time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated tickets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "tickets"
+        ]
+      }
+    },
+    "/api/v2/topics.json": {
+      "get": {
+        "operationId": "listTopics",
+        "summary": "List ticket topics",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by topic UUID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated topics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topics"
+        ]
+      },
+      "post": {
+        "operationId": "writeTopic",
+        "summary": "Create or rename a ticket topic",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "When present, update the topic with this UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated Topic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The created Topic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors, keyed by field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topics"
+        ]
+      }
+    },
+    "/api/v2/users.json": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List workspace users",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by user UUID."
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by email."
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "administrator",
+                "editor",
+                "agent"
+              ]
+            },
+            "description": "Filter by role."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v2/workspace.json": {
+      "get": {
+        "operationId": "getWorkspace",
+        "summary": "View the current workspace",
+        "responses": {
+          "200": {
+            "description": "The workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "workspace"
+        ]
       }
     }
-  }
+  },
+  "security": [
+    {
+      "token": []
+    }
+  ]
 }
