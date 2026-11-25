@@ -3,7 +3,7 @@
   "info": {
     "title": "Vtiger CRM Webservices API",
     "version": "1.0.0",
-    "description": "OpenAPI description of the Vtiger CRM Webservices (RPC) API: the full set of documented /webservice.php operations (getchallenge, login, logout, listtypes, describe, create, retrieve, update, revise, delete, query, sync, lookup), not just the ones the OpenFn `@openfn/language-vtiger` adaptor calls by name. The real API is RPC-style: every call is issued against the single /webservice.php endpoint and the action is selected via an `operation` parameter (form-encoded for POST, query string for GET). To make the surface mockable, each RPC operation is modelled here as a distinct path segment under /webservice.php. Every response is wrapped in the standard envelope { \"success\": boolean, \"result\": ... } (or { \"success\": false, \"error\": {...} } on failure). The adaptor authenticates with a getchallenge -> login handshake (accessKey = md5(token + accessKey)) and drives records through a generic `postElement({ operation, elementType, element })` helper that maps onto create/update/delete/revise; it has no generic path builder, so only this bounded RPC surface is reachable through it (the newer Basic-Auth REST API at /restapi/v1/vtiger/default, which adds a couple of endpoints like get_account_hierarchy with no webservice.php equivalent, is architecturally unreachable and out of scope).",
+    "description": "OpenAPI description of the Vtiger CRM Webservices (RPC) API: every /webservice.php operation vtigercrm 8.4.0 registers (core: getchallenge, login, logout, extendsession, listtypes, describe, relatedtypes, create, retrieve, update, revise, delete, retrieve_inventory, convertlead, query, sync, retrieve_related, query_related, add_related, files_retrieve, changePassword, deleteUser; the bundled Mobile module's eleven mobile.* operations) plus lookup from the Vtiger Cloud manual, not just the ones the OpenFn `@openfn/language-vtiger` adaptor calls by name. The real API is RPC-style: every call is issued against the single /webservice.php endpoint and the action is selected via an `operation` parameter (form-encoded for POST, query string for GET). To make the surface mockable, each RPC operation is modelled here as a distinct path segment under /webservice.php. Every response is wrapped in the standard envelope { \"success\": boolean, \"result\": ... } (or { \"success\": false, \"error\": {...} } on failure). The adaptor authenticates with a getchallenge -> login handshake (accessKey = md5(token + accessKey)) and drives records through a generic `postElement({ operation, elementType, element })` helper that maps onto create/update/delete/revise; it has no generic path builder, so only this bounded RPC surface is reachable through it (the newer Basic-Auth REST API at /restapi/v1/vtiger/default, which adds a couple of endpoints like get_account_hierarchy with no webservice.php equivalent, is architecturally unreachable and out of scope).",
     "x-openfn-adaptor": "vtiger"
   },
   "servers": [
@@ -18,9 +18,46 @@
       }
     }
   ],
+  "tags": [
+    {
+      "name": "Session",
+      "description": "Challenge/login handshake and session lifetime."
+    },
+    {
+      "name": "Metadata",
+      "description": "Module types, field descriptions and relations."
+    },
+    {
+      "name": "Records",
+      "description": "Create, read, update, revise and delete records; inventory retrieval; lead conversion."
+    },
+    {
+      "name": "Query",
+      "description": "VtigerQL queries, change sync and lookup."
+    },
+    {
+      "name": "Relations",
+      "description": "Related-list reads and links."
+    },
+    {
+      "name": "Files",
+      "description": "Attachment download."
+    },
+    {
+      "name": "Users",
+      "description": "User administration."
+    },
+    {
+      "name": "Mobile",
+      "description": "Operations the bundled Mobile module registers for Vtiger's mobile app."
+    }
+  ],
   "paths": {
     "/webservice.php#operation=getchallenge": {
       "get": {
+        "tags": [
+          "Session"
+        ],
         "operationId": "getChallenge",
         "summary": "Get authentication challenge token",
         "description": "First step of the login handshake. Returns a short-lived challenge token that must be combined with the user's access key (md5(token + accessKey)) to produce the login accessKey.",
@@ -54,6 +91,9 @@
     },
     "/webservice.php#operation=login": {
       "post": {
+        "tags": [
+          "Session"
+        ],
         "operationId": "login",
         "summary": "Log in and open a session",
         "description": "Second step of the handshake. Exchanges the username and computed accessKey (md5(challengeToken + userAccessKey)) for a session.",
@@ -82,17 +122,39 @@
       }
     },
     "/webservice.php#operation=logout": {
-      "get": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
         "operationId": "logout",
         "summary": "Close the current session",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/OperationGet"
-          },
-          {
-            "$ref": "#/components/parameters/SessionNameQuery"
+        "description": "Destroys the session. Vtiger registers logout as a POST operation and vtws_logout() rejects any other request method with OPERATION_NOT_SUPPORTED, so the session id goes in the form body.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "logout"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  }
+                }
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Session closed.",
@@ -109,6 +171,9 @@
     },
     "/webservice.php#operation=listtypes": {
       "post": {
+        "tags": [
+          "Metadata"
+        ],
         "operationId": "listTypes",
         "summary": "List accessible module (element) types",
         "description": "Returns the CRM modules the authenticated user can access, along with per-module metadata. Called by the adaptor's `listTypes()` operation.",
@@ -150,10 +215,51 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "listTypesByFieldType",
+        "summary": "List accessible module types, optionally filtered by field type",
+        "description": "listtypes is registered as a GET operation, so its one parameter, fieldTypeList, is read from the query string only. The adaptor's listTypes() POSTs instead (see the post operation), which works because the operation name and sessionName are read from $_REQUEST and fieldTypeList is optional.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OperationGet"
+          },
+          {
+            "$ref": "#/components/parameters/SessionNameQuery"
+          },
+          {
+            "name": "fieldTypeList",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "JSON-encoded array of field types (e.g. [\"email\"]); restricts the result to modules having a field of one of those types.",
+            "example": "[\"email\"]"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Module types listing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTypesResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/webservice.php#operation=describe": {
       "get": {
+        "tags": [
+          "Metadata"
+        ],
         "operationId": "describe",
         "summary": "Describe a module's fields and metadata",
         "parameters": [
@@ -189,6 +295,9 @@
     },
     "/webservice.php#operation=create": {
       "post": {
+        "tags": [
+          "Records"
+        ],
         "operationId": "createElement",
         "summary": "Create a CRM record",
         "description": "Creates a record in the given module. Reached via the adaptor's `postElement({ operation: 'create', elementType, element })`.",
@@ -218,6 +327,9 @@
     },
     "/webservice.php#operation=retrieve": {
       "get": {
+        "tags": [
+          "Records"
+        ],
         "operationId": "retrieveElement",
         "summary": "Retrieve a CRM record by id",
         "parameters": [
@@ -253,6 +365,9 @@
     },
     "/webservice.php#operation=update": {
       "post": {
+        "tags": [
+          "Records"
+        ],
         "operationId": "updateElement",
         "summary": "Update (fully replace) a CRM record",
         "description": "Replaces a record with the supplied element. Reached via `postElement({ operation: 'update', ... })`.",
@@ -282,6 +397,9 @@
     },
     "/webservice.php#operation=revise": {
       "post": {
+        "tags": [
+          "Records"
+        ],
         "operationId": "reviseElement",
         "summary": "Partially update a CRM record",
         "description": "Updates only the supplied fields of a record (partial update). Reached via `postElement({ operation: 'revise', ... })`.",
@@ -311,6 +429,9 @@
     },
     "/webservice.php#operation=delete": {
       "post": {
+        "tags": [
+          "Records"
+        ],
         "operationId": "deleteElement",
         "summary": "Delete a CRM record",
         "description": "Deletes a record by id. Reached via `postElement({ operation: 'delete', ... })`.",
@@ -360,6 +481,9 @@
     },
     "/webservice.php#operation=query": {
       "get": {
+        "tags": [
+          "Query"
+        ],
         "operationId": "query",
         "summary": "Run a VtigerQL query",
         "description": "Executes a read-only, SQL-like query (VtigerQL). Query strings must end with a semicolon.",
@@ -397,6 +521,9 @@
     },
     "/webservice.php#operation=sync": {
       "get": {
+        "tags": [
+          "Query"
+        ],
         "operationId": "sync",
         "summary": "Fetch records changed since a timestamp",
         "parameters": [
@@ -442,6 +569,9 @@
     },
     "/webservice.php#operation=lookup": {
       "get": {
+        "tags": [
+          "Query"
+        ],
         "operationId": "lookup",
         "summary": "Search records by phone or email across modules",
         "description": "Searches for records whose phone or email field matches a value, across one or more modules/fields. Documented as a webservice.php operation alongside the newer REST endpoint of the same name.",
@@ -493,6 +623,1143 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/QueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=extendsession": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "operationId": "extendSession",
+        "summary": "Turn a logged-in web (PHPSESSID) session into a webservice session",
+        "description": "Registered by vtigercrm 8.4.0 as a pre-login POST operation. Adopts the browser session named by the PHPSESSID cookie or form field and returns the same session details as login.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "extendsession"
+                    ]
+                  },
+                  "PHPSESSID": {
+                    "type": "string",
+                    "description": "Web session id; read from the PHPSESSID cookie when absent."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session extended.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=relatedtypes": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "listRelatedTypes",
+        "summary": "List the modules related to a module",
+        "description": "Registered by vtigercrm 8.4.0 (660_to_700 migration). Returns the related-list modules of elementType the user can access, with each relation's label.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OperationGet"
+          },
+          {
+            "$ref": "#/components/parameters/SessionNameQuery"
+          },
+          {
+            "name": "elementType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Module name, e.g. Accounts.",
+            "example": "Accounts"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Related module types.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelatedTypesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=retrieve_related": {
+      "get": {
+        "tags": [
+          "Relations"
+        ],
+        "operationId": "retrieveRelated",
+        "summary": "Retrieve a record's related records of one module",
+        "description": "Registered by vtigercrm 8.4.0 (660_to_700 migration). Equivalent to query_related with \"SELECT * FROM <relatedType>;\".",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OperationGet"
+          },
+          {
+            "$ref": "#/components/parameters/SessionNameQuery"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Webservice id of the source record, e.g. \"11x45\".",
+            "example": "11x45"
+          },
+          {
+            "name": "relatedType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Related module name, e.g. Contacts.",
+            "example": "Contacts"
+          },
+          {
+            "name": "relatedLabel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Relation label as returned by relatedtypes (needed when two relations link the same modules)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Related records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=query_related": {
+      "get": {
+        "tags": [
+          "Relations"
+        ],
+        "operationId": "queryRelated",
+        "summary": "Run a VtigerQL query over a record's related records",
+        "description": "Registered by vtigercrm 8.4.0 (660_to_700 migration).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OperationGet"
+          },
+          {
+            "$ref": "#/components/parameters/SessionNameQuery"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "VtigerQL statement over the related module, terminated by a semicolon.",
+            "example": "SELECT * FROM Contacts;"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Webservice id of the source record.",
+            "example": "11x45"
+          },
+          {
+            "name": "relatedLabel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Relation label as returned by relatedtypes.",
+            "example": "Contacts"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching related records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=add_related": {
+      "post": {
+        "tags": [
+          "Relations"
+        ],
+        "operationId": "addRelated",
+        "summary": "Link records to a source record",
+        "description": "Registered by vtigercrm 8.4.0 (701_to_710 migration).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "sourceRecordId",
+                  "relatedRecordId"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "add_related"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "sourceRecordId": {
+                    "type": "string",
+                    "description": "Webservice id of the source record."
+                  },
+                  "relatedRecordId": {
+                    "type": "string",
+                    "description": "Webservice id of the record to link (the handler also accepts an array)."
+                  },
+                  "relationIdLabel": {
+                    "type": "string",
+                    "description": "Relation label, when the modules are related more than once."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Records linked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=retrieve_inventory": {
+      "get": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "retrieveInventory",
+        "summary": "Retrieve an inventory record with its line items",
+        "description": "Registered by vtigercrm 8.4.0 (540_to_600RC migration). For Invoice, Quotes, SalesOrder and PurchaseOrder: the retrieve result plus a LineItems array.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OperationGet"
+          },
+          {
+            "$ref": "#/components/parameters/SessionNameQuery"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Webservice id of the inventory record.",
+            "example": "7x120"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=files_retrieve": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "operationId": "retrieveFiles",
+        "summary": "Retrieve a record's attached files (base64)",
+        "description": "Registered by vtigercrm 8.4.0 (720_to_730 migration). id is \"<moduleId>x<attachmentId>\"; returns each file with its contents base64-encoded.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OperationGet"
+          },
+          {
+            "$ref": "#/components/parameters/SessionNameQuery"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Webservice-style id of the attachment, e.g. \"15x101\".",
+            "example": "15x101"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Files.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=convertlead": {
+      "post": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "convertLead",
+        "summary": "Convert a lead into an account, contact and/or opportunity",
+        "description": "Registered by vtigercrm 8.4.0; its parameter list was corrected to a single JSON-encoded element in 660_to_700. Returns the webservice ids of the records created, keyed by module.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "element"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "convertlead"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "element": {
+                    "type": "string",
+                    "description": "JSON-encoded ConvertLeadElement."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead converted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConvertLeadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=changePassword": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "changePassword",
+        "summary": "Change a user's password",
+        "description": "Registered by vtigercrm 8.4.0. Vtiger lower-cases operation names server-side, so changepassword works too.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "id",
+                  "oldPassword",
+                  "newPassword",
+                  "confirmPassword"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "changePassword"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Webservice id of the user, e.g. \"19x5\"."
+                  },
+                  "oldPassword": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  },
+                  "confirmPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=deleteUser": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "deleteUser",
+        "summary": "Delete a user and transfer their records",
+        "description": "Registered by vtigercrm 8.4.0. Admin only.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "id",
+                  "newOwnerId"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "deleteUser"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Webservice id of the user to delete."
+                  },
+                  "newOwnerId": {
+                    "type": "string",
+                    "description": "Webservice id of the user who takes over their records."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.fetchallalerts": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "fetchMobileAlerts",
+        "summary": "List the mobile alert definitions",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.fetchallalerts"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.alertdetailswithmessage": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "getMobileAlert",
+        "summary": "Get one alert with its message and record count",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "alertid"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.alertdetailswithmessage"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "alertid": {
+                    "type": "string",
+                    "description": "Alert id from fetchallalerts."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.fetchmodulefilters": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "listMobileModuleFilters",
+        "summary": "List a module's list-view filters",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "module"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.fetchmodulefilters"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "module": {
+                    "type": "string",
+                    "description": "Module name."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.fetchrecord": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "fetchMobileRecord",
+        "summary": "Fetch one record",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "record"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.fetchrecord"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "record": {
+                    "type": "string",
+                    "description": "Webservice record id."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.fetchrecordwithgrouping": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "fetchMobileRecordWithGrouping",
+        "summary": "Fetch one record with fields grouped by block",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "record"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.fetchrecordwithgrouping"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "record": {
+                    "type": "string",
+                    "description": "Webservice record id."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.filterdetailswithcount": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "getMobileFilter",
+        "summary": "Get a filter with its record count",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "filterid"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.filterdetailswithcount"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "filterid": {
+                    "type": "string",
+                    "description": "Filter (custom view) id."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.listmodulerecords": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "listMobileModuleRecords",
+        "summary": "Page through a module's records",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "elements"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.listmodulerecords"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "elements": {
+                    "type": "string",
+                    "description": "JSON-encoded object with module and any of alertid, filterid, search, page."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.saverecord": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "saveMobileRecord",
+        "summary": "Create or update a record",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "module",
+                  "values"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.saverecord"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "module": {
+                    "type": "string",
+                    "description": "Module name."
+                  },
+                  "record": {
+                    "type": "string",
+                    "description": "Webservice id to update; empty to create."
+                  },
+                  "values": {
+                    "type": "string",
+                    "description": "JSON-encoded field values."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.syncModuleRecords": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "syncMobileModuleRecords",
+        "summary": "Fetch records changed since a sync token",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "module"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.syncModuleRecords"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "module": {
+                    "type": "string",
+                    "description": "Module name."
+                  },
+                  "syncToken": {
+                    "type": "string",
+                    "description": "Token from the previous call; empty for a full sync."
+                  },
+                  "page": {
+                    "type": "string",
+                    "description": "Page number."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.query": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "queryMobile",
+        "summary": "Run a VtigerQL query, paged",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "module",
+                  "query"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.query"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "module": {
+                    "type": "string",
+                    "description": "Module name."
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "VtigerQL statement."
+                  },
+                  "page": {
+                    "type": "string",
+                    "description": "Page number."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservice.php#operation=mobile.querywithgrouping": {
+      "post": {
+        "tags": [
+          "Mobile"
+        ],
+        "operationId": "queryMobileWithGrouping",
+        "summary": "Run a VtigerQL query, paged, with fields grouped by block",
+        "description": "Registered as a POST webservice.php operation by vtigercrm 8.4.0's bundled Mobile module (pkg/vtiger/modules/Mobile, Mobile::vtlib_handler) for the Vtiger mobile app. Its result is built by modules/Mobile/api/ws handlers and is not modelled field by field.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "sessionName",
+                  "module",
+                  "query"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "mobile.querywithgrouping"
+                    ]
+                  },
+                  "sessionName": {
+                    "type": "string",
+                    "description": "Active session id from login."
+                  },
+                  "module": {
+                    "type": "string",
+                    "description": "Module name."
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "VtigerQL statement."
+                  },
+                  "page": {
+                    "type": "string",
+                    "description": "Page number."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile API result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileResponse"
                 }
               }
             }
@@ -640,7 +1907,13 @@
           },
           "result": {
             "type": "object",
-            "description": "Empty or informational result object on logout.",
+            "description": "{\"message\": \"successfull\"} (sic) on success.",
+            "properties": {
+              "message": {
+                "type": "string",
+                "example": "successfull"
+              }
+            },
             "additionalProperties": true
           }
         },
@@ -1139,6 +2412,293 @@
         "required": [
           "success",
           "error"
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "description": "Envelope for operations that answer with a message (add_related, changePassword).",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "example": "successfull"
+              }
+            }
+          }
+        },
+        "required": [
+          "success",
+          "result"
+        ]
+      },
+      "DeleteUserResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "example": "successful"
+              }
+            }
+          }
+        },
+        "required": [
+          "success",
+          "result"
+        ]
+      },
+      "RelatedType": {
+        "type": "object",
+        "description": "One relation of a module, keyed by its label in RelatedTypesResult.information.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Related module name."
+          },
+          "label": {
+            "type": "string",
+            "description": "Relation label."
+          },
+          "isEntity": {
+            "description": "vtiger_tab.isentitytype as the database returns it ('1'/'0')."
+          }
+        }
+      },
+      "RelatedTypesResult": {
+        "type": "object",
+        "properties": {
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Related module names."
+          },
+          "information": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RelatedType"
+            },
+            "description": "Map of relation label to relation details."
+          }
+        }
+      },
+      "RelatedTypesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "$ref": "#/components/schemas/RelatedTypesResult"
+          }
+        },
+        "required": [
+          "success",
+          "result"
+        ]
+      },
+      "LineItem": {
+        "type": "object",
+        "description": "One inventory line item (LineItem module record).",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "parent_id": {
+            "type": "string"
+          },
+          "productid": {
+            "type": "string"
+          },
+          "sequence_no": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string"
+          },
+          "listprice": {
+            "type": "string"
+          },
+          "discount_percent": {
+            "type": "string"
+          },
+          "discount_amount": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "tax1": {
+            "type": "string"
+          },
+          "tax2": {
+            "type": "string"
+          },
+          "tax3": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "InventoryRecord": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Element"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "LineItems": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LineItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "InventoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "$ref": "#/components/schemas/InventoryRecord"
+          }
+        },
+        "required": [
+          "success",
+          "result"
+        ]
+      },
+      "File": {
+        "type": "object",
+        "description": "An attached file, as built by vtws_filedetails().",
+        "properties": {
+          "fileid": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "filetype": {
+            "type": "string"
+          },
+          "filesize": {
+            "type": "integer"
+          },
+          "filecontents": {
+            "type": "string",
+            "format": "byte",
+            "description": "Base64-encoded file contents."
+          }
+        }
+      },
+      "FilesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/File"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "result"
+        ]
+      },
+      "ConvertLeadElement": {
+        "type": "object",
+        "required": [
+          "leadId",
+          "entities"
+        ],
+        "description": "The element convertlead decodes.",
+        "properties": {
+          "leadId": {
+            "type": "string",
+            "description": "Webservice id of the lead."
+          },
+          "assignedTo": {
+            "type": "string",
+            "description": "Owner of the new records; defaults to the caller."
+          },
+          "transferRelatedRecordsTo": {
+            "type": "string",
+            "description": "Module that inherits the lead's related records; defaults to Contacts."
+          },
+          "imageAttachmentId": {
+            "type": "string"
+          },
+          "entities": {
+            "type": "object",
+            "description": "Per target module (Accounts, Contacts, Potentials): { create: true, name: <module>, <field>: <value> }.",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "ConvertLeadResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "type": "object",
+            "description": "Webservice ids of the created records, keyed by module (Accounts, Contacts, Potentials).",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "result"
+        ]
+      },
+      "MobileResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Mobile module result; shape varies by operation."
+          }
+        },
+        "required": [
+          "success",
+          "result"
         ]
       }
     }
