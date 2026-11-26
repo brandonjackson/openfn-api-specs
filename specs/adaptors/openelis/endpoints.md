@@ -1,8 +1,8 @@
-# OpenELIS Global REST API (openelis) v3.2.2.0
+# OpenELIS Global REST API (openelis) v3.4.0-SNAPSHOT
 
 <!-- derived from openapi.json by `pnpm specs index openelis` — do not edit by hand -->
 
-base: https://openelis.example.org/api/OpenELIS-Global, https://fhir.openelis.example.org:8443 | auth: http/basic | 1057 operations in 276 resources
+base: https://openelis.example.org/api/OpenELIS-Global, https://fhir.openelis.example.org:8443 | auth: http/basic | 1426 operations in 298 resources
 
 Each line is `METHOD /path — operationId: summary`. For a request body, parameters or response shape, look the operationId up in `openapi.json`; for the objects an operation returns, see `data-schemas/index.json`.
 
@@ -16,6 +16,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/AccessionValidation/auto-validated — autoValidatedForAccession: The accession's auto-validated results: released at result entry with no validator signature
 - POST /rest/AccessionValidation/qc-acknowledgment — acknowledgeQcFailures: Persists the validator's QC failure acknowledgment for a batch (S-08 FR-04)
 - POST /rest/AccessionValidation/release-clear — releaseAllClear: The guarded bulk release
+- POST /rest/AccessionValidation/sign-clear — signAllClear: Sign all clear
 
 ## Aliquot
 - POST /rest/Aliquot — updateSampleItem: Update sample item
@@ -333,10 +334,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/SampleItem — getSampleItemByAccessionNumber: Get sample item by accession number
 
 ## SamplePatientEntry
+- POST /SamplePatientEntry — postSamplePatientEntry: Show sample patient entry save
 - GET /rest/SamplePatientEntry — showSamplePatientEntry: Show sample patient entry
 - POST /rest/SamplePatientEntry — createSampleOrder: Create a lab order (sample + patient + tests)
 
 ## SamplePatientEntryBatch
+- POST /SamplePatientEntryBatch — postSamplePatientEntryBatch: Show sample patient entry save
 - POST /rest/SamplePatientEntryBatch — showSamplePatientEntrySave: Show sample patient entry save
 
 ## SampleTypeCreate
@@ -497,6 +500,20 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## accession-results
 - GET /rest/accession-results — getAccessionResults: Get results for an accession
 
+## accreditation
+- GET /rest/accreditation/bodies — listBodies: List bodies
+- POST /rest/accreditation/bodies — createBody: Create body
+- PUT /rest/accreditation/bodies/{id} — updateBody: Update body
+- DELETE /rest/accreditation/bodies/{id} — deleteBody: Delete body
+- POST /rest/accreditation/bodies/{id}/logo — postAccreditationBodiesLogo: Upload logo
+- DELETE /rest/accreditation/bodies/{id}/logo — deleteAccreditationBodiesLogo: Remove logo
+- GET /rest/accreditation/enrollments — getAccreditationEnrollments: List enrollments
+- POST /rest/accreditation/enrollments — enroll: Enroll
+- DELETE /rest/accreditation/enrollments/{id} — unenroll: Unenroll
+- GET /rest/accreditation/eqa-coverage — eqaCoverage: Eqa coverage
+- GET /rest/accreditation/logo/{imageId} — logo: Logo
+- GET /rest/accreditation/summary — summary: Summary
+
 ## activate-reflexrule
 - POST /rest/activate-reflexrule/{id} — postActivatereflexruleById: Activate reflex rule
 
@@ -511,7 +528,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/address-hierarchy/search — getAddresshierarchySearch: Search for locations by name across all levels
 
 ## admin
+- GET /rest/admin/menu — getEditableMenuTree: Get editable menu tree
+- POST /rest/admin/menu — saveEditableMenus: Save editable menus
+- GET /rest/admin/menu/configuration — exportMenuConfiguration: Export menu configuration
 - GET /rest/admin/menu/{elementId} — getEditableMenuItem: Get editable menu item
+- GET /rest/admin/provider-titles — list: List
+- POST /rest/admin/provider-titles — create: Create
+- PUT /rest/admin/provider-titles/{id} — update: Update
+- PATCH /rest/admin/provider-titles/{id}/active — setActive: Set active
 - GET /rest/admin/vector/manual-entry-fields — getFields: Get fields
 - POST /rest/admin/vector/manual-entry-fields — createField: Create field
 - PUT /rest/admin/vector/manual-entry-fields/{id} — updateField: Update field
@@ -542,7 +566,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/alerts/count — countActiveAlerts: Count active alerts
 - GET /rest/alerts/dashboard — getAlertsDashboard: Get alerts dashboard
 - GET /rest/alerts/dashboard/summary — getAlertsSummary: Get alerts summary
+- GET /rest/alerts/dashboard/types — getAlertTypes: Get alert types
 - PUT /rest/alerts/dashboard/{id}/acknowledge — putAlertsDashboardByIdAcknowledge: Dashboard acknowledge: acknowledges and, when a comment is supplied, resolves in one step
+- PUT /rest/alerts/dashboard/{id}/resolve — putAlertsDashboardResolve: Resolve alert
 - GET /rest/alerts/{id} — getAlertById: Get alert by id
 - DELETE /rest/alerts/{id} — deleteAlert: Deletes an alert record outright
 - PUT /rest/alerts/{id}/acknowledge — putAlertsByIdAcknowledge: Acknowledge alert
@@ -557,15 +583,33 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /rest/analyzer/analyzers — postAnalyzerAnalyzers: Create
 - GET /rest/analyzer/analyzers/{id} — getAnalyzerAnalyzersById: Get
 - PUT /rest/analyzer/analyzers/{id} — putAnalyzerAnalyzersById: Update
+- DELETE /rest/analyzer/analyzers/{id} — delete: Delete
 - POST /rest/analyzer/analyzers/{id}/activate — postAnalyzerAnalyzersByIdActivate: Activate
 - GET /rest/analyzer/analyzers/{id}/activation-readiness — readiness: Readiness
+- GET /rest/analyzer/analyzers/{id}/adoption — prepareAdoption: Prepare adoption
+- POST /rest/analyzer/analyzers/{id}/adoption — adopt: Adopt
 - POST /rest/analyzer/analyzers/{id}/deactivate — postAnalyzerAnalyzersByIdDeactivate: Deactivate
+- GET /rest/analyzer/analyzers/{id}/mapping — getAnalyzerAnalyzersMapping: Get mapping
+- PUT /rest/analyzer/analyzers/{id}/mapping — saveMapping: Save mapping
+- PUT /rest/analyzer/analyzers/{id}/mapping/apply — applyMapping: Apply mapping
+- POST /rest/analyzer/analyzers/{id}/mapping/confirm — confirmMapping: Confirm mapping
 - POST /rest/analyzer/analyzers/{id}/reactivate — postAnalyzerAnalyzersByIdReactivate: Reactivate
-- PUT /rest/analyzer/analyzers/{id}/site-binding — selectSiteBindingRevision: Select site binding revision
+- POST /rest/analyzer/analyzers/{id}/reset-profile — resetProfile: Reset profile
+- POST /rest/analyzer/analyzers/{id}/restore — restore: Restore
+- POST /rest/analyzer/analyzers/{id}/retire — retire: Retire
+- POST /rest/analyzer/analyzers/{id}/setup-reception — startSetupReception: Start setup reception
 - POST /rest/analyzer/analyzers/{id}/test-connection — testConnection: Test connection
+- GET /rest/analyzer/bridge-pairing — status: Status
+- POST /rest/analyzer/bridge-pairing — pair: Pair
+- GET /rest/analyzer/deliveries/{id}/bundle — bundle: Bundle
+- GET /rest/analyzer/delivery-issues — getAnalyzerDeliveryIssues: List
+- POST /rest/analyzer/delivery-issues/{id}/dismiss — dismiss: Dismiss
+- POST /rest/analyzer/delivery-issues/{id}/retry — retry: Retry
 - POST /rest/analyzer/events/ast — postAnalyzerEventsAst: Receive
 - POST /rest/analyzer/events/culture — postAnalyzerEventsCulture: Receive
 - GET /rest/analyzer/import-issues — getImportIssues: Get import issues
+- POST /rest/analyzer/results/{id}/dismiss — dismissHeldResult: Dismiss held result
+- POST /rest/analyzer/results/{id}/failed-run — dismissAsFailedRun: Dismiss as failed run
 
 ## analyzer-types
 - GET /rest/analyzer-types — getAnalyzerTypes: Get analyzer types
@@ -576,14 +620,13 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /rest/analyzer-types/drafts/{draftId}/control-recognition — updateControlRecognition: Update control recognition
 - POST /rest/analyzer-types/drafts/{draftId}/publish — publishDraft: Publish draft
 - GET /rest/analyzer-types/mapping-catalog/tests — searchMappingTests: Search mapping tests
+- GET /rest/analyzer-types/mapping-catalog/tests/{testId}/components — getMappingComponents: Get mapping components
 - GET /rest/analyzer-types/mapping-catalog/tests/{testId}/result-options — getMappingResultOptions: Get mapping result options
 - GET /rest/analyzer-types/{profileId} — getAnalyzerType: Get analyzer type
 - POST /rest/analyzer-types/{profileId}/deactivate — postAnalyzertypesByProfileIdDeactivate: Deactivate
 - POST /rest/analyzer-types/{profileId}/duplicate — duplicate: Duplicate
 - GET /rest/analyzer-types/{profileId}/history — history: History
 - GET /rest/analyzer-types/{profileId}/mapping — getMapping: Get mapping
-- PUT /rest/analyzer-types/{profileId}/mapping — saveMapping: Save mapping
-- POST /rest/analyzer-types/{profileId}/mapping/confirm — confirmMapping: Confirm mapping
 - POST /rest/analyzer-types/{profileId}/reactivate — postAnalyzertypesByProfileIdReactivate: Reactivate
 - POST /rest/analyzer-types/{profileId}/update — updateShared: Update shared
 
@@ -593,6 +636,21 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## barcode
 - GET /api/barcode/print/{orderId}/{presetId} — printFromSnapshot: Print from snapshot
+
+## batch-workplans
+- GET /rest/batch-workplans/batches — batches: Batches
+- POST /rest/batch-workplans/batches — postBatchWorkplansBatches: Create
+- POST /rest/batch-workplans/batches/archive-all — archiveAll: Archive all
+- POST /rest/batch-workplans/batches/from-worklist — fromWorklist: From worklist
+- GET /rest/batch-workplans/batches/{id} — batch: Batch
+- PUT /rest/batch-workplans/batches/{id} — putBatchWorkplansBatches: Update
+- POST /rest/batch-workplans/batches/{id}/generate — postBatchWorkplansBatchesGenerate: Generate
+- GET /rest/batch-workplans/batches/{id}/qc-status — qcStatus: Qc status
+- PUT /rest/batch-workplans/batches/{id}/reagent — assignReagent: Assign reagent
+- GET /rest/batch-workplans/batches/{id}/setup-options — setupOptions: Setup options
+- PUT /rest/batch-workplans/batches/{id}/status — putBatchWorkplansBatchesStatus: Transition
+- GET /rest/batch-workplans/pending-tests — pendingTests: Pending tests
+- GET /rest/batch-workplans/pending-tests/page — pendingTestsPage: Pending tests page
 
 ## box-sample
 - POST /rest/box-sample — addSampleToBox: Add sample to box
@@ -670,6 +728,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/compliance/standards/active — getActiveStandards: Get active standards
 - GET /rest/compliance/standards/country-regions — getDistinctCountryRegions: Distinct list of countryRegion values currently in use across standards
 - GET /rest/compliance/standards/search — searchStandards: Search standards
+- GET /rest/compliance/standards/suggested-tests — getSuggestedTests: Get suggested tests
 - GET /rest/compliance/standards/{id} — getComplianceStandardsById: Get standard
 - PUT /rest/compliance/standards/{id} — updateStandard: Update standard
 - DELETE /rest/compliance/standards/{id} — deleteStandard: Delete standard
@@ -697,17 +756,55 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## configuration
 - POST /rest/configuration/domains/reload — reloadDomains: Reload domains
+- POST /rest/configuration/import/apply — apply: Apply
+- GET /rest/configuration/import/domains — getDomains: Get domains
+- POST /rest/configuration/import/preview — preview: Preview
+- GET /rest/configuration/unresolved — getUnresolved: Get unresolved
+- GET /rest/configuration/unresolved/candidates — getCandidates: Get candidates
+- POST /rest/configuration/unresolved/{id}/resolve — postConfigurationUnresolvedResolve: Resolve
 
 ## configuration-properties
 - GET /rest/configuration-properties — getConfigurationProperties: Get configuration properties
+
+## container-proposal
+- POST /rest/container-proposal — propose: Propose
+
+## container-types
+- GET /rest/container-types — getContainerTypes: List
+- POST /rest/container-types — add: Add
+- PUT /rest/container-types/{id} — edit: Edit
+- POST /rest/container-types/{id}/activate — activate: Activate
+- POST /rest/container-types/{id}/deactivate — deactivate: Deactivate
+- GET /rest/container-types/{id}/usage — usage: Usage
+
+## critical-callback
+- POST /rest/critical-callback — postCriticalCallback: Create
+- GET /rest/critical-callback/detail — getCriticalCallbackDetail: Get detail
+- GET /rest/critical-callback/logged-results — getLoggedResults: Get logged results
+- GET /rest/critical-callback/summary — getSummary: Get summary
 
 ## cytology
 - POST /rest/cytology/assignCytoPathologist — postCytologyAssignCytoPathologist: Assign pathologist
 - POST /rest/cytology/assignTechnician — postCytologyAssignTechnician: Assign technician
 - GET /rest/cytology/caseView/{cytologySampleId} — getCytologyEntry: Get cytology entry
 - POST /rest/cytology/caseView/{cytologySampleId} — createCytologyEntry: Create cytology entry
+- GET /rest/cytology/caseView/{id}/priorResults — cytology: Cytology
 - GET /rest/cytology/dashboard — getFilteredCytologyEntries: Get filtered cytology entries
 - GET /rest/cytology/dashboard/count — getCytologyDashBoardMetrics: Get cytology dash board metrics
+
+## dashboards
+- GET /rest/dashboards/management/antibiogram — getAntibiogram: Get antibiogram
+- GET /rest/dashboards/management/equipment — getEquipment: Get equipment
+- POST /rest/dashboards/management/export-events — recordExport: Record export
+- GET /rest/dashboards/management/kpis — getKpis: Get kpis
+- GET /rest/dashboards/management/quality — getQuality: Get quality
+- GET /rest/dashboards/management/quality-weights — getWeights: Get weights
+- PUT /rest/dashboards/management/quality-weights — saveWeights: Save weights
+- GET /rest/dashboards/management/stock — getStock: Get stock
+- GET /rest/dashboards/management/summary — getDashboardsManagementSummary: Get summary
+- GET /rest/dashboards/management/surveillance — getSurveillance: Get surveillance
+- POST /rest/dashboards/management/surveillance-mappings/import — importCsv: Import csv
+- GET /rest/dashboards/management/workload — getWorkload: Get workload
 
 ## database-cleaning
 - POST /rest/database-cleaning — cleanDatabase: Clean database
@@ -724,6 +821,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## deactivate-test-calculation
 - POST /rest/deactivate-test-calculation/{id} — postDeactivatetestcalculationById: Deactivate reflex rule
+
+## delivery
+- GET /rest/delivery/channels — channels: Channels
+- GET /rest/delivery/channels/{channel} — channel: Channel
+- PUT /rest/delivery/channels/{channel} — saveChannel: Save channel
+- POST /rest/delivery/channels/{channel}/test — testChannel: Test channel
+- GET /rest/delivery/messages — messages: Messages
+- GET /rest/delivery/messages/{id} — message: Message
+- POST /rest/delivery/messages/{id}/resend — resend: Resend
+- GET /rest/delivery/settings — settings: Settings
+- PUT /rest/delivery/settings — putDeliverySettings: Save settings
 
 ## departments-for-site
 - GET /rest/departments-for-site — getDepartmentsForReferingSite: Get departments for refering site
@@ -745,35 +853,93 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/environmental-sample-types — getEnvironmentalSampleTypes: Get environmental sample types
 
 ## eqa
-- GET /rest/eqa/distributions — listDistributions: List distributions
-- POST /rest/eqa/distributions — createDistribution: Create distribution
-- GET /rest/eqa/distributions/{distributionId}/results — getResults: Get results
-- POST /rest/eqa/distributions/{distributionId}/results — submitResult: Submit result
-- POST /rest/eqa/distributions/{distributionId}/results/import — batchImportResults: Batch import results
-- GET /rest/eqa/distributions/{distributionId}/statistics — getEqaDistributionsByDistributionIdStatistics: Get statistics
-- POST /rest/eqa/distributions/{distributionId}/submit/{organizationId} — submitViaFhir: Submit via fhir
-- POST /rest/eqa/distributions/{distributionId}/submit/{organizationId}/approve-late — approveLateSubmission: Approve late submission
-- GET /rest/eqa/distributions/{id} — getDistribution: Get distribution
-- POST /rest/eqa/distributions/{id}/barcodes — generateBarcodes: Generate barcodes
-- PUT /rest/eqa/distributions/{id}/status — advanceStatus: Advance status
+- GET /rest/eqa/analyst-competency — analystCompetency: Analyst competency
+- POST /rest/eqa/cycles — createCycle: Create cycle
+- GET /rest/eqa/cycles/mine — myCycles: My cycles
+- POST /rest/eqa/cycles/mine — createMyCycle: Create my cycle
+- GET /rest/eqa/cycles/mine/enrollments — enrollmentsOpenForCycles: Enrollments open for cycles
+- GET /rest/eqa/cycles/{cycleId}/export-bundle — exportBundle: Export bundle
+- GET /rest/eqa/cycles/{cycleId}/participant-results — resultsForCycle: Results for cycle
+- GET /rest/eqa/cycles/{cycleId}/participants/{organizationId}/performance-report — participantPerformanceReport: Participant performance report
+- GET /rest/eqa/cycles/{cycleId}/performance-report — performanceReport: Performance report
+- GET /rest/eqa/cycles/{cycleId}/prep — prepStatus: Prep status
+- GET /rest/eqa/cycles/{cycleId}/receipt — getReceipt: Get receipt
+- POST /rest/eqa/cycles/{cycleId}/receipt — recordReceipt: Record receipt
+- GET /rest/eqa/cycles/{cycleId}/receipts — receipts: Receipts
+- POST /rest/eqa/cycles/{cycleId}/receipts/{organizationId}/delivered — markDelivered: Mark delivered
+- POST /rest/eqa/cycles/{cycleId}/receipts/{organizationId}/repeat — sendRepeat: Send repeat
+- GET /rest/eqa/cycles/{cycleId}/report-comments — reportComments: Report comments
+- POST /rest/eqa/cycles/{cycleId}/report-comments — attachReportComments: Attach report comments
+- DELETE /rest/eqa/cycles/{cycleId}/report-comments/{commentId} — detachReportComment: Detach report comment
+- GET /rest/eqa/cycles/{cycleId}/results — cycleResults: Cycle results
+- POST /rest/eqa/cycles/{cycleId}/results — takeInCycleResults: Take in cycle results
+- POST /rest/eqa/cycles/{cycleId}/results/import — importCycleResultsCsv: Import cycle results csv
+- POST /rest/eqa/cycles/{cycleId}/review-submit — submitAfterReview: Submit after review
+- POST /rest/eqa/cycles/{cycleId}/score — postEqaCyclesScore: Score
+- POST /rest/eqa/cycles/{cycleId}/score-intake — intakeScores: Intake scores
+- POST /rest/eqa/cycles/{cycleId}/score-intake/csv — intakeScoresCsv: Intake scores csv
+- GET /rest/eqa/cycles/{cycleId}/scores — scores: Scores
+- GET /rest/eqa/cycles/{cycleId}/scores/{organizationId}/csv — scoresCsv: Scores csv
+- POST /rest/eqa/cycles/{cycleId}/scores/{organizationId}/distribute — distributeScores: Distribute scores
+- GET /rest/eqa/cycles/{cycleId}/shipments — shipments: Shipments
+- POST /rest/eqa/cycles/{cycleId}/shipments — saveShipment: Save shipment
+- POST /rest/eqa/cycles/{cycleId}/shipments/ship — ship: Ship
+- POST /rest/eqa/cycles/{cycleId}/submit-manual — submitManually: Submit manually
+- GET /rest/eqa/cycles/{id} — getCycle: Get cycle
+- GET /rest/eqa/cycles/{id}/participant-state — participantState: Participant state
+- PATCH /rest/eqa/cycles/{id}/transition — transition: Transition
+- GET /rest/eqa/cycles/{id}/transitions — transitions: Transitions
 - GET /rest/eqa/eligible-organizations — getEligibleOrganizations: Get eligible organizations
+- GET /rest/eqa/followups — queue: Queue
+- POST /rest/eqa/followups/{followupId}/dismiss — postEqaFollowupsDismiss: Dismiss
+- POST /rest/eqa/followups/{followupId}/escalate — escalate: Escalate
+- GET /rest/eqa/lab-performance — labPerformance: Lab performance
+- GET /rest/eqa/lab-performance/open-nce-count — openNceCount: Open nce count
 - GET /rest/eqa/my-programs — listMyPrograms: List my programs
 - POST /rest/eqa/my-programs — createMyProgram: Create my program
+- GET /rest/eqa/my-programs/analytes — getAnalytes: Get analytes
 - GET /rest/eqa/my-programs/providers — getProviders: Get providers
 - GET /rest/eqa/my-programs/{id} — getMyProgram: Get my program
 - PUT /rest/eqa/my-programs/{id} — updateMyProgram: Update my program
 - DELETE /rest/eqa/my-programs/{id} — deleteMyProgram: Delete my program
+- GET /rest/eqa/my-programs/{id}/open-cycles — openCycles: Open cycles
+- PUT /rest/eqa/my-programs/{id}/status — updateMyProgramStatus: Update my program status
 - GET /rest/eqa/orders — listOrders: List orders
 - GET /rest/eqa/orders/summary — getEqaOrdersSummary: Get summary
+- GET /rest/eqa/panels — panels: Panels
+- POST /rest/eqa/panels — postEqaPanels: Create panel
+- GET /rest/eqa/panels/{id} — getEqaPanels: Get panel
+- POST /rest/eqa/panels/{id}/distribute — distribute: Distribute
+- GET /rest/eqa/panels/{id}/labels — labelSheet: Label sheet
+- GET /rest/eqa/panels/{id}/samples — getSamples: Get samples
+- POST /rest/eqa/panels/{id}/seal — seal: Seal
+- POST /rest/eqa/panels/{id}/seal-and-distribute — sealAndDistribute: Seal and distribute
+- POST /rest/eqa/panels/{id}/unblind — unblind: Unblind
+- PATCH /rest/eqa/panels/{panelId}/prep — savePrep: Save prep
+- POST /rest/eqa/participant-results — postEqaParticipantResults: Create draft
+- PATCH /rest/eqa/participant-results/{id}/score — score: Score
+- PATCH /rest/eqa/participant-results/{id}/status — patchEqaParticipantResultsStatus: Transition
 - GET /rest/eqa/programs — listPrograms: List programs
 - POST /rest/eqa/programs — postEqaPrograms: Create program
 - GET /rest/eqa/programs/{id} — getProgram: Get program
 - PUT /rest/eqa/programs/{id} — updateProgram: Update program
+- GET /rest/eqa/programs/{id}/analysts — getAnalysts: Get analysts
+- PUT /rest/eqa/programs/{id}/analysts — updateAnalysts: Update analysts
 - GET /rest/eqa/programs/{id}/tests — getTestAssignments: Get test assignments
 - PUT /rest/eqa/programs/{id}/tests — updateTestAssignments: Update test assignments
 - GET /rest/eqa/programs/{programId}/enrollments — listEnrollments: List enrollments
 - POST /rest/eqa/programs/{programId}/enrollments — createEnrollments: Create enrollments
 - PUT /rest/eqa/programs/{programId}/enrollments/{enrollmentId} — updateEnrollmentStatus: Update enrollment status
+- POST /rest/eqa/provider/cycles — createProviderCycle: Create provider cycle
+- GET /rest/eqa/provider/followups — register: Register
+- POST /rest/eqa/provider/followups/{followupId}/notify — notifyParticipant: Notify participant
+- POST /rest/eqa/provider/followups/{followupId}/repeat — repeat: Repeat
+- POST /rest/eqa/provider/followups/{followupId}/status — triage: Triage
+- GET /rest/eqa/provider/schemes — providerSchemes: Provider schemes
+- GET /rest/eqa/provider/schemes/{schemeId}/performance — participantPerformance: Participant performance
+- GET /rest/eqa/report-comments — reportCommentLibrary: Report comment library
+- GET /rest/eqa/schemes/{schemeId}/eligible-analysts — eligibleAnalysts: Eligible analysts
+- GET /rest/eqa/testable-tests — testableTests: Testable tests
 
 ## esig
 - GET /rest/esig/admin/certifications — getAllCertifications: Get all certifications (admin)
@@ -781,12 +947,21 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/esig/certified/{username} — isUserCertified: Check if current user is certified
 - POST /rest/esig/certify — certifyUser: Complete first-use certification
 - GET /rest/esig/enabled — isEsigEnabled: Check if e-signatures are enabled
+- GET /rest/esig/log — getSignatureLog: Get signature log
+- GET /rest/esig/log/export — exportSignatureLogCsv: Export signature log csv
+- GET /rest/esig/log/exportPdf — exportSignatureLogPdf: Export signature log pdf
 - GET /rest/esig/session-status/{username} — getSessionStatus: Get signing session status for the current user
 - POST /rest/esig/sign — executeSignature: Execute an electronic signature
 - GET /rest/esig/signatures — getSignaturesForRecord: Get signatures for a specific record
 
+## facility-location
+- GET /rest/facility-location — getFacilityLocation: Get facility location
+- POST /rest/facility-location — recordBrowserLocation: Record browser location
+
 ## fhir
 - POST /fhir/optimizeStorage — triggerOptimizeStorage: Trigger optimize storage
+- GET /rest/fhir/Questionnaire/{resourceId} — getQuestionnaire: Get questionnaire
+- POST /rest/fhir/replay — replay: Replay
 - GET /rest/fhir/{resourceType} — queryFhirResources: Query FHIR resources by resource type with search parameters
 - GET /rest/fhir/{resourceType}/_search — searchFhirResourcesRaw: Execute a raw FHIR query using the FHIR search URL format
 - POST /rest/fhir/{resourceType}/_search — searchFhirResources: Execute a FHIR search using a POST request with a search parameter map
@@ -802,6 +977,27 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /fhir/{resourceType}/{id} — getFhirStoreResource: Read one resource by logical id
 - PUT /fhir/{resourceType}/{id} — updateFhirStoreResource: Update or create a resource at a known id
 - DELETE /fhir/{resourceType}/{id} — deleteFhirStoreResource: Delete a resource by logical id
+
+## freezer-monitoring
+- GET /rest/freezer-monitoring/devices — getFreezerMonitoringDevices: List devices
+- POST /rest/freezer-monitoring/devices — createDevice: Create device
+- GET /rest/freezer-monitoring/devices/name/{name} — getFreezerMonitoringDevicesName: Get device by name
+- GET /rest/freezer-monitoring/devices/{id} — getFreezerMonitoringDevicesById: Get device
+- PUT /rest/freezer-monitoring/devices/{id} — updateDevice: Update device
+- POST /rest/freezer-monitoring/devices/{id}/delete — deleteDevice: Delete device
+- PUT /rest/freezer-monitoring/devices/{id}/thresholds — putFreezerMonitoringDevicesThresholds: Update device thresholds
+- POST /rest/freezer-monitoring/devices/{id}/toggle-status — postFreezerMonitoringDevicesToggleStatus: Toggle device status
+- GET /rest/freezer-monitoring/id/{freezerId}/readings — getFreezerMonitoringIdReadings: Get readings
+- GET /rest/freezer-monitoring/status — getFreezerMonitoringStatus: Get current status
+- GET /rest/freezer-monitoring/storage-devices — getFreezerMonitoringStorageDevices: List storage devices
+- GET /rest/freezer-monitoring/system-config — getFreezerMonitoringSystemConfig: Get system config
+- POST /rest/freezer-monitoring/system-config — postFreezerMonitoringSystemConfig: Save system config
+- GET /rest/freezer-monitoring/thresholds — getFreezerMonitoringThresholds: List thresholds
+- POST /rest/freezer-monitoring/thresholds — postFreezerMonitoringThresholds: Create threshold
+- GET /rest/freezer-monitoring/users — getFreezerMonitoringUsers: List users
+- POST /rest/freezer-monitoring/{freezerId}/thresholds/{profileId}/assign — postFreezerMonitoringThresholdsAssign: Assign threshold
+- GET /rest/freezer-monitoring/{name}/latest — getFreezerMonitoringLatest: Get latest by name
+- GET /rest/freezer-monitoring/{name}/recent — getFreezerMonitoringRecent: Get recent by name
 
 ## getPendingAnalysisForTestProvider
 - GET /rest/getPendingAnalysisForTestProvider — getGetPendingAnalysisForTestProvider: Process request
@@ -821,6 +1017,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## immunohistochemistry
 - POST /rest/immunohistochemistry/assignPathologist — postImmunohistochemistryAssignPathologist: Assign pathologist
 - POST /rest/immunohistochemistry/assignTechnician — postImmunohistochemistryAssignTechnician: Assign technician
+- GET /rest/immunohistochemistry/caseView/{id}/priorResults — immunohistochemistry: Immunohistochemistry
 - GET /rest/immunohistochemistry/caseView/{immunohistochemistrySampleId} — getImmunohistochemistryCaseViewByImmunohistochemistrySampleId: Get filtered immunohistochemistry entries
 - POST /rest/immunohistochemistry/caseView/{immunohistochemistrySampleId} — postImmunohistochemistryCaseViewByImmunohistochemistrySampleId: Get filtered immunohistochemistry entries
 - GET /rest/immunohistochemistry/dashboard — getImmunohistochemistryDashboard: Get filtered immunohistochemistry entries
@@ -832,14 +1029,20 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /import/provider — importProviders: Import providers
 
 ## inventory
+- GET /rest/inventory/board — getBoard: Get board
+- POST /rest/inventory/count — recordCount: Record count
+- POST /rest/inventory/import/apply — postInventoryImportApply: Apply
+- POST /rest/inventory/import/preview — postInventoryImportPreview: Preview
+- GET /rest/inventory/import/template — template: Template
 - GET /rest/inventory/items — getInventoryItems: Get all active
 - POST /rest/inventory/items — postInventoryItems: Create
 - GET /rest/inventory/items/all — getInventoryItemsAll: Get all
 - GET /rest/inventory/items/category/{category} — getByCategory: Get by category
+- POST /rest/inventory/items/clear-ordered — clearOrdered: Clear ordered
 - GET /rest/inventory/items/low-stock — getLowStockItems: Get low stock items
+- POST /rest/inventory/items/mark-ordered — markOrdered: Mark ordered
 - GET /rest/inventory/items/search — getInventoryItemsSearch: Search
-- GET /rest/inventory/items/type/{itemType} — getInventoryItemsTypeByItemType: Get by type
-- GET /rest/inventory/items/types — getAllItemTypes: Get all item types
+- GET /rest/inventory/items/tags — getAllTags: Get all tags
 - GET /rest/inventory/items/{id} — getInventoryItemsById: Get by id
 - PUT /rest/inventory/items/{id} — putInventoryItemsById: Update
 - PUT /rest/inventory/items/{id}/activate — putInventoryItemsByIdActivate: Activate
@@ -847,12 +1050,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/inventory/items/{id}/stock — getTotalStock: Get total stock
 - GET /rest/inventory/lots — getInventoryLots: Get all
 - POST /rest/inventory/lots — postInventoryLots: Create
+- GET /rest/inventory/lots/barcode/{barcode} — getByBarcode: Get by barcode
 - GET /rest/inventory/lots/expired — getExpiredActiveLots: Get expired active lots
 - GET /rest/inventory/lots/expiring — getExpiringLots: Get expiring lots
 - GET /rest/inventory/lots/item/{itemId} — getInventoryLotsItemByItemId: Get by item id
 - GET /rest/inventory/lots/item/{itemId}/available — getAvailableLotsFEFO: Get available lots fefo
 - GET /rest/inventory/lots/item/{itemId}/total-quantity — getTotalQuantity: Get total quantity
-- GET /rest/inventory/lots/location/{locationId} — getByLocationId: Get by location id
 - GET /rest/inventory/lots/lot-number/{lotNumber} — getByLotNumber: Get by lot number
 - POST /rest/inventory/lots/process-expired — processExpired: Process expired
 - GET /rest/inventory/lots/{id} — getInventoryLotsById: Get by id
@@ -860,12 +1063,20 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /rest/inventory/lots/{id}/adjust — adjustQuantity: Adjust quantity
 - POST /rest/inventory/lots/{id}/dispose — disposeLot: Dispose lot
 - POST /rest/inventory/lots/{id}/open — openLot: Open lot
+- POST /rest/inventory/lots/{id}/print-label — postInventoryLotsPrintLabel: Print label
 - PUT /rest/inventory/lots/{id}/qc-status — updateQCStatus: Update qc status
 - PUT /rest/inventory/lots/{id}/status — updateStatus: Update status
 - GET /rest/inventory/management/alerts — getInventoryManagementAlerts: Get alerts
 - GET /rest/inventory/management/check-availability — checkAvailability: Check availability
 - POST /rest/inventory/management/consume — consumeInventory: Consume inventory
 - POST /rest/inventory/management/receive — receiveInventory: Receive inventory
+- POST /rest/inventory/management/receive/batch — receiveInventoryBatch: Receive inventory batch
+- POST /rest/inventory/reports/generate — postInventoryReportsGenerate: Generate
+- POST /rest/inventory/reports/preview — postInventoryReportsPreview: Preview
+- GET /rest/inventory/tags — getDirectory: Get directory
+- POST /rest/inventory/tags — postInventoryTags: Create
+- POST /rest/inventory/tags/activate — postInventoryTagsActivate: Activate
+- POST /rest/inventory/tags/deactivate — postInventoryTagsDeactivate: Deactivate
 - GET /rest/inventory/transactions/date-range — getByDateRange: Get by date range
 - GET /rest/inventory/transactions/lot/{lotId} — getInventoryTransactionsLotByLotId: Get by lot id
 - GET /rest/inventory/transactions/reference — getByReference: Get by reference
@@ -877,25 +1088,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/inventory/usage/test-result/{testResultId} — getByTestResultId: Get by test result id
 - GET /rest/inventory/usage/{id} — getInventoryUsageById: Get by id
 
-## inventory-storage-locations
-- GET /rest/inventory-storage-locations — getInventorystoragelocations: Get all active
-- POST /rest/inventory-storage-locations — postInventorystoragelocations: Create
-- GET /rest/inventory-storage-locations/code/{code} — getByCode: Get by code
-- GET /rest/inventory-storage-locations/top-level — getTopLevel: Get top level
-- GET /rest/inventory-storage-locations/type/{locationType} — getInventorystoragelocationsTypeByLocationType: Get by type
-- GET /rest/inventory-storage-locations/{id} — getInventorystoragelocationsById: Get by id
-- PUT /rest/inventory-storage-locations/{id} — putInventorystoragelocationsById: Update
-- PUT /rest/inventory-storage-locations/{id}/deactivate — putInventorystoragelocationsByIdDeactivate: Deactivate
-- GET /rest/inventory-storage-locations/{id}/has-active-lots — hasActiveLots: Has active lots
-- GET /rest/inventory-storage-locations/{id}/path — getPath: Get path
-- GET /rest/inventory-storage-locations/{parentId}/children — getInventorystoragelocationsByParentIdChildren: Get children
-
 ## lab-units-management
 - GET /rest/lab-units-management — getAllLabUnits: Get all lab units
 - POST /rest/lab-units-management — createLabUnit: Create a lab unit
 - GET /rest/lab-units-management/{labUnitId} — getLabUnit: Get lab unit
 - PUT /rest/lab-units-management/{labUnitId} — updateLabUnit: Update lab unit
 - GET /rest/lab-units-management/{labUnitId}/assignable-tests — getAssignableTests: Active tests NOT currently assigned to this lab unit, for the bulk Assign dialog
+- POST /rest/lab-units-management/{labUnitId}/deactivate — deactivateLabUnit: Deactivate lab unit
+- GET /rest/lab-units-management/{labUnitId}/deactivation-impact — getDeactivationImpact: Get deactivation impact
 - PUT /rest/lab-units-management/{labUnitId}/display-order — putLabunitsmanagementByLabUnitIdDisplayorder: Update display order
 - GET /rest/lab-units-management/{labUnitId}/tests — getAssignedTests: Get assigned tests
 - POST /rest/lab-units-management/{labUnitId}/tests/assign — assignTests: Bulk-assign tests INTO this lab unit (moves them off their current unit)
@@ -925,6 +1125,34 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/localizations/{id} — getLocalization: Get a specific localization by ID
 - PUT /rest/localizations/{id}/translations — updateTranslations: Update translations for a localization entry
 - POST /rest/localizations/{id}/translations/{locale} — setTranslation: Set a single translation for a localization entry
+- POST /rest/localizations/{id}/translations/{locale}/reset — resetToShipped: Reset to shipped
+
+## locations
+- GET /rest/locations/areas — areas: Areas
+- POST /rest/locations/areas — createArea: Create area
+- GET /rest/locations/areas/levels — areaLevels: Area levels
+- PUT /rest/locations/areas/{id} — updateArea: Update area
+- POST /rest/locations/areas/{id}/active — setAreaActive: Set area active
+- GET /rest/locations/export — getLocationsExport: Export
+- GET /rest/locations/identifier-collisions — identifierCollisions: Identifier collisions
+- POST /rest/locations/import/apply — postLocationsImportApply: Apply
+- POST /rest/locations/import/preview — postLocationsImportPreview: Preview
+- GET /rest/locations/import/recent — recent: Recent
+- GET /rest/locations/import/runs/{id}/report — getLocationsImportRunsReport: Report
+- GET /rest/locations/import/template — getLocationsImportTemplate: Template
+- GET /rest/locations/lists — lists: Lists
+- GET /rest/locations/organizations — getLocationsOrganizations: List
+- POST /rest/locations/organizations — postLocationsOrganizations: Create
+- POST /rest/locations/organizations/active — postLocationsOrganizationsActive: Set active
+- GET /rest/locations/organizations/{id} — get: Get
+- PUT /rest/locations/organizations/{id} — putLocationsOrganizations: Update
+- GET /rest/locations/organizations/{id}/history — getLocationsOrganizationsHistory: History
+- GET /rest/locations/organizations/{id}/usage — getLocationsOrganizationsUsage: Usage
+- GET /rest/locations/organizations/{id}/wards — wards: Wards
+- POST /rest/locations/organizations/{id}/wards — createWard: Create ward
+- PUT /rest/locations/organizations/{id}/wards/{wardId} — updateWard: Update ward
+- GET /rest/locations/this-laboratory — thisLaboratory: This laboratory
+- POST /rest/locations/wards/{wardId}/move — moveWard: Move ward
 
 ## logging
 - GET /logging — changeLoggingLevel: Change logging level
@@ -947,16 +1175,22 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/methods-for-test/{testId} — getMethodsForTest: Returns methods linked to the given test plus the default method id
 
 ## microbiology
+- GET /rest/microbiology/admin/breakpoints/default — getDefaultStandard: Get default standard
 - POST /rest/microbiology/admin/breakpoints/imports/preview — previewImport: Preview import
 - POST /rest/microbiology/admin/breakpoints/imports/{previewToken}/apply — applyImport: Apply import
 - GET /rest/microbiology/admin/breakpoints/standards — getStandards: Get standards
 - GET /rest/microbiology/admin/breakpoints/standards/{id} — getMicrobiologyAdminBreakpointsStandardsById: Get standard
 - POST /rest/microbiology/admin/breakpoints/standards/{id}/activate — postMicrobiologyAdminBreakpointsStandardsByIdActivate: Activate
 - POST /rest/microbiology/admin/breakpoints/standards/{id}/archive — archive: Archive
+- PUT /rest/microbiology/admin/breakpoints/standards/{id}/default — setDefaultStandard: Set default standard
 - GET /rest/microbiology/admin/breakpoints/standards/{id}/rules — getRules: Get rules
 - POST /rest/microbiology/admin/breakpoints/standards/{id}/rules — createRule: Create rule
 - GET /rest/microbiology/admin/breakpoints/standards/{id}/rules/{ruleId} — getRule: Get rule
 - PUT /rest/microbiology/admin/breakpoints/standards/{id}/rules/{ruleId} — updateRule: Update rule
+- GET /rest/microbiology/admin/dst-bindings — getMicrobiologyAdminDstBindings: Get
+- POST /rest/microbiology/admin/dst-bindings — postMicrobiologyAdminDstBindings: Save
+- GET /rest/microbiology/admin/interpretation-rules — getMicrobiologyAdminInterpretationRules: Get
+- POST /rest/microbiology/admin/interpretation-rules — postMicrobiologyAdminInterpretationRules: Save
 - GET /rest/microbiology/admin/reference/antibiotics — getMicrobiologyAdminReferenceAntibiotics: Get antibiotics
 - POST /rest/microbiology/admin/reference/antibiotics — createAntibiotic: Create antibiotic
 - GET /rest/microbiology/admin/reference/antibiotics/{id} — getAntibiotic: Get antibiotic
@@ -964,12 +1198,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PATCH /rest/microbiology/admin/reference/antibiotics/{id}/active — setAntibioticActive: Set antibiotic active
 - GET /rest/microbiology/admin/reference/ast-panels — getMicrobiologyAdminReferenceAstpanels: Get ast panels
 - POST /rest/microbiology/admin/reference/ast-panels — createAstPanel: Create ast panel
+- GET /rest/microbiology/admin/reference/ast-panels/organism-coverage — getPanelOrganismCoverage: Get panel organism coverage
 - GET /rest/microbiology/admin/reference/ast-panels/{id} — getAstPanel: Get ast panel
 - POST /rest/microbiology/admin/reference/ast-panels/{id}/versions — publishAstPanelVersion: Publish ast panel version
-- GET /rest/microbiology/admin/reference/culture-setups — getCultureSetups: Get culture setups
-- POST /rest/microbiology/admin/reference/culture-setups — createCultureSetup: Create culture setup
-- GET /rest/microbiology/admin/reference/culture-setups/{id} — getCultureSetup: Get culture setup
-- PUT /rest/microbiology/admin/reference/culture-setups/{id} — updateCultureSetup: Update culture setup
 - GET /rest/microbiology/admin/reference/options/{resource} — getMicrobiologyAdminReferenceOptionsByResource: Get options
 - GET /rest/microbiology/admin/reference/organisms — getMicrobiologyAdminReferenceOrganisms: Get organisms
 - POST /rest/microbiology/admin/reference/organisms — createOrganism: Create organism
@@ -977,6 +1208,13 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - PUT /rest/microbiology/admin/reference/organisms/{id} — updateOrganism: Update organism
 - PATCH /rest/microbiology/admin/reference/organisms/{id}/active — setOrganismActive: Set organism active
 - GET /rest/microbiology/admin/reference/patient-origins — getMicrobiologyAdminReferencePatientorigins: Get patient origins
+- GET /rest/microbiology/admin/reporting-rules — getMicrobiologyAdminReportingRules: Get
+- POST /rest/microbiology/admin/reporting-rules — postMicrobiologyAdminReportingRules: Save
+- GET /rest/microbiology/admin/reporting-rules/export — getMicrobiologyAdminReportingRulesExport: Export
+- POST /rest/microbiology/admin/reporting-rules/preview — postMicrobiologyAdminReportingRulesPreview: Preview
+- GET /rest/microbiology/admin/reporting-rules/settings — getMicrobiologyAdminReportingRulesSettings: Get settings
+- PUT /rest/microbiology/admin/reporting-rules/settings — putMicrobiologyAdminReportingRulesSettings: Save settings
+- GET /rest/microbiology/admin/reporting-rules/{id}/history — getMicrobiologyAdminReportingRulesHistory: History
 - GET /rest/microbiology/ast/panels/{panelId}/antibiotics — getPanelAntibiotics: Get panel antibiotics
 - PUT /rest/microbiology/ast/readings/{readingId}/override — overrideReading: Override reading
 - POST /rest/microbiology/ast/readings/{readingId}/override/revert — revertOverride: Revert override
@@ -990,40 +1228,80 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /rest/microbiology/ast/runs/{runId}/review — reviewRun: Review run
 - POST /rest/microbiology/ast/runs/{sourceRunId}/attempts — startRepeatRun: Start repeat run
 - GET /rest/microbiology/ast/setup — getSetup: Get setup
+- GET /rest/microbiology/bench — search: Search
+- POST /rest/microbiology/bench — postMicrobiologyBench: Apply
+- POST /rest/microbiology/bench/sheets — postMicrobiologyBenchSheets: Save
+- GET /rest/microbiology/bench/sheets/{id} — getMicrobiologyBenchSheets: Open
+- POST /rest/microbiology/bench/{caseId}/{actionId}/undo — undo: Undo
 - GET /rest/microbiology/cases — getCasesForSampleItem: Get cases for sample item
+- GET /rest/microbiology/cases/by-accession — byAccession: By accession
+- GET /rest/microbiology/cases/search — getMicrobiologyCasesSearch: Search
 - GET /rest/microbiology/cases/{caseId} — getCaseDetail: Get case detail
 - POST /rest/microbiology/cases/{caseId}/activities — recordActivity: Record activity
 - GET /rest/microbiology/cases/{caseId}/amendments — getMicrobiologyCasesByCaseIdAmendments: Get history
 - POST /rest/microbiology/cases/{caseId}/amendments — open: Open
 - POST /rest/microbiology/cases/{caseId}/amendments/current/cancel — cancel: Cancel
 - GET /rest/microbiology/cases/{caseId}/amendments/report-versions — getReportVersions: Get report versions
+- GET /rest/microbiology/cases/{caseId}/analyses — getTests: Get tests
+- POST /rest/microbiology/cases/{caseId}/analyses — addTests: Add tests
+- GET /rest/microbiology/cases/{caseId}/analyses/catalog — getMicrobiologyCasesAnalysesCatalog: Get catalog
+- POST /rest/microbiology/cases/{caseId}/analyses/{analysisId}/report-selection — select: Select
+- POST /rest/microbiology/cases/{caseId}/analyses/{analysisId}/results — saveResults: Save results
+- POST /rest/microbiology/cases/{caseId}/analyses/{analysisId}/tested-elsewhere — setTestedElsewhere: Set tested elsewhere
+- POST /rest/microbiology/cases/{caseId}/analyses/{analysisId}/validate — validateResult: Validate result
+- GET /rest/microbiology/cases/{caseId}/ast — getMicrobiologyCasesAst: Get
+- POST /rest/microbiology/cases/{caseId}/ast/entry — enter: Enter
+- GET /rest/microbiology/cases/{caseId}/ast/runs/{runId}/qc — getQc: Get qc
+- POST /rest/microbiology/cases/{caseId}/ast/runs/{runId}/qc — recordQc: Record qc
+- POST /rest/microbiology/cases/{caseId}/ast/validation — validate: Validate
+- POST /rest/microbiology/cases/{caseId}/context — context: Context
 - GET /rest/microbiology/cases/{caseId}/critical-communications — getCommunications: Get communications
 - POST /rest/microbiology/cases/{caseId}/critical-communications — logCommunication: Log communication
-- GET /rest/microbiology/cases/{caseId}/inoculations — getByCaseId: Get by case id
-- POST /rest/microbiology/cases/{caseId}/inoculations — postMicrobiologyCasesByCaseIdInoculations: Record
+- GET /rest/microbiology/cases/{caseId}/cultures — getMicrobiologyCasesCultures: Get
+- POST /rest/microbiology/cases/{caseId}/cultures — inoculate: Inoculate
+- GET /rest/microbiology/cases/{caseId}/cultures/options — options: Options
+- POST /rest/microbiology/cases/{caseId}/cultures/{rowId}/{action} — act: Act
+- POST /rest/microbiology/cases/{caseId}/dst/resolve — postMicrobiologyCasesDstResolve: Resolve
+- GET /rest/microbiology/cases/{caseId}/incoming — getMicrobiologyCasesIncoming: List
+- POST /rest/microbiology/cases/{caseId}/incoming/{id}/fail — fail: Fail
+- POST /rest/microbiology/cases/{caseId}/incoming/{id}/place — place: Place
+- GET /rest/microbiology/cases/{caseId}/isolates — getMicrobiologyCasesIsolates: Get
+- POST /rest/microbiology/cases/{caseId}/isolates — pick: Pick
+- GET /rest/microbiology/cases/{caseId}/isolates/options — getMicrobiologyCasesIsolatesOptions: Options
+- POST /rest/microbiology/cases/{caseId}/isolates/referrals — refer: Refer
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/acknowledge — postMicrobiologyCasesIsolatesAcknowledge: Validate
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/identify — postMicrobiologyCasesIsolatesIdentify: Act
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/received-origin — postMicrobiologyCasesIsolatesReceivedOrigin: Act
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/referral — postMicrobiologyCasesIsolatesReferral: Act
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/reidentify — postMicrobiologyCasesIsolatesReidentify: Validate
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/sample-item — postMicrobiologyCasesIsolatesSampleItem: Act
+- POST /rest/microbiology/cases/{caseId}/isolates/{isolateId}/test — postMicrobiologyCasesIsolatesTest: Act
 - POST /rest/microbiology/cases/{caseId}/nonconformances — report: Report
 - POST /rest/microbiology/cases/{caseId}/notes — addNote: Add note
 - PUT /rest/microbiology/cases/{caseId}/order-detail — saveOrderDetail: Save order detail
-- PUT /rest/microbiology/cases/{caseId}/protocol — changeProtocol: Change protocol
-- GET /rest/microbiology/cases/{caseId}/protocol/options — getMicrobiologyCasesByCaseIdProtocolOptions: Get options
+- GET /rest/microbiology/cases/{caseId}/questionnaire — getMicrobiologyCasesQuestionnaire: Get
+- POST /rest/microbiology/cases/{caseId}/questionnaire — postMicrobiologyCasesQuestionnaire: Save
 - GET /rest/microbiology/cases/{caseId}/readiness — getMicrobiologyCasesByCaseIdReadiness: Get readiness
 - GET /rest/microbiology/cases/{caseId}/reagent-lots — getOverview: Get overview
 - POST /rest/microbiology/cases/{caseId}/release/amended — releaseAmended: Release amended
 - POST /rest/microbiology/cases/{caseId}/release/final — releaseFinal: Release final
 - POST /rest/microbiology/cases/{caseId}/release/preliminary — releasePreliminary: Release preliminary
 - GET /rest/microbiology/cases/{caseId}/release/preview — getMicrobiologyCasesByCaseIdReleasePreview: Preview
+- GET /rest/microbiology/cases/{caseId}/report — getMicrobiologyCasesReport: Report
+- GET /rest/microbiology/cases/{caseId}/report/versions — versions: Versions
+- GET /rest/microbiology/cases/{caseId}/shell — getMicrobiologyCasesShell: Get
 - GET /rest/microbiology/cases/{caseId}/timeline — getTimeline: Get timeline
+- POST /rest/microbiology/cases/{caseId}/transfer — transfer: Transfer
 - GET /rest/microbiology/cases/{caseId}/whonet-readiness — getMicrobiologyCasesByCaseIdWhonetreadiness: Get readiness
-- PUT /rest/microbiology/cases/{caseId}/workflow — changeWorkflow: Change workflow
-- PUT /rest/microbiology/critical-communications/{communicationId}/acknowledge — acknowledge: Acknowledge
+- POST /rest/microbiology/containers/labels — print: Print
+- GET /rest/microbiology/containers/presets — presets: Presets
+- GET /rest/microbiology/containers/resolve — resolve: Resolve
 - PUT /rest/microbiology/critical-communications/{communicationId}/close — close: Close
-- POST /rest/microbiology/isolates — createIsolate: Create isolate
-- PUT /rest/microbiology/isolates/{isolateId}/identification — updateIdentification: Update identification
-- GET /rest/microbiology/isolates/{isolateId}/identification-history — getIdentificationHistory: Get identification history
+- GET /rest/microbiology/culture-catalog — getMicrobiologyCultureCatalog: Get
+- POST /rest/microbiology/order-preview — postMicrobiologyOrderPreview: Preview
 - GET /rest/microbiology/reference/antibiotics — getMicrobiologyReferenceAntibiotics: Get antibiotics
 - GET /rest/microbiology/reference/ast-panels — getMicrobiologyReferenceAstpanels: Get ast panels
 - GET /rest/microbiology/reference/breakpoint-standards — getBreakpointStandards: Get breakpoint standards
-- GET /rest/microbiology/reference/culture-methods — getCultureMethods: Get culture methods
 - GET /rest/microbiology/reference/organisms — getMicrobiologyReferenceOrganisms: Get organisms
 - GET /rest/microbiology/reference/patient-origins — getMicrobiologyReferencePatientorigins: Get patient origins
 - POST /rest/microbiology/uat/scenarios — provision: Provision
@@ -1032,9 +1310,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/microbiology/whonet/preview — getMicrobiologyWhonetPreview: Preview
 - GET /rest/microbiology/worklist — getWorklistRows: Get worklist rows
 
+## module-registry
+- GET /rest/module-registry — getModuleRegistry: List
+- GET /rest/module-registry/{id} — detail: Detail
+- GET /rest/module-registry/{id}/config — config: Config
+
 ## nce
 - POST /rest/nce/assign — assignNce: Assign an NCE to a user
 - GET /rest/nce/attachments/{attachmentId}/download — getNceAttachmentsByAttachmentIdDownload: Download an NCE attachment file
+- GET /rest/nce/capa-register — getCapaRegister: Get capa register
 - GET /rest/nce/categories — getCategories: Get categories
 - GET /rest/nce/dashboard — getDashboardData: Get dashboard data
 - GET /rest/nce/generate-number — generateNceNumber: Generate nce number
@@ -1082,6 +1366,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - DELETE /rest/order/attachments/{attachmentId} — deleteAttachment: Delete attachment
 - GET /rest/order/attachments/{attachmentId}/download — getOrderAttachmentsByAttachmentIdDownload: Download attachment
 - GET /rest/order/attachments/{attachmentId}/view — viewAttachment: View attachment
+- POST /rest/order/cancel — cancelOrder: Cancel order
 - GET /rest/order/dashboard — getOrderDashboard: Search/list orders
 - GET /rest/order/search — searchOrder: Search for an order by lab number (accession number)
 - GET /rest/order/{accessionNumber}/attachments — listAttachments: List attachments
@@ -1091,12 +1376,18 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/order-override/{labNumber} — getOverrides: Get overrides
 - POST /rest/order-override/{labNumber} — recordOverride: Record override
 
+## order-tests
+- GET /rest/order-tests/tested-elsewhere — forOrder: For order
+- PUT /rest/order-tests/tested-elsewhere — mark: Mark
+- DELETE /rest/order-tests/tested-elsewhere — unmark: Unmark
+
 ## orderEntry
 - POST /api/orderEntry/labelRequest — computeLabelRequest: Compute label request
 
 ## orders
 - GET /api/orders/by-accession/{accessionNumber}/labels — getOrderLabelsByAccession: Accession-keyed twin of #getOrderLabels(String) for frontends that hold only the accession number, not the internal Sample PK
 - GET /api/orders/{id}/labels — getOrderLabels: Get order labels
+- GET /api/orders/{id}/labels/pdf — printOrderLabels: Print order labels
 
 ## organization
 - GET /rest/organization/search — searchOrganizations: Search organizations
@@ -1115,10 +1406,17 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## pathology
 - POST /rest/pathology/assignPathologist — postPathologyAssignPathologist: Assign pathologist
 - POST /rest/pathology/assignTechnician — postPathologyAssignTechnician: Assign technician
+- POST /rest/pathology/block/{blockId}/deactivate — deactivateBlock: Deactivate block
+- POST /rest/pathology/block/{blockId}/embed — embedBlock: Embed block
+- GET /rest/pathology/caseView/{id}/priorResults — pathology: Pathology
 - GET /rest/pathology/caseView/{pathologySampleId} — getPathologyCaseViewByPathologySampleId: Get filtered pathology entries
 - POST /rest/pathology/caseView/{pathologySampleId} — postPathologyCaseViewByPathologySampleId: Get filtered pathology entries
+- POST /rest/pathology/caseView/{pathologySampleId}/advance — advance: Advance
+- POST /rest/pathology/caseView/{pathologySampleId}/return — returnToPreviousStage: Return to previous stage
 - GET /rest/pathology/dashboard — getPathologyDashboard: Get filtered pathology entries
 - GET /rest/pathology/dashboard/count — getPathologyDashboardCount: Get filtered pathology entries
+- POST /rest/pathology/slide/{slideId}/deactivate — deactivateSlide: Deactivate slide
+- POST /rest/pathology/slide/{slideId}/verify-label — verifySlideLabel: Verify slide label
 
 ## patient
 - GET /rest/patient/merge/details/{patientId} — getMergeDetails: GET /api/patient/merge/details/{patientId} Retrieves merge details for a specific patient
@@ -1146,13 +1444,23 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## patientByLabNumer
 - GET /rest/patientByLabNumer — getPatientByLabNumber: Get patient by lab number
 
+## possible-matches
+- GET /rest/possible-matches/facility — facilities: Facilities
+- GET /rest/possible-matches/patient — patients: Patients
+- GET /rest/possible-matches/provider — providers: Providers
+- POST /rest/possible-matches/{kind}/override — postPossibleMatchesOverride: Record override
+
 ## practitioner
 - GET /rest/practitioner — getProviderInformation: Get provider information
 
 ## program
 - POST /rest/program — postProgram: Create program
 - GET /rest/program/{id} — getProgramById: Create program
+- GET /rest/program/{id}/orderCount — getOrderCount: Get order count
 - GET /rest/program/{id}/questionnaire — getAdditionalEntryQuestions: Get additional entry questions
+
+## program-list
+- GET /rest/program-list — getProgramList: List programs
 
 ## programSample
 - GET /rest/programSample/{id} — getProgramSampleDisplayItem: Get program sample display item
@@ -1169,6 +1477,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## provider
 - GET /rest/provider/search — searchProviders: Search providers
+
+## qa
+- GET /rest/qa/overview/summary — getQaOverviewSummary: Get summary
 
 ## qa-checklist
 - POST /rest/qa-checklist — saveQaChecklist: Save or update QA checklist
@@ -1193,9 +1504,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /rest/qc/controlLot/{id}/statistics/initialRuns — calculateInitialRunsStatistics: Calculate initial runs statistics for a control lot
 - POST /rest/qc/controlLot/{id}/statistics/rolling — calculateRollingStatistics: Calculate rolling window statistics for a control lot
 - GET /rest/qc/controlLots — getActiveControlLots: Get all active control lots for a specific test and instrument
+- GET /rest/qc/dashboard/bench — getBenchQcSummary: Get bench qc summary
 - GET /rest/qc/dashboard/instruments — getAllInstrumentQCStatus: Get compliance status for all instruments
 - GET /rest/qc/dashboard/instruments/{instrumentId} — getInstrumentQCStatus: Get compliance status for a specific instrument
 - GET /rest/qc/dashboard/summary — getDashboardSummary: Get dashboard summary with aggregate violation counts
+- GET /rest/qc/export/bench/csv — exportBenchCsv: Export bench csv
+- GET /rest/qc/export/csv — exportCsv: Export csv
+- GET /rest/qc/export/pdf — exportPdf: Export pdf
+- POST /rest/qc/results — record: Record
+- GET /rest/qc/results/control-lots — controlLots: Control lots
 - GET /rest/qc/ruleConfig — getRuleConfigurations: Get all rule configurations for a specific test and instrument
 - POST /rest/qc/ruleConfig/defaults — createDefaultRuleConfigurations: Create default rule configurations for a new test-instrument combination
 - GET /rest/qc/ruleConfig/enabled — getEnabledRuleConfigurations: Get only enabled rule configurations for a test and instrument
@@ -1209,6 +1526,11 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/qc/violations/{id} — getViolation: Get a specific violation by ID
 - POST /rest/qc/violations/{id}/acknowledge — acknowledgeViolation: Acknowledge a warning violation (marks as seen but not fully resolved)
 - POST /rest/qc/violations/{id}/resolve — resolveViolation: Resolve a violation
+
+## qi-config
+- GET /rest/qi-config — getQiConfig: List
+- PUT /rest/qi-config/indicator/{indicatorKey} — saveIndicator: Save indicator
+- GET /rest/qi-config/resolve — getQiConfigResolve: Resolve
 
 ## reference-lab-results
 - GET /rest/reference-lab-results/metrics — metrics: Metrics
@@ -1233,6 +1555,14 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## reindex
 - GET /rest/reindex — reindex: Reindex
 
+## reportQueue
+- GET /rest/reportQueue — getReportQueue: List
+- GET /rest/reportQueue/orders/{sampleId} — getReportQueueOrders: Detail
+- GET /rest/reportQueue/preferences — preferences: Preferences
+- PUT /rest/reportQueue/preferences — savePreferences: Save preferences
+- POST /rest/reportQueue/print — postReportQueuePrint: Print
+- GET /rest/reportQueue/versions/{versionId}/pdf — archivedPdf: Archived pdf
+
 ## reportnonconformingevent
 - GET /rest/reportnonconformingevent — getReportNonConformingEvent: Get report non conforming event
 - POST /rest/reportnonconformingevent — postReportnonconformingevent: Post report non conforming event
@@ -1240,13 +1570,35 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## reports
 - GET /rest/reports — healthCheck: Health check endpoint to verify the reports namespace is available
+- GET /rest/reports/amendment/breakdown — getBreakdown: Get breakdown
+- GET /rest/reports/amendment/detail — getReportsAmendmentDetail: Get detail
+- GET /rest/reports/amendment/summary — getReportsAmendmentSummary: Get summary
+- GET /rest/reports/amendment/trend — getTrend: Get trend
 - GET /rest/reports/categories — getReportCategories: Get available report categories for filtering and discovery
+- GET /rest/reports/data-export/jobs — getReportsDataExportJobs: List
+- POST /rest/reports/data-export/jobs — postReportsDataExportJobs: Submit
+- GET /rest/reports/data-export/jobs/{id} — job: Job
+- POST /rest/reports/data-export/jobs/{id}/cancel — postReportsDataExportJobsCancel: Cancel
+- GET /rest/reports/data-export/jobs/{id}/download — download: Download
+- POST /rest/reports/data-export/jobs/{id}/retry — postReportsDataExportJobsRetry: Retry
+- GET /rest/reports/data-export/report-types — types: Types
+- GET /rest/reports/data-export/saved-configs — savedReports: Saved reports
+- POST /rest/reports/data-export/saved-configs — createSavedReport: Create saved report
+- GET /rest/reports/data-export/saved-configs/{id} — savedReport: Saved report
+- PUT /rest/reports/data-export/saved-configs/{id} — updateSavedReport: Update saved report
+- DELETE /rest/reports/data-export/saved-configs/{id} — deleteSavedReport: Delete saved report
+- GET /rest/reports/data-export/variables — variables: Variables
 - GET /rest/reports/definitions — getDefinitions: Get all report definitions
 - GET /rest/reports/definitions/active — getActiveDefinitions: Get all active report definitions
 - GET /rest/reports/definitions/category/{category} — getDefinitionsByCategory: Get report definitions by category
 - GET /rest/reports/definitions/{id} — getDefinition: Get a specific report definition by ID
 - GET /rest/reports/formats — getAvailableFormats: Execute a report with optional parameters and return data in requested format
 - GET /rest/reports/patient-results — getReportsPatientresults: Get patient results
+- GET /rest/reports/rejection/breakdown — getReportsRejectionBreakdown: Get breakdown
+- GET /rest/reports/rejection/detail — getReportsRejectionDetail: Get detail
+- GET /rest/reports/rejection/heatmap — getHeatmap: Get heatmap
+- GET /rest/reports/rejection/summary — getReportsRejectionSummary: Get summary
+- GET /rest/reports/rejection/trend — getReportsRejectionTrend: Get trend
 - GET /rest/reports/tat/detail — getDetail: Get detail
 - GET /rest/reports/tat/export — export: Export
 - GET /rest/reports/tat/summary — getReportsTatSummary: Get summary
@@ -1259,6 +1611,24 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## requestor
 - GET /rest/requestor/search — searchRequestors: Search requestors
+
+## result-runs
+- GET /rest/result-runs — getResultRuns: List
+- POST /rest/result-runs/of-analysis/{analysisId}/controls — recordRowControl: Record row control
+- GET /rest/result-runs/{id} — header: Header
+- POST /rest/result-runs/{id}/complete — markComplete: Mark complete
+- POST /rest/result-runs/{id}/controls — recordControl: Record control
+- POST /rest/result-runs/{id}/exceptions/hold — holdException: Hold exception
+- POST /rest/result-runs/{id}/exceptions/ignore — ignoreException: Ignore exception
+- POST /rest/result-runs/{id}/exceptions/match — matchException: Match exception
+- GET /rest/result-runs/{id}/exceptions/orders — exceptionOrders: Exception orders
+- GET /rest/result-runs/{id}/lot-options — lotOptions: Lot options
+- GET /rest/result-runs/{id}/raw — raw: Raw
+- PUT /rest/result-runs/{id}/reagent-lot — setReagentLot: Set reagent lot
+- GET /rest/result-runs/{id}/rows — rows: Rows
+- POST /rest/result-runs/{id}/selection — selection: Selection
+- POST /rest/result-runs/{id}/tests/{testId}/decision — decide: Decide
+- POST /rest/result-runs/{id}/tests/{testId}/retest-of — confirmRetest: Confirm retest
 
 ## result-tree
 - GET /rest/result-tree — getResultTreeArray: Get result tree array
@@ -1293,6 +1663,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /rest/sample-acceptance-checklist/sample-item/{sampleItemId}/resample — resample: Resample
 - GET /rest/sample-acceptance-checklist/sample/{sampleId}/gate — gate: FR-08 server-side enforcement gate for a whole order
 
+## sample-handling
+- GET /rest/sample-handling/requirements — requirements: Requirements
+
 ## sample-item-status-types
 - GET /rest/sample-item-status-types — getSampleItemStatusTypes: Get sample item status types
 
@@ -1304,6 +1677,10 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 
 ## sample-status-types
 - GET /rest/sample-status-types — getSampleStatusTypes: List sample status types
+
+## sample-type-containers
+- GET /rest/sample-type-containers/{sampleTypeId} — forSampleType: For sample type
+- PUT /rest/sample-type-containers/{sampleTypeId} — setDefaultContainer: Set default container
 
 ## sample-type-requests
 - GET /rest/sample-type-requests/sample/{sampleId} — getRequestsBySample: Get all sample type requests for a sample
@@ -1374,6 +1751,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - POST /rest/storage/barcode/validate — validateBarcode: Validate a storage location barcode POST /rest/storage/barcode/validate
 - GET /rest/storage/boxes — getBoxes: Get boxes
 - POST /rest/storage/boxes — postStorageBoxes: Create box
+- GET /rest/storage/boxes/search — searchBoxes: Search boxes
 - GET /rest/storage/boxes/{id} — getStorageBoxesById: Get box by id
 - PUT /rest/storage/boxes/{id} — putStorageBoxesById: Update box
 - DELETE /rest/storage/boxes/{id} — deleteBox: Delete box
@@ -1389,6 +1767,12 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/storage/devices/{id}/can-delete — canDeleteDevice: Check if a device can be deleted (pre-flight check for frontend)
 - GET /rest/storage/devices/{id}/can-move — canMoveDevice: Check if a device can be moved to a new parent room, and if samples exist downstream
 - GET /rest/storage/devices/{id}/cascade-delete-summary — getDeviceCascadeDeleteSummary: Get cascade delete summary for a device (admin only)
+- GET /rest/storage/inventory-lots — getStorageInventoryLots: Get inventory lots
+- POST /rest/storage/inventory-lots/assign — assignInventoryLot: Assign inventory lot
+- POST /rest/storage/inventory-lots/move — moveInventoryLot: Move inventory lot
+- GET /rest/storage/inventory-lots/{inventoryLotId} — getInventoryLotLocation: Get inventory lot location
+- PATCH /rest/storage/inventory-lots/{inventoryLotId} — patchStorageInventoryLots: Update assignment metadata
+- GET /rest/storage/inventory-lots/{inventoryLotId}/movements — getInventoryLotMovements: Get inventory lot movements
 - GET /rest/storage/locations/search — searchLocations: Search locations
 - GET /rest/storage/racks — getRacks: Get racks with optional filters (FR-065: Racks tab - filter by room, shelf, device, and status) Returns racks with roomId column (FR-065a)
 - POST /rest/storage/racks — createRack: Create rack
@@ -1428,6 +1812,9 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/storage/shelves/{id}/cascade-delete-summary — getShelfCascadeDeleteSummary: Get cascade delete summary for a shelf (admin only)
 - GET /rest/storage/{type}/{id}/print-history — getPrintHistory: Get print history for a location GET /rest/storage/{type}/{id}/print-history
 - POST /rest/storage/{type}/{id}/print-label — printLabel: Generate and return PDF label POST /rest/storage/{type}/{id}/print-label Validates code exists before printing, returns error if missing
+
+## studyprojects
+- GET /rest/studyprojects — getStudyExportProjects: Get study export projects
 
 ## subjectNumberValidationProvider
 - GET /rest/subjectNumberValidationProvider — validateSubjectNumberAndNationalId: Validate subject number and national id
@@ -1472,6 +1859,8 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/test-calculations — getTestcalculations: Get reflex rules
 
 ## test-catalog
+- GET /rest/test-catalog/answers/{dictionaryId}/terminology — getAnswerTerminology: Get answer terminology
+- PUT /rest/test-catalog/answers/{dictionaryId}/terminology — saveAnswerTerminology: Save answer terminology
 - GET /rest/test-catalog/dictionary — searchDictionaryOptions: Typeahead for select-list option values: active dictionary entries whose name starts with search, capped for responsiveness
 - PUT /rest/test-catalog/group/ranges — saveGroupRanges: Save group ranges
 - PUT /rest/test-catalog/group/storage — saveGroupStorage: Save group storage
@@ -1497,15 +1886,19 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/test-catalog/tests/{testId}/basic-info — getBasicInfo: Get basic info
 - PUT /rest/test-catalog/tests/{testId}/basic-info — saveBasicInfo: Save basic info
 - GET /rest/test-catalog/tests/{testId}/completeness — getCompleteness: The completeness checklist for a test, so the editor can show what still blocks activation before the user even tries
+- GET /rest/test-catalog/tests/{testId}/containers — forTest: For test
+- PUT /rest/test-catalog/tests/{testId}/containers — putTestCatalogTestsContainers: Save
 - GET /rest/test-catalog/tests/{testId}/localization — getTestcatalogTestsByTestIdLocalization: Get localization refs
 - GET /rest/test-catalog/tests/{testId}/loinc-integrity — getLoincIntegrity: Get loinc integrity
 - GET /rest/test-catalog/tests/{testId}/panels — getTestPanels: Get test panels
 - PUT /rest/test-catalog/tests/{testId}/panels — saveTestPanels: Save test panels
+- GET /rest/test-catalog/tests/{testId}/qc-targets — getTargets: Get targets
+- PUT /rest/test-catalog/tests/{testId}/qc-targets — saveTargets: Save targets
+- GET /rest/test-catalog/tests/{testId}/qc-targets/effective — effectiveTarget: Effective target
 - GET /rest/test-catalog/tests/{testId}/ranges — getRanges: Get ranges
 - PUT /rest/test-catalog/tests/{testId}/ranges — saveRanges: Save ranges
 - GET /rest/test-catalog/tests/{testId}/sample-results — getSampleResults: Get sample results
 - PUT /rest/test-catalog/tests/{testId}/sample-results — saveSampleResults: Save sample results
-- POST /rest/test-catalog/tests/{testId}/sample-results/copy-from/{sourceId} — copySampleResults: Copy sample results
 - GET /rest/test-catalog/tests/{testId}/siblings — siblings: Active tests sharing this test's name stem (the analyte's specimen siblings) — the suggested set for "Edit related tests together" (FR-7)
 - GET /rest/test-catalog/tests/{testId}/storage — getStorage: Get storage
 - PUT /rest/test-catalog/tests/{testId}/storage — saveStorage: Save storage
@@ -1551,6 +1944,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## tests-by-sample
 - GET /rest/tests-by-sample — getTestsBySample: Get tests by sample
 
+## text-macros
+- GET /rest/text-macros — findActive: Find active
+- GET /rest/text-macros/admin — getTextMacrosAdmin: Search
+- POST /rest/text-macros/admin — postTextMacrosAdmin: Create
+- POST /rest/text-macros/admin/bulk — bulk: Bulk
+- GET /rest/text-macros/admin/export — getTextMacrosAdminExport: Export
+- GET /rest/text-macros/admin/{id} — getTextMacrosAdminById: Get
+- PUT /rest/text-macros/admin/{id} — putTextMacrosAdmin: Update
+
 ## trendsprojects
 - GET /rest/trendsprojects — getTempProjects: Get temp projects
 
@@ -1559,6 +1961,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 - GET /rest/unassigned-sample/by-facility/{facilityId} — getUnassignedSamplesByFacility: Get unassigned samples by destination facility
 - GET /rest/unassigned-sample/count-by-facility/{facilityId} — countUnassignedSamplesByFacility: Count unassigned samples by facility
 - GET /rest/unassigned-sample/items — getAllUnassignedSampleItems: Get all unassigned sample items grouped by SampleItem
+- GET /rest/unassigned-sample/items/by-facility/{facilityId} — getUnassignedSampleItemsByFacility: Get unassigned sample items by facility
 - GET /rest/unassigned-sample/items/search — searchUnassignedSampleItems: Search unassigned sample items by accession number
 - PUT /rest/unassigned-sample/{referralId}/assign-to-box — assignSampleToBox: Assign a referral sample to a shipment box
 - PUT /rest/unassigned-sample/{referralId}/cancel — cancelReferral: Cancel a referral
@@ -1567,6 +1970,7 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## uom
 - GET /rest/uom — getUnitOfMeasuresByType: Get unit of measures by type
 - POST /rest/uom — createUnitOfMeasure: Create a unit of measure inline (FR-29 / OGC-963)
+- PUT /rest/uom/{id} — updateUnitOfMeasure: Update unit of measure
 
 ## user-programs
 - GET /rest/user-programs — getUserSPrograms: Get user s programs
@@ -1580,6 +1984,15 @@ Each line is `METHOD /path — operationId: summary`. For a request body, parame
 ## users
 - GET /rest/users — getUsers2: Get users with role
 - GET /rest/users/{roleName} — getUsersByRoleName: Get users with role
+
+## validation-policy
+- GET /rest/validation-policy/default — getLabWideDefault: Get lab wide default
+- PUT /rest/validation-policy/default — saveLabWideDefault: Save lab wide default
+- GET /rest/validation-policy/lab-units — getLabUnitPolicies: Get lab unit policies
+- POST /rest/validation-policy/lab-units — addLabUnitOverride: Add lab unit override
+- PUT /rest/validation-policy/lab-units/{id} — saveLabUnitOverride: Save lab unit override
+- PUT /rest/validation-policy/lab-units/{id}/active — setLabUnitOverrideActive: Set lab unit override active
+- GET /rest/validation-policy/roles — getLevelRoleOptions: Get level role options
 
 ## vector
 - POST /rest/vector/deconvolution/initiate — initiate: Initiate
