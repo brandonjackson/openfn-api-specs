@@ -5,25 +5,93 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/UnitOfMeasure",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A unit of measure.",
+  "description": "A unit of measure for products",
   "properties": {
+    "resourceType": {
+      "type": "string",
+      "default": "UnitOfMeasure",
+      "enum": [
+        "UnitOfMeasure"
+      ]
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Unique identifier for this UoM (name)"
+    },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "UoM name"
+    },
+    "symbol": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Short symbol (e.g., 'kg', 'L')"
     },
     "category": {
-      "type": "string",
-      "description": "Unit category (Weight, Volume, ...)."
-    },
-    "uom_type": {
-      "type": "string",
-      "description": "reference, bigger or smaller than reference."
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to UoM category"
     },
     "factor": {
-      "type": "number",
-      "description": "Conversion factor."
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Factor to convert to reference UoM"
+    },
+    "rounding": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Rounding precision"
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier",
+    "name"
+  ]
 }

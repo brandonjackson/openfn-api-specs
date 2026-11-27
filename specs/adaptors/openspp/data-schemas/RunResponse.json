@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openspp/RunResponse",
+  "title": "RunResponse",
+  "x-openfn-adaptor": "openspp",
+  "x-source": {
+    "openapi": "#/components/schemas/RunResponse",
+    "capturedAt": "2026-11-27"
+  },
+  "type": "object",
+  "description": "Simulation run details.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Run ID"
+    },
+    "scenario_id": {
+      "type": "integer",
+      "description": "Scenario ID"
+    },
+    "scenario_name": {
+      "type": "string",
+      "description": "Scenario name"
+    },
+    "state": {
+      "type": "string",
+      "description": "Run state: 'pending', 'running', 'completed', 'failed'"
+    },
+    "executed_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Execution timestamp (ISO 8601)"
+    },
+    "execution_duration_seconds": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Execution duration in seconds"
+    },
+    "beneficiary_count": {
+      "type": "integer",
+      "description": "Number of beneficiaries selected"
+    },
+    "total_registry_count": {
+      "type": "integer",
+      "description": "Total number of registrants in registry"
+    },
+    "coverage_rate": {
+      "type": "number",
+      "description": "Coverage rate (beneficiaries / total registry)"
+    },
+    "total_cost": {
+      "type": "number",
+      "description": "Total cost of entitlements"
+    },
+    "budget_utilization": {
+      "type": "number",
+      "description": "Budget utilization rate (total cost / budget)"
+    },
+    "gini_coefficient": {
+      "type": "number",
+      "description": "Gini coefficient measuring inequality"
+    },
+    "equity_score": {
+      "type": "number",
+      "description": "Equity score (1 - Gini coefficient)"
+    },
+    "has_disparity": {
+      "type": "boolean",
+      "description": "Whether significant disparity was detected"
+    },
+    "leakage_rate": {
+      "type": "number",
+      "description": "Leakage rate (beneficiaries outside ideal population)"
+    },
+    "undercoverage_rate": {
+      "type": "number",
+      "description": "Undercoverage rate (ideal population not covered)"
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Error message if run failed"
+    },
+    "distribution_data": {
+      "anyOf": [
+        {
+          "$ref": "DistributionData.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Distribution analysis data"
+    },
+    "fairness_data": {
+      "anyOf": [
+        {
+          "$ref": "FairnessData.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Fairness metrics by demographic group"
+    },
+    "geographic_data": {
+      "anyOf": [
+        {
+          "$ref": "GeographicData.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Geographic distribution data"
+    },
+    "targeting_efficiency_data": {
+      "anyOf": [
+        {
+          "$ref": "TargetingEfficiencyData.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Targeting efficiency metrics"
+    },
+    "metric_results": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "MetricResult.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Detailed metric calculation results"
+    },
+    "scenario_snapshot": {
+      "anyOf": [
+        {
+          "$ref": "ScenarioSnapshot.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Snapshot of scenario configuration at time of run"
+    }
+  },
+  "required": [
+    "id",
+    "scenario_id",
+    "scenario_name",
+    "state",
+    "beneficiary_count",
+    "total_registry_count",
+    "coverage_rate",
+    "total_cost",
+    "budget_utilization",
+    "gini_coefficient",
+    "equity_score",
+    "has_disparity",
+    "leakage_rate",
+    "undercoverage_rate"
+  ]
+}

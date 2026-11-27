@@ -5,32 +5,113 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/ProgramMembership",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A registrant's enrolment in a programme.",
+  "description": "Enrollment of a beneficiary in a program",
   "properties": {
-    "program": {
+    "type": {
       "type": "string",
-      "description": "Programme identifier."
+      "description": "Resource type discriminator",
+      "default": "ProgramMembership",
+      "enum": [
+        "ProgramMembership"
+      ]
+    },
+    "identifier": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "Identifier.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "External identifiers for this enrollment"
+    },
+    "program": {
+      "allOf": [
+        {
+          "$ref": "Reference.json"
+        }
+      ],
+      "description": "Reference to the Program"
     },
     "beneficiary": {
-      "type": "string",
-      "description": "Registrant identifier."
-    },
-    "state": {
-      "type": "string"
-    },
-    "enrollment_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "exit_date": {
-      "type": [
-        "string",
-        "null"
+      "allOf": [
+        {
+          "$ref": "Reference.json"
+        }
       ],
-      "format": "date"
+      "description": "Reference to the beneficiary (Individual or Group)"
+    },
+    "status": {
+      "type": "string",
+      "pattern": "^(draft|enrolled|paused|exited|not_eligible|duplicated)$",
+      "description": "Enrollment status"
+    },
+    "enrollmentDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Date of enrollment"
+    },
+    "exitDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Date of exit from program"
+    },
+    "exitReason": {
+      "anyOf": [
+        {
+          "$ref": "CodeableConcept.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reason for exit"
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "program",
+    "beneficiary",
+    "status"
+  ]
 }

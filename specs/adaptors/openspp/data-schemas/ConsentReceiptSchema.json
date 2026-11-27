@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openspp/ConsentReceiptSchema",
+  "title": "ConsentReceiptSchema",
+  "x-openfn-adaptor": "openspp",
+  "x-source": {
+    "openapi": "#/components/schemas/ConsentReceiptSchema",
+    "capturedAt": "2026-11-27"
+  },
+  "type": "object",
+  "description": "Consent receipt per ISO/IEC 29184 and Kantara Initiative.\n\nProvides proof of consent to the data subject.",
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "description": "Unique receipt identifier"
+    },
+    "version": {
+      "type": "string",
+      "description": "Receipt format version",
+      "default": "1.0"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When receipt was generated"
+    },
+    "data_subject": {
+      "type": "object",
+      "description": "Identifier for the data subject (no PII)"
+    },
+    "data_controller": {
+      "type": "object",
+      "description": "Organization responsible for data processing"
+    },
+    "consent_id": {
+      "type": "string",
+      "description": "Consent record identifier"
+    },
+    "consent_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When consent was given"
+    },
+    "collection_method": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "How consent was collected"
+    },
+    "purposes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Purposes for which data processing was consented"
+    },
+    "data_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Categories of personal data covered"
+    },
+    "effective_date": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "expiry_date": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "withdrawal_uri": {
+      "type": "string",
+      "description": "URI to revoke consent"
+    },
+    "data_subject_rights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "receipt_id",
+    "timestamp",
+    "data_subject",
+    "data_controller",
+    "consent_id",
+    "consent_date",
+    "purposes",
+    "withdrawal_uri"
+  ]
+}

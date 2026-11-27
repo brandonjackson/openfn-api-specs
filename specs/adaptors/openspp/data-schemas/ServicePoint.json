@@ -5,42 +5,146 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/ServicePoint",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A service point (agent/shop) that delivers entitlements.",
+  "description": "A service point where beneficiaries can redeem entitlements",
   "properties": {
+    "resourceType": {
+      "type": "string",
+      "default": "ServicePoint",
+      "enum": [
+        "ServicePoint"
+      ]
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Unique identifier for this service point (name)"
+    },
     "name": {
       "type": "string",
-      "description": "Service point name — the identifier used in lookups."
+      "description": "Display name of the service point"
     },
-    "type": {
-      "type": "string"
+    "contractActive": {
+      "type": "boolean",
+      "description": "Whether contract is active",
+      "default": true
+    },
+    "disabled": {
+      "type": "boolean",
+      "description": "Whether service point is disabled",
+      "default": false
     },
     "area": {
-      "type": "string"
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to geographic area"
+    },
+    "country": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "ISO 3166-1 alpha-2 country code"
     },
     "address": {
-      "type": "string"
+      "anyOf": [
+        {
+          "$ref": "Address.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     },
-    "latitude": {
-      "type": "number"
+    "telecom": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "ContactPoint.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     },
-    "longitude": {
-      "type": "number"
+    "company": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to company managing this service point"
     },
-    "phone": {
-      "type": "string"
+    "serviceType": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Types of services offered"
     },
-    "active": {
-      "type": "boolean"
+    "extension": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     },
-    "programs": {
-      "type": "array",
-      "description": "Associated programme identifiers.",
-      "items": {
-        "type": "string"
-      }
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier",
+    "name"
+  ]
 }

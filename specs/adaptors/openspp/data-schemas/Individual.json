@@ -5,53 +5,167 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Individual",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "An individual registrant, addressed by external identifier (never a database id).",
+  "description": "A person registered in OpenSPP",
   "properties": {
+    "type": {
+      "type": "string",
+      "description": "Resource type discriminator",
+      "default": "Individual",
+      "enum": [
+        "Individual"
+      ]
+    },
     "identifier": {
-      "type": "string",
-      "description": "External identifier, `<namespace-uri>|<value>`.",
-      "example": "urn:openspp:id:spp-id|IND_Q4VGGZPF"
-    },
-    "name": {
-      "type": "string",
-      "example": "Jane Doe"
-    },
-    "given_name": {
-      "type": "string"
-    },
-    "family_name": {
-      "type": "string"
-    },
-    "birth_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "gender": {
-      "type": "string",
-      "description": "Vocabulary code (urn:openspp:vocabulary:gender)."
-    },
-    "phone": {
-      "type": "string"
-    },
-    "email": {
-      "type": "string",
-      "format": "email"
-    },
-    "address": {
-      "type": "string"
-    },
-    "area": {
-      "type": "string",
-      "description": "Administrative area identifier."
+      "type": "array",
+      "items": {
+        "$ref": "Identifier.json"
+      },
+      "description": "External identifiers for this individual",
+      "minItems": 1
     },
     "active": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether record is active",
+      "default": true
+    },
+    "name": {
+      "anyOf": [
+        {
+          "$ref": "HumanName.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "birthDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "birthDateEstimated": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "default": false
+    },
+    "gender": {
+      "anyOf": [
+        {
+          "$ref": "CodeableConcept.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "telecom": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "ContactPoint.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "address": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "Address.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "photo": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Base64-encoded photo"
+    },
+    "groupMembership": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "GroupMembershipRef.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     },
     "extension": {
-      "$ref": "ApiExtension.json"
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier"
+  ]
 }

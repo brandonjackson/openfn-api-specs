@@ -5,54 +5,197 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Entitlement",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A cash or in-kind entitlement. Cash entitlements carry `amount`/`currency`; in-kind entitlements carry `product`/`qty`/`unit`.",
+  "description": "An entitlement to receive benefits (cash or in-kind)",
   "properties": {
-    "code": {
+    "type": {
       "type": "string",
-      "description": "Entitlement identifier (UUID)."
+      "description": "Resource type discriminator",
+      "default": "Entitlement",
+      "enum": [
+        "Entitlement"
+      ]
     },
-    "program": {
-      "type": "string"
+    "identifier": {
+      "type": "string",
+      "description": "Unique identifier for this entitlement (code)"
     },
-    "cycle": {
-      "type": "string"
-    },
-    "beneficiary": {
-      "type": "string"
+    "entitlementType": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "inkind"
+      ],
+      "description": "Type of entitlement"
     },
     "state": {
-      "type": "string"
-    },
-    "amount": {
-      "type": "number",
-      "description": "Transfer amount (cash entitlements)."
-    },
-    "currency": {
       "type": "string",
-      "description": "Currency code (cash entitlements)."
+      "description": "Current state of entitlement"
     },
-    "product": {
-      "type": "string",
-      "description": "Product identifier (in-kind entitlements)."
+    "beneficiary": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to beneficiary (Individual or Group)"
     },
-    "qty": {
-      "type": "number",
-      "description": "Quantity (in-kind entitlements)."
+    "program": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to program"
     },
-    "unit": {
-      "type": "string",
-      "description": "Unit of measure (in-kind entitlements)."
+    "cycle": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to cycle"
     },
-    "valid_from": {
-      "type": "string",
-      "format": "date"
+    "validPeriod": {
+      "anyOf": [
+        {
+          "$ref": "Period.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Validity period"
     },
-    "valid_until": {
-      "type": "string",
-      "format": "date"
+    "initialAmount": {
+      "anyOf": [
+        {
+          "$ref": "MoneyValue.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Initial cash amount"
+    },
+    "balance": {
+      "anyOf": [
+        {
+          "$ref": "MoneyValue.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Remaining balance"
+    },
+    "items": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "ProductQuantity.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Products for in-kind entitlement"
+    },
+    "servicePoint": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Redemption service point"
+    },
+    "approvedDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "ern": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Entitlement Reference Number"
+    },
+    "extension": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier",
+    "entitlementType",
+    "state"
+  ]
 }
