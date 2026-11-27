@@ -5,34 +5,156 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Cycle",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A programme cycle.",
+  "description": "A program cycle for distributing benefits",
   "properties": {
+    "type": {
+      "type": "string",
+      "default": "Cycle",
+      "enum": [
+        "Cycle"
+      ]
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Unique identifier for this cycle (name)"
+    },
     "name": {
       "type": "string",
-      "description": "Cycle identifier, used in lookups."
+      "description": "Cycle name"
+    },
+    "sequence": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Cycle sequence number"
     },
     "program": {
-      "type": "string",
-      "description": "Programme identifier."
+      "allOf": [
+        {
+          "$ref": "Reference.json"
+        }
+      ],
+      "description": "Reference to program"
+    },
+    "period": {
+      "anyOf": [
+        {
+          "$ref": "Period.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Start and end dates"
     },
     "state": {
       "type": "string",
-      "description": "Current cycle state."
+      "description": "Current state"
     },
-    "start_date": {
-      "type": "string",
-      "format": "date"
+    "approvedDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     },
-    "end_date": {
-      "type": "string",
-      "format": "date"
+    "approvedBy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Approver's name"
     },
-    "sequence": {
-      "type": "integer",
-      "description": "Cycle sequence number."
+    "statistics": {
+      "anyOf": [
+        {
+          "$ref": "CycleStatistics.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "previousCycle": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "nextCycle": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "extension": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier",
+    "name",
+    "program",
+    "state"
+  ]
 }

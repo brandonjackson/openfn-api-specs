@@ -1,14 +1,26 @@
 {
   "adaptor": "openspp",
   "npm": "@openfn/language-openspp",
-  "origin": "synthesized",
-  "upstreamFormat": "adaptor-surface",
+  "origin": "generated",
+  "upstreamFormat": "vendor-source",
   "coverage": "full",
   "derivedFrom": null,
   "completeness": "best-effort",
   "completenessReason": "rpc-transport",
   "upstream": null,
   "attempts": [
+    {
+      "kind": "github",
+      "url": "https://github.com/OpenSPP/OpenSPP2/tree/a71e8f04f6ecca91160afff79af868421a71b968",
+      "result": "used",
+      "note": "OpenSPP 2 (Odoo 19) monorepo, branch 19.0 @ a71e8f04. The API V2 app is assembled by fastapi.endpoint._get_fastapi_routers() in spp_api_v2 and ten addons that extend it (change_request, cycles, data, entitlements, gis, products, programs, service_points, simulation, vocabulary) plus spp_studio_api_v2; every APIRouter decorator and add_api_route call they register, and every Pydantic model those routes take or return, was read statically (Python ast, no vendor code executed) into this spec: 107 operations, 156 schemas. No machine spec is committed in the repo (the app generates one at runtime only)."
+    },
+    {
+      "kind": "openapi",
+      "url": "https://github.com/OpenSPP/OpenSPP2",
+      "result": "not-found",
+      "note": "no openapi.json/swagger.json committed; FastAPI builds it at runtime per deployment and there is still no public instance to fetch one from (see the demo attempt below)."
+    },
     {
       "kind": "openapi",
       "url": "https://demo.openspp.org/api/v2/spp/openapi.json",
@@ -54,24 +66,28 @@
     {
       "kind": "docs",
       "url": "https://docs.openspp.org/reference/modules/spp_api_v2",
-      "result": "used",
-      "note": "endpoint tables and response-field tables for spp_api_v2 and its six extension modules; the REST API v2 half of this spec is authored from these."
+      "result": "rejected",
+      "note": "endpoint and response-field tables for spp_api_v2 and six extension modules; the previous REST half (29 operations) was authored from these. Superseded by the vendor source: the docs omit whole addons (GIS, simulation, change requests, consent, studio), give no list envelope (search results were modelled as bare arrays; the source returns a {data, meta, links} SearchResult or a Bundle), and name the token endpoint /token where the router serves /oauth/token."
     },
     {
       "kind": "adaptor-source",
-      "url": "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/openspp/src/Adaptor.js",
+      "url": "https://cdn.jsdelivr.net/npm/@openfn/language-openspp@4.0.1/dist/index.cjs",
       "result": "used",
-      "note": "all 20 operations go through odoo-await (sppConnector.connect/searchRead/search/create/update); odoo-await speaks XML-RPC at /xmlrpc/2/common and /xmlrpc/2/object."
+      "note": "up to 3.x all 20 operations went through odoo-await (XML-RPC at /xmlrpc/2/common and /xmlrpc/2/object). 4.0.0 (2026-09-29) rewrote the adaptor onto the REST API v2: request() prefixes /api/v2/spp, authorize() POSTs /oauth/token, and every named operation is a GET/POST/PATCH/PUT on Individual, Group ($add-member/$remove-member), Program, ProgramMembership or ServicePoint. Checked against dist/index.cjs of 4.0.1."
     }
   ],
   "verifiedAgainst": [
     "ast.json",
     "adaptor-source",
+    "vendor-source",
     "odoo-await-source",
     "openfn-mocker-exchanges"
   ],
   "modifications": [],
   "sources": [
+    "https://github.com/OpenSPP/OpenSPP2/tree/a71e8f04f6ecca91160afff79af868421a71b968/spp_api_v2",
+    "https://github.com/OpenSPP/OpenSPP2/blob/a71e8f04f6ecca91160afff79af868421a71b968/spp_api_v2/models/fastapi_endpoint_registry.py",
+    "https://cdn.jsdelivr.net/npm/@openfn/language-openspp@4.0.1/dist/index.cjs",
     "https://cdn.jsdelivr.net/npm/@openfn/language-openspp/ast.json",
     "https://raw.githubusercontent.com/OpenFn/adaptors/main/packages/openspp/src/Adaptor.js",
     "https://raw.githubusercontent.com/vettloffah/odoo-await/master/lib/index.js",
@@ -86,7 +102,7 @@
     "https://docs.openspp.org/howto/developer_guides/rest_api",
     "https://github.com/OpenSPP/openspp-api"
   ],
-  "capturedAt": "2026-09-13",
-  "lastCheckedAt": "2026-09-13",
-  "notes": "OpenSPP is a social-protection registry built on Odoo, and its externally reachable API has two halves, both described here. (1) Odoo's external API, which is RPC and not REST: the openspp adaptor uses the odoo-await client, which speaks XML-RPC at POST /xmlrpc/2/common (authenticate) and POST /xmlrpc/2/object (execute_kw) with text/xml bodies; POST /web/session/authenticate and POST /jsonrpc are Odoo's JSON equivalents and are modelled with JSON schemas so the record shapes the adaptor actually reads (res.partner registrants, g2p.group.membership, g2p.program, g2p.program_membership, spp.service.point, spp.area — the Odoo* component schemas) are captured. (2) OpenSPP's own REST API v2 (the spp_api_v2 FastAPI module family, base path /api/v2/spp), authored from the module reference pages: Individual, Group, Program, ProgramMembership, Cycle, Entitlement, Product/ProductCategory/UnitOfMeasure, ServicePoint, Vocabulary and Data push/pull. BEST-EFFORT, reason rpc-transport, for two independent reasons. First, execute_kw dispatches model methods by name at runtime, so the XML-RPC/JSON-RPC surface is two endpoints wide and open-ended in depth — OpenAPI cannot enumerate it, and the XML wire format cannot be described at all (those two operations carry text/xml string bodies). Second, the REST API v2 docs give endpoint tables and response-field tables but no list envelope or full payload examples, so search endpoints are modelled as bare arrays of the documented fields and each such operation says so; a deployment's own generated schema at /api/v2/spp/openapi.json is the authority there. This replaces an earlier synthesized spec that projected the adaptor's twenty operations onto invented REST paths (/groups/{spp_id}, /individuals/search, ...) which no OpenSPP instance has ever served: all ten openfn-mocker exchanges were unknown-operation against it. Cross-checked against ast.json (20 operations, all funnelling through execute_kw), the adaptor source, odoo-await's transport, and the mocker's recorded XML-RPC traffic, which now conforms with 0 violations."
+  "capturedAt": "2026-11-27",
+  "lastCheckedAt": "2026-11-27",
+  "notes": "OpenSPP is a social-protection registry built on Odoo, and its externally reachable API has two halves, both described here. (1) OpenSPP's REST API v2 (spp_api_v2 + extension addons, FastAPI, base path /api/v2/spp). This is now the half that matters: @openfn/language-openspp 4.0.0 dropped XML-RPC and calls only /api/v2/spp/* (OAuth client-credentials at /oauth/token, then Individual, Group, $add-member/$remove-member, Program, ProgramMembership, ServicePoint), and its generic request() reaches any route here. The previous 29 REST operations were authored from the module reference pages; they are replaced by all 107 operations the API V2 app registers in the vendor source (OpenSPP/OpenSPP2 19.0 @ a71e8f04), read statically from the router modules of spp_api_v2, its ten extension addons and spp_studio_api_v2 in registration order: paths (router prefix + route), methods, Path/Query/Header parameters with their aliases (_count, _offset, _lastId, _elements, ...), defaults and bounds, request bodies, status codes (201 creates, 204 deletes), response_model schemas and bearer security from the get_authenticated_client/get_current_client dependencies. Component schemas are the Pydantic models those routes use (156), translated to OpenAPI 3.0.3 the way FastAPI would emit them (aliases as property names, Optional as nullable, Literal as enum, polymorphic_body fields as oneOf). Each operation carries x-openspp-source, the router file it came from. What this fixed beyond the 78 new operations: the token endpoint is /oauth/token (the docs-based spec said /token); searches return the SearchResult envelope {data, meta{total,count,offset}, links{self,next,prev}} (Individual, Group, Program, ProgramMembership, Cycle, Entitlement, ChangeRequest) or a Bundle (Product, ProductCategory, UnitOfMeasure, ServicePoint, the _search routes), not bare arrays; Individual/Group gain PUT and PATCH, Group gains member add/remove/update, merge, split and membership history; ProgramMembership gains PUT. Two vendor-source oddities are documented as declared, not patched: the four GET .../_filters routes are registered after GET .../{identifier} on the same prefix, so Starlette answers them with the read route (each says so); and spp_api_v2_simulation's registry imports ..routers.aggregation while the aggregation router lives in routers/analytics.py, so the five simulation routers plus /aggregation are what the addon intends to serve but would fail to load at that commit. The OAuth handler parses its own body (JSON, form-encoded or HTTP Basic), so its TokenRequest body is described by hand from _parse_token_request. Error responses are FastAPI's {detail} body as 'default'. (2) Odoo's external API, which is RPC and not REST: POST /xmlrpc/2/common and /xmlrpc/2/object (XML-RPC, text/xml) and POST /web/session/authenticate and /jsonrpc (JSON-RPC), kept unchanged with the Odoo* record schemas, because adaptor 3.x (and the openfn-mocker XML-RPC mock) still use them. BEST-EFFORT, reason rpc-transport: execute_kw dispatches model methods by name at runtime, so the RPC half is open-ended in depth and its XML wire format cannot be described. The REST half is the complete declared route table of the addons named above; a deployment serves only the addons it installs, and its own /api/v2/spp/openapi.json is the authority for that deployment."
 }

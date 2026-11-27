@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openspp/ApiMetadata",
+  "title": "ApiMetadata",
+  "x-openfn-adaptor": "openspp",
+  "x-source": {
+    "openapi": "#/components/schemas/ApiMetadata",
+    "capturedAt": "2026-11-27"
+  },
+  "type": "object",
+  "description": "Complete API metadata response.\n\nThis provides a comprehensive overview of the API including version,\navailable resources, extensions, authentication methods, and documentation.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "API name",
+      "example": "OpenSPP API"
+    },
+    "version": {
+      "type": "string",
+      "description": "API version following semantic versioning",
+      "example": "2.0.0"
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "ResourceMetadata.json"
+      },
+      "description": "Map of resource types to their metadata"
+    },
+    "extensions": {
+      "type": "array",
+      "items": {
+        "$ref": "ExtensionMetadata.json"
+      },
+      "description": "Available API extensions from optional modules"
+    },
+    "authentication": {
+      "allOf": [
+        {
+          "$ref": "AuthenticationMetadata.json"
+        }
+      ],
+      "description": "Authentication configuration"
+    },
+    "docs": {
+      "type": "string",
+      "description": "URL to interactive API documentation",
+      "example": "/api/v2/spp/docs"
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "resources",
+    "authentication",
+    "docs"
+  ]
+}

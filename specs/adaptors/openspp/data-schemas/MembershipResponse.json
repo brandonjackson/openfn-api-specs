@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openspp/MembershipResponse",
+  "title": "MembershipResponse",
+  "x-openfn-adaptor": "openspp",
+  "x-source": {
+    "openapi": "#/components/schemas/MembershipResponse",
+    "capturedAt": "2026-11-27"
+  },
+  "type": "object",
+  "description": "Response for membership operations",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Resource type discriminator",
+      "default": "GroupMember",
+      "enum": [
+        "GroupMember"
+      ]
+    },
+    "group": {
+      "allOf": [
+        {
+          "$ref": "Reference.json"
+        }
+      ],
+      "description": "Reference to the Group"
+    },
+    "entity": {
+      "allOf": [
+        {
+          "$ref": "Reference.json"
+        }
+      ],
+      "description": "Reference to the Individual member"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "$ref": "CodeableConcept.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Member's role in the group"
+    },
+    "startDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "When membership starts/started"
+    },
+    "endedDate": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "When membership ends/ended"
+    },
+    "status": {
+      "type": "string",
+      "pattern": "^(active|inactive)$",
+      "description": "Current membership status"
+    }
+  },
+  "required": [
+    "group",
+    "entity",
+    "status"
+  ]
+}

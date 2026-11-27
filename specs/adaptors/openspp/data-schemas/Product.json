@@ -5,33 +5,137 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Product",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A product in the in-kind catalogue.",
+  "description": "A product that can be distributed as in-kind entitlement",
   "properties": {
-    "code": {
+    "resourceType": {
       "type": "string",
-      "description": "Product code (Odoo default_code)."
+      "default": "Product",
+      "enum": [
+        "Product"
+      ]
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Unique identifier for this product (default_code or name)"
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Product name"
+    },
+    "defaultCode": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Product SKU/code"
     },
     "category": {
-      "type": "string"
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to product category"
     },
-    "type": {
-      "type": "string"
+    "unitOfMeasure": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to unit of measure"
     },
-    "uom": {
-      "type": "string",
-      "description": "Default unit of measure."
+    "listPrice": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "List price"
     },
-    "description": {
-      "type": "string"
+    "currency": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Currency code (ISO 4217)"
     },
     "active": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether product is active",
+      "default": true
+    },
+    "hasImage": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Whether product has an image"
+    },
+    "extension": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier",
+    "name"
+  ]
 }

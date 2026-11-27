@@ -5,44 +5,119 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/Group",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A group/household registrant, addressed by external identifier.",
+  "description": "A household or other group of individuals",
   "properties": {
+    "type": {
+      "type": "string",
+      "description": "Resource type discriminator",
+      "default": "Group",
+      "enum": [
+        "Group"
+      ]
+    },
     "identifier": {
-      "type": "string",
-      "example": "urn:openspp:id:spp-id|GRP_Q4VGGZPF"
-    },
-    "name": {
-      "type": "string",
-      "example": "Doe Household"
-    },
-    "kind": {
-      "type": "string",
-      "description": "Group kind vocabulary code."
-    },
-    "members": {
       "type": "array",
-      "description": "Member individual identifiers.",
       "items": {
-        "type": "string"
-      }
-    },
-    "address": {
-      "type": "string"
-    },
-    "phone": {
-      "type": "string"
-    },
-    "area": {
-      "type": "string"
+        "$ref": "Identifier.json"
+      },
+      "description": "External identifiers for this group",
+      "minItems": 1
     },
     "active": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": true
+    },
+    "groupType": {
+      "type": "string",
+      "pattern": "^(household|family|organization|other)$",
+      "description": "Type of group",
+      "default": "household"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "member": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "GroupMember.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "quantity": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Number of members"
+    },
+    "address": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "Address.json"
+          }
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     },
     "extension": {
-      "$ref": "ApiExtension.json"
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier"
+  ]
 }

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openspp/BulkExportItem",
+  "title": "BulkExportItem",
+  "x-openfn-adaptor": "openspp",
+  "x-source": {
+    "openapi": "#/components/schemas/BulkExportItem",
+    "capturedAt": "2026-11-27"
+  },
+  "type": "object",
+  "description": "Single item in bulk export response",
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "description": "The requested identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "not_found",
+        "access_denied",
+        "error"
+      ],
+      "description": "Result status for this identifier"
+    },
+    "resource": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "The exported resource (if successful)"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Error message (if not successful)"
+    }
+  },
+  "required": [
+    "identifier",
+    "status"
+  ]
+}

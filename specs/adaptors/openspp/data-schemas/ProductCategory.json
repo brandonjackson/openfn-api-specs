@@ -5,23 +5,54 @@
   "x-openfn-adaptor": "openspp",
   "x-source": {
     "openapi": "#/components/schemas/ProductCategory",
-    "capturedAt": "2026-09-13"
+    "capturedAt": "2026-11-27"
   },
   "type": "object",
-  "description": "A product category.",
+  "description": "A category for organizing products",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "parent": {
-      "type": [
-        "string",
-        "null"
+    "resourceType": {
+      "type": "string",
+      "default": "ProductCategory",
+      "enum": [
+        "ProductCategory"
       ]
     },
-    "full_path": {
+    "identifier": {
       "type": "string",
-      "description": "Complete category path."
+      "description": "Unique identifier for this category (name)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Category name"
+    },
+    "parent": {
+      "anyOf": [
+        {
+          "$ref": "Reference.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ],
+      "description": "Reference to parent category"
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "ResourceMeta.json"
+        },
+        {
+          "enum": [
+            null
+          ]
+        }
+      ]
     }
-  }
+  },
+  "required": [
+    "identifier",
+    "name"
+  ]
 }
