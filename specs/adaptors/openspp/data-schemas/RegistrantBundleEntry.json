@@ -11,71 +11,41 @@
   "description": "Bundle entry whose resource is a registrant (Individual or Group).\n\nThe base BundleEntry stays generic because other modules (e.g. Products)\nreuse it for non-registrant resources; only registrant-serving endpoints\ndocument the Individual/Group restriction.",
   "properties": {
     "fullUrl": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "enum": [
-            null
-          ]
-        }
+      "type": [
+        "string",
+        "null"
       ],
       "description": "Placeholder UUID (urn:uuid:xxx) or resource URL"
     },
     "request": {
-      "anyOf": [
+      "allOf": [
         {
           "$ref": "BundleRequest.json"
-        },
-        {
-          "enum": [
-            null
-          ]
         }
       ]
     },
     "response": {
-      "anyOf": [
+      "allOf": [
         {
           "$ref": "BundleResponse.json"
-        },
-        {
-          "enum": [
-            null
-          ]
         }
       ]
     },
     "resource": {
-      "anyOf": [
+      "oneOf": [
         {
-          "oneOf": [
-            {
-              "$ref": "Individual.json"
-            },
-            {
-              "$ref": "Group.json"
-            }
-          ]
+          "$ref": "Individual.json"
         },
         {
-          "enum": [
-            null
-          ]
+          "$ref": "Group.json"
         }
       ],
       "description": "FHIR-style registrant resource (Individual or Group). Must match the type indicated by request.url."
     },
     "search": {
-      "anyOf": [
+      "allOf": [
         {
           "$ref": "BundleSearch.json"
-        },
-        {
-          "enum": [
-            null
-          ]
         }
       ]
     }
