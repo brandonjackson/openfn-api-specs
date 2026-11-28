@@ -3,7 +3,7 @@
   "info": {
     "title": "SENAITE JSON API",
     "version": "2.7.0",
-    "description": "The JSON REST API of SENAITE LIMS, an open-source laboratory information management system built on Plone. It is provided by the `senaite.jsonapi` add-on, which mounts itself at the Plone site's `@@API` traversal point with the base route `/senaite/v1`; a full URL therefore looks like `https://<host>/<plone-site>/@@API/senaite/v1/<route>`. Every SENAITE portal type is reachable through one generic content route \u2014 reads by GET, and create / update / delete by POST with the operation in the path \u2014 plus dedicated routes for users, authentication, catalogs, registry, settings, search and push. The OpenFn `senaite` adaptor exposes a single generic `request(method, path, options)` operation against this base, logging in first with `GET /login?__ac_name=&__ac_password=` and reusing the session cookie.",
+    "description": "The JSON REST API of SENAITE LIMS, an open-source laboratory information management system built on Plone. It is provided by the `senaite.jsonapi` add-on, which mounts itself at the Plone site's `@@API` traversal point with the base route `/senaite/v1`; a full URL therefore looks like `https://<host>/<plone-site>/@@API/senaite/v1/<route>`. Every SENAITE portal type is reachable through one generic content route \u2014 reads by GET, and create / update / delete by POST with the operation in the path \u2014 plus dedicated routes for users, authentication, catalogs, registry, settings, search, push, introspection (types, schema, workflow) and sample partitioning. Since 2.7.0 object-addressed routes also take the REST verbs PUT/PATCH (update) and DELETE (deactivate). The OpenFn `senaite` adaptor exposes a single generic `request(method, path, options)` operation against this base, logging in first with `GET /login?__ac_name=&__ac_password=` and reusing the session cookie.",
     "x-openfn-adaptor": "senaite"
   },
   "servers": [
@@ -76,6 +76,14 @@
     {
       "name": "version",
       "description": "API version information."
+    },
+    {
+      "name": "introspect",
+      "description": "Discover portal types, their schema fields and workflow transitions."
+    },
+    {
+      "name": "operations",
+      "description": "Domain operations that are not plain field writes, such as sample partitioning."
     }
   ],
   "paths": {
@@ -1144,7 +1152,7 @@
         "tags": [
           "content"
         ],
-        "description": "senaite.jsonapi exposes every SENAITE portal type through one generic content route. Reads are HTTP GET; create, update and delete are HTTP POST, with the operation named in the path (`<resource>/create`, `create/<uid>`, ...). `delete` deactivates the object rather than removing it, because SENAITE keeps a full audit trail. Any catalog index may be used as a query parameter. Passing a 32-character UID in place of the portal type returns that one record on its own \u2014 the bare content object, not the batch envelope.",
+        "description": "senaite.jsonapi exposes every SENAITE portal type through one generic content route. Reads are HTTP GET; create, update and delete are HTTP POST, with the operation named in the path (`<resource>/create`, `create/<uid>`, ...), and since 2.7.0 an object-addressed route also takes PUT/PATCH (update) and DELETE (deactivate). `delete` deactivates the object rather than removing it, because SENAITE keeps a full audit trail. Any catalog index may be used as a query parameter. Passing a 32-character UID in place of the portal type returns that one record on its own \u2014 the bare content object, not the batch envelope.",
         "parameters": [
           {
             "name": "resource",
@@ -1217,6 +1225,218 @@
                 }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "actionOnUid",
+        "summary": "Run create/update/delete on the object with this bare UID via a method override",
+        "tags": [
+          "content"
+        ],
+        "description": "POST to `/<uid>` without an action segment; the operation comes from the `X-HTTP-Method-Override` header (`create`, `update` or `delete`).",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "Here a bare 32-character object UID, not a portal type (senaite.jsonapi registers `/<string(length=32):uid>` alongside `/<string:resource>`; Werkzeug tells them apart by length, which an OpenAPI template cannot)."
+          },
+          {
+            "name": "X-HTTP-Method-Override",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "create",
+                "update",
+                "delete"
+              ]
+            },
+            "description": "The operation to run."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putUid",
+        "summary": "Update the object with this bare UID with HTTP PUT",
+        "tags": [
+          "content"
+        ],
+        "description": "REST-style form of `/update/{uid}` on the bare-UID route `/<uid>` (senaite.jsonapi #98, 2.7.0).",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "Here a bare 32-character object UID, not a portal type (senaite.jsonapi registers `/<string(length=32):uid>` alongside `/<string:resource>`; Werkzeug tells them apart by length, which an OpenAPI template cannot)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchUid",
+        "summary": "Update the object with this bare UID with HTTP PATCH",
+        "tags": [
+          "content"
+        ],
+        "description": "REST-style form of `/update/{uid}` on the bare-UID route `/<uid>` (senaite.jsonapi #98, 2.7.0).",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "Here a bare 32-character object UID, not a portal type (senaite.jsonapi registers `/<string(length=32):uid>` alongside `/<string:resource>`; Werkzeug tells them apart by length, which an OpenAPI template cannot)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUid",
+        "summary": "Deactivate the object with this bare UID with HTTP DELETE",
+        "tags": [
+          "content"
+        ],
+        "description": "REST-style form of `/delete/{uid}` on the bare-UID route `/<uid>` (senaite.jsonapi #98, 2.7.0).",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "Here a bare 32-character object UID, not a portal type (senaite.jsonapi registers `/<string(length=32):uid>` alongside `/<string:resource>`; Werkzeug tells them apart by length, which an OpenAPI template cannot)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -1579,7 +1799,7 @@
         "tags": [
           "content"
         ],
-        "description": "senaite.jsonapi exposes every SENAITE portal type through one generic content route. Reads are HTTP GET; create, update and delete are HTTP POST, with the operation named in the path (`<resource>/create`, `create/<uid>`, ...). `delete` deactivates the object rather than removing it, because SENAITE keeps a full audit trail. Any catalog index may be used as a query parameter. A read by UID wakes the object up, so the full field set is returned.",
+        "description": "senaite.jsonapi exposes every SENAITE portal type through one generic content route. Reads are HTTP GET; create, update and delete are HTTP POST, with the operation named in the path (`<resource>/create`, `create/<uid>`, ...), and since 2.7.0 an object-addressed route also takes PUT/PATCH (update) and DELETE (deactivate). `delete` deactivates the object rather than removing it, because SENAITE keeps a full audit trail. Any catalog index may be used as a query parameter. A read by UID wakes the object up, so the full field set is returned.",
         "parameters": [
           {
             "name": "resource",
@@ -1693,6 +1913,397 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putResourceByUid",
+        "summary": "Update one object with HTTP PUT (REST verb form)",
+        "tags": [
+          "content"
+        ],
+        "description": "REST-style form of `/{resource}/update/{uid}`: an HTTP PUT on an object-addressed route runs `update` without an action segment (PUT and PATCH both map to update). Added in senaite.jsonapi #98 (2.7.0); an `IPubStart` subscriber clears Zope's WebDAV flag for `@@API` requests so the verb reaches the API view.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchResourceByUid",
+        "summary": "Update one object with HTTP PATCH (REST verb form)",
+        "tags": [
+          "content"
+        ],
+        "description": "REST-style form of `/{resource}/update/{uid}`: an HTTP PATCH on an object-addressed route runs `update` without an action segment (PUT and PATCH both map to update). Added in senaite.jsonapi #98 (2.7.0); an `IPubStart` subscriber clears Zope's WebDAV flag for `@@API` requests so the verb reaches the API view.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentActionRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteResourceByUid",
+        "summary": "Deactivate one object with HTTP DELETE (REST verb form)",
+        "tags": [
+          "content"
+        ],
+        "description": "REST-style form of `/{resource}/delete/{uid}`: an HTTP DELETE on an object-addressed route runs `delete` without an action segment (DELETE deactivates the object; SENAITE keeps it for the audit trail). Added in senaite.jsonapi #98 (2.7.0); an `IPubStart` subscriber clears Zope's WebDAV flag for `@@API` requests so the verb reaches the API view.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A SENAITE portal type, e.g. `Client`, `Contact`, `AnalysisRequest`, `AnalysisService`. Lower-case spellings are accepted. A 32-character UID may be given instead, in which case the single record with that UID is returned."
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "description": "32-character hexadecimal UID. On a `create` route this is the UID of the target container; on `update` and `delete` it is the UID of the object itself."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The affected records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/types": {
+      "get": {
+        "operationId": "listTypes",
+        "summary": "List the registered portal types",
+        "tags": [
+          "introspect"
+        ],
+        "description": "Lists every portal type, or with `parent_uid` / `parent_path` only the types that can be added inside that container. Added in senaite.jsonapi #108 (2.7.0).",
+        "parameters": [
+          {
+            "name": "parent_uid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restrict to types addable in the container with this UID."
+          },
+          {
+            "name": "parent_path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restrict to types addable in the container at this physical path (used when `parent_uid` is absent)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The portal types.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypeList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/types/{portal_type}": {
+      "get": {
+        "operationId": "getType",
+        "summary": "Describe one portal type",
+        "tags": [
+          "introspect"
+        ],
+        "description": "Returns the type with its add permission and indexing catalogs; 404 for an unknown type (senaite.jsonapi #108, 2.7.0).",
+        "parameters": [
+          {
+            "name": "portal_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A portal type id, e.g. `Client`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The portal type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypeDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/schema/{portal_type}": {
+      "get": {
+        "operationId": "getSchema",
+        "summary": "Describe the schema fields of a portal type",
+        "tags": [
+          "introspect"
+        ],
+        "description": "Each field with its type, required/read-only flags and, for references, the allowed target types; 404 for an unknown type (senaite.jsonapi #108, 2.7.0).",
+        "parameters": [
+          {
+            "name": "portal_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A portal type id, e.g. `Client`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The schema fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/workflow/{uid}": {
+      "get": {
+        "operationId": "getWorkflow",
+        "summary": "Get an object's workflow state and available transitions",
+        "tags": [
+          "introspect"
+        ],
+        "description": "Answers \"what can I do with this object now\" without guessing transition ids; 404 when no object has the UID (senaite.jsonapi #108, 2.7.0).",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UID of the object."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workflow state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/partition": {
+      "post": {
+        "operationId": "createPartitions",
+        "summary": "Create partitions (aliquots) of received samples",
+        "tags": [
+          "operations"
+        ],
+        "description": "Creates one or more partitions of each primary sample named by `uid`, moving the selected analyses into them. 400 when a record has no `uid` or nothing was created; 404 for an unknown primary. Added in senaite.jsonapi #109 (2.7.0).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created partitions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -2666,6 +3277,272 @@
             "description": "Release date of that version."
           }
         }
+      },
+      "TypeInfo": {
+        "type": "object",
+        "description": "A registered portal type (its factory type information).",
+        "required": [
+          "portal_type",
+          "title",
+          "description",
+          "meta_type",
+          "global_allow"
+        ],
+        "properties": {
+          "portal_type": {
+            "type": "string",
+            "description": "Portal type id, e.g. `Client`."
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "meta_type": {
+            "type": "string",
+            "nullable": true,
+            "description": "The FTI's `content_meta_type`, e.g. `Client`; null when the FTI defines none."
+          },
+          "global_allow": {
+            "type": "boolean",
+            "description": "True when the type may be added anywhere; false when only a container that explicitly allows it can hold it."
+          }
+        }
+      },
+      "TypeList": {
+        "type": "object",
+        "description": "Registered portal types, sorted by `portal_type`.",
+        "required": [
+          "count",
+          "items"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypeInfo"
+            }
+          }
+        }
+      },
+      "TypeDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TypeInfo"
+          },
+          {
+            "type": "object",
+            "required": [
+              "add_permission",
+              "catalogs"
+            ],
+            "properties": {
+              "add_permission": {
+                "type": "string",
+                "nullable": true,
+                "description": "Permission required to add this type, e.g. `senaite.core: Add Client`."
+              },
+              "catalogs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Ids of the catalogs that index this type, sorted."
+              }
+            }
+          }
+        ],
+        "description": "One portal type with what is needed to decide where and how to create it."
+      },
+      "SchemaField": {
+        "type": "object",
+        "description": "One schema field of a portal type.",
+        "required": [
+          "name",
+          "type",
+          "required",
+          "readonly"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "Archetypes field type (e.g. `string`, `reference`) or the Dexterity zope.schema class name (e.g. `TextLine`)."
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "readonly": {
+            "type": "boolean",
+            "description": "True when the field cannot be written through the API."
+          },
+          "allowed_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Reference fields only: the portal types the field may point to."
+          },
+          "multi_valued": {
+            "type": "boolean",
+            "description": "Present when the field declares whether it holds one value or many."
+          }
+        }
+      },
+      "SchemaResponse": {
+        "type": "object",
+        "description": "The schema fields of a portal type. Archetypes types are introspected from an existing instance, so a type with no objects yet returns no fields.",
+        "required": [
+          "portal_type",
+          "count",
+          "fields"
+        ],
+        "properties": {
+          "portal_type": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SchemaField"
+            }
+          }
+        }
+      },
+      "WorkflowInfo": {
+        "type": "object",
+        "description": "Current workflow state of an object and the transitions the caller may run on it now.",
+        "required": [
+          "uid",
+          "portal_type",
+          "review_state",
+          "transitions"
+        ],
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "portal_type": {
+            "type": "string"
+          },
+          "review_state": {
+            "type": "string",
+            "description": "e.g. `active`, `sample_due`, `to_be_verified`."
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "title"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Pass as `transition` in an update body to run it."
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PartitionSpec": {
+        "type": "object",
+        "description": "Values for one partition.",
+        "properties": {
+          "analyses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "UIDs of analyses to move from the primary into the partition. May be empty; analyses can be added later."
+          },
+          "sample_type": {
+            "type": "string",
+            "description": "Sample type UID; defaults to the primary's."
+          },
+          "container": {
+            "type": "string",
+            "description": "Container UID."
+          },
+          "preservation": {
+            "type": "string",
+            "description": "Preservation UID."
+          },
+          "internal_use": {
+            "type": "boolean",
+            "description": "Overrides the core default only when sent."
+          }
+        }
+      },
+      "PartitionRecord": {
+        "type": "object",
+        "description": "Partitions to create for one primary sample: either a `partitions` list, or a single partition given inline.",
+        "required": [
+          "uid"
+        ],
+        "properties": {
+          "uid": {
+            "type": "string",
+            "description": "UID of the primary (received) sample."
+          },
+          "partitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartitionSpec"
+            }
+          },
+          "analyses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "UIDs of analyses to move from the primary into the partition. May be empty; analyses can be added later."
+          },
+          "sample_type": {
+            "type": "string",
+            "description": "Sample type UID; defaults to the primary's."
+          },
+          "container": {
+            "type": "string",
+            "description": "Container UID."
+          },
+          "preservation": {
+            "type": "string",
+            "description": "Preservation UID."
+          },
+          "internal_use": {
+            "type": "boolean",
+            "description": "Overrides the core default only when sent."
+          }
+        }
+      },
+      "PartitionRequest": {
+        "description": "One partition record, or a list of them (the request data is read as a list of records).",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/PartitionRecord"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartitionRecord"
+            }
+          }
+        ]
       }
     }
   }
